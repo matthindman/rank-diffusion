@@ -1,0 +1,2499 @@
+---
+title: 'Rank Diffusion on FB Pages: Stochastic Portfolio Theory-style Model'
+output:
+  pdf_document:
+    toc: true
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+params:
+  data_path: "data/rank-diffusion/fb_top2000_ranked_daily.parquet"
+  input_is_weekly: null
+  horizons:
+  - 1
+  - 7
+  - 28
+  ranks_keep:
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16
+  - 32
+  - 64
+  - 128
+  - 256
+  - 512
+  - 1024
+  ranks_overlay:
+  - 2
+  - 8
+  - 32
+  - 128
+  - 512
+  top_n_anchor: 1000
+  anchor_days:
+  - 1
+  - 8
+  - 15
+  - 22
+  m_head: 10
+  index_top_n: null
+  min_n_per_rank: 10
+  quantiles:
+  - 0.1
+  - 0.25
+  - 0.5
+  - 0.75
+  - 0.9
+  k_daily:
+  - 100
+  - 200
+  - 300
+  - 400
+  - 500
+  - 600
+  - 700
+  - 800
+  - 900
+  weekly_quantiles:
+  - 0.1
+  - 0.5
+  - 0.9
+  seed: 1823
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 7, fig.height = 4.6, dpi = 150)
+if (knitr::is_latex_output()) {
+  # Ensure PDF figures are generated for LaTeX without X11/cairo dependency
+  knitr::opts_chunk$set(dev = 'pdf')
+}
+set.seed(params$seed)
+```
+
+# 0) Purpose and scope
+
+This notebook implements the CDC pipeline aligned with the technical design, with two data-driven modifications: (i) if variance flatness across rank deciles is rejected, we use a smoothed rank-dependent variance for the head; (ii) the tail is anchored at the splice rank k0 and spliced from k0 onward. It uses only the top 1000 ranks for head estimation, fits a constant variance, estimates a monotone rank‑drift schedule, extrapolates a softening tail, enforces stationarity by zero‑sum drift with bottom uplift, converts drifts to exponential gap rates and CDC increments, builds certainty‑equivalent (MCE) weights, and produces diagnostics and a final CDC plot.
+
+Key data expectations (tables might be provided as in‑memory data frames or CSVs under `data/`):
+
+- weekly: `week_start`, `endpoint_id`, `weekly_metric`, `weekly_total`, `weekly_share`, `rank_w`.
+- daily (optional): `date`, `endpoint_id`, `metric_value`, `rank`, `total_metric`, `share`.
+
+All growth computations are on shares, not counts.
+
+
+# 1) Packages and configuration
+
+```{r packages}
+# NEW: Preconfigure Arrow env to avoid macOS sysctl logs before loading packages
+try({
+  if (identical(Sys.info()[["sysname"]], "Darwin")) {
+    if (!nzchar(Sys.getenv("ARROW_USER_SIMD_LEVEL"))) Sys.setenv(ARROW_USER_SIMD_LEVEL = "none")
+    if (!nzchar(Sys.getenv("ARROW_LOG_LEVEL"))) Sys.setenv(ARROW_LOG_LEVEL = "FATAL")
+  }
+}, silent = TRUE)
+
+required_pkgs <- c(
+  "tidyverse",   # data manipulation + ggplot2
+  "isotone",     # isotonic regression (PAVA)
+  "Iso",         # alternative PAVA implementation
+  "robustbase",  # robust stats (Huber)
+  "car",         # Levene/Brown–Forsythe test
+  "boot",        # bootstrapping support
+  "scales",      # plotting scales
+  "arrow",       # parquet/feather IO
+  "DBI",         # DB interface for DuckDB
+  "duckdb",      # fast SQL over Parquet
+  "lubridate",   # time handling
+  "broom",       # tidying
+  "here",        # paths
+  "purrr"        # functional programming
+)
+
+missing <- setdiff(required_pkgs, rownames(installed.packages()))
+if (length(missing) > 0) {
+  warning("Missing packages: ", paste(missing, collapse = ", "),
+          ". Please install them before running the full pipeline.")
+}
+
+invisible(lapply(intersect(required_pkgs, rownames(installed.packages())),
+                 library, character.only = TRUE))
+
+# Optional packages for advanced smoothing/fitting and multi-plot layout
+# NEW: include 'zoo' for LOCF utilities (optional)
+opt_pkgs <- c("genlasso", "minpack.lm", "patchwork", "zoo")
+opt_missing <- setdiff(opt_pkgs, rownames(installed.packages()))
+invisible(lapply(intersect(opt_pkgs, rownames(installed.packages())),
+                 library, character.only = TRUE))
+
+# NEW: Silence Arrow CPU sysctl warnings on macOS sandboxes and avoid SIMD detection
+try({
+  if (identical(Sys.info()[["sysname"]], "Darwin")) {
+    if (!nzchar(Sys.getenv("ARROW_USER_SIMD_LEVEL"))) Sys.setenv(ARROW_USER_SIMD_LEVEL = "none")
+    if (!nzchar(Sys.getenv("ARROW_LOG_LEVEL"))) Sys.setenv(ARROW_LOG_LEVEL = "FATAL")
+  }
+}, silent = TRUE)
+```
+
+```{r seed_fixed}
+set.seed(12345)
+message("[seed] set.seed(12345)")
+```
+
+```{r ascii_check}
+safe_ascii_check <- function() {
+  f <- tryCatch(knitr::current_input(), error = function(e) NA_character_)
+  if (is.na(f) || !file.exists(f)) return(invisible(TRUE))
+  txt <- readLines(f, warn = FALSE)
+  bad <- grep("[\u2013\u2014\u02C6\u00A0]", txt)  # en/em-dash, modifier letter, NBSP
+  if (length(bad) > 0) {
+    message(sprintf("[ascii check] %d lines contain non-ASCII punctuation likely to break LaTeX; consider replacing dashes and carets. First few lines: %s",
+                    length(bad), paste(utils::head(bad, 5), collapse=", ")))
+  }
+  invisible(TRUE)
+}
+safe_ascii_check()
+```
+
+```{r config}
+config <- list(
+  k_max = 1000L,                   # use top 1:1000 ranks (head)
+  micro_share_threshold = 1e-8,    # exclude micro-shares to avoid log underflow
+  winsor_q = 0.99,                 # winsorize |growth| at 99th pct per-rank
+  k0 = 500L,                       # splice rank for tail extrapolation [300,600]
+  tail_family = "auto",            # "power", "log", or "auto" for CV selection
+  tv_lambda = 0.0,                 # small TV penalty equivalent (see notes)
+  lambda_share = 1.0,              # weight on normalized top-1000 share error in selection objective
+  pre_smooth_ksize = 0L,           # 0 disables, else moving-average window size (odd integer)
+  df_spline = NA_integer_,         # if NA, use GCV; else fix df to this value
+  splice_blend_width = 7L,         # odd integer >=3; set 0 to disable
+  protect_head_up_to = 1000L,      # try not to change drifts for ranks <= this cutoff
+  N_grid = c(5000L, 10000L, 20000L, 50000L, 100000L, 200000L),
+  uplift_m_grid = c(100L, 500L, 1000L, 5000L, 10000L, 20000L, 50000L, 100000L, 200000L),
+  do_cv = FALSE,                   # time-blocked CV for tail family
+  cv_blocks = 5L,                  # number of time blocks if do_cv = TRUE
+  save_outputs = FALSE,            # whether to write tables/figures
+  output_dir = "website/plots"     # target dir for figures if saving
+)
+
+# Align head size with header parameters when provided
+if (!is.null(params$top_n_anchor)) {
+  config$k_max <- as.integer(params$top_n_anchor)
+}
+
+# Optional centered-difference growth path
+config$use_centered_diffs <- FALSE
+config$min_week_ranks_keep <- 12000L   # drop weeks with < this many pages
+
+# NEW: variance window and testing config
+config <- modifyList(config, list(
+  variance_window_L_candidates = c(100L, 500L, 1000L),
+  variance_window_U_cap = 10000L,   # cap at 10k or k_full, whichever smaller
+  variance_bins = 10L,              # deciles within window
+  variance_flat_alpha = 0.01,       # p-threshold
+  use_piecewise_sigma = TRUE        # prefer piecewise σ² if built
+))
+```
+
+
+## 1A) Raw CrowdTangle sampling diagnostics
+
+This section replicates checks against the raw daily Parquet exports on the external disk. It reports two diagnostics:
+
+- For 10 random daily files: number of posts (rows), unique pages that day, and unique pages across that ISO week.
+- For each ISO week (after the first 4): counts of pages new‑ever; returning after at least 4 weeks; returning after at least 12 weeks. Returning counts exclude truly new pages; the 12‑week count is a subset of the 4‑week count.
+
+If the external path is not available, these chunks will be skipped with a note.
+
+```{r raw_paths}
+raw_dir <- "/Volumes/My Passport for Mac/crowdtangle_backfill"
+raw_ok <- dir.exists(raw_dir)
+if (!raw_ok) {
+  message("[raw] External path not found: ", raw_dir, " — skipping raw diagnostics. Update raw_dir if needed.")
+}
+```
+
+```{r raw_sample_10, eval=raw_ok && requireNamespace('DBI', quietly=TRUE) && requireNamespace('duckdb', quietly=TRUE)}
+con <- DBI::dbConnect(duckdb::duckdb())
+DBI::dbExecute(con, sprintf("PRAGMA threads=%d;", parallel::detectCores()))
+DBI::dbExecute(con, "SET memory_limit='12GB';")
+
+files <- list.files(raw_dir, pattern = "\\.parquet$", full.names = TRUE)
+stopifnot(length(files) > 0)
+
+date_from_name <- function(x) {
+  m <- stringr::str_match(basename(x), "(\\\\d{4}-\\\\d{2}-\\\\d{2})")[,2]
+  if (!is.na(m)) return(as.Date(m))
+  as.Date(DBI::dbGetQuery(con, "SELECT MIN(CAST(date AS DATE)) AS d FROM parquet_scan(?, union_by_name=true)", params = list(x))$d)
+}
+
+week_start <- function(d) d - as.difftime(lubridate::wday(d, week_start = 1) - 1, units = "days")
+
+# Build week -> files map
+file_dates <- vapply(files, date_from_name, as.Date("1970-01-01"))
+week_starts <- week_start(file_dates)
+week_map <- split(files, as.character(week_starts))
+
+set.seed(42)
+sample_days <- sample(files, size = min(10L, length(files)))
+
+day_week_tbl <- tibble::tibble(
+  date = as.Date(vapply(sample_days, date_from_name, as.Date("1970-01-01"))),
+  file = basename(sample_days),
+  week_start = week_start(date)
+)
+
+# Precompute unique pages per sampled week to avoid re-reading
+ws_unique <- unique(day_week_tbl$week_start)
+week_pages_counts <- purrr::map_dfr(ws_unique, function(ws) {
+  wk_files <- week_map[[as.character(ws)]]
+  file_list_sql <- paste(sprintf("'%s'", gsub("'", "''", wk_files)), collapse = ",")
+  read_src <- sprintf("read_parquet([%s], union_by_name=true)", file_list_sql)
+  n_pages <- DBI::dbGetQuery(con, sprintf('SELECT COUNT(DISTINCT "account.name") AS n FROM %s', read_src))$n
+  tibble::tibble(week_start = ws, unique_pages_week = n_pages)
+})
+
+day_rows <- purrr::map_dfr(sample_days, function(x) {
+  n_posts <- DBI::dbGetQuery(con, "SELECT COUNT(*) AS n FROM parquet_scan(?, union_by_name=true)", params = list(x))$n
+  n_pages <- DBI::dbGetQuery(con, 'SELECT COUNT(DISTINCT "account.name") AS n FROM parquet_scan(?, union_by_name=true)', params = list(x))$n
+  tibble::tibble(file = basename(x), posts = n_posts, unique_pages_day = n_pages)
+})
+
+res10 <- day_week_tbl %>%
+  dplyr::left_join(day_rows, by = "file") %>%
+  dplyr::left_join(week_pages_counts, by = "week_start") %>%
+  dplyr::arrange(date)
+
+knitr::kable(res10, align = "lrrr", caption = "Random 10 daily files: posts, unique pages (day), unique pages (week)")
+```
+
+```{r raw_weekly_returns, eval=raw_ok && requireNamespace('DBI', quietly=TRUE) && requireNamespace('duckdb', quietly=TRUE)}
+# Weekly returning/new counts after the first 4 weeks
+weeks_sorted <- sort(unique(as.Date(names(week_map))))
+
+last_seen <- new.env(parent = emptyenv())
+count_week <- function(i, ws) {
+  wk_files <- week_map[[as.character(ws)]]
+  file_list_sql <- paste(sprintf("'%s'", gsub("'", "''", wk_files)), collapse = ",")
+  read_src <- sprintf("read_parquet([%s], union_by_name=true)", file_list_sql)
+  pages <- DBI::dbGetQuery(con, sprintf('SELECT DISTINCT "account.name" AS p FROM %s WHERE "account.name" IS NOT NULL', read_src))$p
+
+  new_ever <- 0L
+  first_4w <- 0L
+  first_12w <- 0L
+
+  for (p in pages) {
+    last <- mget(p, envir = last_seen, ifnotfound = list(NA_integer_))[[1]]
+    if (is.na(last)) {
+      new_ever <- new_ever + 1L
+    } else {
+      gap <- i - last
+      if (gap >= 4L) first_4w <- first_4w + 1L
+      if (gap >= 12L) first_12w <- first_12w + 1L
+    }
+    assign(p, i, envir = last_seen)
+  }
+  tibble::tibble(week_start = ws, new_ever = new_ever, first_time_in_4w = first_4w, first_time_in_12w = first_12w)
+}
+
+weekly_counts <- purrr::map2_dfr(seq_along(weeks_sorted), weeks_sorted, count_week)
+weekly_counts2 <- weekly_counts %>% dplyr::filter(dplyr::row_number() > 4)
+
+knitr::kable(weekly_counts2, align = "lrrr", caption = "Weekly counts: new-ever, first-time in >=4 weeks, first-time in >=12 weeks (after first four weeks)")
+
+DBI::dbDisconnect(con, shutdown = TRUE)
+```
+
+
+# 2) Helpers
+
+```{r helpers}
+# Null coalescing helper
+`%||%` <- function(a, b) if (!is.null(a)) a else b
+
+# Simple weighted PAVA for nondecreasing fit (Pool Adjacent Violators)
+pava_increasing <- function(y, w = NULL) {
+  n <- length(y)
+  if (n == 0) return(numeric(0))
+  if (is.null(w)) w <- rep(1, n)
+  w <- ifelse(is.finite(w) & w > 0, w, 1)
+  m <- as.numeric(y)
+  ww <- as.numeric(w)
+  start <- seq_len(n)
+  end <- seq_len(n)
+  k <- n
+  i <- 1
+  while (i < k) {
+    if (m[i] <= m[i + 1]) {
+      i <- i + 1
+    } else {
+      total_w <- ww[i] + ww[i + 1]
+      total_m <- (ww[i] * m[i] + ww[i + 1] * m[i + 1]) / total_w
+      m[i] <- total_m
+      ww[i] <- total_w
+      end[i] <- end[i + 1]
+      if (i + 1 < k) {
+        m[(i + 1):(k - 1)] <- m[(i + 2):k]
+        ww[(i + 1):(k - 1)] <- ww[(i + 2):k]
+        start[(i + 1):(k - 1)] <- start[(i + 2):k]
+        end[(i + 1):(k - 1)] <- end[(i + 2):k]
+      }
+      k <- k - 1
+      if (i > 1) i <- i - 1
+    }
+  }
+  fit <- numeric(n)
+  for (j in seq_len(k)) {
+    fit[start[j]:end[j]] <- m[j]
+  }
+  fit
+}
+# From user-provided loading utilities
+req_cols <- c("date","endpoint_id","metric_value")
+
+read_any <- function(path) {
+  ext <- tolower(tools::file_ext(path))
+  if (ext %in% c("parquet","feather")) return(arrow::read_parquet(path))
+  if (ext %in% c("csv","tsv")) return(readr::read_delim(path, delim = ifelse(ext=="csv", ",", "\t"), show_col_types = FALSE))
+  stop("Unsupported file extension: ", ext)
+}
+
+safe_rank1 <- function(x, decreasing = TRUE) base::rank(if (decreasing) -x else x, ties.method = "first")
+log_brks <- function(rmax) { b <- 2^(0:floor(log2(rmax))); b[b <= rmax] }
+
+# Utility: ensure date
+to_date <- function(x) {
+  if (inherits(x, "Date")) return(x)
+  as.Date(x)
+}
+
+# Weighted trimmed mean (one-sided symmetric trim by weight mass)
+weighted_trim_mean <- function(x, w, trim = 0.10) {
+  stopifnot(length(x) == length(w))
+  o <- order(x)
+  x <- x[o]; w <- w[o]
+  w <- w / sum(w)
+  cw <- cumsum(w)
+  keep <- (cw >= trim) & (cw <= 1 - trim)
+  if (!any(keep)) {
+    # fallback: return weighted mean
+    return(sum(x * w))
+  }
+  # Linear interpolation at edges for exact trim mass
+  idx <- which(keep)
+  xk <- x[idx]; wk <- w[idx]
+  # add contribution from partial edge mass if needed
+  lower_i <- max(0, max(which(cw < trim)))
+  upper_i <- min(length(cw) + 1, min(which(cw > 1 - trim)))
+  # Lower edge interpolation
+  if (lower_i > 0 && lower_i < length(cw)) {
+    wt_needed <- trim - cw[lower_i]
+    if (wt_needed > 0) {
+      x_val <- x[lower_i + 1]
+      xk <- c(x_val, xk)
+      wk <- c(wt_needed, wk)
+    }
+  }
+  # Upper edge interpolation
+  if (upper_i > 1 && upper_i <= length(cw)) {
+    wt_needed <- cw[upper_i] - (1 - trim)
+    if (wt_needed > 0) {
+      x_val <- x[upper_i]
+      xk <- c(xk, x_val)
+      wk <- c(wk, wt_needed)
+    }
+  }
+  wk <- wk / sum(wk)
+  sum(xk * wk)
+}
+
+# Winsorize by rank: cap |r| at rank-wise 99th percentile of |r|
+winsorize_by_rank <- function(df, rank_col = "rank_w", value_col = "r_f", q = 0.99) {
+  df %>%
+    group_by(.data[[rank_col]]) %>%
+    mutate(
+      .abs = abs(.data[[value_col]]),
+      .thr = quantile(.abs, probs = q, na.rm = TRUE, type = 7),
+      !!rlang::sym(value_col) := pmax(pmin(.data[[value_col]], .thr), -.thr)
+    ) %>%
+    ungroup() %>%
+    select(-.abs, -.thr)
+}
+
+# Contiguous rank check for 1:K within a week
+has_contiguous_head <- function(df, k_max) {
+  rks <- sort(unique(df$rank_w))
+  all(1:k_max %in% rks)
+}
+
+# Drop dates with sparse rank coverage so downstream growth pairs stay stable
+filter_low_rank_dates <- function(daily_tbl, min_ranks = 1850) {
+  counts <- daily_tbl %>% count(date, name = "n")
+  sparse_dates <- counts %>% filter(n < min_ranks)
+  list(
+    daily = daily_tbl %>% anti_join(sparse_dates, by = "date"),
+    removed_dates = sparse_dates
+  )
+}
+
+# Mark weeks that contain any day with very low rank coverage
+drop_weeks_with_bad_days <- function(daily_tbl, min_day_ranks = 1800L) {
+  day_counts <- daily_tbl %>% dplyr::count(date, name = "n")
+  bad_days <- day_counts %>% dplyr::filter(n < min_day_ranks) %>%
+    dplyr::mutate(week_start = lubridate::floor_date(date, unit = "week", week_start = 1L))
+  bad_weeks <- bad_days %>% dplyr::distinct(week_start)
+  list(bad_weeks = bad_weeks)
+}
+
+# Synthetic weekly data generator for demo runs
+simulate_weekly_data <- NULL  # disabled per user instruction (no synthetic data)
+
+# Build occupant forward growth panel restricted to top k_max
+build_forward_growth <- function(weekly, k_max = 1000L, micro_share_threshold = 1e-8, winsor_q = 0.99) {
+  wk <- weekly %>%
+    mutate(week_start = to_date(week_start)) %>%
+    filter(!is.na(weekly_share), weekly_share > 0, rank_w <= k_max) %>%
+    mutate(log_share = log(weekly_share)) %>%
+    select(week_start, endpoint_id, rank_w, weekly_share, log_share, weekly_metric, weekly_total)
+  # Exclude weeks marked as bad
+  wk <- wk %>% dplyr::anti_join(bad_weeks, by = "week_start")
+
+  # Drop weeks missing any rank in 1:k_max
+  kept_weeks <- wk %>%
+    group_by(week_start) %>%
+    filter(n() >= k_max) %>%
+    summarise(contig = has_contiguous_head(cur_data(), k_max), .groups = "drop") %>%
+    filter(contig) %>%
+    pull(week_start)
+
+  wk <- wk %>% filter(week_start %in% kept_weeks)
+
+  # Week index for lead join
+  weeks <- sort(unique(wk$week_start))
+  wmap <- tibble(week_start = weeks, week_id = seq_along(weeks))
+  wk <- wk %>% left_join(wmap, by = "week_start")
+
+  wk_next <- wk %>%
+    mutate(week_id = week_id - 1L) %>%   # so join by week_id gives t+1 on the right
+    select(endpoint_id, week_id, log_share_next = log_share)
+
+  gpanel <- wk %>%
+    left_join(wk_next, by = c("endpoint_id", "week_id")) %>%
+    filter(!is.na(log_share_next), weekly_share >= micro_share_threshold) %>%
+    mutate(r_f = log_share_next - log_share)
+
+  # Winsorize forward growth |r_f| at rank level
+  gpanel <- winsorize_by_rank(gpanel, rank_col = "rank_w", value_col = "r_f", q = winsor_q)
+
+  gpanel
+}
+
+# Build occupant forward growth panel using RAW INTERACTIONS (weekly_metric)
+build_forward_growth_counts <- function(weekly, k_max = 1000L, winsor_q = 0.99) {
+  wk <- weekly %>%
+    mutate(week_start = to_date(week_start)) %>%
+    filter(!is.na(weekly_metric), weekly_metric > 0, rank_w <= k_max) %>%
+    mutate(log_metric = log(weekly_metric)) %>%
+    select(week_start, endpoint_id, rank_w, weekly_metric, log_metric)
+  # Exclude weeks marked as bad
+  wk <- wk %>% dplyr::anti_join(bad_weeks, by = "week_start")
+
+  # Drop weeks missing any rank in 1:k_max
+  kept_weeks <- wk %>%
+    group_by(week_start) %>%
+    filter(n() >= k_max) %>%
+    summarise(contig = has_contiguous_head(cur_data(), k_max), .groups = "drop") %>%
+    filter(contig) %>%
+    pull(week_start)
+
+  wk <- wk %>% filter(week_start %in% kept_weeks)
+
+  # Week index for lead join
+  weeks <- sort(unique(wk$week_start))
+  wmap <- tibble(week_start = weeks, week_id = seq_along(weeks))
+  wk <- wk %>% left_join(wmap, by = "week_start")
+
+  wk_next <- wk %>%
+    mutate(week_id = week_id - 1L) %>%   # so join by week_id gives t+1 on the right
+    select(endpoint_id, week_id, log_metric_next = log_metric)
+
+  gpanel <- wk %>%
+    left_join(wk_next, by = c("endpoint_id", "week_id")) %>%
+    filter(!is.na(log_metric_next)) %>%
+    mutate(r_f_cnt = log_metric_next - log_metric)
+
+  # Winsorize forward growth |r_f_cnt| at rank level
+  gpanel <- winsorize_by_rank(gpanel, rank_col = "rank_w", value_col = "r_f_cnt", q = winsor_q)
+
+  gpanel
+}
+
+# Centered-difference occupant growth panel (t-1, t+1)/2
+build_centered_growth <- function(weekly, k_max = 1000L, micro_share_threshold = 1e-8, winsor_q = 0.99) {
+  wk <- weekly %>%
+    dplyr::mutate(week_start = to_date(week_start)) %>%
+    dplyr::filter(!is.na(weekly_share), weekly_share > 0, rank_w <= k_max) %>%
+    dplyr::mutate(log_share = log(weekly_share)) %>%
+    dplyr::select(week_start, endpoint_id, rank_w, weekly_share, log_share)
+  weeks <- sort(unique(wk$week_start))
+  wmap <- tibble::tibble(week_start = weeks, week_id = seq_along(weeks))
+  wk <- wk %>% dplyr::left_join(wmap, by = "week_start")
+  lag_tbl  <- wk %>% dplyr::mutate(week_id = week_id - 1L) %>% dplyr::select(endpoint_id, week_id, log_share_lag = log_share)
+  lead_tbl <- wk %>% dplyr::mutate(week_id = week_id + 1L) %>% dplyr::select(endpoint_id, week_id, log_share_lead = log_share)
+  gpanel <- wk %>% dplyr::left_join(lag_tbl,  by = c("endpoint_id","week_id")) %>% dplyr::left_join(lead_tbl, by = c("endpoint_id","week_id")) %>%
+    dplyr::filter(is.finite(log_share_lag), is.finite(log_share_lead), weekly_share >= micro_share_threshold) %>%
+    dplyr::mutate(r_c = 0.5 * (log_share_lead - log_share_lag))
+  gpanel <- winsorize_by_rank(gpanel, rank_col = "rank_w", value_col = "r_c", q = winsor_q)
+  gpanel
+}
+
+# Summaries by rank: mean, median, variance, n
+summarize_growth_by_rank <- function(gpanel, k_max = 1000L) {
+  gsum <- gpanel %>%
+    filter(rank_w <= k_max) %>%
+    group_by(rank_w) %>%
+    summarise(
+      bar_g_k = mean(r_f, na.rm = TRUE),
+      tilde_g_k = median(r_f, na.rm = TRUE),
+      v_k = var(r_f, na.rm = TRUE),
+      n_k = n(),
+      .groups = "drop"
+    )
+  gsum
+}
+
+# Summaries by rank for raw interactions growth (r_f_cnt)
+summarize_growth_by_rank_counts <- function(gpanel, k_max = 1000L) {
+  gsum <- gpanel %>%
+    filter(rank_w <= k_max) %>%
+    group_by(rank_w) %>%
+    summarise(
+      bar_g_k_cnt = mean(r_f_cnt, na.rm = TRUE),
+      tilde_g_k_cnt = median(r_f_cnt, na.rm = TRUE),
+      v_k_cnt = var(r_f_cnt, na.rm = TRUE),
+      n_k_cnt = n(),
+      .groups = "drop"
+    )
+  gsum
+}
+
+# Adjacent head gaps and empirical CDC head
+compute_head_gaps <- function(weekly, k_max = 1000L) {
+  wk <- weekly %>%
+    mutate(week_start = to_date(week_start)) %>%
+    filter(!is.na(weekly_share), weekly_share > 0, rank_w <= k_max) %>%
+    mutate(log_share = log(weekly_share)) %>%
+    select(week_start, rank_w, weekly_share, log_share)
+  # Exclude weeks marked as bad
+  wk <- wk %>% dplyr::anti_join(bad_weeks, by = "week_start")
+
+  # Keep weeks with contiguous head
+  kept_weeks <- wk %>%
+    group_by(week_start) %>%
+    filter(n() >= k_max) %>%
+    summarise(contig = has_contiguous_head(cur_data(), k_max), .groups = "drop") %>%
+    filter(contig) %>% pull(week_start)
+
+  wk <- wk %>% filter(week_start %in% kept_weeks)
+
+  deltas <- wk %>%
+    arrange(week_start, rank_w) %>%
+    group_by(week_start) %>%
+    mutate(delta = log_share - dplyr::lead(log_share)) %>%
+    ungroup() %>%
+    filter(rank_w < k_max)
+
+  delta_bar <- deltas %>%
+    group_by(rank_w) %>%
+    summarise(overline_delta_k = mean(delta, na.rm = TRUE), .groups = "drop")
+
+  mhat <- wk %>%
+    group_by(rank_w) %>%
+    summarise(mhat_k = mean(log_share, na.rm = TRUE), .groups = "drop")
+
+  list(delta_bar = delta_bar, mhat = mhat)
+}
+
+# Pool constant variance sigma^2 via weighted trimmed mean of v_k
+pool_sigma2 <- function(gsum, trim = 0.10) {
+  df <- gsum %>% filter(is.finite(v_k), is.finite(n_k), n_k > 1)
+  if (nrow(df) == 0) stop("No finite per-rank variances available for pooling.")
+  sigma2_hat <- weighted_trim_mean(x = df$v_k, w = df$n_k, trim = trim)
+  as.numeric(sigma2_hat)
+}
+
+# Smooth rank-dependent variance from v_k
+compute_sigma2_by_rank <- function(gsum, df_spline = NA_integer_) {
+  df <- gsum %>% dplyr::filter(is.finite(v_k)) %>% dplyr::arrange(rank_w)
+  if (nrow(df) == 0) stop("No finite v_k for variance smoothing.")
+  if (is.na(df_spline)) {
+    fit <- stats::smooth.spline(x = df$rank_w, y = pmax(df$v_k, 1e-10))  # GCV
+    used_df <- fit$df
+  } else {
+    fit <- stats::smooth.spline(x = df$rank_w, y = pmax(df$v_k, 1e-10), df = as.numeric(df_spline))
+    used_df <- df_spline
+  }
+  message(sprintf("[variance] sigma2(k) smoothing df=%s (GCV if NA)", as.character(used_df)))
+  tibble::tibble(rank_w = df$rank_w, sigma2_k = pmax(as.numeric(fit$y), 1e-10))
+}
+
+# Expand sigma2_k to length N by holding the last value constant
+expand_sigma2_to_N <- function(sig_tbl, N) {
+  s <- rep(tail(sig_tbl$sigma2_k, 1), N)
+  s[seq_len(min(N, nrow(sig_tbl)))] <- sig_tbl$sigma2_k[seq_len(min(N, nrow(sig_tbl)))]
+  s
+}
+
+# Brown–Forsythe (median-centered Levene) across rank deciles
+levene_bf_test <- function(gpanel, k_max = 1000L) {
+  if (!requireNamespace("car", quietly = TRUE)) return(NULL)
+  df <- gpanel %>%
+    filter(rank_w <= k_max) %>%
+    mutate(decile = cut(rank_w, breaks = seq(0, k_max, by = k_max/10), include.lowest = TRUE, labels = FALSE))
+  car::leveneTest(r_f ~ as.factor(decile), data = df, center = median)
+}
+
+# NEW: Brown–Forsythe on trimmed rank window (L,U]
+levene_bf_trimmed <- function(gpanel, L, U, bins = 10L) {
+  stopifnot(L < U)
+  df <- gpanel %>% dplyr::filter(rank_w > L, rank_w <= U)
+  if (nrow(df) == 0) return(NULL)
+  df$bin <- cut(df$rank_w, breaks = seq(L, U, length.out = bins + 1L),
+                include.lowest = TRUE, labels = FALSE)
+  if (!requireNamespace("car", quietly = TRUE)) return(NULL)
+  car::leveneTest(r_f ~ as.factor(bin), data = df, center = median)
+}
+
+# NEW: build piecewise σ²(k): top (1..L)=smoothed, body (L..U]=scalar or light-smooth, tail (>U)=smoothed
+build_sigma2_piecewise_tbl <- function(gsum_all, L, U, df_spline = NA_integer_, alpha = 0.01, bins = 10L) {
+  stopifnot(L >= 0L, U > L)
+  k_full_loc <- max(gsum_all$rank_w)
+  U <- min(U, k_full_loc)
+
+  # Top smoothing
+  gsum_top  <- gsum_all %>% dplyr::filter(rank_w >= 1L, rank_w <= L)
+  sig_top   <- if (nrow(gsum_top) > 2) compute_sigma2_by_rank(gsum_top, df_spline = df_spline) else
+               tibble::tibble(rank_w = seq_len(L), sigma2_k = rep(pool_sigma2(gsum_top), length.out = L))
+
+  # Body: test flatness, then choose scalar vs light smooth
+  gsum_body <- gsum_all %>% dplyr::filter(rank_w > L, rank_w <= U)
+  sigma2_body_scalar <- if (nrow(gsum_body) > 0) pool_sigma2(gsum_body, trim = 0.10) else NA_real_
+
+  # fallback light smooth for body if needed
+  if (nrow(gsum_body) > 2) {
+    sig_body_tbl <- compute_sigma2_by_rank(gsum_body, df_spline = df_spline)
+  } else {
+    len_body <- max(0L, U - L)
+    body_seq <- if (len_body > 0L) seq.int(L + 1L, U) else integer(0)
+    sig_body_tbl <- tibble::tibble(rank_w = body_seq, sigma2_k = rep(sigma2_body_scalar, len_body))
+  }
+
+  # Tail smoothing
+  gsum_tail <- gsum_all %>% dplyr::filter(rank_w > U)
+  if (nrow(gsum_tail) > 2) {
+    sig_tail <- compute_sigma2_by_rank(gsum_tail, df_spline = df_spline)
+  } else {
+    # Fallback: extend the last body value (or scalar body) into the tail
+    tail_base <- tryCatch({
+      tb <- sig_body_tbl$sigma2_k
+      if (length(tb) > 0 && is.finite(utils::tail(tb, 1))) utils::tail(tb, 1) else sigma2_body_scalar
+    }, error = function(e) sigma2_body_scalar)
+    len_tail <- max(0L, k_full_loc - U)
+    tail_seq <- if (len_tail > 0L) seq.int(U + 1L, k_full_loc) else integer(0)
+    sig_tail <- tibble::tibble(rank_w = tail_seq, sigma2_k = rep(tail_base, len_tail))
+  }
+
+  # Stitch with scalar body by default; if trimmed BF rejects use smoothed body
+  # Decide flatness outside this function and pass a flag via attr
+  use_body_scalar <- !isTRUE(attr(gsum_body, "reject_body_flatness"))
+  body_vals <- if (use_body_scalar) {
+    tibble::tibble(rank_w = (L + 1L):U, sigma2_k = rep(sigma2_body_scalar, max(0L, U - L)))
+  } else {
+    sig_body_tbl
+  }
+
+  out <- dplyr::bind_rows(
+    tibble::tibble(rank_w = seq_len(L)) %>% dplyr::left_join(sig_top, by = "rank_w"),
+    body_vals,
+    tibble::tibble(rank_w = (U + 1L):k_full_loc) %>% dplyr::left_join(sig_tail, by = "rank_w")
+  ) %>% dplyr::arrange(rank_w)
+
+  # Fill any gaps
+  if (requireNamespace("zoo", quietly = TRUE)) {
+    out$sigma2_k <- zoo::na.locf(out$sigma2_k, na.rm = FALSE)
+    out$sigma2_k <- zoo::na.locf(out$sigma2_k, fromLast = TRUE)
+  } else {
+    # Lightweight LOCF fallback without zoo
+    v <- out$sigma2_k
+    last <- NA_real_
+    for (i in seq_along(v)) {
+      if (!is.na(v[i])) last <- v[i] else v[i] <- last
+    }
+    # back-fill
+    last <- NA_real_
+    for (i in rev(seq_along(v))) {
+      if (!is.na(v[i])) last <- v[i] else v[i] <- last
+    }
+    out$sigma2_k <- v
+  }
+  out
+}
+
+# Isotonic regression on bar_g_k with weights; optional TV-like smoothing
+fit_isotonic_drift <- function(gsum, tv_lambda = 0.0) {
+  df <- gsum %>% dplyr::filter(is.finite(bar_g_k), is.finite(n_k), n_k > 0) %>% dplyr::arrange(rank_w)
+  stopifnot(nrow(df) > 0)
+  x <- df$rank_w; y <- df$bar_g_k; w <- df$n_k
+
+  # Optional moving-average pre-smoothing
+  if (exists("config", inherits = TRUE) && is.list(config)) {
+    if (is.numeric(config$pre_smooth_ksize) && config$pre_smooth_ksize >= 3 && config$pre_smooth_ksize %% 2 == 1) {
+      ksz <- as.integer(config$pre_smooth_ksize)
+      pad <- (ksz - 1L) / 2L
+      y_pad <- c(rep(y[1], pad), y, rep(y[length(y)], pad))
+      y <- stats::filter(y_pad, rep(1/ksz, ksz), sides = 2)[(pad+1):(length(y_pad)-pad)]
+      y <- as.numeric(y)
+    }
+  }
+
+  # Primary isotonic fit: weighted gpava if available, else custom PAVA
+  if (requireNamespace("isotone", quietly = TRUE)) {
+    iso <- isotone::gpava(z = x, y = y, weights = w)
+    f_iso <- as.numeric(iso$x)  # fitted nondecreasing
+  } else {
+    f_iso <- pava_increasing(y, w)
+  }
+  # Guard: ensure sane output; last-resort constant fill
+  if (length(f_iso) != length(y) || any(!is.finite(f_iso))) {
+    f_iso <- rep_len(mean(y, na.rm = TRUE), length(y))
+  }
+
+  # Optional fused-lasso smoothing then isotonic re-projection
+  if (tv_lambda > 0 && requireNamespace("genlasso", quietly = TRUE)) {
+    y_w <- sqrt(w) * f_iso
+    X_w <- diag(sqrt(w))
+    D <- diff(diag(length(f_iso)))
+    fl <- genlasso::genlasso(y = y_w, X = X_w, D = D)
+    lam <- min(tv_lambda * max(fl$lambda), max(fl$lambda))
+    f_smooth <- as.numeric(predict(fl, lambda = lam)$fit)
+    # Re-project to isotonic
+    if (requireNamespace("isotone", quietly = TRUE)) {
+      iso2 <- isotone::gpava(z = x, y = f_smooth, weights = w)
+      f_iso <- as.numeric(iso2$x)
+    } else {
+      f_iso <- pava_increasing(f_smooth, w)
+    }
+    if (length(f_iso) != length(y) || any(!is.finite(f_iso))) {
+      f_iso <- rep_len(mean(y, na.rm = TRUE), length(y))
+    }
+  }
+
+  # Estimate gamma as weighted mean residual and recenter
+  gamma_hat <- as.numeric(stats::weighted.mean(y - f_iso, w))
+  gk_hat <- f_iso - gamma_hat
+
+  message(sprintf("[head drift] gamma_hat=%.6g; g1=%.6g; g1000=%.6g",
+                  gamma_hat, gk_hat[1], gk_hat[min(length(gk_hat), 1000)]))
+
+  out <- tibble::tibble(rank_w = x, gk_hat = gk_hat)
+  attr(out, "gamma_hat") <- gamma_hat
+  out
+}
+
+# Gap-based cross-check that supports scalar or rank-dependent variance
+drift_from_gaps <- function(delta_bar,
+                            sigma2_scalar = NULL,
+                            sigma2_tbl = NULL) {
+  stopifnot("rank_w" %in% names(delta_bar),
+            "overline_delta_k" %in% names(delta_bar))
+  # r_k = 1 / E[Delta_k]
+  r_k <- 1 / pmax(delta_bar$overline_delta_k, .Machine$double.eps)
+
+  if (!is.null(sigma2_tbl)) {
+    # Expect columns: rank_w, sigma2_k for ranks 1:k_max
+    st <- sigma2_tbl[order(sigma2_tbl$rank_w), , drop = FALSE]
+    # Denominator for k = 1:(K-1)
+    denom <- st$sigma2_k[1:(nrow(st) - 1)] + st$sigma2_k[2:nrow(st)]
+    if (length(denom) != length(r_k)) stop("sigma2_tbl length mismatch.")
+    Gk <- -0.25 * denom * r_k
+    src <- "vector"
+  } else if (!is.null(sigma2_scalar) && is.finite(sigma2_scalar)) {
+    Gk <- -0.5 * sigma2_scalar * r_k
+    src <- "scalar"
+  } else {
+    stop("Provide either sigma2_scalar or sigma2_tbl.")
+  }
+
+  gk_gap <- c(Gk[1], diff(Gk))
+  if (any(!is.finite(gk_gap))) stop("Non-finite gk_gap.")
+  message(sprintf("[gap xcheck] used %s sigma2; max|G(k)|=%.3g", src, max(abs(Gk))))
+  tibble::tibble(rank_w = delta_bar$rank_w,
+                 gk_gap = gk_gap,
+                 r_k_gap = r_k,
+                 Gk_gap = Gk)
+}
+
+# Tail families (anchored at k0): single-parameter fits with a = -g(k0)
+fit_tail_power <- function(k, gk, k0, w) {
+  stopifnot(any(k == k0))
+  a_fix <- -as.numeric(gk[k == k0])  # positive
+  obj <- function(alpha) {
+    pred <- -a_fix * ( (k / k0) ^ (-alpha) )
+    sum(w * (gk - pred)^2)
+  }
+  opt <- stats::optim(par = 0.5, fn = function(z) obj(pmax(1e-3, pmin(2, z))), method = "L-BFGS-B", lower = 1e-3, upper = 2)
+  list(family = "power", a = a_fix, alpha = pmax(1e-3, pmin(2, opt$par)), c = NA_real_)
+}
+
+fit_tail_log <- function(k, gk, k0, w) {
+  stopifnot(any(k == k0))
+  a_fix <- -as.numeric(gk[k == k0])  # positive
+  obj <- function(cpos) {
+    pred <- -a_fix / (1 + cpos * log(pmax(k / k0, 1)))
+    sum(w * (gk - pred)^2)
+  }
+  opt <- stats::optim(par = 0.5, fn = function(z) obj(pmax(1e-3, pmin(50, z))), method = "L-BFGS-B", lower = 1e-3, upper = 50)
+  list(family = "log", a = a_fix, alpha = NA_real_, c = pmax(1e-3, pmin(50, opt$par)))
+}
+
+predict_tail <- function(par, k, k0) {
+  if (par$family == "power") {
+    -par$a * (k / k0)^(-par$alpha)
+  } else {
+    -par$a / (1 + par$c * log(pmax(k / k0, 1)))
+  }
+}
+
+# Cross-validated tail family choice (rank-blocked CV)
+cv_choose_tail <- function(seg, k0, blocks = 5L) {
+  # Partition seg by rank into contiguous blocks of weeks via rank indices as proxy
+  n <- nrow(seg); bsz <- max(5L, floor(n / blocks))
+  idx <- split(seq_len(n), rep(1:blocks, each = bsz, length.out = n))
+  losses <- c(power = 0, log = 0)
+  for (ii in idx) {
+    train <- seg[-ii, , drop = FALSE]; test <- seg[ii, , drop = FALSE]
+    par_p <- fit_tail_power(train$rank_w, train$gk_hat, k0, w = train$n_k)
+    par_l <- fit_tail_log(train$rank_w, train$gk_hat, k0, w = train$n_k)
+    pred_p <- predict_tail(par_p, test$rank_w, k0)
+    pred_l <- predict_tail(par_l, test$rank_w, k0)
+    w <- test$n_k
+    losses["power"] <- losses["power"] + sum(w * (test$gk_hat - pred_p)^2)
+    losses["log"]   <- losses["log"]   + sum(w * (test$gk_hat - pred_l)^2)
+  }
+  if (losses["power"] <= losses["log"]) "power" else "log"
+}
+
+# Build full g_k up to N using head estimate and tail params
+build_g_schedule <- function(g_head, par, N, k0) {
+  k_head <- g_head$rank_w
+  gk_head <- g_head$gk_hat
+  stopifnot(max(k_head) >= k0)
+  k_all <- 1:N
+  g_all <- numeric(N)
+
+  # Densify head as step function to preserve isotonic structure
+  dens <- approx(x = k_head, y = gk_head, xout = 1:max(k_head), method = "constant", f = 0, rule = 2)$y
+
+  # Splice: keep head for 1:(k0-1), use tail for k >= k0
+  g_all[1:(k0-1)] <- dens[1:(k0-1)]
+  k_tail <- k0:N
+  g_all[k_tail] <- predict_tail(par, k_tail, k0 = k0)
+
+  # Optional linear blend around k0 to smooth slope
+  w <- get("config", inherits = TRUE)$splice_blend_width %||% 7L
+  if (is.numeric(w) && w >= 3L) {
+    w <- as.integer(w + (w %% 2 == 0))  # force odd
+    i1 <- max(2L, k0 - (w %/% 2))
+    i2 <- min(N - 1L, k0 + (w %/% 2))
+    idx <- i1:i2
+    s <- seq(0, 1, length.out = length(idx))
+    tail_pred <- predict_tail(par, idx, k0 = k0)
+    # Keep exact anchor at k0
+    s[(k0 - i1 + 1L)] <- 1.0
+    g_blend <- (1 - s) * g_all[idx] + s * tail_pred
+    g_blend[(k0 - i1 + 1L)] <- g_all[k0]
+    g_all[idx] <- g_blend
+    # Report local slopes
+    sL <- g_all[k0] - g_all[k0 - 1L]
+    sR <- g_all[k0 + 1L] - g_all[k0]
+    message(sprintf("[splice] blended window [%d,%d]; slopes left=%.3g right=%.3g", i1, i2, sL, sR))
+  }
+
+  # Ensure monotone nondecreasing
+  g_all <- pmax(g_all, cummax(g_all))
+  tibble::tibble(rank_w = k_all, gk = g_all)
+}
+
+# Enforce stationarity via bottom uplift on last m ranks if sum g_k < 0
+enforce_stationarity <- function(g_sched, m, verbose = FALSE, eps = 1e-12) {
+  N <- nrow(g_sched); if (N <= 1L) return(list(gk = g_sched$gk, uplift = 0, ok = TRUE, reason = "trivial"))
+  m <- max(1L, min(as.integer(m), N - 1L))
+  g <- as.numeric(g_sched$gk)
+  G0 <- cumsum(g)
+
+  k_protect <- min(as.integer(get("config", inherits = TRUE)$protect_head_up_to %||% 1000L), N - 1L)
+  k_violate <- which.max(G0[1:(N - 1L)])
+  max_pref <- G0[k_violate]
+
+  g1 <- g
+  c_shift <- 0
+
+  if (max_pref < -eps) {
+    # Already OK on prefixes; no global shift
+  } else if (k_violate > k_protect) {
+    # Tail-only shift: for k > k_protect, need G0[k] - c_shift*(k - k_protect) < -eps
+    kk <- (k_protect + 1L):(N - 1L)
+    c_lb_tail <- max((G0[kk] + eps) / pmax(1, kk - k_protect))
+    c_shift <- max(0, c_lb_tail)
+    g1[(k_protect + 1L):N] <- g1[(k_protect + 1L):N] - c_shift
+  } else {
+    # Violations occur in the head: fall back to uniform shift
+    c_lb <- max(G0[1:(N - 1L)] / (1:(N - 1L)))
+    c_shift <- max(0, c_lb) + eps
+    g1 <- g1 - c_shift
+  }
+
+  S1 <- sum(g1)
+  u <- max(0, -S1 / m)
+  g2 <- g1
+  g2[(N - m + 1L):N] <- g2[(N - m + 1L):N] + u
+
+  # Isotonic re-projection focusing on the tail; keep head values unchanged
+  if (k_protect < N) {
+    head_part <- g2[1:k_protect]
+    tail_part <- g2[(k_protect + 1L):N]
+    tail_part <- pmax(tail_part, cummax(c(head_part[k_protect], tail_part))[-1])
+    g3 <- c(head_part, tail_part)
+  } else {
+    g3 <- g2
+  }
+
+  # Final small correction to make sum zero while preserving monotonicity
+  adj <- -sum(g3)
+  g3[N] <- max(g3[N] + adj, g3[N - 1L])
+
+  G <- cumsum(g3)
+  ok <- all(G[1:(N - 1L)] < -eps) && abs(sum(g3)) <= 1e-7
+
+  if (verbose) {
+    d_head <- if (k_protect >= 1L) max(abs(g3[1:k_protect] - g[1:k_protect])) else 0
+    message(sprintf("[stationarity] c_shift=%.6g; uplift=%.6g; ok=%s; max_prefix=%.3e; sum_g=%.3e; max|delta head|=%.3g",
+                    c_shift, u, ok, max(G[1:(N - 1L)]), sum(g3), d_head))
+  }
+  list(gk = g3, uplift = u, ok = ok, reason = if (ok) "ok" else "prefix_violation")
+}
+
+# From drifts to gaps to CDC and MCE
+drifts_to_cdc_mce <- function(gk, sigma2, anchor_m1) {
+  N <- length(gk)
+  Gk <- cumsum(gk)
+  # allow scalar or vector; recycle if needed
+  if (length(sigma2) == 1L) sigma2 <- rep(as.numeric(sigma2), N)
+  sigma2 <- as.numeric(sigma2)
+  if (length(sigma2) < N) sigma2 <- rep_len(sigma2, N)
+
+  denom <- sigma2[1:(N-1)] + sigma2[2:N]
+  r_k <- -4 * Gk[1:(N - 1)] / denom
+
+  if (any(!is.finite(r_k) | r_k <= 0)) {
+    stop("Nonpositive or invalid r_k; check g_k and sigma2.")
+  }
+  rho_k <- 1 / r_k
+
+  m <- numeric(N); m[1] <- anchor_m1
+  for (k in 1:(N - 1)) m[k + 1] <- m[k] - rho_k[k]
+
+  S <- rev(cumsum(rev(rho_k))); S <- c(S, 0)
+  S <- S - max(S, na.rm = TRUE)  # stabilize exponentials
+  w_star <- exp(S); mce <- w_star / sum(w_star)
+
+  list(Gk = Gk, r_k = r_k, rho_k = rho_k, m = m, mce = mce)
+}
+
+# Small self-test to confirm scalar vs vector gap-rate equivalence
+selftest_gap_rate <- function(gk, sigma2_hat) {
+  N <- length(gk); Gk <- cumsum(gk)
+  r_scalar <- -2 * Gk[1:(N-1)] / sigma2_hat
+  r_vec    <- -4 * Gk[1:(N-1)] / (rep(sigma2_hat, N-1) + rep(sigma2_hat, N-1))
+  d1 <- max(abs(r_scalar - r_vec))
+  message(sprintf("[self-test] max |r_scalar - r_vec| = %.3e (expect ~0)", d1))
+  invisible(d1)
+}
+
+# Score head fit and share discrepancy
+score_candidate <- function(m_model, m_obs, k_max, mce, s_obs_1000 = NA_real_) {
+  obs <- m_obs %>% dplyr::arrange(rank_w)
+  k_use <- min(k_max, nrow(obs), length(m_model))
+  df <- tibble::tibble(rank_w = seq_len(k_use)) %>%
+    dplyr::left_join(obs %>% dplyr::select(rank_w, mhat_k), by = "rank_w") %>%
+    dplyr::mutate(m_model = m_model[rank_w])
+  y_true <- df$mhat_k; y_hat <- df$m_model
+  rmse <- sqrt(mean((y_true - y_hat)[is.finite(y_true + y_hat)]^2))
+
+  s_mod <- sum(mce[seq_len(min(k_max, length(mce)))])
+  share_err <- if (is.na(s_obs_1000)) NA_real_ else abs(s_mod - s_obs_1000)
+
+  # Normalization
+  scale_rmse <- stats::mad(y_true, constant = 1.4826, na.rm = TRUE)
+  rmse_norm <- if (is.finite(scale_rmse) && scale_rmse > 0) rmse / scale_rmse else rmse
+  share_err_norm <- if (is.na(share_err)) NA_real_ else share_err / max(s_obs_1000, 1e-6)
+
+  lam <- tryCatch(as.numeric(get("config", inherits = TRUE)$lambda_share), error = function(e) NA_real_)
+  if (!is.finite(lam)) lam <- 1.0
+  obj <- rmse_norm + lam * ifelse(is.na(share_err_norm), 0, share_err_norm)
+
+  list(rmse = rmse, s_mod_1000 = s_mod, share_err = share_err,
+       rmse_norm = rmse_norm, share_err_norm = share_err_norm, obj = obj)
+}
+```
+
+
+# 3) Data ingest
+
+This notebook expects a file path parameter `params$data_path` pointing to a daily interactions dataset (parquet/csv/tsv). The loader reads the file, computes daily shares and ranks, and then builds weekly aggregates used by the Atlas model.
+
+```{r ingest}
+stopifnot(!is.null(params$data_path))
+
+# Resolve data_path robustly: expand ~, try as-given, here::here(), and recursive search under data/
+p_in <- as.character(params$data_path)
+p_expanded <- path.expand(p_in)
+p_here <- tryCatch(here::here(p_in), error = function(e) NA_character_)
+bn <- basename(p_in)
+# Also try common data locations
+p_data <- tryCatch(here::here("data", bn), error = function(e) NA_character_)
+p_data_rd <- tryCatch(here::here("data", "rank-diffusion", bn), error = function(e) NA_character_)
+p_webdata <- tryCatch(here::here("website", "data", bn), error = function(e) NA_character_)
+# Initial candidate set
+candidates <- unique(na.omit(c(p_expanded, p_here, p_data, p_data_rd, p_webdata)))
+existing <- candidates[file.exists(candidates)]
+
+# If not found, fall back to a recursive search within data/ for matching basename
+if (length(existing) == 0) {
+  data_root <- tryCatch(here::here("data"), error = function(e) NA_character_)
+  deep <- character(0)
+  if (!is.na(data_root) && dir.exists(data_root)) {
+    all_files <- list.files(data_root, recursive = TRUE, full.names = TRUE)
+    deep <- all_files[basename(all_files) == bn]
+  }
+  candidates <- unique(c(candidates, deep))
+  existing <- candidates[file.exists(candidates)]
+}
+
+if (length(existing) == 0) {
+  stop(sprintf(
+    "File not found. Tried: %s. getwd() = %s",
+    paste(candidates, collapse = " | "), getwd()
+  ))
+}
+data_path_resolved <- existing[[1]]
+
+raw <- read_any(data_path_resolved) %>% tibble::as_tibble()
+stopifnot(all(req_cols %in% names(raw)))
+
+# Decide if input is already weekly. Allow explicit param; fallback to filename heuristic.
+is_weekly <- if (!is.null(params$input_is_weekly)) {
+  isTRUE(params$input_is_weekly)
+} else {
+  grepl("weekly", basename(data_path_resolved), ignore.case = TRUE)
+}
+
+if (!is_weekly) {
+  # DAILY INPUT BRANCH
+  daily <- raw %>%
+    mutate(
+      date = as.Date(date),
+      endpoint_id = as.character(endpoint_id)
+    ) %>%
+    filter(metric_value > 0) %>%
+    group_by(date) %>%
+    mutate(
+      total_metric = sum(metric_value, na.rm = TRUE),
+      share        = metric_value / total_metric
+    ) %>%
+    ungroup()
+
+  if (!"rank" %in% names(daily)) {
+    daily <- daily %>%
+      group_by(date) %>%
+      mutate(rank = as.integer(safe_rank1(share, decreasing = TRUE))) %>%
+      ungroup()
+  }
+
+  # Drop dates with sparse rank coverage so downstream growth pairs stay stable
+  filter_result <- filter_low_rank_dates(daily, min_ranks = 1850)
+  daily <- filter_result$daily
+  removed_low_rank_dates <- filter_result$removed_dates
+
+  if (nrow(removed_low_rank_dates) > 0) {
+    message(
+      sprintf(
+        "Filtered %d dates with < %d ranks (min = %d).",
+        nrow(removed_low_rank_dates),
+        1850,
+        min(removed_low_rank_dates$n)
+      )
+    )
+  }
+
+  # Diagnostics
+  dup_ct <- daily %>% count(date, endpoint_id) %>% filter(n>1) %>% nrow()
+  day_counts <- daily %>% count(date)
+  diag_tbl <- tibble::tibble(
+    rows = nrow(daily),
+    days = dplyr::n_distinct(daily$date),
+    unique_pages = dplyr::n_distinct(daily$endpoint_id),
+    min_pages_per_day = min(day_counts$n),
+    median_pages_per_day = median(day_counts$n),
+    max_pages_per_day = max(day_counts$n),
+    duplicated_pairs = dup_ct
+  )
+  knitr::kable(diag_tbl, caption = "Dataset diagnostics")
+
+  # Mark weeks with any day having insufficient ranks and drop them later
+  week_filter <- drop_weeks_with_bad_days(daily, min_day_ranks = 1800L)
+  bad_weeks <- week_filter$bad_weeks
+  message(sprintf("[weeks filter] dropping %d weeks due to a day with < 1800 ranks", nrow(bad_weeks)))
+
+  ggplot(daily, aes(x = share)) +
+    geom_histogram(bins = 80) +
+    scale_x_log10(labels = scales::percent_format(accuracy = 0.01)) +
+    labs(title = "Share distribution", x = "Share (log)", y = "Count")
+} else {
+  # WEEKLY INPUT BRANCH (expects: date = ISO week start, endpoint_id, metric_value[, rank])
+  weekly0 <- raw %>%
+    transmute(
+      week_start = as.Date(date),
+      endpoint_id = as.character(endpoint_id),
+      weekly_metric = as.numeric(metric_value)
+    ) %>%
+    group_by(week_start, endpoint_id) %>%
+    summarise(weekly_metric = sum(weekly_metric, na.rm = TRUE), .groups = "drop")
+  # Identify thin weeks by page count threshold and drop them
+  wk_counts <- weekly0 %>% dplyr::count(week_start, name = "n")
+  thin_weeks <- wk_counts %>% dplyr::filter(n < config$min_week_ranks_keep)
+  bad_weeks <- thin_weeks %>% dplyr::select(week_start)
+  message(sprintf("[weekly filter] dropping %d weeks with < %d ranks (min=%d)",
+                  nrow(thin_weeks), config$min_week_ranks_keep,
+                  ifelse(nrow(wk_counts)>0, min(wk_counts$n), NA_integer_)))
+}
+```
+
+```{r weekly_build}
+# Weekly aggregation with stable tie-breaker using prior week's rank
+if (!is_weekly) {
+  # From daily -> weekly aggregation
+  prev_order <- daily %>%
+    dplyr::mutate(week_start = lubridate::floor_date(date, unit = "week", week_start = 1)) %>%
+    dplyr::group_by(week_start, endpoint_id) %>%
+    dplyr::summarise(weekly_metric = sum(metric_value, na.rm = TRUE), .groups = "drop") %>%
+    dplyr::arrange(week_start, dplyr::desc(weekly_metric)) %>%
+    dplyr::group_by(week_start) %>%
+    dplyr::mutate(prev_rank = dplyr::row_number()) %>%
+    dplyr::ungroup()
+
+  weekly <- daily %>%
+    dplyr::mutate(week_start = lubridate::floor_date(date, unit = "week", week_start = 1)) %>%
+    dplyr::group_by(week_start, endpoint_id) %>%
+    dplyr::summarise(weekly_metric = sum(metric_value, na.rm = TRUE), .groups = "drop") %>%
+    dplyr::group_by(week_start) %>%
+    dplyr::mutate(
+      weekly_total = sum(weekly_metric, na.rm = TRUE),
+      weekly_share = weekly_metric / weekly_total
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::left_join(prev_order %>% dplyr::transmute(week_start = week_start + lubridate::weeks(1),
+                                                     endpoint_id, prev_rank), by = c("week_start","endpoint_id")) %>%
+    dplyr::group_by(week_start) %>%
+    dplyr::arrange(week_start, dplyr::desc(weekly_share), dplyr::coalesce(prev_rank, Inf), .by_group = TRUE) %>%
+    dplyr::mutate(rank_w = dplyr::row_number()) %>%
+    dplyr::ungroup() %>%
+    dplyr::anti_join(bad_weeks, by = "week_start")
+} else {
+  # Already-weekly input -> compute totals/shares and ranks with ISO week and previous-week tiebreaker
+  weekly <- weekly0 %>%
+    dplyr::group_by(week_start) %>%
+    dplyr::mutate(
+      weekly_total = sum(weekly_metric, na.rm = TRUE),
+      weekly_share = weekly_metric / weekly_total
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::anti_join(bad_weeks, by = "week_start")
+
+  # Stable tie-breaker using previous KEPT week rather than calendar week
+  wmap <- weekly %>% dplyr::distinct(week_start) %>% dplyr::arrange(week_start) %>%
+    dplyr::mutate(week_id = dplyr::row_number())
+  weekly_tmp <- weekly %>% dplyr::left_join(wmap, by = "week_start")
+  prev_source <- weekly_tmp %>%
+    dplyr::group_by(week_start) %>% dplyr::arrange(dplyr::desc(weekly_metric), .by_group = TRUE) %>%
+    dplyr::mutate(prev_rank_kept = dplyr::row_number()) %>% dplyr::ungroup() %>%
+    dplyr::transmute(week_id = week_id + 1L, endpoint_id, prev_rank_kept)
+  weekly <- weekly_tmp %>%
+    dplyr::left_join(prev_source, by = c("week_id","endpoint_id")) %>%
+    dplyr::group_by(week_start) %>%
+    dplyr::arrange(week_start, dplyr::desc(weekly_share), dplyr::coalesce(prev_rank_kept, Inf), .by_group = TRUE) %>%
+    dplyr::mutate(rank_w = dplyr::row_number()) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-week_id)
+}
+
+# Log tie counts
+tie_ct <- weekly %>% dplyr::group_by(week_start, weekly_share) %>% dplyr::summarise(n=dplyr::n(), .groups="drop") %>% dplyr::filter(n>1) %>% nrow()
+message(sprintf("[ties] weeks with any share ties: %d", tie_ct))
+
+message(sprintf("[weeks kept] %d", dplyr::n_distinct(weekly$week_start)))
+
+# Derive a robust full-rank cutoff k_full using the median pages/week (min was too conservative)
+wk_n <- weekly %>% dplyr::group_by(week_start) %>% dplyr::summarise(n_pages = dplyr::n(), .groups='drop')
+q <- stats::quantile(wk_n$n_pages, probs = c(0.1, 0.5, 0.9, 1.0), names = FALSE, type = 7)
+k_full <- as.integer(q[2])  # median
+coverage <- mean(wk_n$n_pages >= k_full)
+message(sprintf("[k_full] median pages/week = %d (10th= %d; 90th= %d; min= %d). Coverage at k_full: %.1f%% of weeks.",
+                k_full, as.integer(q[1]), as.integer(q[3]), as.integer(q[4]), 100*coverage))
+
+# Likes→share thresholds: average shares corresponding to 10 and 100 weekly likes
+like_totals <- weekly %>% dplyr::distinct(week_start, weekly_total)
+share_thr_10  <- mean(10 / like_totals$weekly_total, na.rm = TRUE)
+share_thr_100 <- mean(100 / like_totals$weekly_total, na.rm = TRUE)
+message(sprintf("[likes->share] avg share for 10 likes ~ %s; for 100 likes ~ %s",
+                scales::percent(share_thr_10), scales::percent(share_thr_100)))
+
+# Weekly (t, t+H) pairs helper for diagnostics/sensitivity (H=1 default)
+build_weekly_pairs_observed <- function(weekly, H = 1, max_rank = Inf) {
+  w_all   <- sort(unique(weekly$week_start))
+  valid_t <- w_all[(w_all + lubridate::weeks(H)) %in% w_all]
+
+  base <- weekly %>%
+    filter(week_start %in% valid_t, rank_w <= max_rank) %>%
+    transmute(week_start, endpoint_id,
+              rank_t = rank_w,
+              a_t    = weekly_metric,
+              w_t    = weekly_share)
+
+  later <- weekly %>%
+    transmute(week_start = week_start - lubridate::weeks(H), endpoint_id,
+              a_tpH   = weekly_metric,
+              w_tpH   = weekly_share,
+              rank_tpH = rank_w)
+
+  base %>%
+    inner_join(later, by = c("week_start","endpoint_id")) %>%
+    mutate(horizon = H,
+           g       = log(a_tpH) - log(a_t),
+           dlog    = log(w_tpH) - log(w_t))
+}
+```
+
+
+# 4) Descriptives (head = top 1000)
+
+```{r descriptives}
+# A) Rank-occupant forward growth panel
+gpanel <- build_forward_growth(
+  weekly,
+  k_max = config$k_max,
+  micro_share_threshold = config$micro_share_threshold,
+  winsor_q = config$winsor_q
+)
+
+# B) Summaries by rank
+gsum <- summarize_growth_by_rank(gpanel, k_max = config$k_max)
+
+# C) Adjacent head gaps and empirical CDC head
+head_gaps <- compute_head_gaps(weekly, k_max = config$k_max)
+delta_bar <- head_gaps$delta_bar
+mhat <- head_gaps$mhat
+
+# Convenience merged frame
+head_summary <- gsum %>%
+  left_join(delta_bar, by = "rank_w") %>%
+  left_join(mhat, by = "rank_w")
+
+head(head_summary)
+
+if (isTRUE(config$use_centered_diffs)) {
+  gpanel_c <- build_centered_growth(weekly, k_max = config$k_max,
+                                    micro_share_threshold = config$micro_share_threshold,
+                                    winsor_q = config$winsor_q)
+  gsum_c <- summarize_growth_by_rank(gpanel_c, k_max = config$k_max) %>% dplyr::rename(bar_g_k_c = bar_g_k)
+  head_summary <- head_summary %>% dplyr::left_join(gsum_c %>% dplyr::select(rank_w, bar_g_k_c), by = "rank_w")
+  ggplot(head_summary, aes(rank_w)) +
+    geom_line(aes(y = bar_g_k, color = "forward"), linewidth = 0.6) +
+    geom_line(aes(y = bar_g_k_c, color = "centered"), linewidth = 0.6, linetype = 2) +
+    scale_color_manual(values = c(forward = "#1b9e77", centered = "#7570b3")) +
+    labs(title = "Forward vs centered growth by rank", x = "rank k", y = "growth") +
+    theme_minimal()
+  message("[centered] centered-difference growth computed and plotted")
+}
+```
+
+```{r descriptives_full}
+# Descriptives over the full available ranks 1:k_full
+gpanel_all <- build_forward_growth(
+  weekly,
+  k_max = k_full,
+  micro_share_threshold = config$micro_share_threshold,
+  winsor_q = config$winsor_q
+)
+
+gsum_all <- summarize_growth_by_rank(gpanel_all, k_max = k_full)
+head_gaps_all <- compute_head_gaps(weekly, k_max = k_full)
+delta_all <- head_gaps_all$delta_bar
+mhat_all <- head_gaps_all$mhat
+
+desc_full <- gsum_all %>%
+  dplyr::left_join(delta_all, by = "rank_w") %>%
+  dplyr::left_join(mhat_all, by = "rank_w")
+
+head(desc_full)
+```
+
+```{r descriptives_full_counts}
+# Descriptives over full ranks for RAW INTERACTIONS growth
+gpanel_all_cnt <- build_forward_growth_counts(
+  weekly,
+  k_max = k_full,
+  winsor_q = config$winsor_q
+)
+
+gsum_all_cnt <- summarize_growth_by_rank_counts(gpanel_all_cnt, k_max = k_full)
+head(gsum_all_cnt)
+```
+
+```{r plots_descriptives_full, fig.height=4.8}
+# Full-range descriptives with transparent raw lines and opaque smoothers
+p1f <- ggplot(desc_full, aes(x = rank_w)) +
+  geom_line(aes(y = bar_g_k, color = "mean"), alpha = 0.25, linewidth = 0.4) +
+  geom_line(aes(y = tilde_g_k, color = "median"), alpha = 0.25, linewidth = 0.35) +
+  geom_smooth(aes(y = bar_g_k, color = "mean"), se = FALSE, linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  geom_smooth(aes(y = tilde_g_k, color = "median"), se = FALSE, linewidth = 0.9, linetype = 2, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_color_manual(values = c(mean = "#1b9e77", median = "#d95f02"), name = "stat") +
+  labs(title = sprintf("Shares: forward log-growth by rank (full 1:%d)", k_full), x = "rank k", y = "growth (forward, shares)") +
+  theme_minimal()
+
+p2f <- ggplot(desc_full, aes(x = rank_w, y = v_k)) +
+  geom_line(color = "#7570b3", alpha = 0.25, linewidth = 0.4) +
+  geom_smooth(se = FALSE, color = "#4f4db2", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  labs(title = sprintf("Shares: variance v_k by rank (full 1:%d)", k_full), x = "rank k", y = "variance v_k (shares)") +
+  theme_minimal()
+
+p3f <- ggplot(desc_full, aes(x = rank_w, y = overline_delta_k)) +
+  geom_line(color = "#666666", alpha = 0.25, linewidth = 0.4) +
+  geom_smooth(se = FALSE, color = "#444444", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  labs(title = sprintf("Shares: average adjacent log-gap (full 1:%d)", k_full), x = "rank k", y = "overline delta_k (shares)") +
+  theme_minimal()
+
+if (requireNamespace("patchwork", quietly = TRUE)) {
+  patchwork::wrap_plots(p1f, p2f, p3f, ncol = 1)
+} else {
+  print(p1f); print(p2f); print(p3f)
+}
+```
+
+```{r plots_descriptives_full_log, fig.height=4.8}
+# Log-scale variants with transparent raw lines and opaque smoothers
+p1fL <- ggplot(desc_full, aes(x = rank_w)) +
+  geom_line(aes(y = bar_g_k, color = "mean"), alpha = 0.25, linewidth = 0.4) +
+  geom_line(aes(y = tilde_g_k, color = "median"), alpha = 0.25, linewidth = 0.35) +
+  geom_smooth(aes(y = bar_g_k, color = "mean"), se = FALSE, linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  geom_smooth(aes(y = tilde_g_k, color = "median"), se = FALSE, linewidth = 0.9, linetype = 2, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_color_manual(values = c(mean = "#1b9e77", median = "#d95f02"), name = "stat") +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = sprintf("Shares: forward log-growth (log x) full 1:%d", k_full), x = "rank k (log)", y = "growth (forward, shares)") +
+  theme_minimal()
+
+p2fL <- ggplot(desc_full, aes(x = rank_w, y = v_k)) +
+  geom_line(color = "#7570b3", alpha = 0.25, linewidth = 0.4) +
+  geom_smooth(se = FALSE, color = "#4f4db2", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = sprintf("Shares: variance v_k (log x) full 1:%d", k_full), x = "rank k (log)", y = "variance v_k (shares)") +
+  theme_minimal()
+
+p3fL <- ggplot(desc_full, aes(x = rank_w, y = overline_delta_k)) +
+  geom_line(color = "#666666", alpha = 0.25, linewidth = 0.4) +
+  geom_smooth(se = FALSE, color = "#444444", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = sprintf("Shares: average adjacent log-gap (log x) full 1:%d", k_full), x = "rank k (log)", y = "overline delta_k (shares)") +
+  theme_minimal()
+
+if (requireNamespace("patchwork", quietly = TRUE)) {
+  patchwork::wrap_plots(p1fL, p2fL, p3fL, ncol = 1)
+} else {
+  print(p1fL); print(p2fL); print(p3fL)
+}
+```
+
+```{r plots_counts_descriptives_full, fig.height=4.8}
+# RAW interactions: mean/median forward log-growth and variance (linear x)
+p1c <- ggplot(gsum_all_cnt, aes(x = rank_w)) +
+  geom_line(aes(y = bar_g_k_cnt, color = "mean"), alpha = 0.25, linewidth = 0.4) +
+  geom_line(aes(y = tilde_g_k_cnt, color = "median"), alpha = 0.25, linewidth = 0.35) +
+  geom_smooth(aes(y = bar_g_k_cnt, color = "mean"), se = FALSE, linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  geom_smooth(aes(y = tilde_g_k_cnt, color = "median"), se = FALSE, linewidth = 0.9, linetype = 2, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_color_manual(values = c(mean = "#1b9e77", median = "#d95f02"), name = "stat") +
+  labs(title = sprintf("Raw interactions: forward log-growth by rank (full 1:%d)", k_full), x = "rank k", y = "growth (forward, log metric)") +
+  theme_minimal()
+
+p2c <- ggplot(gsum_all_cnt, aes(x = rank_w, y = v_k_cnt)) +
+  geom_line(color = "#7570b3", alpha = 0.25, linewidth = 0.4) +
+  geom_smooth(se = FALSE, color = "#4f4db2", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  labs(title = sprintf("Raw interactions: variance by rank (full 1:%d)", k_full), x = "rank k", y = "variance v_k (log metric)") +
+  theme_minimal()
+
+if (requireNamespace("patchwork", quietly = TRUE)) {
+  patchwork::wrap_plots(p1c, p2c, ncol = 1)
+} else {
+  print(p1c); print(p2c)
+}
+```
+
+```{r plots_counts_descriptives_full_log, fig.height=4.8}
+# RAW interactions: mean/median forward log-growth and variance (log x)
+p1cL <- ggplot(gsum_all_cnt, aes(x = rank_w)) +
+  geom_line(aes(y = bar_g_k_cnt, color = "mean"), alpha = 0.25, linewidth = 0.4) +
+  geom_line(aes(y = tilde_g_k_cnt, color = "median"), alpha = 0.25, linewidth = 0.35) +
+  geom_smooth(aes(y = bar_g_k_cnt, color = "mean"), se = FALSE, linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  geom_smooth(aes(y = tilde_g_k_cnt, color = "median"), se = FALSE, linewidth = 0.9, linetype = 2, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_color_manual(values = c(mean = "#1b9e77", median = "#d95f02"), name = "stat") +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = sprintf("Raw interactions: forward log-growth (log x) full 1:%d", k_full), x = "rank k (log)", y = "growth (forward, log metric)") +
+  theme_minimal()
+
+p2cL <- ggplot(gsum_all_cnt, aes(x = rank_w, y = v_k_cnt)) +
+  geom_line(color = "#7570b3", alpha = 0.25, linewidth = 0.4) +
+  geom_smooth(se = FALSE, color = "#4f4db2", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = sprintf("Raw interactions: variance (log x) full 1:%d", k_full), x = "rank k (log)", y = "variance v_k (log metric)") +
+  theme_minimal()
+
+if (requireNamespace("patchwork", quietly = TRUE)) {
+  patchwork::wrap_plots(p1cL, p2cL, ncol = 1)
+} else {
+  print(p1cL); print(p2cL)
+}
+```
+
+```{r plots_descriptives, fig.height=4.8, eval=FALSE}
+# (Disabled) Top-1k-only descriptives are superseded by full-range plots below.
+```
+
+```{r plots_descriptives_log, fig.height=4.8, eval=FALSE}
+# (Disabled) Top-1k-only log-scale descriptives are superseded by full-range plots below.
+```
+
+```{r cdc_head_plot, fig.height=4.8}
+# CDC level over full rank range (plot exp(mhat) vs rank on log–log)
+cdc_full_level <- mhat_all %>% dplyr::mutate(level = exp(mhat_k))
+ggplot(cdc_full_level, aes(x = rank_w, y = level)) +
+  geom_line(color = "#555555", alpha = 0.25, linewidth = 0.5) +
+  geom_smooth(se = FALSE, color = "black", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_x_log10(labels = scales::comma_format()) +
+  scale_y_log10() +
+  labs(title = sprintf("CDC level (geometric mean share), full 1:%d", k_full), x = "rank k (log)", y = "geometric mean share (log)") +
+  theme_minimal()
+```
+
+```{r cdc_slope_tests, fig.height=4.8}
+# Test log-log slope and curvature of CDC up to rank 10k (to avoid tail censoring)
+k_cap <- min(k_full, 10000L)
+df_cdc <- mhat_all %>% dplyr::filter(rank_w <= k_cap) %>%
+  dplyr::transmute(x = log(rank_w), y = mhat_k, rank_w)
+
+# Smooth y(x) with smoothing spline (GCV by default), then get first and second derivatives
+fit <- stats::smooth.spline(x = df_cdc$x, y = df_cdc$y)
+d1 <- stats::predict(fit, x = df_cdc$x, deriv = 1)$y  # dy/dx, where x = log(rank)
+d2 <- stats::predict(fit, x = df_cdc$x, deriv = 2)$y  # d^2y/dx^2
+
+# Summaries: proportion negative slope; proportion negative curvature; Kendall tau for slope trend
+p_neg_slope <- mean(d1 < 0, na.rm = TRUE)
+p_neg_curv  <- mean(d2 < 0, na.rm = TRUE)  # concave down if TRUE
+tau_slope   <- suppressWarnings(stats::cor(df_cdc$x[is.finite(d1)], d1[is.finite(d1)], method = "kendall"))
+
+tab <- tibble::tibble(
+  k_cap = k_cap,
+  prop_neg_slope = round(p_neg_slope, 3),
+  prop_neg_second_deriv = round(p_neg_curv, 3),
+  kendall_tau_slope_vs_logk = round(tau_slope, 3),
+  slope_q10 = round(stats::quantile(d1, 0.10, na.rm = TRUE), 4),
+  slope_q50 = round(stats::quantile(d1, 0.50, na.rm = TRUE), 4),
+  slope_q90 = round(stats::quantile(d1, 0.90, na.rm = TRUE), 4)
+)
+knitr::kable(tab, caption = "CDC log-log slope diagnostics up to rank 10k")
+
+# Visual diagnostics: slope and second derivative vs rank (log x)
+df_plot <- df_cdc %>% dplyr::mutate(d1 = d1, d2 = d2)
+p_slope <- ggplot(df_plot, aes(rank_w, d1)) +
+  geom_line(color = "#1b9e77", alpha = 0.3, linewidth = 0.5) +
+  geom_smooth(se = FALSE, color = "#1b9e77", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = "CDC: d/d log(k) log(level) (slope)", x = "rank k (log)", y = "slope") +
+  theme_minimal()
+
+p_curv <- ggplot(df_plot, aes(rank_w, d2)) +
+  geom_line(color = "#d95f02", alpha = 0.3, linewidth = 0.5) +
+  geom_smooth(se = FALSE, color = "#d95f02", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = "CDC: d^2/d log(k)^2 log(level) (curvature)", x = "rank k (log)", y = "second derivative") +
+  theme_minimal()
+
+if (requireNamespace("patchwork", quietly = TRUE)) {
+  patchwork::wrap_plots(p_slope, p_curv, ncol = 1)
+} else {
+  print(p_slope); print(p_curv)
+}
+```
+
+
+# 5) Constant variance estimate and variance flatness test
+
+```{r variance}
+sigma2_hat <- pool_sigma2(gsum, trim = 0.10)
+sigma2_hat
+```
+
+```{r variance_test}
+levene_bf <- tryCatch(levene_bf_test(gpanel, k_max = config$k_max), error = function(e) NULL)
+if (!is.null(levene_bf)) print(levene_bf)
+```
+
+```{r variance_rank}
+sigma2_by_rank <- compute_sigma2_by_rank(gsum, df_spline = config$df_spline)
+use_rank_sigma2 <- (!is.null(levene_bf)) && is.finite(levene_bf$`Pr(>F)`[1]) && (levene_bf$`Pr(>F)`[1] < 0.01)
+message(sprintf("[variance] sigma2_hat=%.6g; use_rank_sigma2=%s", sigma2_hat, use_rank_sigma2))
+```
+
+```{r variance_trimmed_piecewise}
+# NEW: choose trimmed window and test flatness around the operational cutoff
+L_candidates <- config$variance_window_L_candidates
+U_cap <- min(config$variance_window_U_cap, k_full)
+bins <- config$variance_bins
+alpha <- config$variance_flat_alpha
+
+trim_tests <- purrr::map_dfr(L_candidates, function(L) {
+  bf <- levene_bf_trimmed(gpanel_all, L = as.integer(L), U = U_cap, bins = bins)
+  p <- if (!is.null(bf)) as.numeric(bf$`Pr(>F)`[1]) else NA_real_
+  sig_body <- tryCatch(pool_sigma2(gsum_all %>% dplyr::filter(rank_w > L, rank_w <= U_cap), trim = 0.10),
+                       error = function(e) NA_real_)
+  tibble::tibble(L = as.integer(L), U = U_cap, p_value = p, sigma2_body = sig_body)
+}) %>% dplyr::mutate(decision = dplyr::case_when(is.finite(p_value) & p_value >= alpha ~ "flat-ok", TRUE ~ "reject"))
+
+print(knitr::kable(trim_tests, caption = "Trimmed Brown–Forsythe by window (L,U], with pooled body sigma^2"))
+
+# Pick window: first with p>=alpha, else max p
+pick_idx <- if (any(is.finite(trim_tests$p_value) & trim_tests$p_value >= alpha)) {
+  which(is.finite(trim_tests$p_value) & trim_tests$p_value >= alpha)[1]
+} else {
+  which.max(ifelse(is.finite(trim_tests$p_value), trim_tests$p_value, -Inf))
+}
+L_star <- as.integer(trim_tests$L[pick_idx]); U_star <- as.integer(trim_tests$U[pick_idx])
+reject_body_flatness <- !(is.finite(trim_tests$p_value[pick_idx]) && trim_tests$p_value[pick_idx] >= alpha)
+message(sprintf("[variance-trim] chosen window (L,U]=(%d,%d]; p=%.3g; reject_body_flatness=%s",
+                L_star, U_star, trim_tests$p_value[pick_idx], reject_body_flatness))
+
+# Flag the decision for builder
+gsum_body_tmp <- gsum_all %>% dplyr::filter(rank_w > L_star, rank_w <= U_star)
+attr(gsum_body_tmp, "reject_body_flatness") <- reject_body_flatness
+
+# Build piecewise σ² table over observed ranks 1:k_full
+sigma2_piecewise_tbl <- build_sigma2_piecewise_tbl(
+  gsum_all = gsum_all, L = L_star, U = U_star,
+  df_spline = config$df_spline, alpha = alpha, bins = bins
+)
+# Keep for plotting and downstream expansion
+use_sigma2_piecewise <- isTRUE(config$use_piecewise_sigma)
+
+# Plot overlay: raw v_k with piecewise σ²(k)
+ggplot(desc_full, aes(x = rank_w, y = v_k)) +
+  geom_line(color = "#7570b3", alpha = 0.25, linewidth = 0.4) +
+  geom_line(data = sigma2_piecewise_tbl, aes(x = rank_w, y = sigma2_k), color = "black", linewidth = 0.9) +
+  labs(title = sprintf("Piecewise sigma^2(k): top 1:%d smoothed, body (%d,%d] %s, tail >%d smoothed",
+                       L_star, L_star, U_star, ifelse(reject_body_flatness, "smoothed", "scalar"), U_star),
+       x = "rank k", y = "sigma^2(k)") + theme_minimal()
+```
+
+```{r variance_rank_log, eval=FALSE}
+# (dropped redundant head-only variance plot)
+```
+
+```{r variance_full_rank}
+# Full-range smoothed sigma^2(k) using all available ranks 1:k_full
+sigma2_by_rank_full <- compute_sigma2_by_rank(gsum_all, df_spline = config$df_spline)
+ggplot(desc_full, aes(x = rank_w, y = v_k)) +
+  geom_line(color = "#7570b3", alpha = 0.25, linewidth = 0.4) +
+  geom_line(data = sigma2_by_rank_full, aes(x = rank_w, y = sigma2_k), color = "#4f4db2", linewidth = 0.9) +
+  labs(title = sprintf("Smoothed sigma^2(k) from full ranks (1:%d)", k_full), x = "rank k", y = "sigma^2(k)") +
+  theme_minimal()
+```
+
+```{r variance_full_rank_log}
+ggplot(desc_full, aes(x = rank_w, y = v_k)) +
+  geom_line(color = "#7570b3", alpha = 0.25, linewidth = 0.4) +
+  geom_line(data = sigma2_by_rank_full, aes(x = rank_w, y = sigma2_k), color = "#4f4db2", linewidth = 0.9) +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = sprintf("Smoothed sigma^2(k) from full ranks (log x) 1:%d", k_full), x = "rank k (log)", y = "sigma^2(k)") +
+  theme_minimal()
+```
+
+```{r variance_trimmed_summary}
+# NEW: print chosen body sigma^2 and window
+if (exists("sigma2_piecewise_tbl", inherits = TRUE)) {
+  s_body <- trim_tests$sigma2_body[pick_idx]
+  message(sprintf("[variance-trim] body scalar sigma^2=%.6g in (%d,%d]; using %s",
+                  s_body, L_star, U_star,
+                  ifelse(reject_body_flatness, "smoothed body", "scalar body")))
+}
+```
+
+```{r variance_trend, eval=FALSE}
+var_trend <- gsum %>% dplyr::transmute(rank_w, logk = log1p(rank_w), v_k = pmax(v_k, 1e-10))
+ggplot(var_trend, aes(logk, v_k)) + geom_point(alpha = 0.3, size = 0.6) +
+  geom_line(data = sigma2_by_rank %>% dplyr::mutate(logk = log1p(rank_w)), aes(logk, sigma2_k)) +
+  labs(title = "Rank-wise variance vs log(rank)", x = "log(1+k)", y = "variance") +
+  theme_minimal()
+message(sprintf("[variance] v_k head: median=%.6g; 90th=%.6g", median(var_trend$v_k), quantile(var_trend$v_k, 0.9)))
+```
+
+```{r variance_trend_full}
+# Full-range counterpart: variance vs log(rank) using all ranks 1:k_full
+var_trend_full <- gsum_all %>% dplyr::transmute(rank_w, logk = log1p(rank_w), v_k = pmax(v_k, 1e-10))
+ggplot(var_trend_full, aes(logk, v_k)) +
+  geom_point(alpha = 0.25, size = 0.5, color = "#7570b3") +
+  geom_line(data = sigma2_by_rank_full %>% dplyr::mutate(logk = log1p(rank_w)), aes(logk, sigma2_k), color = "#4f4db2", linewidth = 0.9) +
+  labs(title = sprintf("Rank-wise variance vs log(rank) (full 1:%d)", k_full), x = "log(1+k)", y = "variance") +
+  theme_minimal()
+message(sprintf("[variance-full] v_k full: median=%.6g; 90th=%.6g", median(var_trend_full$v_k), quantile(var_trend_full$v_k, 0.9)))
+```
+
+Addendum: Unless the Brown–Forsythe test strongly rejects variance flatness across rank deciles, we proceed with a constant `sigma2_hat` for the head. If Brown–Forsythe strongly rejects homogeneity, subsequent steps use a smoothed sigma^2(k) estimated from v_k; constant sigma^2 is retained only for sensitivity comparison.
+
+
+# 6) Rank‑drift estimation on 1:1000
+
+Primary approach (A): fit a monotone nondecreasing schedule `g_k` to `bar_g_k` with weights `n_k` via isotonic regression (PAVA). A small TV penalty is optionally approximated by fused‑lasso smoothing followed by an isotonic projection when `genlasso` is available and `tv_lambda > 0`. Cross‑check (B): use average adjacent gaps to derive `g_k` via the exponential gap rate identity using `sigma2_hat`.
+
+```{r drift_fit}
+gk_iso <- fit_isotonic_drift(gsum, tv_lambda = config$tv_lambda)
+gamma_hat <- attr(gk_iso, "gamma_hat"); if (is.null(gamma_hat)) gamma_hat <- NA_real_
+message(sprintf("[head drift] stored gamma_hat=%.6g", gamma_hat))
+gk_gap <- if (isTRUE(use_rank_sigma2)) {
+  drift_from_gaps(delta_bar, sigma2_tbl = sigma2_by_rank)
+} else {
+  drift_from_gaps(delta_bar, sigma2_scalar = sigma2_hat)
+}
+
+# Merge for comparison
+gk_compare <- gk_iso %>% left_join(gk_gap, by = "rank_w")
+stopifnot(nrow(gk_compare) >= 2L)
+
+# Diagnostic discrepancy
+tol <- 0.05
+delta <- mean(abs(gk_compare$gk_hat - gk_compare$gk_gap), na.rm = TRUE)
+message(sprintf("[gap check] mean |isotonic - gap| = %.6g", delta))
+
+if (is.finite(delta) && delta > tol) {
+  message("[gap check] large discrepancy; tightening winsorization and refitting head drifts with Huber weights")
+  # Rebuild gpanel with tighter winsorization
+  gpanel2 <- build_forward_growth(weekly, k_max = config$k_max,
+                                  micro_share_threshold = config$micro_share_threshold,
+                                  winsor_q = 0.98)
+  gsum2 <- summarize_growth_by_rank(gpanel2, k_max = config$k_max)
+  # Huber reweighting on bar_g_k by rank
+  if (requireNamespace("MASS", quietly = TRUE)) {
+    hub <- MASS::huber(gsum2$bar_g_k)
+    mu <- hub$mu; s <- hub$s
+  } else {
+    mu <- stats::median(gsum2$bar_g_k, na.rm = TRUE)
+    s <- stats::mad(gsum2$bar_g_k, constant = 1.4826, na.rm = TRUE)
+    if (!is.finite(s) || s <= 1e-8) s <- stats::sd(gsum2$bar_g_k, na.rm = TRUE)
+    if (!is.finite(s) || s <= 1e-8) s <- 1.0
+  }
+  w_h <- 1 / pmax(1e-6, abs(gsum2$bar_g_k - mu) + s)
+  gk_iso <- fit_isotonic_drift(gsum2 %>% dplyr::mutate(n_k = n_k * w_h), tv_lambda = config$tv_lambda)
+  gamma_hat <- attr(gk_iso, "gamma_hat"); if (is.null(gamma_hat)) gamma_hat <- NA_real_
+  message(sprintf("[gap check] refit gamma_hat=%.6g", gamma_hat))
+  # Recompute compare
+  gk_gap <- if (isTRUE(use_rank_sigma2)) {
+    drift_from_gaps(delta_bar, sigma2_tbl = sigma2_by_rank)
+  } else {
+    drift_from_gaps(delta_bar, sigma2_scalar = sigma2_hat)
+  }
+  gk_compare <- gk_iso %>% dplyr::left_join(gk_gap, by = "rank_w")
+}
+
+if (FALSE) {
+  ggplot(gk_compare, aes(x = rank_w)) +
+    geom_line(aes(y = gk_gap, color = "gap"), linewidth = 0.4, linetype = 2, alpha = 0.5) +
+    geom_line(aes(y = gk_hat, color = "isotonic"), linewidth = 0.9) +
+    scale_color_manual(values = c(isotonic = "#1b9e77", gap = "#fdae6b"), breaks = c("isotonic", "gap"), name = "drift") +
+    labs(title = "Drift schedule: Approach A (isotonic) vs B (gap)", x = "rank k", y = "g_k") +
+    theme_minimal()
+}
+
+message(sprintf("[drift] head sum(g_k[1:1000])=%.6g; min=%.6g; max=%.6g",
+                sum(gk_iso$gk_hat[gk_iso$rank_w <= config$k_max]),
+                min(gk_iso$gk_hat), max(gk_iso$gk_hat)))
+```
+
+If large discrepancies appear between approaches, revisit variance flatness, outliers, and week selection (winsorization threshold, micro‑share filter). Approach A remains primary for subsequent steps.
+
+
+# 7) Tail extrapolation (k > 1000)
+
+We splice a monotone softening family at `k0 epsilon [300, 600]` and fit with weighted nonlinear least squares over ranks `k0:1000`. The tail is value-anchored at k0 to the observed head and applied from k0 onward. We prefer families that agree with the observed head shape and avoid extrapolations that impose undue curvature.
+
+```{r drift_full_observed, fig.height=4.8}
+# Full observed drift schedule (isotonic vs gap) over 1:k_full
+gk_iso_full <- fit_isotonic_drift(gsum_all, tv_lambda = config$tv_lambda)
+gk_gap_full <- drift_from_gaps(delta_all, sigma2_tbl = sigma2_by_rank_full)
+gk_full_compare <- gk_iso_full %>% dplyr::left_join(gk_gap_full, by = "rank_w")
+
+ggplot(gk_full_compare, aes(x = rank_w)) +
+  geom_line(aes(y = gk_hat, color = "isotonic"), alpha = 0.3, linewidth = 0.5) +
+  geom_line(aes(y = gk_gap, color = "gap"), alpha = 0.3, linewidth = 0.5, linetype = 2) +
+  geom_smooth(aes(y = gk_hat, color = "isotonic"), se = FALSE, linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  geom_smooth(aes(y = gk_gap, color = "gap"), se = FALSE, linewidth = 0.9, linetype = 2, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_color_manual(values = c(isotonic = "#1b9e77", gap = "#fdae6b"), name = "drift") +
+  labs(title = sprintf("Full observed drift schedule (1:%d): isotonic vs gap", k_full), x = "rank k", y = "g_k") +
+  theme_minimal()
+```
+
+```{r drift_full_observed_log, fig.height=4.8}
+ggplot(gk_full_compare, aes(x = rank_w)) +
+  geom_line(aes(y = gk_hat, color = "isotonic"), alpha = 0.3, linewidth = 0.5) +
+  geom_line(aes(y = gk_gap, color = "gap"), alpha = 0.3, linewidth = 0.5, linetype = 2) +
+  geom_smooth(aes(y = gk_hat, color = "isotonic"), se = FALSE, linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  geom_smooth(aes(y = gk_gap, color = "gap"), se = FALSE, linewidth = 0.9, linetype = 2, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_color_manual(values = c(isotonic = "#1b9e77", gap = "#fdae6b"), name = "drift") +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = sprintf("Full observed drift schedule (log x) 1:%d", k_full), x = "rank k (log)", y = "g_k") +
+  theme_minimal()
+```
+
+```{r tail_fit}
+k0 <- as.integer(config$k0)
+stopifnot(k0 >= 300L, k0 <= 600L)
+
+seg <- gk_iso %>% filter(rank_w >= k0, rank_w <= config$k_max) %>%
+  left_join(gsum %>% select(rank_w, n_k), by = "rank_w")
+
+if (nrow(seg) < 5) {
+  # Fallback: use last ~200 available head ranks if splice window is empty
+  rk_max_avail <- max(gk_iso$rank_w)
+  seg <- gk_iso %>% filter(rank_w >= max(1L, rk_max_avail - 200L)) %>%
+    left_join(gsum %>% select(rank_w, n_k), by = "rank_w")
+}
+seg$n_k[is.na(seg$n_k)] <- 1
+
+g0 <- seg$gk_hat[seg$rank_w == k0][1]
+message(sprintf("[tail] k0=%d; g(k0)=%.6g; family candidates will be anchored to this", k0, g0))
+
+par_power <- fit_tail_power(k = seg$rank_w, gk = seg$gk_hat, k0 = k0, w = seg$n_k)
+par_log <- fit_tail_log(k = seg$rank_w, gk = seg$gk_hat, k0 = k0, w = seg$n_k)
+
+# Simple selection without CV unless enabled: compare WSS on segment
+wss_power <- sum(seg$n_k * (seg$gk_hat - predict_tail(par_power, seg$rank_w, k0))^2)
+wss_log <- sum(seg$n_k * (seg$gk_hat - predict_tail(par_log, seg$rank_w, k0))^2)
+
+if (identical(config$tail_family, "power")) {
+  tail_par <- par_power
+} else if (identical(config$tail_family, "log")) {
+  tail_par <- par_log
+} else if (isTRUE(config$do_cv)) {
+  fam <- cv_choose_tail(seg, k0 = k0, blocks = config$cv_blocks)
+  tail_par <- if (fam == "power") par_power else par_log
+} else {
+  tail_par <- if (wss_power <= wss_log) par_power else par_log
+}
+message(sprintf("[tail] selected family=%s; a=%.6g; alpha=%s; c=%s",
+                tail_par$family, tail_par$a,
+                ifelse(is.na(tail_par$alpha), "NA", sprintf("%.6g", tail_par$alpha)),
+                ifelse(is.na(tail_par$c), "NA", sprintf("%.6g", tail_par$c))))
+
+message(sprintf("[tail] a=%.6g; alpha=%s; c=%s",
+                tail_par$a,
+                ifelse(is.na(tail_par$alpha), "NA", sprintf("%.6g", tail_par$alpha)),
+                ifelse(is.na(tail_par$c), "NA", sprintf("%.6g", tail_par$c))))
+
+ggplot(seg, aes(rank_w, gk_hat)) +
+  geom_line(color = "black") +
+  geom_line(aes(y = predict_tail(tail_par, seg$rank_w, k0)), color = "red", linetype = 2) +
+  labs(title = "Tail fit on head segment", x = "rank k", y = "g_k")
+```
+
+```{r tail_fit_more, fig.height=4.6}
+# Repeat tail fit using larger head windows: k=2,000 and k=5,000 (capped at k_full)
+k_heads_tail <- c(2000L, 5000L)
+for (kh in k_heads_tail) {
+  kh <- as.integer(min(kh, k_full))
+  if (kh <= k0 + 10L) { message(sprintf("[tail-fit %d] insufficient head beyond k0; skipping", kh)); next }
+
+  gpanel_k <- build_forward_growth(weekly, k_max = kh,
+                                   micro_share_threshold = config$micro_share_threshold,
+                                   winsor_q = config$winsor_q)
+  gsum_k <- summarize_growth_by_rank(gpanel_k, k_max = kh)
+  gk_iso_k <- fit_isotonic_drift(gsum_k, tv_lambda = config$tv_lambda)
+
+  seg_k <- gk_iso_k %>% dplyr::filter(rank_w >= k0, rank_w <= kh) %>%
+    dplyr::left_join(gsum_k %>% dplyr::select(rank_w, n_k), by = "rank_w")
+  if (nrow(seg_k) < 5) {
+    rk_max_avail <- max(gk_iso_k$rank_w)
+    seg_k <- gk_iso_k %>% dplyr::filter(rank_w >= max(1L, rk_max_avail - 200L)) %>%
+      dplyr::left_join(gsum_k %>% dplyr::select(rank_w, n_k), by = "rank_w")
+  }
+  seg_k$n_k[is.na(seg_k$n_k)] <- 1L
+
+  par_power_k <- fit_tail_power(k = seg_k$rank_w, gk = seg_k$gk_hat, k0 = k0, w = seg_k$n_k)
+  par_log_k   <- fit_tail_log(  k = seg_k$rank_w, gk = seg_k$gk_hat, k0 = k0, w = seg_k$n_k)
+  wss_p <- sum(seg_k$n_k * (seg_k$gk_hat - predict_tail(par_power_k, seg_k$rank_w, k0))^2)
+  wss_l <- sum(seg_k$n_k * (seg_k$gk_hat - predict_tail(par_log_k,   seg_k$rank_w, k0))^2)
+  tail_par_k <- if (identical(config$tail_family, "power")) par_power_k else if (identical(config$tail_family, "log")) par_log_k else if (isTRUE(config$do_cv)) {
+    fam <- cv_choose_tail(seg_k, k0 = k0, blocks = config$cv_blocks); if (fam == "power") par_power_k else par_log_k
+  } else { if (wss_p <= wss_l) par_power_k else par_log_k }
+
+  p <- ggplot(seg_k, aes(rank_w, gk_hat)) +
+    geom_line(color = "black") +
+    geom_line(aes(y = predict_tail(tail_par_k, seg_k$rank_w, k0)), color = "red", linetype = 2) +
+    labs(title = sprintf("Tail fit on head segment (k=%d)", kh), x = "rank k", y = "g_k")
+  print(p)
+}
+```
+
+```{r drift_full_plot, fig.height=4.6}
+# Full drift schedule 1:k_full using head + tail splice
+g_full <- build_g_schedule(g_head = gk_iso, par = tail_par, N = k_full, k0 = k0)
+p_drift_full <- ggplot(g_full, aes(x = rank_w, y = gk)) +
+  geom_line(color = "#1b9e77", alpha = 0.3, linewidth = 0.5) +
+  geom_smooth(se = FALSE, color = "#1b9e77", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  labs(title = sprintf("Drift schedule g_k (spliced head+tail, 1:%d)", k_full), x = "rank k", y = "g_k") +
+  theme_minimal()
+print(p_drift_full)
+```
+
+```{r drift_full_plot_log, fig.height=4.6}
+# Log-x variant of the full drift schedule
+ggplot(g_full, aes(x = rank_w, y = gk)) +
+  geom_line(color = "#1b9e77", alpha = 0.3, linewidth = 0.5) +
+  geom_smooth(se = FALSE, color = "#1b9e77", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = sprintf("Drift schedule g_k (log x) full 1:%d", k_full), x = "rank k (log)", y = "g_k") +
+  theme_minimal()
+```
+
+
+# 8) Stationarity and effective population size N
+
+We extend `g_k` beyond 1000 using the selected tail family to candidate `N` values. For each `N`, if `sum_{k=1}^N g_k < 0`, we add a bottom uplift (a small positive constant drift over the last `m` ranks) so that `sum g_k = 0` and `G(k) < 0` for all `k < N`. We score `(N, m)` by CDC head fit and top‑1000 share fit. Stationarity is enforced by a global shift and a nonnegative bottom uplift spread over the last m ranks; last-element fixes are not used.
+
+```{r stationarity, message=TRUE, warning=TRUE}
+# Observed top-1000 share (average over weeks) if weekly_total is available
+obs_top1000_share <- NA_real_
+if (all(c("weekly_metric", "weekly_total") %in% names(weekly))) {
+  top1000_by_week <- weekly %>%
+    dplyr::filter(rank_w <= config$k_max) %>%
+    dplyr::group_by(week_start) %>%
+    dplyr::summarise(A1000 = sum(weekly_metric, na.rm = TRUE),
+                     totals = list(unique(weekly_total)), .groups = "drop") %>%
+    dplyr::mutate(total = purrr::map_dbl(totals, ~{ x <- .x[is.finite(.x)]; if (length(x)==0) NA_real_ else { stopifnot(length(unique(x))==1); unique(x) } })) %>%
+    dplyr::select(-totals) %>%
+    dplyr::filter(is.finite(A1000), is.finite(total), total > 0)
+  if (nrow(top1000_by_week) > 0) {
+    obs_top1000_share <- mean(top1000_by_week$A1000 / top1000_by_week$total, na.rm = TRUE)
+  }
+}
+
+best <- NULL
+best_model <- NULL
+m1_anchor <- mhat$mhat_k[mhat$rank_w == 1]
+
+# Diagnostics: tail parameters and base schedule summaries
+message("[stationarity] Diagnostics starting…")
+message(sprintf("sigma2_hat = %.6e; k0 = %d", sigma2_hat, k0))
+if (!is.null(tail_par$family)) message(sprintf("tail_family = %s", tail_par$family))
+message(sprintf("N_grid: %s", paste(config$N_grid, collapse = ", ")))
+message(sprintf("uplift_m_grid: %s", paste(config$uplift_m_grid, collapse = ", ")))
+
+base_diag <- lapply(config$N_grid, function(N) {
+  gs <- build_g_schedule(g_head = gk_iso, par = tail_par, N = N, k0 = k0)
+  g <- gs$gk
+  G0 <- cumsum(g)
+  data.frame(N = N,
+             sum_g = sum(g),
+             max_prefix = if (N > 1) max(G0[1:(N - 1)]) else NA_real_,
+             min_g = min(g), max_g = max(g),
+             g1 = g[1], gN = g[N])
+}) %>% dplyr::bind_rows()
+print(utils::head(base_diag, 10))
+
+# Helper to score a given N and m
+score_for_N_m <- function(N, m, g_head, tail_par, k0, m1_anchor, sigma2_by_rank, sigma2_hat, use_rank_sigma2, m_obs, k_max) {
+  gs <- build_g_schedule(g_head = g_head, par = tail_par, N = N, k0 = k0)
+  enf <- enforce_stationarity(gs, m = m, verbose = FALSE)
+  if (!isTRUE(enf$ok)) return(NULL)
+  sig_N <- if (isTRUE(config$use_piecewise_sigma) && exists("sigma2_piecewise_tbl", inherits = TRUE) && !is.null(sigma2_piecewise_tbl)) {
+    expand_sigma2_to_N(sigma2_piecewise_tbl, N)
+  } else if (use_rank_sigma2) {
+    expand_sigma2_to_N(sigma2_by_rank, N)
+  } else {
+    rep(sigma2_hat, N)
+  }
+  out <- drifts_to_cdc_mce(gk = enf$gk, sigma2 = sig_N, anchor_m1 = m1_anchor)
+  if (!isTRUE(getOption("cdc_selftest_done", FALSE))) {
+    invisible(selftest_gap_rate(enf$gk, sigma2_hat))
+    options(cdc_selftest_done = TRUE)
+  }
+  sc <- score_candidate(m_model = out$m, m_obs = m_obs, k_max = k_max, mce = out$mce, s_obs_1000 = obs_top1000_share)
+  list(N = N, m = m, uplift = enf$uplift, rmse = sc$rmse, share_err = sc$share_err, s_mod_1000 = sc$s_mod_1000,
+       rmse_norm = sc$rmse_norm, share_err_norm = sc$share_err_norm, obj = sc$obj,
+       gk = enf$gk, m_vec = out$m, mce = out$mce, r_k = out$r_k, rho_k = out$rho_k)
+}
+
+message("[selection] scoring grid over N_grid x uplift_m_grid")
+cand <- purrr::compact(unlist(lapply(config$N_grid, function(N) {
+  m_grid <- sort(unique(c(config$uplift_m_grid,
+                          max(50L, floor(N/20L)),
+                          max(50L, floor(N/10L)),
+                          N - 1L)))
+  lapply(m_grid, function(m)
+    score_for_N_m(N = as.integer(N), m = as.integer(m),
+                  g_head = gk_iso, tail_par = tail_par, k0 = k0,
+                  m1_anchor = m1_anchor,
+                  sigma2_by_rank = sigma2_by_rank, sigma2_hat = sigma2_hat,
+                  use_rank_sigma2 = use_rank_sigma2,
+                  m_obs = mhat, k_max = config$k_max))
+}), recursive = FALSE))
+if (length(cand) == 0) {
+  warning("[selection] no feasible stationary schedule on the grid; proceeding without final CDC selection.")
+  best <- NULL
+} else {
+  ord <- order(vapply(cand, function(z) z$obj, numeric(1)))
+  topk <- utils::head(ord, 5)
+  message("[selection] top grid candidates: ",
+          paste(vapply(cand[topk], function(z)
+            sprintf("(N=%d,m=%d,obj=%.4g,rmse=%.4g,share_err=%.4g)",
+                    z$N, z$m, z$obj, z$rmse, ifelse(is.na(z$share_err), NaN, z$share_err)),
+            character(1)), collapse = "; "))
+  best <- cand[[ ord[1] ]]
+
+  # Expose key results
+  message(sprintf("[selection] best objective=%.4g (rmse_norm=%.4g, share_err_norm=%.4g, lambda=%.3g)",
+                  best$obj, best$rmse_norm, best$share_err_norm, config$lambda_share))
+  message(sprintf("[selection] best: N=%d; m=%d; uplift=%.6g; rmse=%.6g; s_mod_1000=%.6g; share_err=%.6g",
+                  best$N, best$m, best$uplift, best$rmse, best$s_mod_1000, best$share_err))
+
+  stopifnot(best$N > config$k_max)
+  stopifnot(length(best$m_vec) == best$N)
+  stopifnot(all(best$r_k > 0))
+
+  # Additional sanity checks
+  stopifnot(is.numeric(best$r_k), is.numeric(best$m_vec), is.numeric(best$mce))
+  if (any(best$r_k <= 0 | !is.finite(best$r_k))) stop("[sanity] r_k has nonpositive/invalid entries")
+  if (any(diff(best$m_vec[1:config$k_max]) >= 0)) warning("[sanity] CDC head is not strictly decreasing")
+  s_mce <- sum(best$mce)
+  if (!is.finite(s_mce) || abs(s_mce - 1) > 1e-8) stop(sprintf("[sanity] sum(MCE)=%.6g != 1", s_mce))
+  message(sprintf("[sanity] r_k>0 ok; sum(MCE)=%.6g; m(1..10)=[%s]", s_mce, paste(round(best$m_vec[1:min(10,length(best$m_vec))],3), collapse=", ")))
+}
+
+if (isTRUE(config$save_outputs)) {
+  dbg <- list(
+    config = config,
+    gamma_hat = tryCatch(gamma_hat, error = function(e) NA_real_),
+    gk_head = gk_iso,
+    tail_par = tail_par,
+    N = best$N, m = best$m,
+    uplift = best$uplift,
+    r_k = best$r_k[1:min(5000, length(best$r_k))],
+    m_head = best$m_vec[1:min(config$k_max, length(best$m_vec))],
+    m_obs = mhat,
+    sigma2_hat = sigma2_hat
+  )
+  saveRDS(dbg, file = file.path(config$output_dir, "cdc_debug_bundle.rds"))
+  message("[debug] wrote cdc_debug_bundle.rds")
+}
+```
+
+
+# 9) Final CDC and plots
+
+```{r final_plots, fig.height=4.8}
+# Skip if no feasible stationary schedule was found
+if (is.null(best)) {
+  message("[final] Skipping final CDC plots because no feasible stationary schedule was found in selection.")
+} else {
+# Build and plot CDC at fixed N values to reduce far-tail distortion
+head_level <- mhat %>% mutate(level = exp(mhat_k))
+
+build_cdc_for_N <- function(N, m_try = best$m) {
+  N <- as.integer(N)
+  # Try to enforce stationarity across a small grid of m values
+  g_sched <- build_g_schedule(g_head = gk_iso, par = tail_par, N = N, k0 = k0)
+  m_grid <- sort(unique(pmax(1L, pmin(N - 1L, c(
+    as.integer(m_try), 100L, 500L, 1000L, 2500L, 5000L, 10000L, 20000L,
+    floor(N / 20L), floor(N / 10L), floor(N / 5L), N - 1L
+  )))))
+  chosen <- NULL
+  for (mm in m_grid) {
+    enf <- enforce_stationarity(g_sched, m = mm, verbose = FALSE)
+    if (isTRUE(enf$ok)) { chosen <- list(enf = enf, m = mm); break }
+  }
+  if (is.null(chosen)) {
+    # Proceed with the first m in the grid even if not strictly OK, to enable plotting
+    mm <- m_grid[[1]]
+    enf <- enforce_stationarity(g_sched, m = mm, verbose = FALSE)
+    chosen <- list(enf = enf, m = mm)
+  }
+  sig_N <- if (isTRUE(config$use_piecewise_sigma) && exists("sigma2_piecewise_tbl", inherits = TRUE) && !is.null(sigma2_piecewise_tbl)) {
+    expand_sigma2_to_N(sigma2_piecewise_tbl, N)
+  } else if (use_rank_sigma2) {
+    expand_sigma2_to_N(sigma2_by_rank, N)
+  } else {
+    rep(sigma2_hat, N)
+  }
+  out <- tryCatch(drifts_to_cdc_mce(gk = chosen$enf$gk, sigma2 = sig_N, anchor_m1 = m1_anchor),
+                  error = function(e) NULL)
+  if (is.null(out)) return(NULL)
+  list(N = N, m = chosen$m, m_vec = out$m, mce = out$mce)
+}
+
+N1 <- 10000L; N2 <- 100000L
+res1 <- build_cdc_for_N(N1)
+res2 <- build_cdc_for_N(N2)
+
+if (!is.null(res1)) {
+  tail_level_1 <- tibble::tibble(rank_w = 1:N1, level = exp(res1$m_vec))
+  p_final_1 <- ggplot() +
+    geom_line(data = tail_level_1 %>% dplyr::filter(rank_w > config$k_max), aes(x = rank_w, y = level),
+              color = "#9e9e9e", linewidth = 0.8, linetype = 2) +
+    geom_line(data = head_level, aes(x = rank_w, y = level), color = "black", linewidth = 0.9) +
+    scale_x_log10(labels = scales::comma_format()) +
+    scale_y_log10() +
+    labs(title = "Final CDC to N = 10,000 (head observed, tail modeled)", x = "rank k (log)", y = "weight level (log)") +
+    theme_minimal()
+  print(p_final_1)
+}
+
+if (!is.null(res2)) {
+  tail_level_2 <- tibble::tibble(rank_w = 1:N2, level = exp(res2$m_vec))
+  p_final_2 <- ggplot() +
+    geom_line(data = tail_level_2 %>% dplyr::filter(rank_w > config$k_max), aes(x = rank_w, y = level),
+              color = "#9e9e9e", linewidth = 0.8, linetype = 2) +
+    geom_line(data = head_level, aes(x = rank_w, y = level), color = "black", linewidth = 0.9) +
+    scale_x_log10(labels = scales::comma_format()) +
+    scale_y_log10() +
+    labs(title = "Final CDC to N = 100,000 (head observed, tail modeled)", x = "rank k (log)", y = "weight level (log)") +
+    theme_minimal()
+  print(p_final_2)
+}
+}
+```
+
+```{r save_outputs, eval=config$save_outputs}
+if (isTRUE(config$save_outputs) && !is.null(best)) {
+  dir.create(config$output_dir, recursive = TRUE, showWarnings = FALSE)
+  ggplot2::ggsave(filename = file.path(config$output_dir, "cdc_final.png"), width = 8, height = 5, dpi = 150)
+  # Save tables
+  readr::write_csv(tibble::tibble(rank_w = 1:best$N, m = best$m_vec, mce = best$mce), file.path(config$output_dir, "cdc_m_mce.csv"))
+  readr::write_csv(head_summary, file.path(config$output_dir, "head_summary.csv"))
+}
+```
+
+
+# 9B) Inference sensitivity by head size (1k, 5k, 20k)
+
+We rerun the inference pipeline three times using different head cutoffs to predict the rest of the CDC: 1,000; 5,000; and 20,000. Each run re-fits head drifts, tail parameters, and performs the stationarity selection.
+
+```{r inference_multi, message=TRUE, warning=TRUE, fig.height=4.6}
+run_inference_for_k <- function(weekly, k_head, config) {
+  # Cap requested head to available full head
+  k_head <- as.integer(min(k_head, k_full))
+  if (k_head < 50L) {
+    warning(sprintf("[inference] k_head=%d too small after capping; skipping", k_head))
+    return(list(k_head = k_head, best = NULL))
+  }
+  # Growth panel and summaries for this head size
+  gpanel_k <- build_forward_growth(
+    weekly,
+    k_max = k_head,
+    micro_share_threshold = config$micro_share_threshold,
+    winsor_q = config$winsor_q
+  )
+  gsum_k <- summarize_growth_by_rank(gpanel_k, k_max = k_head)
+  head_gaps_k <- compute_head_gaps(weekly, k_max = k_head)
+  delta_bar_k <- head_gaps_k$delta_bar
+  mhat_k <- head_gaps_k$mhat
+
+  # Variance and flatness test
+  sigma2_hat_k <- pool_sigma2(gsum_k, trim = 0.10)
+  lev_k <- tryCatch(levene_bf_test(gpanel_k, k_max = k_head), error = function(e) NULL)
+  use_rank_sigma2_k <- (!is.null(lev_k)) && is.finite(lev_k$`Pr(>F)`[1]) && (lev_k$`Pr(>F)`[1] < 0.01)
+  sigma2_by_rank_k <- if (use_rank_sigma2_k) compute_sigma2_by_rank(gsum_k, df_spline = config$df_spline) else NULL
+
+  # Head drift fits
+  gk_iso_k <- fit_isotonic_drift(gsum_k, tv_lambda = config$tv_lambda)
+  gk_gap_k <- if (isTRUE(use_rank_sigma2_k)) {
+    drift_from_gaps(delta_bar_k, sigma2_tbl = sigma2_by_rank_k)
+  } else {
+    drift_from_gaps(delta_bar_k, sigma2_scalar = sigma2_hat_k)
+  }
+
+  # Tail fit on splice segment [k0, k_head]
+  k0_loc <- as.integer(config$k0)
+  seg_k <- gk_iso_k %>% dplyr::filter(rank_w >= k0_loc, rank_w <= k_head) %>%
+    dplyr::left_join(gsum_k %>% dplyr::select(rank_w, n_k), by = "rank_w")
+  if (nrow(seg_k) < 5) {
+    rk_max_avail <- max(gk_iso_k$rank_w)
+    seg_k <- gk_iso_k %>% dplyr::filter(rank_w >= max(1L, rk_max_avail - 200L)) %>%
+      dplyr::left_join(gsum_k %>% dplyr::select(rank_w, n_k), by = "rank_w")
+  }
+  seg_k$n_k[is.na(seg_k$n_k)] <- 1
+  par_power_k <- fit_tail_power(k = seg_k$rank_w, gk = seg_k$gk_hat, k0 = k0_loc, w = seg_k$n_k)
+  par_log_k   <- fit_tail_log(  k = seg_k$rank_w, gk = seg_k$gk_hat, k0 = k0_loc, w = seg_k$n_k)
+  wss_p <- sum(seg_k$n_k * (seg_k$gk_hat - predict_tail(par_power_k, seg_k$rank_w, k0_loc))^2)
+  wss_l <- sum(seg_k$n_k * (seg_k$gk_hat - predict_tail(par_log_k,   seg_k$rank_w, k0_loc))^2)
+  tail_par_k <- if (identical(config$tail_family, "power")) par_power_k else if (identical(config$tail_family, "log")) par_log_k else if (isTRUE(config$do_cv)) {
+    fam <- cv_choose_tail(seg_k, k0 = k0_loc, blocks = config$cv_blocks); if (fam == "power") par_power_k else par_log_k
+  } else { if (wss_p <= wss_l) par_power_k else par_log_k }
+
+  # Selection over N and uplift m
+  m1_anchor_k <- exp(mhat_k$mhat_k[1])
+  score_for_N_m_k <- function(N, m) {
+    gs <- build_g_schedule(g_head = gk_iso_k, par = tail_par_k, N = N, k0 = k0_loc)
+    enf <- enforce_stationarity(gs, m = m, verbose = FALSE)
+    if (!isTRUE(enf$ok)) return(NULL)
+    # NEW: prefer piecewise sigma^2 if available, else per-rank, else scalar
+    sig_N <- if (isTRUE(config$use_piecewise_sigma) && exists("sigma2_piecewise_tbl", inherits = TRUE) && !is.null(sigma2_piecewise_tbl)) {
+      expand_sigma2_to_N(sigma2_piecewise_tbl, N)
+    } else if (use_rank_sigma2_k && !is.null(sigma2_by_rank_k)) {
+      expand_sigma2_to_N(sigma2_by_rank_k, N)
+    } else {
+      rep(sigma2_hat_k, N)
+    }
+    out <- drifts_to_cdc_mce(gk = enf$gk, sigma2 = sig_N, anchor_m1 = m1_anchor_k)
+    sc <- score_candidate(m_model = out$m, m_obs = mhat_k, k_max = k_head, mce = out$mce, s_obs_1000 = obs_top1000_share)
+    list(N = N, m = m, obj = sc$obj, rmse = sc$rmse, s_mod_1000 = sc$s_mod_1000, share_err = sc$share_err,
+         gk = enf$gk, m_vec = out$m, mce = out$mce)
+  }
+  cand_k <- purrr::compact(unlist(lapply(config$N_grid, function(N) {
+    m_grid <- sort(unique(c(config$uplift_m_grid, max(50L, floor(N/20L)), max(50L, floor(N/10L)), N - 1L)))
+    lapply(m_grid, function(m) score_for_N_m_k(as.integer(N), as.integer(m)))
+  }), recursive = FALSE))
+  best_k <- if (length(cand_k) > 0) cand_k[[ order(vapply(cand_k, function(z) z$obj, numeric(1)))[1] ]] else NULL
+
+  list(k_head = k_head, best = best_k, gk_iso = gk_iso_k, tail_par = tail_par_k, mhat = mhat_k)
+}
+
+k_heads <- c(1000L, 5000L, 20000L)
+res_list <- lapply(k_heads, function(kh) run_inference_for_k(weekly, kh, config))
+names(res_list) <- paste0("k", k_heads)
+
+# Plot CDC curves for each head size using its selected N (if available),
+# truncated at the average weekly share equivalent to ~10 likes.
+plots <- list()
+for (nm in names(res_list)) {
+  rr <- res_list[[nm]]
+  if (is.null(rr$best)) { message(sprintf("[%s] no feasible schedule; skipping plot", nm)); next }
+  Nsel <- rr$best$N
+  m_vec <- rr$best$m_vec
+  head_level_k <- rr$mhat %>% dplyr::mutate(level = exp(mhat_k)) %>%
+    dplyr::filter(level >= share_thr_10)
+  tail_level <- tibble::tibble(rank_w = seq_len(Nsel), level = exp(m_vec)) %>%
+    dplyr::filter(level >= share_thr_10)
+  plots[[nm]] <- ggplot() +
+    geom_line(data = tail_level %>% dplyr::filter(rank_w > rr$k_head), aes(rank_w, level), color = "#9e9e9e", alpha = 0.35, linewidth = 0.8, linetype = 2) +
+    geom_line(data = head_level_k, aes(rank_w, level), color = "black", alpha = 0.35, linewidth = 0.9) +
+    geom_smooth(data = tail_level %>% dplyr::filter(rank_w > rr$k_head), aes(rank_w, level), se = FALSE, color = "#9e9e9e", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+    geom_smooth(data = head_level_k, aes(rank_w, level), se = FALSE, color = "black", linewidth = 0.9, method = "gam", formula = y ~ s(x, k = 50)) +
+    scale_x_log10(labels = scales::comma_format()) +
+    scale_y_log10() +
+    labs(title = sprintf("CDC with head k=%s, N=%d (cut at ~10-likes share %s)", rr$k_head, Nsel, scales::percent(share_thr_10)),
+         x = "rank k (log)", y = "weight level (log)") +
+    theme_minimal()
+}
+
+if (length(plots) > 0) {
+  if (requireNamespace("patchwork", quietly = TRUE)) {
+    print(do.call(patchwork::wrap_plots, c(plots, ncol = 1)))
+  } else {
+    for (p in plots) print(p)
+  }
+}
+```
+
+
+# 10) Robustness (optional hooks)
+
+```{r bootstrap}
+config$do_bootstrap <- getOption("cdc_do_bootstrap", FALSE)
+config$boot_block_weeks <- 8L
+config$boot_B <- 200L
+
+bootstrap_pipeline <- function(weekly, gsum, delta_bar, mhat, config) {
+  # Resample by week blocks
+  weeks <- sort(unique(weekly$week_start))
+  B <- config$boot_B; bw <- config$boot_block_weeks
+  out <- vector("list", B)
+  for (b in seq_len(B)) {
+    idx <- sample.int(length(weeks), replace = TRUE)
+    wk_sel <- weeks[idx]
+    weekly_b <- weekly %>% dplyr::filter(week_start %in% wk_sel)
+    # Re-run minimal steps: head drifts, tail fit, selection, CDC
+    gpanel_b <- build_forward_growth(weekly_b, k_max = config$k_max,
+                                     micro_share_threshold = config$micro_share_threshold,
+                                     winsor_q = config$winsor_q)
+    gsum_b <- summarize_growth_by_rank(gpanel_b, k_max = config$k_max)
+    gk_iso_b <- fit_isotonic_drift(gsum_b, tv_lambda = config$tv_lambda)
+    seg_b <- gk_iso_b %>% dplyr::filter(rank_w >= config$k0, rank_w <= config$k_max) %>%
+      dplyr::left_join(gsum_b %>% dplyr::select(rank_w, n_k), by = "rank_w")
+    seg_b$n_k[is.na(seg_b$n_k)] <- 1
+    par_p <- fit_tail_power(seg_b$rank_w, seg_b$gk_hat, config$k0, seg_b$n_k)
+    par_l <- fit_tail_log(seg_b$rank_w, seg_b$gk_hat, config$k0, seg_b$n_k)
+    tail_par_b <- if (identical(config$tail_family, "power")) par_p else if (identical(config$tail_family, "log")) par_l else par_p    
+    # For speed, skip CV inside bootstrap
+    # Return S_mod_1000 and selected curves length-k_max for bands
+    # ... minimal implementation to keep runtime tolerable ...
+    out[[b]] <- list() # placeholder for brevity; keep disabled by default
+  }
+  out
+}
+
+if (isTRUE(config$do_bootstrap)) {
+  message("[bootstrap] starting block bootstrap. This may be slow.")
+  boot_res <- bootstrap_pipeline(weekly, gsum, delta_bar, mhat, config)
+}
+```
+
+The following hooks align with the design for robustness:
+
+- Variance flatness: inspected via Brown–Forsythe test; sensitivity runs (not shown) can allow decile‑specific `sigma2` in the `drifts_to_cdc_mce` conversion to quantify impact on the CDC head.
+- Centered differences: optionally recompute growth as `[log mu_{i,t+1} - log mu_{i,t-1}]/2` with extended joins.
+- Outliers: winsorization and micro‑share filters implemented; Huber loss variant for drift fitting can be added by reweighting `bar_g_k`.
+- Time blocking: block bootstrap by weeks (e.g., 6–8‑week blocks) can re‑run steps C–G to produce bands for `g_k`, `r_k`, `m(k)`, and the modeled top‑1000 share.
+- Head–tail sensitivity: vary `k0`, change tail family, and grid over `N`; bands can be reported for top‑1000 modeled share and tail mass.
+
+
+# 11) Edge cases and data hygiene
+
+- Ties: assumed broken deterministically upstream; if not, ensure `rank_w` is stable (e.g., by previous week’s order).
+- Missing ranks: weeks with gaps in 1:1000 are dropped by `has_contiguous_head`.
+- Exposure filter: growth uses only occupants present at `t` and `t+1`.
+- Micro‑shares: excluded below `1e-8`.
+- Winsorization: top 1% of `|r_f|` winsorized at the rank level.
+- Reproducibility: RNG seed set; session info recorded below.
+
+
+# 12) Session info
+
+```{r session}
+sessionInfo()
+```
+ # (pava_increasing defined earlier in helpers)
+ 
+ 
+# 13) Static-list capture vs refresh window
+
+Plan:
+1) Build sorted weekly timeline and per-week top-K sets
+2) For each R ∈ {4,13,26,52} and K ∈ {1000,2000,5000}, slide R‑week windows
+3) For each window start t: fix L_t (top‑K at t), sum captured mass over s ∈ [t, t+R−1], and total mass over those weeks
+4) Compute capture ratio per window; aggregate mean and 5/50/95 percentiles per (R,K)
+5) Plot capture ratio vs refresh window for each K; save plot and tables
+
+```{r static_list_capture, eval=exists("weekly"), cache=TRUE}
+suppressPackageStartupMessages({
+  library(data.table)
+  library(zoo)
+  library(ggplot2)
+})
+
+# Use all cores for data.table
+data.table::setDTthreads(percent = 100)
+
+# Ensure weekly_total exists once
+if (!"weekly_total" %in% names(weekly)) {
+  weekly <- weekly %>%
+    dplyr::group_by(week_start) %>%
+    dplyr::mutate(weekly_total = sum(weekly_metric, na.rm = TRUE)) %>%
+    dplyr::ungroup()
+}
+
+# --- Index weeks and convert to data.table ---
+weeks <- sort(unique(weekly$week_start))
+wk_map <- data.table(week_start = weeks, start_id = seq_along(weeks))
+setDT(weekly)
+weekly <- wk_map[weekly, on = "week_start"]
+setorder(weekly, start_id, rank_w)
+
+# Keep only needed columns
+weekly <- weekly[, .(start_id, week_start, endpoint_id, rank_w, weekly_metric, weekly_total)]
+
+# Parameters (same as before)
+R_list <- c(4L, 13L, 26L, 52L)
+K_list <- c(1000L, 2000L, 5000L)
+
+# Optional stride to thin windows during prototyping: options(static_list_stride = 1L)
+stride <- getOption("static_list_stride", 1L)
+
+# --- Rolling totals per R (one pass per R) ---
+totals_dt <- unique(weekly[, .(start_id, weekly_total)])[order(start_id)]
+totals_roll <- rbindlist(lapply(R_list, function(R) {
+  n <- nrow(totals_dt)
+  if (n < R) return(data.table(R = R, start_id = integer(), total = numeric()))
+  data.table(
+    R = R,
+    start_id = seq_len(n - R + 1L),
+    total = zoo::rollsum(totals_dt$weekly_total, k = R, align = "left")
+  )
+}))
+
+# --- Precompute top‑K membership once per K ---
+topK_by_week <- lapply(K_list, function(K) {
+  weekly[rank_w <= K, .(members = list(endpoint_id)), by = .(start_id)]
+})
+names(topK_by_week) <- paste0("K", K_list)
+
+# --- Non‑equi join to sum captured mass per K×R ---
+setkey(weekly, endpoint_id, start_id)
+weekly_iv <- weekly[, .(endpoint_id, start_id, end_id = start_id, weekly_metric)]
+setkey(weekly_iv, endpoint_id, start_id, end_id)
+
+compute_capture_dt <- function(K, R) {
+  memb <- copy(topK_by_week[[paste0("K", K)]])
+  if (nrow(memb) == 0L) return(data.table())
+  # explode membership: one row per (start_id, endpoint_id), then attach end_id
+  memb_exp <- memb[, .(endpoint_id = unlist(members)), by = .(start_id)]
+  memb_exp[, end_id := start_id + R - 1L]
+  nW <- max(weekly$start_id)
+  memb_exp <- memb_exp[end_id <= nW]
+  if (stride > 1L) memb_exp <- memb_exp[seq(1L, .N, by = stride)]
+  setkey(memb_exp, endpoint_id, start_id, end_id)
+
+  joined <- foverlaps(weekly_iv, memb_exp, nomatch = 0L)
+  captured <- joined[, .(captured = sum(weekly_metric, na.rm = TRUE)), by = .(start_id)]
+
+  out <- merge(captured, totals_roll[R == R], by = "start_id", all.y = TRUE)
+  out[, `:=`(
+    R = R, K = K,
+    start_week = weeks[start_id],
+    end_week   = weeks[start_id + R - 1L],
+    ratio = fifelse(total > 0, captured / total, NA_real_)
+  )][]
+}
+
+window_ratios <- rbindlist(
+  lapply(K_list, function(K) rbindlist(lapply(R_list, function(R) compute_capture_dt(K, R)))),
+  use.names = TRUE, fill = TRUE
+)
+
+summary_capture <- window_ratios[, .(
+  n_windows  = sum(is.finite(ratio)),
+  mean_ratio = mean(ratio, na.rm = TRUE),
+  p05        = quantile(ratio, 0.05, na.rm = TRUE),
+  p50        = quantile(ratio, 0.50, na.rm = TRUE),
+  p95        = quantile(ratio, 0.95, na.rm = TRUE)
+), by = .(K, R)][order(K, R)]
+
+knitr::kable(summary_capture, digits = 3,
+             caption = "Static-list capture ratio by refresh window and K (mean and percentiles)")
+
+p_capture <- ggplot(summary_capture, aes(x = R, y = mean_ratio, color = factor(K), group = factor(K))) +
+  geom_point(size = 2) +
+  geom_line(linewidth = 0.7) +
+  geom_errorbar(aes(ymin = p05, ymax = p95), width = 1) +
+  scale_x_continuous(breaks = R_list) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(title = "Static-list capture ratio vs refresh window",
+       subtitle = "L_t fixed at window start; captured mass sums their activity within the window",
+       x = "Refresh window R (weeks)", y = "Capture ratio (mean with 5–95% range)",
+       color = "List length K") +
+  theme_minimal()
+
+print(p_capture)
+
+out_plot_dir <- "website/plots"
+out_tab_dir  <- "data/rank-diffusion/results"
+dir.create(out_plot_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(out_tab_dir,  recursive = TRUE, showWarnings = FALSE)
+
+ggplot2::ggsave(filename = file.path(out_plot_dir, "static_list_capture_vs_refresh_window.png"),
+                plot = p_capture, width = 8, height = 5, dpi = 150)
+readr::write_csv(summary_capture, file.path(out_tab_dir, "static_list_capture_summary.csv"))
+readr::write_csv(window_ratios,   file.path(out_tab_dir, "static_list_capture_windows.csv"))
+```
+
+
+# 14) Coverage of fixed top-K over time
+
+```{r over time coverage, eval=exists("weekly"), cache=TRUE}
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(ggplot2)
+  library(scales)
+  library(readr)
+})
+
+# Ensure weekly_total and weekly_share are available
+if (!"weekly_total" %in% names(weekly)) {
+  weekly <- weekly %>%
+    group_by(week_start) %>%
+    mutate(weekly_total = sum(weekly_metric, na.rm = TRUE)) %>%
+    ungroup()
+}
+weekly_cov <- weekly %>% mutate(
+  weekly_share = if ("weekly_share" %in% names(.)) weekly_share else weekly_metric / weekly_total
+)
+
+# Parameters
+K_list <- c(1000L, 2000L, 5000L)
+weeks <- sort(unique(weekly_cov$week_start))
+
+# Choose start weeks with at least max(K) items available; thin for readability
+max_paths <- getOption("over_time_cov_max_paths", 12L)
+wk_counts <- weekly_cov %>% count(week_start, name = "n")
+good_weeks_all <- wk_counts %>% filter(n >= max(K_list)) %>% pull(week_start)
+if (length(good_weeks_all) > max_paths) {
+  idx <- unique(floor(seq(1, length(good_weeks_all), length.out = max_paths)))
+  good_weeks_all <- good_weeks_all[idx]
+}
+
+# Build coverage paths: for each K and start_week, track the share captured by that fixed list
+cov_paths <- list()
+for (K in K_list) {
+  good_weeks_K <- wk_counts %>% filter(n >= K, week_start %in% good_weeks_all) %>% pull(week_start)
+  for (start_week in good_weeks_K) {
+    ids <- weekly_cov %>% filter(week_start == start_week, rank_w <= K) %>% pull(endpoint_id)
+    if (length(ids) == 0L) next
+    path_df <- weekly_cov %>%
+      filter(endpoint_id %in% ids, week_start >= start_week) %>%
+      group_by(week_start) %>%
+      summarise(share = sum(weekly_share, na.rm = TRUE), .groups = "drop") %>%
+      arrange(week_start)
+    if (nrow(path_df) == 0L) next
+    path_df$K <- K
+    path_df$K_lab <- paste0("K=", K)
+    path_df$start_week <- start_week
+    cov_paths[[length(cov_paths) + 1L]] <- path_df
+  }
+}
+cov_paths <- dplyr::bind_rows(cov_paths)
+
+if (nrow(cov_paths) == 0L) {
+  message("[over_time_coverage] No coverage paths constructed; skipping plot.")
+} else {
+  p_cov <- ggplot(cov_paths) +
+    aes(x = week_start, y = share, group = interaction(K_lab, start_week), color = K_lab) +
+    geom_line(alpha = 0.5, linewidth = 0.6) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    labs(title = "Coverage of fixed top-K lists over time",
+         subtitle = "For each start week, track the share captured by the initial top-K list",
+         x = "Week", y = "Share captured by initial list", color = "Top-K") +
+    theme_minimal()
+  print(p_cov)
+
+  out_plot_dir <- "website/plots"
+  dir.create(out_plot_dir, recursive = TRUE, showWarnings = FALSE)
+  ggplot2::ggsave(filename = file.path(out_plot_dir, "coverage_fixed_topK_over_time.png"),
+                  plot = p_cov, width = 9, height = 5, dpi = 150)
+}
+```
