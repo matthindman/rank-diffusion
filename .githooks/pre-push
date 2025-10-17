@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Skip render if explicitly requested
+if [[ "${SKIP_RENDER:-}" == "1" ]]; then
+  echo "[pre-push] SKIP_RENDER=1 -> skipping render check"
+  exit 0
+fi
+
+if ! command -v R >/dev/null 2>&1; then
+  echo "[pre-push] R is not installed or not on PATH; aborting push" >&2
+  exit 1
+fi
+
+echo "[pre-push] Rendering atlas notebooks before push..."
+Rscript scripts/render_atlas.R
+echo "[pre-push] Render succeeded. Proceeding with push."

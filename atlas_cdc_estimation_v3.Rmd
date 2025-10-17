@@ -1,14 +1,14 @@
 ---
 title: 'Rank Diffusion on FB Pages: Stochastic Portfolio Theory-style Model'
 output:
-  pdf_document:
-    toc: true
   html_document:
     toc: true
     toc_float: true
     number_sections: true
+  pdf_document:
+    toc: true
 params:
-  data_path: "data/rank-diffusion/fb_top2000_ranked_daily.parquet"
+  data_path: "fb_top2000_ranked_daily.parquet"
   input_is_weekly: null
   horizons:
   - 1
@@ -194,7 +194,7 @@ config <- modifyList(config, list(
   variance_window_U_cap = 10000L,   # cap at 10k or k_full, whichever smaller
   variance_bins = 10L,              # deciles within window
   variance_flat_alpha = 0.01,       # p-threshold
-  use_piecewise_sigma = TRUE        # prefer piecewise σ² if built
+  use_piecewise_sigma = TRUE        # prefer piecewise sigma² if built
 ))
 ```
 
@@ -667,7 +667,7 @@ levene_bf_trimmed <- function(gpanel, L, U, bins = 10L) {
   car::leveneTest(r_f ~ as.factor(bin), data = df, center = median)
 }
 
-# NEW: build piecewise σ²(k): top (1..L)=smoothed, body (L..U]=scalar or light-smooth, tail (>U)=smoothed
+# NEW: build piecewise sigma²(k): top (1..L)=smoothed, body (L..U]=scalar or light-smooth, tail (>U)=smoothed
 build_sigma2_piecewise_tbl <- function(gsum_all, L, U, df_spline = NA_integer_, alpha = 0.01, bins = 10L) {
   stopifnot(L >= 0L, U > L)
   k_full_loc <- max(gsum_all$rank_w)
@@ -1597,7 +1597,7 @@ message(sprintf("[variance-trim] chosen window (L,U]=(%d,%d]; p=%.3g; reject_bod
 gsum_body_tmp <- gsum_all %>% dplyr::filter(rank_w > L_star, rank_w <= U_star)
 attr(gsum_body_tmp, "reject_body_flatness") <- reject_body_flatness
 
-# Build piecewise σ² table over observed ranks 1:k_full
+# Build piecewise sigma² table over observed ranks 1:k_full
 sigma2_piecewise_tbl <- build_sigma2_piecewise_tbl(
   gsum_all = gsum_all, L = L_star, U = U_star,
   df_spline = config$df_spline, alpha = alpha, bins = bins
@@ -1605,7 +1605,7 @@ sigma2_piecewise_tbl <- build_sigma2_piecewise_tbl(
 # Keep for plotting and downstream expansion
 use_sigma2_piecewise <- isTRUE(config$use_piecewise_sigma)
 
-# Plot overlay: raw v_k with piecewise σ²(k)
+# Plot overlay: raw v_k with piecewise sigma²(k)
 ggplot(desc_full, aes(x = rank_w, y = v_k)) +
   geom_line(color = "#7570b3", alpha = 0.25, linewidth = 0.4) +
   geom_line(data = sigma2_piecewise_tbl, aes(x = rank_w, y = sigma2_k), color = "black", linewidth = 0.9) +
@@ -2295,8 +2295,8 @@ sessionInfo()
 
 Plan:
 1) Build sorted weekly timeline and per-week top-K sets
-2) For each R ∈ {4,13,26,52} and K ∈ {1000,2000,5000}, slide R‑week windows
-3) For each window start t: fix L_t (top‑K at t), sum captured mass over s ∈ [t, t+R−1], and total mass over those weeks
+2) For each R element of  {4,13,26,52} and K element of  {1000,2000,5000}, slide R‑week windows
+3) For each window start t: fix L_t (top‑K at t), sum captured mass over s element of  [t, t+R−1], and total mass over those weeks
 4) Compute capture ratio per window; aggregate mean and 5/50/95 percentiles per (R,K)
 5) Plot capture ratio vs refresh window for each K; save plot and tables
 
