@@ -1,0 +1,21 @@
+
+# Project defaults (compiled/large and local files)
+.DS_Store
+.Rhistory
+.RData
+.Rproj.user/
+.Ruserdata
+.Renviron
+.env
+.env.*
+.ipynb_checkpoints/
+outputs/
+results/
+website/_site/
+*_files/
+*.html
+*.pdf
+*.parquet
+*.feather
+*.rds
+*.Rds

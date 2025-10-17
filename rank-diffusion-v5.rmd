@@ -1,0 +1,1570 @@
+---
+title: 'Rank Diffusion on FB Pages: Stochastic Portfolio Theory-style Model'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+  pdf_document:
+    toc: true
+params:
+  data_path: "./fb_top2000_ranked_daily.parquet"
+  horizons:
+  - 1
+  - 7
+  - 28
+  ranks_keep:
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16
+  - 32
+  - 64
+  - 128
+  - 256
+  - 512
+  - 1024
+  ranks_overlay:
+  - 2
+  - 8
+  - 32
+  - 128
+  - 512
+  top_n_anchor: 1000
+  anchor_days:
+  - 1
+  - 8
+  - 15
+  - 22
+  m_head: 10
+  index_top_n: null
+  min_n_per_rank: 10
+  quantiles:
+  - 0.1
+  - 0.25
+  - 0.5
+  - 0.75
+  - 0.9
+  k_daily:
+  - 100
+  - 200
+  - 300
+  - 400
+  - 500
+  - 600
+  - 700
+  - 800
+  - 900
+  weekly_quantiles:
+  - 0.1
+  - 0.5
+  - 0.9
+  seed: 1823
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 7, fig.height = 4.6, dpi = 150)
+set.seed(params$seed)
+```
+
+# Introduction
+
+Goal: build a rank diffusion model using daily interaciton data from FB pages data. We hope to: 
+* Use stochastic portfolio theory (SPT) ideas on relative shares and ranks to study drift and diffusion by rank. 
+* Address leakage bias from the top-N list. 
+* Compare models by daily and weekly aggregation.
+
+Core aim is to have working code that we can test on the smaller top-N dataset, and the port to the full ~400K top post dataset from Instagram and Facebook and the full 
+
+## Basics of a rank diffusion model.
+
+Let $A_i(t)$ be interactions for page $i$ on day $t$. Define share (also sometimes calls weight from SPT) as  $w_i(t)=A_i(t)/\sum_j A_j(t)$. 
+
+Rank pages by descending $w_i(t)$ to get $r_i(t)\in{1,2,\dots}$. A rank diffusion model posits that $\Delta\log w_i$ over a horizon $H$ has rank-specific drift $b_{r}$ and variance (\sigma^2_{r}). In discrete time:
+$$
+g_i(t;H)=\log A_i(t+H)-\log A_i(t),\quad
+\Delta\log w_i(t;H)=\log w_i(t+H)-\log w_i(t)
+$$
+
+Conditioning on rank at $t$ or $t-H$ gives us rank-based drift and variance diagnostics. In SPT, the capital-distribution curve (CDC) summarizes the time-average of $w(r)$ across ranks. In our case this is really the attention/interaction distribution curve, but we will use the CDC terminology for consistency. 
+
+## SPT lessons for platform data.
+
+SPT treats $w_i$ as a dynamical system. State at time $t$ is just the vector of shares:  weights must be >= 0 and sum of weights == 1. 
+
+B/c model estimates relative composition, rank-conditioning is essential. In stationary regimes the CDC should be stable and expected rank drift mean-reverting at the top. Diffusion may be near-constant (Atlas-like) or increase with rank (e.g., $\sigma^2_r\propto \log r)$. 
+
+## Open questions 
+
+**Does variance of $\Delta\log w$ increase with (\log r) within the top ranks or is it near-constant?**  We want to build a model that nests the simplest constant variance model (Atlas model).  
+
+> Looks like it is near-constant! Very close to Atlas model.
+
+**What is the shape and magnitude of rank drift at the top?** Initial analysis suggests mean $\Delta\log w_i(t;H)$ for all of the top 1k ranks is below zero -- but actually lower for topmost ranks.  Does this hold up? What about weekly data or changes as a 7-day moving-average  
+
+**Impact of leakage**: many pages have no posting or near-zero interactions on some days. We have to figure out how to handle this. Possibilities in order: 
+
+* aggregation (start w/ week)
+* changes as moving averages
+* condition just on active pages 
+* jump model.
+
+> weekly aggregration works pretty well!   
+> More work to be done on how many lags are necessary b/f correlation goes to zero
+
+
+# Libraries, helpers, and reproducibility
+
+Need to check for library availability, required columns, deterministic ranking; must give a reproducible seed.
+
+```{r}
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(arrow)
+  library(lubridate)
+  library(scales)
+  library(broom)
+  library(here)
+  library(purrr)
+})
+
+theme_set(theme_minimal())
+
+req_cols <- c("date","endpoint_id","metric_value")
+
+read_any <- function(path) {
+  ext <- tolower(tools::file_ext(path))
+  if (ext %in% c("parquet","feather")) return(arrow::read_parquet(path))
+  if (ext %in% c("csv","tsv")) return(readr::read_delim(path, delim = ifelse(ext=="csv", ",", "\t"), show_col_types = FALSE))
+  stop("Unsupported file extension: ", ext)
+}
+
+safe_rank1 <- function(x, decreasing = TRUE) base::rank(if (decreasing) -x else x, ties.method = "first")
+log_brks <- function(rmax) { b <- 2^(0:floor(log2(rmax))); b[b <= rmax] }
+```
+
+# Load, clean, and daily/weekly shares and ranks
+
+This section: load daily interactions, keep strictly positive rows, compute daily shares and ranks.
+
+Checks:
+* Required columns present?
+* do dates parse? 
+* are pages per day stable?
+* no duplicated (date, endpoint_id) rows, sane share distribution.
+
+```{r load}
+raw <- read_any(params$data_path) %>% as_tibble()
+stopifnot(all(req_cols %in% names(raw)))
+
+daily <- raw %>%
+  mutate(
+    date = as.Date(date),
+    endpoint_id = as.character(endpoint_id)
+  ) %>%
+  filter(metric_value > 0) %>%
+  group_by(date) %>%
+  mutate(
+    total_metric = sum(metric_value, na.rm = TRUE),
+    share        = metric_value / total_metric
+  ) %>%
+  ungroup()
+
+if (!"rank" %in% names(daily)) {
+  daily <- daily %>%
+    group_by(date) %>%
+    mutate(rank = as.integer(safe_rank1(share, decreasing = TRUE))) %>%
+    ungroup()
+}
+
+# Drop dates with sparse rank coverage so downstream growth pairs stay stable
+filter_low_rank_dates <- function(daily_tbl, min_ranks = 1850) {
+  counts <- daily_tbl %>% count(date, name = "n")
+  sparse_dates <- counts %>% filter(n < min_ranks)
+
+  list(
+    daily = daily_tbl %>% anti_join(sparse_dates, by = "date"),
+    removed_dates = sparse_dates
+  )
+}
+
+filter_result <- filter_low_rank_dates(daily, min_ranks = 1850)
+daily <- filter_result$daily
+removed_low_rank_dates <- filter_result$removed_dates
+
+if (nrow(removed_low_rank_dates) > 0) {
+  message(
+    sprintf(
+      "Filtered %d dates with < %d ranks (min = %d).",
+      nrow(removed_low_rank_dates),
+      1850,
+      min(removed_low_rank_dates$n)
+    )
+  )
+}
+
+# Diagnostics
+dup_ct <- daily %>% count(date, endpoint_id) %>% filter(n>1) %>% nrow()
+day_counts <- daily %>% count(date)
+tibble(
+  rows = nrow(daily),
+  days = n_distinct(daily$date),
+  unique_pages = n_distinct(daily$endpoint_id),
+  min_pages_per_day = min(day_counts$n),
+  median_pages_per_day = median(day_counts$n),
+  max_pages_per_day = max(day_counts$n),
+  duplicated_pairs = dup_ct
+) %>% knitr::kable(caption = "Dataset diagnostics")
+
+ggplot(daily, aes(x = share)) +
+  geom_histogram(bins = 80) +
+  scale_x_log10(labels = percent_format(accuracy = 0.01)) +
+  labs(title = "Share distribution", x = "Share (log)", y = "Count")
+
+```
+
+```{r weekly_build}
+# --- Weekly aggregation (moved earlier) -------------------------------------
+weekly <- daily %>%
+  mutate(week_start = floor_date(date, unit = "week", week_start = 1)) %>%  # Monday
+  group_by(week_start, endpoint_id) %>%
+  summarise(weekly_metric = sum(metric_value, na.rm = TRUE), .groups = "drop") %>%
+  group_by(week_start) %>%
+  mutate(
+    weekly_total = sum(weekly_metric, na.rm = TRUE),
+    weekly_share = weekly_metric / weekly_total,
+    rank_w = as.integer(rank(-weekly_share, ties.method = "first"))
+  ) %>%
+  ungroup()
+
+# --- Weekly pairs: observed (t, t+H) with metric and share changes ----------
+build_weekly_pairs_observed <- function(weekly, H = 1, max_rank = Inf) {
+  w_all   <- sort(unique(weekly$week_start))
+  valid_t <- w_all[(w_all + weeks(H)) %in% w_all]
+
+  base <- weekly %>%
+    filter(week_start %in% valid_t, rank_w <= max_rank) %>%
+    transmute(week_start, endpoint_id,
+              rank_t = rank_w,
+              a_t    = weekly_metric,
+              w_t    = weekly_share)
+
+  later <- weekly %>%
+    transmute(week_start = week_start - weeks(H), endpoint_id,
+              a_tpH   = weekly_metric,
+              w_tpH   = weekly_share,
+              rank_tpH = rank_w)
+
+  base %>%
+    inner_join(later, by = c("week_start","endpoint_id")) %>%
+    mutate(horizon = H,
+           g       = log(a_tpH) - log(a_t),
+           dlog    = log(w_tpH) - log(w_t))
+}
+
+# --- Weekly leakage (presence-based or top-N) -------------------------------
+compute_weekly_leakage <- function(weekly, horizons = c(1,2,3,4), ranks_keep = NULL, top_n = NULL) {
+  if (is.null(ranks_keep)) ranks_keep <- sort(unique(weekly$rank_w))
+
+  base_all <- weekly %>% select(week_start, rank_w, endpoint_id) %>% filter(rank_w %in% ranks_keep)
+  if (!is.null(top_n)) base_all <- base_all %>% filter(rank_w <= top_n)
+  w_all <- sort(unique(weekly$week_start))
+
+  out <- lapply(horizons, function(H) {
+    valid_t <- w_all[(w_all + weeks(H)) %in% w_all]
+    baseH   <- base_all %>% filter(week_start %in% valid_t) %>% rename(rank = rank_w)
+    later   <- weekly %>% transmute(week_start = week_start - weeks(H), endpoint_id, rank_later = rank_w)
+    if (!is.null(top_n)) later <- later %>% filter(rank_later <= top_n)
+
+    joined <- baseH %>% left_join(later, by = c("week_start","endpoint_id")) %>%
+      mutate(leaked = is.na(rank_later), horizon = H)
+
+    joined %>% group_by(week_start, rank, horizon) %>%
+      summarise(leakage = mean(leaked), .groups = "drop")
+  }) %>% bind_rows()
+
+  summary <- out %>% group_by(rank, horizon) %>%
+    summarise(leakage_rate = mean(leakage), n_weeks = n(), .groups = "drop")
+
+  list(daily = out, summary = summary)
+}
+```
+
+So definitely a few issues.  
+
+Context here: CrowdTangle was **insanely** buggy and unreliable in its last few months. There was one period we could not get reliable data on.  
+
+But the histogram of share distribution looks mostly exactly as it should, except for some low-end outliers. 
+
+Let's look at a plot of low-end outliers by date and rank.  
+
+```{r outliers_low_share}
+# Diagnostic: low-end outliers (share < 0.03%) by date
+low_thr <- 0.0003  # 0.03%
+outliers_low <- daily %>% filter(share < low_thr)
+
+ggplot(outliers_low, aes(x = date, y = rank)) +
+  geom_point(alpha = 0.35, size = 0.6) +
+  # To display rank 1 at top, uncomment:
+  # scale_y_reverse() +
+  labs(
+    title = "Low-end outliers: share < 0.03%",
+    subtitle = paste("n =", scales::comma(nrow(outliers_low))),
+    x = "Date", y = "Rank"
+  )
+
+```
+
+Let's plot that collection timeline. 
+
+# Checking collection timeline / pages per day
+
+This is how things look filtering out days with fewer than 1850 ranks: 
+
+
+```{r colletion-timeline}
+
+# Coverage timeline: pages per day
+pages_per_day <- daily %>% count(date, name = "pages")
+
+ggplot(pages_per_day, aes(x = date, y = pages)) +
+  geom_line() +
+  geom_hline(yintercept = median(pages_per_day$pages), linetype = "dashed") +
+  labs(
+    title = "Coverage timeline: pages per day",
+    subtitle = paste0(
+      "min = ", min(pages_per_day$pages),
+      ", median = ", median(pages_per_day$pages),
+      ", max = ", max(pages_per_day$pages)
+    ),
+    x = "Date", y = "Pages"
+  )
+```
+
+**TO DO**--further diagnostics and cleaning growth pairs from problematic dates.  
+
+
+# Interaction distribution curve / capital-distribution curve (CDC)
+
+This section: estimate the CDC and head exponent.A log-log linear head suggests Pareto-like scaling; we are expecting tail to be curvilinear and decreasing. 
+
+OLS fit is not really best practice here b/c it overweights tail, but good enough for this initial analysis.
+
+Checks: 
+* Head fit linear in log-log scale?  
+* Exponent consistent in different segments of the curve?
+* Any weirdness at rank 1?
+
+```{r cdc}
+
+# Mean share by rank
+mean_share <- daily %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop")
+
+# Head and midrange fits on log-log scale
+fit_head <- lm(log(w_bar) ~ log(rank), data = filter(mean_share, rank >= 1, rank <= 10))
+fit_mid  <- lm(log(w_bar) ~ log(rank), data = filter(mean_share, rank >= 11, rank <= 100))
+fit_low <- lm(log(w_bar) ~ log(rank), data = filter(mean_share, rank >= 101, rank <= 1000))
+
+# Summaries (alpha = -slope)
+summarise_fit <- function(fit, label){
+  s <- tidy(fit, conf.int = TRUE) %>% filter(term == "log(rank)")
+  tibble(
+    segment  = label,
+    alpha    = -s$estimate,
+    alpha_lo = -s$conf.high,   # note flip because alpha = -beta
+    alpha_hi = -s$conf.low,
+    R2       = summary(fit)$r.squared
+  )
+}
+cdc_fits <- bind_rows(
+  summarise_fit(fit_head, "ranks 1–10"),
+  summarise_fit(fit_mid,  "ranks 11–100"),
+  summarise_fit(fit_low,  "ranks 101–1000")
+)
+knitr::kable(cdc_fits, digits = 4, caption = "CDC power-law fits on log–log scale")
+
+# Predicted lines on original (share) scale so they match the log–log axes
+pred_head <- tibble(rank = 1:10) %>%
+  mutate(w_pred = exp(coef(fit_head)[[1]]) * rank^(coef(fit_head)[[2]]),
+         segment = "fit 1–10")
+pred_mid  <- tibble(rank = 11:100) %>%
+  mutate(w_pred = exp(coef(fit_mid)[[1]])  * rank^(coef(fit_mid)[[2]]),
+         segment = "fit 11–100")
+pred_low  <- tibble(rank = 101:1000) %>%
+  mutate(w_pred = exp(coef(fit_low)[[1]])  * rank^(coef(fit_low)[[2]]),
+         segment = "fit 101–1000")
+pred_all  <- bind_rows(pred_head, pred_mid, pred_low)
+
+# Plot: points + both fitted lines; axes on log–log
+ggplot(mean_share, aes(rank, w_bar)) +
+  geom_point(alpha = 0.6, size = 1.2) +
+  geom_line(data = pred_all, aes(y = w_pred, colour = segment), linewidth = 0.9) +
+  scale_x_log10() +
+  scale_y_log10(labels = percent_format(accuracy = 0.01)) +
+  labs(
+    title   = "Capital-distribution curve (time-averaged)",
+    subtitle= "Overlaid power-law fits for ranks 1–10, 11-100 and 101–1,000 (log–log OLS)",
+    x = "Rank (log)", y = "Mean share (log)", colour = "Fit window"
+  )
+
+
+```
+
+Let's try the same thing with median value by rank instead of mean value.  
+
+```{r cdc_median_segments}
+# Median CDC segmented fits: 1–10, 11–100, 101–1000
+median_share <- daily %>%
+  group_by(rank) %>%
+  summarise(w_med = median(share, na.rm = TRUE), .groups = "drop")
+
+# Fit helpers
+fit_seg <- function(rmin, rmax) lm(log(w_med) ~ log(rank), data = median_share %>% filter(rank >= rmin, rank <= rmax))
+seg1 <- fit_seg(1, 10)
+seg2 <- fit_seg(11, 100)
+seg3 <- fit_seg(101, 1000)
+
+seg_tbl <- function(fit, lbl) {
+  s <- broom::tidy(fit, conf.int = TRUE) %>% dplyr::filter(term == "log(rank)")
+  tibble(
+    segment  = lbl,
+    alpha    = -s$estimate,
+    alpha_lo = -s$conf.high,
+    alpha_hi = -s$conf.low,
+    R2       = summary(fit)$r.squared,
+    n        = fit$df.residual + length(fit$coefficients)
+  )
+}
+
+cdc_med_fits <- bind_rows(
+  seg_tbl(seg1, "1–10"),
+  seg_tbl(seg2, "11–100"),
+  seg_tbl(seg3, "101–1000")
+)
+knitr::kable(cdc_med_fits, digits = 4, caption = "Median CDC: segmented power-law fits (log–log)")
+
+# Overlay predicted lines (original scale; log axes)
+pred1 <- tibble(rank = 1:10) %>%
+  mutate(w_pred = exp(coef(seg1)[[1]]) * rank^(coef(seg1)[[2]]),
+         segment = "fit 1–10")
+pred2 <- tibble(rank = 11:100) %>%
+  mutate(w_pred = exp(coef(seg2)[[1]]) * rank^(coef(seg2)[[2]]),
+         segment = "fit 11–100")
+pred3 <- tibble(rank = 101:1000) %>%
+  mutate(w_pred = exp(coef(seg3)[[1]]) * rank^(coef(seg3)[[2]]),
+         segment = "fit 101–1000")
+pred_med <- bind_rows(pred1, pred2, pred3)
+
+ggplot(median_share, aes(rank, w_med)) +
+  geom_point(alpha = 0.6, size = 1.1) +
+  geom_line(data = pred_med, aes(y = w_pred, colour = segment), linewidth = 0.9) +
+  scale_x_log10() +
+  scale_y_log10(labels = scales::percent_format(accuracy = 0.01)) +
+  labs(
+    title = "Median capital-distribution curve with segmented fits",
+    x = "Rank (log)", y = "Median share (log)", colour = "Fit window"
+  )
+```
+
+Reactions:  Big difference in slope fitting at different parts of the head!  
+
+Median plot does reduce weirdness with top rank but otherwise very similar.  
+
+# Build pairs and construct growth rates
+
+This section: construct observed growth pairs for metrics and shares at horizon (H).
+
+Separate metric growth $g=\log A(t+H)-\log A(t)$ from share changes $\Delta\log w$. Calculate variance and drift based on starting consistency.
+
+Checks: 
+* Consistent results with different horizons? 
+* How many zero/missing pairs?  Adequate counts per rank?
+
+```{r growth rates}
+# Daily metric growth pairs: g = log A(t+H) − log A(t)
+build_metric_pairs <- function(daily, H = 1, ranks_keep = NULL) {
+  base <- daily %>% transmute(date, endpoint_id, rank_t = as.integer(rank), a_t = metric_value)
+  later <- daily %>% transmute(date = date - days(H), endpoint_id, a_tpH = metric_value, rank_tpH = as.integer(rank))
+  out <- base %>% inner_join(later, by = c("date","endpoint_id")) %>% filter(a_t > 0, a_tpH > 0) %>%
+    mutate(horizon = H, g = log(a_tpH) - log(a_t))
+  if (!is.null(ranks_keep)) out <- out %>% filter(rank_t %in% ranks_keep)
+  out
+}
+
+# Daily share change pairs for SPT primitives
+build_share_pairs <- function(daily, H = 1) {
+  daily %>%
+    arrange(endpoint_id, date) %>%
+    group_by(endpoint_id) %>%
+    mutate(
+      log_share  = log(share),
+      dlog       = log_share - lag(log_share, H),
+      rank_prev  = lag(rank, H),
+      rank_curr  = rank,
+      delta_days = as.integer(date - lag(date, H))
+    ) %>%
+    ungroup() %>%
+    filter(!is.na(dlog), delta_days == H)
+}
+
+
+# Observed (t, t+H) metric growth pairs across horizons
+pair_counts <- bind_rows(lapply(params$horizons, function(H) {
+  build_metric_pairs(daily, H = H) %>%
+    count(horizon, rank_t, name = "n")
+}))
+
+# Table (subset to ranks_keep for readability)
+pair_counts_tbl <- pair_counts %>%
+  filter(rank_t %in% params$ranks_keep) %>%
+  tidyr::pivot_wider(names_from = horizon, values_from = n, names_prefix = "H=", values_fill = 0) %>%
+  arrange(rank_t)
+
+knitr::kable(pair_counts_tbl, caption = "Observed pair counts by start rank and horizon (metric growth)")
+
+weekly_horizons <- c(1, 2, 3, 4)  # horizons in weeks for the weekly pairs
+
+  weekly_pair_counts <- bind_rows(lapply(weekly_horizons, function(H) {
+    build_weekly_pairs_observed(weekly, H = H) %>%
+      count(horizon, rank_t, name = "n")
+  })) %>%
+    mutate(horizon = factor(horizon, levels = weekly_horizons))
+
+  weekly_pair_counts_tbl <- weekly_pair_counts %>%
+    filter(rank_t %in% params$ranks_keep) %>%
+    mutate(horizon_label = paste0("W=", horizon)) %>%
+    select(-horizon) %>%
+    pivot_wider(names_from = horizon_label, values_from = n, values_fill = 0) %>%
+    arrange(rank_t)
+
+  knitr::kable(
+    weekly_pair_counts_tbl,
+    caption = "Observed weekly pair counts by start rank and horizon (metric growth)"
+  )
+
+
+```
+
+```{r pair_coverage_heatmap}
+# Portion of non-missing pairs by rank bin and horizon (1,7,28)
+rank_bins <- list(
+  "1"         = c(1,1),
+  "2–3"       = c(2,3),
+  "4–7"       = c(4,7),
+  "8–15"      = c(8,15),
+  "16–31"     = c(16,31),
+  "32–63"     = c(32,63),
+  "64–127"    = c(64,127),
+  "128–255"   = c(128,255),
+  "256–511"   = c(256,511),
+  "512–1024"  = c(512,1024)
+)
+
+compute_pair_portion_by_bin <- function(daily, horizons = c(1,7,28)) {
+  bin_map <- tibble(rank = sort(unique(daily$rank))) %>%
+    mutate(bin = case_when(
+      rank == 1 ~ "1",
+      rank >= 2   & rank <= 3   ~ "2–3",
+      rank >= 4   & rank <= 7   ~ "4–7",
+      rank >= 8   & rank <= 15  ~ "8–15",
+      rank >= 16  & rank <= 31  ~ "16–31",
+      rank >= 32  & rank <= 63  ~ "32–63",
+      rank >= 64  & rank <= 127 ~ "64–127",
+      rank >= 128 & rank <= 255 ~ "128–255",
+      rank >= 256 & rank <= 511 ~ "256–511",
+      rank >= 512 & rank <= 1024 ~ "512–1024",
+      TRUE ~ NA_character_
+    ))
+
+  daily_b <- daily %>% inner_join(bin_map, by = "rank") %>% filter(!is.na(bin))
+  all_dates <- sort(unique(daily_b$date))
+
+  bind_rows(lapply(horizons, function(H) {
+    valid_t <- all_dates[(all_dates + days(H)) %in% all_dates]
+
+    base  <- daily_b %>% filter(date %in% valid_t) %>% select(date, endpoint_id, bin)
+    later <- daily_b %>% transmute(date = date - days(H), endpoint_id)
+
+    cand <- base %>% count(date, bin, name = "n_cand")
+    obs  <- base %>% inner_join(later, by = c("date","endpoint_id")) %>% count(date, bin, name = "n_obs")
+
+    out <- cand %>%
+      full_join(obs, by = c("date","bin")) %>%
+      mutate(n_cand = replace_na(n_cand, 0L),
+             n_obs  = replace_na(n_obs,  0L)) %>%
+      group_by(bin) %>%
+      summarise(n_cand = sum(n_cand), n_obs = sum(n_obs), .groups = "drop") %>%
+      mutate(horizon = H,
+             portion = if_else(n_cand > 0, n_obs / n_cand, NA_real_))
+    out
+  }))
+}
+
+pair_portion <- compute_pair_portion_by_bin(daily, horizons = c(1,7,28))
+pair_portion$bin <- factor(pair_portion$bin, levels = names(rank_bins))
+
+ggplot(pair_portion, aes(x = bin, y = factor(horizon), fill = portion)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(limits = c(0,1), low = "white", high = "steelblue",
+                      labels = scales::percent, na.value = "grey90", name = "Portion") +
+  labs(
+    title = "Portion of non-missing pairs by rank bin and horizon",
+    x = "Rank bin", y = "Horizon (days)"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+# Variance funnel and drift (H = 1): Atlas vs log-rank
+
+Look if $Var \Delta\log w$ scales with $\log(r)$ or is near-constant. Estimate drift by current rank.
+
+Checks
+* Compare WLS fits by AIC/BIC. 
+* Drift should be negative at very top in a stable regime.
+* Outliers should not dominate.
+
+```{r var-drift}
+H1_share <- build_share_pairs(daily, H = 1)
+
+# Variance conditional on rank_prev
+var_by_rank <- H1_share %>%
+  group_by(rank_prev) %>%
+  summarise(var_dlog = var(dlog, na.rm = TRUE), n = n(), .groups = "drop") %>%
+  mutate(log_rank = log(rank_prev), weight = pmax(n - 1, 1))
+
+fit_funnel_lin <- lm(var_dlog ~ log_rank, data = var_by_rank, weights = weight)
+fit_funnel_cte <- lm(var_dlog ~ 1,         data = var_by_rank, weights = weight)
+
+comp_var <- tibble(
+  model = c("Var ~ log(rank_prev)","Var ~ constant"),
+  AIC   = c(AIC(fit_funnel_lin), AIC(fit_funnel_cte)),
+  BIC   = c(BIC(fit_funnel_lin), BIC(fit_funnel_cte)),
+  slope = c(unname(coef(fit_funnel_lin)["log_rank"]), NA_real_),
+  R2    = c(summary(fit_funnel_lin)$r.squared, NA_real_)
+)
+knitr::kable(comp_var, digits = 4, caption = "Variance model comparison (WLS)")
+
+ggplot(var_by_rank, aes(log_rank, var_dlog)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.8) +
+  labs(title = "Funnel diagnostic (H=1; condition on rank at t−1)", subtitle = paste0("WLS slope = ", signif(coef(fit_funnel_lin)[["log_rank"]],3), ", R² = ", round(summary(fit_funnel_lin)$r.squared,3)), x = "log(rank_prev)", y = "Var[Δ log share]")
+
+
+```
+```{r weekly drift and funnel}
+W1_share <- build_weekly_pairs_observed(weekly, H = 1) %>%
+    mutate(rank_prev = rank_t)
+
+  var_by_rank_weekly <- W1_share %>%
+    group_by(rank_prev) %>%
+    summarise(var_dlog = var(dlog, na.rm = TRUE), n = n(), .groups = "drop") %>%
+    filter(is.finite(var_dlog)) %>%
+    mutate(log_rank = log(rank_prev), weight = pmax(n - 1, 1))
+
+  fit_weekly_lin <- lm(var_dlog ~ log_rank, data = var_by_rank_weekly, weights = weight)
+  fit_weekly_cte <- lm(var_dlog ~ 1,         data = var_by_rank_weekly, weights = weight)
+
+  comp_var_weekly <- tibble(
+    model = c("Var ~ log(rank_prev)", "Var ~ constant"),
+    AIC   = c(AIC(fit_weekly_lin), AIC(fit_weekly_cte)),
+    BIC   = c(BIC(fit_weekly_lin), BIC(fit_weekly_cte)),
+    slope = c(unname(coef(fit_weekly_lin)["log_rank"]), NA_real_),
+    R2    = c(summary(fit_weekly_lin)$r.squared, NA_real_)
+  )
+
+  knitr::kable(comp_var_weekly, digits = 4, caption = "Weekly variance model comparison (WLS)")
+```
+
+
+```{r weekly var v rank plot}
+W1_share <- build_weekly_pairs_observed(weekly, H = 1) %>%
+    mutate(rank_prev = rank_t)
+
+  var_by_rank_weekly <- W1_share %>%
+    group_by(rank_prev) %>%
+    summarise(var_dlog = var(dlog, na.rm = TRUE), n = n(), .groups = "drop") %>%
+    filter(is.finite(var_dlog), var_dlog > 0) %>%
+    mutate(log_rank = log(rank_prev), weight = pmax(n - 1, 1))
+
+  var_by_rank_weekly_top1k <- var_by_rank_weekly %>% filter(rank_prev <= 1000)
+  var_by_rank_weekly_2_1000 <- var_by_rank_weekly %>% filter(rank_prev >= 2, rank_prev <= 1000)
+
+  fit_weekly_lin <- lm(var_dlog ~ log_rank, data = var_by_rank_weekly, weights = weight)
+  fit_weekly_lin_top1k <- lm(var_dlog ~ log_rank, data = var_by_rank_weekly_top1k, weights = weight)
+  fit_weekly_lin_2_1000 <- if (nrow(var_by_rank_weekly_2_1000) >= 2) {
+    lm(var_dlog ~ log_rank, data = var_by_rank_weekly_2_1000, weights = weight)
+  } else {
+    NULL
+  }
+
+  fitted_segment <- if (!is.null(fit_weekly_lin_2_1000)) {
+    var_by_rank_weekly_2_1000 %>%
+      mutate(fitted = predict(fit_weekly_lin_2_1000, newdata = var_by_rank_weekly_2_1000)) %>%
+      arrange(rank_prev)
+  } else {
+    tibble()
+  }
+
+  subtitle_parts <- c(
+    "All ranks WLS slope =",
+    signif(coef(fit_weekly_lin)[["log_rank"]], 3),
+    "· R² =",
+    round(summary(fit_weekly_lin)$r.squared, 3),
+    "| ranks ≤ 1,000 slope =",
+    signif(coef(fit_weekly_lin_top1k)[["log_rank"]], 3),
+    "· R² =",
+    round(summary(fit_weekly_lin_top1k)$r.squared, 3)
+  )
+
+  if (!is.null(fit_weekly_lin_2_1000)) {
+    subtitle_parts <- c(
+      subtitle_parts,
+      "| ranks 2–1,000 slope =",
+      signif(coef(fit_weekly_lin_2_1000)[["log_rank"]], 3),
+      "· R² =",
+      round(summary(fit_weekly_lin_2_1000)$r.squared, 3)
+    )
+  }
+
+  ggplot(var_by_rank_weekly, aes(x = rank_prev, y = var_dlog, weight = weight)) +
+    geom_point(alpha = 0.6) +
+    geom_smooth(
+      method = "lm", formula = y ~ log(x), se = FALSE,
+      linewidth = 0.8, colour = "#1b9e77"
+    ) +
+    geom_smooth(
+      data = var_by_rank_weekly_top1k,
+      method = "lm", formula = y ~ log(x), se = FALSE,
+      linewidth = 0.8, colour = "#d95f02"
+    ) +
+    geom_line(
+      data = fitted_segment,
+      aes(x = rank_prev, y = fitted),
+      colour = "#7570b3",
+      linewidth = 0.9,
+      inherit.aes = FALSE
+    ) +
+    scale_x_log10() +
+    scale_y_log10() +
+    labs(
+      title = "Weekly funnel diagnostic (H = 1 week; condition on rank at week t−1)",
+      subtitle = paste(subtitle_parts, collapse = " "),
+      x = "Rank at week t (log scale)",
+      y = "Var[Δ log weekly share] (log scale)"
+    )
+
+```
+
+The weekly data is almost perfectly flat -- strong evidence for the Atlas (constant variance model)
+
+
+
+
+# Leakage off index by rank
+
+This section will measure leakage at ranks over different time horizons (H).
+
+Core issue is that inconsistent posting and intereaction/attention sparsity causes missing observations. Leakage is doubly problematic because it introduces selection bias/censoring in growth distributions.
+
+Checks:
+* Leakage rates should be between 0 & 1 (sanity check).
+* Leakage should grow monotonically by time horizon (esp. after 7 days; may be day-of-week effects.
+* Expected leakage should grow monotonically with rank. 
+* Pages near threshold should drop off the list slightly > 50% of the time. 
+
+
+```{r leakage}
+compute_index_leakage <- function(daily, horizons = c(1,7,28), top_n = NULL, ranks_keep = NULL) {
+  stopifnot(all(c("date","endpoint_id","rank") %in% names(daily)))
+  if (is.null(ranks_keep)) ranks_keep <- sort(unique(daily$rank))
+
+  base_all <- daily %>% select(date, rank, endpoint_id) %>% filter(rank %in% ranks_keep)
+  if (!is.null(top_n)) base_all <- base_all %>% filter(rank <= top_n)
+
+  all_dates <- sort(unique(daily$date))
+
+  out <- lapply(horizons, function(H) {
+    valid_t <- all_dates[(all_dates + days(H)) %in% all_dates]
+    baseH <- base_all %>% filter(date %in% valid_t)
+    later <- daily %>% transmute(date = date - days(H), endpoint_id, rank_later = rank)
+    if (!is.null(top_n)) later <- later %>% filter(rank_later <= top_n)
+
+    joined <- baseH %>%
+      left_join(later, by = c("date","endpoint_id")) %>%
+      mutate(leaked = is.na(rank_later), horizon = H)
+
+    joined %>%
+      group_by(date, rank, horizon) %>%
+      summarise(leakage = mean(leaked), .groups = "drop")
+  }) %>% bind_rows()
+
+  summary <- out %>% group_by(rank, horizon) %>%
+    summarise(leakage_rate = mean(leakage), n_days = n(), .groups = "drop")
+
+  list(daily = out, summary = summary)
+}
+
+L <- compute_index_leakage(
+  daily,
+  horizons = params$horizons,
+  top_n = params$index_top_n
+)
+
+ggplot(L$summary %>% arrange(horizon, rank), aes(x = rank, y = leakage_rate, colour = factor(horizon), group = factor(horizon))) +
+  geom_line(linewidth = 0.9) +
+  scale_x_log10(labels = number_format(accuracy = 1)) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(title = "Leakage off index by rank", subtitle = if (is.null(params$index_top_n)) "Presence-based index" else paste0("Top-", params$index_top_n, " index"), x = "Rank (log scale)", y = "Leakage rate", colour = "H (days)")
+
+L_weekly <- compute_weekly_leakage(
+  weekly,
+  horizons = c(1, 2, 3, 4),
+  top_n = params$index_top_n
+)
+
+L_weekly_summary <- L_weekly$summary %>%
+  filter(rank <= 1024) %>%
+  arrange(horizon, rank)
+
+ggplot(L_weekly_summary, aes(x = rank, y = leakage_rate, colour = factor(horizon), group = factor(horizon))) +
+  geom_line(linewidth = 0.9) +
+  scale_x_log10(labels = number_format(accuracy = 1)) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(title = "Weekly leakage off index by rank", subtitle = if (is.null(params$index_top_n)) "Presence-based weekly index" else paste0("Top-", params$index_top_n, " index"), x = "Rank at week t (log scale)", y = "Leakage rate", colour = "H (weeks)")
+
+
+# For share-change pairs, quantify how much we drop due to non-consecutive dates at lag H
+compute_continuity_loss <- function(daily, H_set) {
+  bind_rows(lapply(H_set, function(H) {
+    tmp <- daily %>%
+      arrange(endpoint_id, date) %>%
+      group_by(endpoint_id) %>%
+      mutate(prev_date = lag(date, H),
+             delta_days = as.integer(date - prev_date)) %>%
+      summarise(
+        total_pairs = sum(!is.na(prev_date)),
+        kept_pairs  = sum(delta_days == H, na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      summarise(
+        total_pairs = sum(total_pairs),
+        kept_pairs  = sum(kept_pairs),
+        .groups = "drop"
+      ) %>%
+      mutate(
+        horizon       = H,
+        kept_share    = kept_pairs / pmax(total_pairs, 1),
+        filtered_share= 1 - kept_share
+      ) %>%
+      select(horizon, total_pairs, kept_pairs, kept_share, filtered_share)
+  }))
+}
+
+loss_tbl <- compute_continuity_loss(daily, params$horizons)
+knitr::kable(loss_tbl, digits = 4,
+             caption = "Continuity of lag-H share pairs. Filtered_share = dropped due to delta_days ≠ H")
+
+# Quick readable line for H=1 if present
+if (any(loss_tbl$horizon == 1)) {
+  fs <- loss_tbl$filtered_share[loss_tbl$horizon == 1][1]
+  cat("Filtered share at H=1:", scales::percent(fs, accuracy = 0.1), "\n")
+}
+
+```
+
+# Growth distributions by rank
+
+Show rank-conditioned distributions of $g=\log A(t+H)-\log A(t)$ for daily horizons (1, 7, 28 days) alongside weekly horizons (1, 2, 4 weeks).
+
+Daily curves use stayers only, while weekly curves aggregate the weekly metric panel. Lee bounds add worst-case monotone selection bounds for weekly quantiles using leakage rates.
+
+Checks. Adequate observations within each rank/horizon window; leakage adjustments finite; identified sets shrink as leakage falls.
+
+```{r leakage-adjusted-growth}
+# Lee quantile bounds for vector x with leakage rate l
+lee_bounds_one <- function(x, taus = c(0.1,0.5,0.9), l) {
+  x <- sort(x[is.finite(x)])
+  if (!length(x)) return(tibble(tau = taus, q_obs = NA_real_, q_lb = NA_real_, q_ub = NA_real_))
+  qfun <- function(p) unname(quantile(x, probs = p, names = FALSE, type = 7))
+  Gamma <- 1 - l
+  tau_lb <- pmax(0, (taus - l) / Gamma)
+  tau_ub <- pmin(1,  taus / Gamma)
+  tibble(
+    tau  = taus,
+    q_obs = sapply(taus, qfun),
+    q_lb  = sapply(tau_lb, qfun),
+    q_ub  = sapply(tau_ub, qfun)
+  )
+}
+
+# Build daily metric growth pairs for all horizons and selected ranks
+G_all <- bind_rows(lapply(params$horizons, function(H) build_metric_pairs(daily, H = H, ranks_keep = params$ranks_keep))) %>% filter(is.finite(g))
+
+plot_density_overlay <- function(df, ranks_overlay, horizons, weight_col = NULL, title_suffix = "") {
+  df2 <- df %>% filter(rank_t %in% ranks_overlay, horizon %in% horizons)
+  xr <- range(df2$g, finite = TRUE)
+  purrr::map(horizons, function(H) {
+    dH <- df2 %>% filter(horizon == H)
+    if (!nrow(dH)) return(ggplot() + theme_void() + ggtitle(paste("No data for H =", H)))
+    bwH <- tryCatch(stats::bw.SJ(dH$g), error = function(e) stats::bw.nrd0(dH$g))
+    ggplot(dH, aes(x = g, colour = factor(rank_t))) +
+      { if (is.null(weight_col)) geom_density(bw = bwH, linewidth = 0.9)
+        else geom_density(bw = bwH, linewidth = 0.9, aes(weight = .data[[weight_col]])) } +
+      geom_vline(xintercept = 0, linetype = "dotted") +
+      coord_cartesian(xlim = xr) +
+      labs(title = paste0("Rank-conditioned growth densities ", title_suffix, " | H = ", H, "d"), subtitle = paste0("Overlaid ranks: ", paste(ranks_overlay, collapse = ", ")), x = "log A(t+H) − log A(t)", y = "Density", colour = "Rank at t")
+  })
+}
+
+# Unweighted (stayers only)
+dens_unw <- plot_density_overlay(G_all, params$ranks_overlay, params$horizons, weight_col = NULL, title_suffix = "(unweighted)")
+weekly_horizons <- c(1, 2, 4)
+G_weekly_all <- bind_rows(lapply(weekly_horizons, function(H) build_weekly_pairs_observed(weekly, H = H))) %>%
+  filter(is.finite(g))
+dens_weekly <- plot_density_overlay(G_weekly_all, params$ranks_overlay, weekly_horizons, weight_col = NULL, title_suffix = "(weekly)")
+
+purrr::walk(dens_unw, print)
+purrr::walk(dens_weekly, print)
+
+compute_bounds_by_rank <- function(G, Lsum, taus = c(0.1,0.5,0.9), min_n = 10) {
+  G %>% group_by(horizon, rank_t) %>%
+    summarise(n = n(), g_list = list(g), .groups = "drop") %>%
+    filter(n >= min_n) %>%
+    left_join(Lsum %>% transmute(rank, horizon, l = leakage_rate), by = c("rank_t" = "rank", "horizon" = "horizon")) %>%
+    mutate(l = replace_na(l, 0)) %>%
+    rowwise() %>% mutate(bounds = list(lee_bounds_one(unlist(g_list), taus = taus, l = l))) %>%
+    unnest(bounds) %>% ungroup()
+}
+
+B_weekly <- compute_bounds_by_rank(G_weekly_all, L_weekly$summary, taus = params$quantiles, min_n = params$min_n_per_rank) %>%
+  filter(rank_t <= 1024)
+
+ggplot(B_weekly, aes(x = rank_t)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey55") +
+  geom_ribbon(aes(ymin = q_lb, ymax = q_ub, fill = factor(tau)), alpha = 0.18) +
+  geom_line(aes(y = q_obs, colour = factor(tau)), linewidth = 0.8) +
+  scale_x_log10(labels = number_format(accuracy = 1)) +
+  facet_wrap(~ horizon, scales = "free_y") +
+  labs(title = "Weekly leakage-robust quantile bands by rank (Lee bounds)", subtitle = "Shaded = identified set; line = observed stayer quantile", x = "Rank at week t (log scale)", y = "Quantile of log A_w(t+H) − log A_w(t)", fill = "Quantile", colour = "Quantile")
+```
+
+# Anchor-day churn funnel
+
+Objective. Compare interactions at anchors vs (+7) days for the top pages on those anchors.
+
+Rationale. Visualizes short-run churn among leaders and the degree of regression toward the mean.
+
+Checks. Symmetry around the 45° line for stable regimes. Excess mass far below the line signals rapid decay or inactivity.
+
+```{r churn funnel}
+plot_churn_funnel <- function(daily, top_n = 1000, anchor_days = c(1,8,15,22), horizon = 7, facet = FALSE) {
+  anchors <- daily %>%
+    mutate(dom = day(date)) %>%
+    filter(dom %in% anchor_days) %>%
+    distinct(date, dom) %>%
+    arrange(date)
+
+  d0 <- daily %>%
+    inner_join(anchors, by = "date") %>%
+    group_by(date) %>%
+    slice_max(order_by = share, n = top_n, with_ties = FALSE) %>%
+    ungroup() %>%
+    transmute(date, endpoint_id, x = metric_value, dom)
+
+  dH <- daily %>% transmute(date = date - days(horizon), endpoint_id, y = metric_value)
+
+  pairs <- d0 %>% inner_join(dH, by = c("date","endpoint_id")) %>% filter(x > 0, y > 0)
+
+  p <- ggplot(pairs, aes(x = x, y = y, colour = factor(dom))) +
+    geom_point(alpha = 0.25, size = 1) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+    scale_x_log10(labels = label_number(scale_cut = cut_short_scale())) +
+    scale_y_log10(labels = label_number(scale_cut = cut_short_scale())) +
+    labs(title = "Churn funnel: anchor day vs +7d", subtitle = paste0("Top ", top_n, " by share on days ", paste(anchor_days, collapse = "/"), " | points = ", scales::comma(nrow(pairs))), x = "Interactions on anchor day (log)", y = "Interactions +7d (log)", colour = "DOM")
+  if (facet) p <- p + facet_wrap(~ factor(dom, levels = anchor_days), nrow = 1)
+  p
+}
+
+plot_churn_funnel(daily, top_n = params$top_n_anchor, anchor_days = params$anchor_days, horizon = 7, facet = FALSE)
+```
+
+
+
+# Rank-wise k-th largest daily growth curves
+
+Objective. For each rank, plot the (k)-th highest observed (g) for (k\in{100,\dots,900}) at (H=1,7).
+
+Rationale. Captures tail dynamics by rank without assuming parametric forms.
+
+Checks. Points omitted when fewer than (k) pairs exist. Compare (H=1) vs (H=7) with matched y-limits.
+
+```{r kth-highest growth}
+build_growth_pairs_observed <- function(daily, H, max_rank = 900) {
+  all_dates <- sort(unique(daily$date))
+  valid_t   <- all_dates[(all_dates + days(H)) %in% all_dates]
+
+  base_t <- daily %>%
+    filter(date %in% valid_t, rank <= max_rank) %>%
+    transmute(date, endpoint_id, rank_t = as.integer(rank), a_t = metric_value)
+
+  later <- daily %>% transmute(date = date - days(H), endpoint_id, a_tpH = metric_value)
+
+  base_t %>%
+    inner_join(later, by = c("date","endpoint_id")) %>%
+    mutate(g = log(a_tpH) - log(a_t))
+}
+
+compute_rank_order_curves <- function(daily, H, ks = seq(100, 900, by = 100), max_rank = 900) {
+  pairs <- build_growth_pairs_observed(daily, H = H, max_rank = max_rank)
+  pairs %>%
+    group_by(rank_t) %>%
+    summarise(g_sorted = list(sort(g, decreasing = TRUE)), n = n(), .groups = "drop") %>%
+    tidyr::crossing(k = ks) %>%
+    mutate(g_k = purrr::map2_dbl(g_sorted, k, ~ if (length(.x) >= .y) .x[.y] else NA_real_),
+           horizon = H) %>%
+    select(rank_t, k, g_k, n, horizon)
+}
+
+plot_rank_order_curves <- function(curves, ks = seq(100, 900, by = 100), y_limits = NULL, title_prefix = "k-th highest log growth") {
+  df <- curves %>% filter(k %in% ks)
+  if (is.null(y_limits)) y_limits <- range(df$g_k, na.rm = TRUE)
+  ggplot(df, aes(x = rank_t, y = g_k, colour = factor(k), group = factor(k))) +
+    geom_hline(yintercept = 0, linetype = "dashed", colour = "grey50") +
+    geom_line(na.rm = TRUE, linewidth = 0.9) +
+    geom_point(na.rm = TRUE, size = 0.8) +
+    scale_x_log10(breaks = c(log_brks(900), 900)) +
+    coord_cartesian(ylim = y_limits) +
+    labs(title = sprintf("%s — H = %sd", title_prefix, unique(df$horizon)), subtitle = "Lines are k ∈ {100,200,…,900}; points omitted when fewer than k observed pairs", x = "Rank (log scale)", y = "k-th highest log A(t+H) − log A(t)", colour = "k")
+}
+
+ks_use <- params$k_daily
+curves_H1 <- compute_rank_order_curves(daily, H = 1, ks = ks_use, max_rank = 900)
+curves_H7 <- compute_rank_order_curves(daily, H = 7, ks = ks_use, max_rank = 900)
+y_lim_global <- range(c(curves_H1$g_k, curves_H7$g_k), na.rm = TRUE)
+
+plot_rank_order_curves(curves_H1, ks = ks_use, y_limits = y_lim_global)
+plot_rank_order_curves(curves_H7, ks = ks_use, y_limits = y_lim_global)
+```
+
+# Weekly aggregation and week→week growth
+
+Objective. Aggregate to Monday–Sunday weeks, recompute shares and ranks, then study week→week growth.
+
+Rationale. Weekly aggregation reduces daily sparsity and mitigates leakage. It should clarify the core model.
+
+Checks. Weekly steps exist for most weeks. Distributions smoother. Tail curves consistent with daily but less noisy.
+
+```{r weekly}
+# Aggregate to weeks and recompute ranks
+weekly <- daily %>%
+  mutate(week_start = floor_date(date, unit = "week", week_start = 1)) %>%  # Monday
+  group_by(week_start, endpoint_id) %>%
+  summarise(weekly_metric = sum(metric_value, na.rm = TRUE), .groups = "drop") %>%
+  group_by(week_start) %>%
+  mutate(
+    weekly_total = sum(weekly_metric, na.rm = TRUE),
+    weekly_share = weekly_metric / weekly_total,
+    rank_w = as.integer(safe_rank1(weekly_share, decreasing = TRUE))
+  ) %>%
+  ungroup()
+
+# Observed week→week pairs
+build_weekly_pairs_observed <- function(weekly, H = 1, max_rank = Inf) {
+  w_all  <- sort(unique(weekly$week_start))
+  valid_t <- w_all[(w_all + weeks(H)) %in% w_all]
+
+  base <- weekly %>%
+    filter(week_start %in% valid_t, rank_w <= max_rank) %>%
+    transmute(week_start, endpoint_id, rank_t = rank_w, a_t = weekly_metric)
+
+  later <- weekly %>% transmute(week_start = week_start - weeks(H), endpoint_id, a_tpH = weekly_metric)
+
+  base %>% inner_join(later, by = c("week_start","endpoint_id")) %>%
+    mutate(g = log(a_tpH) - log(a_t))
+}
+
+pairs_w1 <- build_weekly_pairs_observed(weekly, H = 1)
+
+# Distributions for ranks {1,4,16,64,128}
+ranks_dist <- c(1,4,16,64,128)
+dist_df <- pairs_w1 %>% filter(rank_t %in% ranks_dist)
+bw_all <- tryCatch(stats::bw.SJ(dist_df$g), error = function(e) stats::bw.nrd0(dist_df$g))
+
+ggplot(dist_df, aes(x = g, colour = factor(rank_t))) +
+  geom_density(bw = bw_all, linewidth = 1) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  labs(title = "Weekly log growth distributions (week→week)", subtitle = "Overlay for start ranks 1, 4, 16, 64, 128", x = "log A_w(t+1) − log A_w(t)", y = "Density", colour = "Start rank")
+
+# Coverage
+n_weeks_total <- n_distinct(weekly$week_start)
+valid_weeks   <- sort(unique(weekly$week_start))
+n_steps_pairs <- sum((valid_weeks + weeks(1)) %in% valid_weeks)
+tibble(weekly_periods = n_weeks_total, week_to_week_steps = n_steps_pairs) %>% knitr::kable(caption = "Weekly coverage")
+
+# Rank-wise k-th highest weekly growth (k ∈ {10,25,40})
+compute_weekly_rank_order_curves <- function(weekly, ks = c(10,25,40), max_rank = NULL) {
+  pairs <- build_weekly_pairs_observed(weekly, H = 1, max_rank = ifelse(is.null(max_rank), Inf, max_rank))
+  pairs %>%
+    group_by(rank_t) %>%
+    summarise(g_sorted = list(sort(g, decreasing = TRUE)), n = n(), .groups = "drop") %>%
+    tidyr::crossing(k = ks) %>%
+    mutate(g_k = purrr::map2_dbl(g_sorted, k, ~ if (length(.x) >= .y) .x[.y] else NA_real_)) %>%
+    filter(!is.na(g_k)) %>%
+    arrange(rank_t, k)
+}
+
+curves_weekly <- compute_weekly_rank_order_curves(weekly, ks = c(10,25,40))
+
+ggplot(curves_weekly, aes(x = rank_t, y = g_k, colour = factor(k), group = factor(k))) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_line(linewidth = 1) + geom_point(size = 0.8) +
+  scale_x_log10(breaks = log_brks(max(curves_weekly$rank_t, na.rm = TRUE))) +
+  labs(title = "Weekly growth: k-th highest by start rank (H = 1 week)", subtitle = "k ∈ {10, 25, 40}; points omitted where fewer than k observations", x = "Start rank (log scale)", y = "k-th highest log A_w(t+1) − log A_w(t)", colour = "k")
+
+```
+
+# Building the CDC from growth rates and variance
+
+```{r CDC_weekly_schema, message=FALSE, warning=FALSE}
+suppressPackageStartupMessages({
+  library(dplyr); library(tidyr); library(purrr); library(rlang); library(lubridate)
+})
+
+# Optional explicit overrides. Set these if auto-detection guesses wrong.
+# weekly_schema <- list(
+#   id     = "endpoint_id",
+#   time   = "week_start",
+#   rank   = NULL,            # if you already have a weekly rank column, put it here
+#   share  = NULL,            # if you already have a weekly share column, put it here
+#   metric = NULL             # weekly activity column to compute rank+share from if rank/share are missing
+# )
+
+`%OR%` <- function(a, b) if (!is.null(a) && !is.na(a) && nzchar(as.character(a))) a else b
+
+detect_weekly_schema <- function(df) {
+  id_cands    <- c("endpoint_id","id","page_id","channel_id","subreddit","account_id","node_id","entity","unit","name")
+  time_cands  <- c("week_start","week","date","period","t","time")
+  rank_cands  <- c("rank","rk","r","rank_t","position","weekly_rank","rank_week")
+  share_cands <- c("activity_share_week","activity_share","share","w","mu","p","prop","weight")
+  # broad metric list
+  metric_cands<- c("activity","activity_week","views","view_count","impressions","engagements",
+                   "audience","visits","count","n","volume","value","events","posts","likes","plays")
+
+  pick <- function(cands) { cands[cands %in% names(df)][1] %OR% NA_character_ }
+
+  list(
+    id     = pick(id_cands),
+    time   = pick(time_cands),
+    rank   = pick(rank_cands),
+    share  = pick(share_cands),
+    metric = pick(metric_cands)
+  )
+}
+
+standardize_weekly_long <- function(df, overrides=list()) {
+  sch_det <- detect_weekly_schema(df)
+  sch <- list(
+    id     = overrides$id     %OR% sch_det$id,
+    time   = overrides$time   %OR% sch_det$time,
+    rank   = overrides$rank   %OR% sch_det$rank,
+    share  = overrides$share  %OR% sch_det$share,
+    metric = overrides$metric %OR% sch_det$metric
+  )
+
+  if (is.na(sch$id) || is.na(sch$time))
+    stop("Cannot find required id/time in `weekly`. Set them via `weekly_schema` if needed.")
+
+  out <- df %>%
+    transmute(
+      id   = .data[[sch$id]],
+      time = .data[[sch$time]],
+      rank = if (!is.na(sch$rank)) as.integer(.data[[sch$rank]]) else NA_integer_,
+      share_raw  = if (!is.na(sch$share))  as.numeric(.data[[sch$share]])  else NA_real_,
+      metric_raw = if (!is.na(sch$metric)) as.numeric(.data[[sch$metric]]) else NA_real_
+    )
+
+  # Coerce time to Date if possible, else to ordered integer index
+  if (inherits(out$time, "Date")) {
+    out <- out %>% arrange(time)
+  } else if (inherits(out$time, "POSIXt")) {
+    out <- out %>% mutate(time = as.Date(time)) %>% arrange(time)
+  } else {
+    ord <- sort(unique(out$time))
+    map <- setNames(seq_along(ord), ord)
+    out <- out %>% mutate(time = as.integer(map[as.character(time)])) %>% arrange(time)
+  }
+
+  # If share missing but metric present, build weekly shares
+  if (all(is.na(out$share_raw)) && any(is.finite(out$metric_raw))) {
+    out <- out %>%
+      group_by(time) %>%
+      mutate(share = metric_raw / sum(metric_raw, na.rm=TRUE)) %>%
+      ungroup()
+  } else {
+    out <- out %>% mutate(share = share_raw)
+  }
+
+  # If rank missing, compute weekly rank from metric (prefer) or share
+  if (all(is.na(out$rank))) {
+    if (!all(is.na(out$metric_raw))) {
+      out <- out %>%
+        group_by(time) %>%
+        mutate(rank = as.integer(min_rank(dplyr::desc(metric_raw)))) %>%
+        ungroup()
+    } else if (!all(is.na(out$share))) {
+      out <- out %>%
+        group_by(time) %>%
+        mutate(rank = as.integer(min_rank(dplyr::desc(share)))) %>%
+        ungroup()
+    } else {
+      # Last resort: choose a numeric metric automatically
+      num_cols <- df %>% select(where(is.numeric)) %>% names()
+      num_cols <- setdiff(num_cols, c(sch$id, sch$time, sch$rank, sch$share))
+      if (!length(num_cols)) stop("No numeric metric found to compute rank/share. Set weekly_schema$metric.")
+      # pick the numeric column with largest variance
+      var_tbl <- sapply(df[num_cols], function(x) stats::var(x, na.rm=TRUE))
+      metric_guess <- names(which.max(var_tbl))
+      message("Auto-selected metric: ", metric_guess)
+      out$metric_raw <- as.numeric(df[[metric_guess]])
+      out <- out %>%
+        group_by(time) %>%
+        mutate(
+          share = ifelse(is.na(share), metric_raw / sum(metric_raw, na.rm=TRUE), share),
+          rank  = as.integer(min_rank(dplyr::desc(metric_raw)))
+        ) %>%
+        ungroup()
+    }
+  }
+
+  out %>%
+    mutate(share = pmax(share, 0)) %>%
+    select(id, time, rank, share, metric = metric_raw) %>%
+    arrange(time, rank)
+}
+
+stopifnot(exists("weekly"))
+overrides <- if (exists("weekly_schema")) weekly_schema else list()
+weekly_long <- standardize_weekly_long(weekly, overrides)
+
+knitr::kable(head(weekly_long, 10), digits=4,
+             caption="Standardized weekly panel (id, time, rank, share, metric)")
+
+# Safe SI-style axis labeller for modern 'scales' versions
+si_number <- function(...) {
+  if ("cut_si" %in% getNamespaceExports("scales")) {
+    scales::label_number(scale_cut = scales::cut_si(" "), ...)
+  } else {
+    scales::label_number(...)  # fallback without SI suffixes
+  }
+}
+```
+
+
+---
+
+## 2) Build weekly pairs and rank‑conditional stats  
+This creates `weekly_rank_stats` without relying on a pre‑existing `dlog`.
+
+```{r CDC_weekly_pairs, message=FALSE, warning=FALSE}
+suppressPackageStartupMessages({ library(dplyr) })
+
+# epsilon for zero-safe logs
+eps_share <- {
+  pos <- weekly_long$share[is.finite(weekly_long$share) & weekly_long$share > 0]
+  if (length(pos)) max(1e-12, as.numeric(quantile(pos, 0.001, na.rm=TRUE))/10) else 1e-12
+}
+
+# Consecutive (t, t+1) pairs; condition on rank at time t
+W1 <- weekly_long %>%
+  arrange(id, time) %>%
+  group_by(id) %>%
+  mutate(
+    share_t   = share,
+    share_tp1 = dplyr::lead(share),
+    rank_t    = rank,
+    dlog      = log(pmax(share_tp1, eps_share)) - log(pmax(share_t, eps_share))
+  ) %>%
+  ungroup() %>%
+  filter(is.finite(dlog), !is.na(rank_t))
+
+# Rank-conditional weekly stats; keep ranks with enough data
+min_n <- 30L
+weekly_rank_stats <- W1 %>%
+  group_by(rank = rank_t) %>%
+  summarise(
+    mean_log_growth_week   = mean(dlog, na.rm = TRUE),
+    median_log_growth_week = median(dlog, na.rm = TRUE),
+    var_log_growth_week    = stats::var(dlog, na.rm = TRUE),
+    activity_share_week    = mean(share_t, na.rm = TRUE),
+    n_obs                  = dplyr::n(),
+    .groups = "drop"
+  ) %>%
+  filter(n_obs >= min_n) %>%
+  arrange(rank)
+
+knitr::kable(head(weekly_rank_stats, 12), digits=4,
+             caption="Weekly rank-conditional growth stats (first 12 ranks)")
+```
+
+
+---
+
+## 3) Estimator helpers and main function  
+Drop earlier helper chunks. Use this one.
+
+
+```{r CDC_helpers, message=FALSE, warning=FALSE}
+suppressPackageStartupMessages({
+  library(dplyr); library(ggplot2); library(scales); library(tidyr)
+})
+
+iso_smooth_monotone <- function(k, y) {
+  ord <- order(k); ks <- k[ord]; ys <- y[ord]
+  iso <- stats::isoreg(ks, ys)
+  ys_f <- approx(x=iso$x, y=iso$yf, xout=ks, method="constant", rule=2, f=0)$y
+  out <- numeric(length(y)); out[ord] <- ys_f; out
+}
+
+fit_tail_power <- function(k, g, k0=NULL, b=1) {
+  if (is.null(k0)) k0 <- floor(0.6*max(k))
+  df <- tibble(k=k, g=g) %>% filter(k >= k0, is.finite(g), g < -1e-8)
+  if (nrow(df) < 10) return(list(ok=FALSE))
+  fit <- try(lm(log(-g) ~ I(log(k + b)), data=df), silent=TRUE)
+  if (inherits(fit,"try-error")) return(list(ok=FALSE))
+  list(ok=TRUE,
+       a = exp(unname(coef(fit)[1])),
+       b = b,
+       alpha = -unname(coef(fit)[2]),
+       r2 = summary(fit)$r.squared,
+       k0 = k0)
+}
+
+extend_g_tail <- function(g_head, K, Kmax, tail_fit) {
+  g <- numeric(Kmax); g[seq_len(K)] <- g_head
+  if (isTRUE(tail_fit$ok) && tail_fit$alpha > 0) {
+    a <- tail_fit$a; b <- tail_fit$b; alpha <- tail_fit$alpha
+    g[(K+1):Kmax] <- -a * (((K+1):Kmax) + b)^(-alpha)
+  } else {
+    gK <- g_head[K]; lam <- 0.005
+    g[(K+1):Kmax] <- gK * exp(-lam * (((K+1):Kmax) - K))
+  }
+  g
+}
+
+build_cdc_from_g <- function(g, sigma2) {
+  Kmax <- length(g)
+  G_raw <- cumsum(g)
+  c0 <- max((G_raw[1:(Kmax-1)] + 1e-8) / seq_len(Kmax-1))
+  c0 <- ifelse(is.finite(c0) && c0 > 0, c0, 0)
+  g <- g - c0
+
+  total <- sum(g)
+  if (is.finite(total) && abs(total) > 1e-12) {
+    m <- max(1000L, floor(0.01*Kmax))
+    idx <- (Kmax-m+1):Kmax
+    g[idx] <- g[idx] - total / length(idx)
+  }
+
+  G <- cumsum(g)
+  r <- -2*G/sigma2
+  r[r <= 1e-12] <- NA_real_
+  dm <- -1/r
+
+  m <- numeric(Kmax); m[1] <- 0
+  for (k in 1:(Kmax-1)) m[k+1] <- m[k] + dm[k]
+  list(m=m, r=r, G=G, dm=dm, g=g)
+}
+
+normalize_mu <- function(m) {
+  mu_raw <- exp(m - max(m, na.rm=TRUE))
+  mu_raw[!is.finite(mu_raw)] <- 0
+  mu <- mu_raw / sum(mu_raw)
+  list(mu=mu)
+}
+
+estimate_cdc_atlas_weekly <- function(df_rank_stats,
+                                      K=1000,
+                                      cols=list(
+                                        rank  = "rank",
+                                        mean  = "mean_log_growth_week",
+                                        median= "median_log_growth_week",
+                                        var   = "var_log_growth_week",
+                                        share = "activity_share_week"
+                                      )) {
+
+  req <- c(cols$rank, cols$mean, cols$median, cols$var)
+  if (!all(req %in% names(df_rank_stats)))
+    stop("`df_rank_stats` missing: ", paste(setdiff(req, names(df_rank_stats)), collapse=", "))
+
+  df <- df_rank_stats %>%
+    transmute(
+      rank   = as.integer(.data[[cols$rank]]),
+      mean   = .data[[cols$mean]],
+      median = .data[[cols$median]],
+      var    = .data[[cols$var]],
+      share  = if (cols$share %in% names(df_rank_stats)) .data[[cols$share]] else NA_real_,
+      n_obs  = if ("n_obs" %in% names(df_rank_stats)) .data[["n_obs"]] else NA_real_
+    ) %>%
+    arrange(rank) %>% filter(rank >= 1)
+
+  K_use <- min(1000L, max(df$rank, na.rm=TRUE))
+  topK  <- df %>% filter(rank <= K_use)
+
+  sigma2_trim <- mean(topK$var, trim=0.10, na.rm=TRUE)
+  sigma2_med  <- median(topK$var, na.rm=TRUE)
+  sigma2 <- if (is.finite(sigma2_trim) && sigma2_trim > 0) sigma2_trim else sigma2_med
+
+  var_trend <- tryCatch({
+    mm <- lm(var ~ log(rank), data=topK)
+    c(slope = unname(coef(mm)[2]), p = summary(mm)$coefficients[2,4])
+  }, error=function(e) c(slope=NA_real_, p=NA_real_))
+
+  gamma_hat <- median(topK$mean, na.rm=TRUE)
+  g_center  <- topK$mean - gamma_hat
+  g_iso     <- iso_smooth_monotone(k = topK$rank, y = g_center)
+
+  tail_fit <- fit_tail_power(k = topK$rank, g = g_iso, k0 = floor(0.6*K_use), b = 1)
+  Kmax <- 200000L
+  g_all <- extend_g_tail(g_head = g_iso, K = K_use, Kmax = Kmax, tail_fit = tail_fit)
+
+  cdc <- build_cdc_from_g(g = g_all, sigma2 = sigma2)
+  mu  <- normalize_mu(cdc$m)$mu
+
+  list(
+    K_use=K_use, topK=topK, sigma2=sigma2, var_trend=var_trend,
+    gamma=gamma_hat, g_head=g_iso, tail_fit=tail_fit, cdc=cdc, mu=mu
+  )
+}
+```
+
+
+---
+
+## 4) Estimation, visualizations, and reports  
+Produces the required plots and tables. Uses only the top 1000 weekly ranks.
+
+```r
+```{r CDC_run, message=FALSE, warning=FALSE}
+suppressPackageStartupMessages({ library(ggplot2); library(scales); library(dplyr); library(tidyr) })
+
+fit   <- estimate_cdc_atlas_weekly(weekly_rank_stats, K = 1000)
+K_use <- fit$K_use
+topK  <- fit$topK
+mu    <- fit$mu
+
+# --- Plot 1: weekly growth vs rank (log-x) ---
+growth_df <- topK %>% mutate(g_iso = fit$g_head)
+p_growth <- ggplot(growth_df, aes(x=rank)) +
+  geom_point(aes(y=mean), alpha=0.35, size=0.8) +
+  geom_line(aes(y=g_iso + fit$gamma), linewidth=0.8) +
+  geom_smooth(aes(y=mean), method="loess", span=0.25, se=FALSE,
+              linewidth=0.7, linetype="longdash") +
+  scale_x_log10(labels = si_number()) +
+  labs(title="Weekly log-growth by rank (top 1000)",
+       subtitle="Points: weekly means; solid: isotonic fit + intercept; dashed: LOESS.",
+       x="Rank (log10)", y="Weekly mean log-growth") +
+  theme_minimal(base_size=11)
+print(p_growth)
+
+# --- Intermediate metrics and checks ---
+metrics <- tibble::tibble(
+  metric = c("sigma2_pooled_trimmed", "sigma2_pooled_median",
+             "var_vs_logrank_slope", "var_vs_logrank_p",
+             "gamma_hat_intercept",
+             "tail_power_alpha", "tail_power_a", "tail_fit_R2"),
+  value  = c(
+    mean(topK$var, trim=0.10, na.rm=TRUE),
+    median(topK$var, na.rm=TRUE),
+    fit$var_trend["slope"],
+    fit$var_trend["p"],
+    fit$gamma,
+    if (isTRUE(fit$tail_fit$ok)) fit$tail_fit$alpha else NA_real_,
+    if (isTRUE(fit$tail_fit$ok)) fit$tail_fit$a else NA_real_,
+    if (isTRUE(fit$tail_fit$ok)) fit$tail_fit$r2 else NA_real_
+  )
+)
+knitr::kable(metrics, digits=5, caption="Intermediate metrics (weekly, top-1000).")
+
+checks <- tibble::tibble(
+  check  = c("Partial sums G(k)<0 for k≤K_use-1", "Gap params r_k>0 for k≤K_use-1"),
+  result = c(all(fit$cdc$G[1:(K_use-1)] < 0, na.rm=TRUE),
+             all(fit$cdc$r[1:(K_use-1)] > 0, na.rm=TRUE))
+)
+knitr::kable(checks, digits=4, caption="Stationarity checks.")
+
+# --- Estimated totals and top-1000 capture ---
+avg_total_activity <- tryCatch({
+  if ("metric" %in% names(weekly_long) && any(is.finite(weekly_long$metric))) {
+    weekly_long %>%
+      group_by(time) %>%
+      summarise(total = sum(metric, na.rm=TRUE), .groups="drop") %>%
+      summarise(avg_total = mean(total, na.rm=TRUE)) %>%
+      pull(avg_total)
+  } else NA_real_
+}, error=function(e) NA_real_)
+
+top1000_share_model <- sum(mu[seq_len(min(1000L, length(mu)))], na.rm=TRUE)
+if (is.finite(avg_total_activity)) {
+  est_total_activity   <- as.numeric(avg_total_activity)
+  est_top1000_activity <- as.numeric(top1000_share_model * avg_total_activity)
+  units_lbl <- "raw units"
+} else {
+  est_total_activity   <- 1.0
+  est_top1000_activity <- top1000_share_model
+  units_lbl <- "normalized (total=1)"
+}
+
+act_tbl <- tibble::tibble(
+  quantity = c("Estimated total activity (per week)", "Portion captured by top 1000"),
+  value    = c(est_total_activity, est_top1000_activity),
+  units    = units_lbl
+)
+knitr::kable(act_tbl, digits=5, caption="Estimated totals and top-1000 capture.")
+
+# --- Plot 2: CDC log–log; empirical top-1000 in thick black, model beyond 1000 dashed light gray ---
+emp_cdc <- weekly_long %>%
+  group_by(rank) %>%
+  summarise(emp_share = mean(share, na.rm=TRUE), .groups="drop") %>%
+  filter(rank >= 1) %>%
+  mutate(emp_share = pmax(emp_share, .Machine$double.eps)) %>%
+  arrange(rank)
+
+plot_cutoff <- which(cumsum(mu) > (1 - 1e-6))[1]; if (is.na(plot_cutoff)) plot_cutoff <- length(mu)
+cdc_df <- tibble::tibble(rank = seq_len(plot_cutoff), mu_est = pmax(mu[seq_len(plot_cutoff)], .Machine$double.eps))
+
+p_cdc <- ggplot() +
+  geom_line(data = cdc_df %>% filter(rank <= 1000),
+            aes(x=rank, y=mu_est), linewidth=0.7, color="grey40") +
+  geom_line(data = cdc_df %>% filter(rank > 1000),
+            aes(x=rank, y=mu_est), linewidth=0.7, linetype="dashed", color="grey70") +
+  scale_x_log10(labels = si_number()) +
+  scale_y_log10(labels = si_number()) +
+  labs(title="Estimated capital distribution curve (CDC)",
+       subtitle=paste0("Empirical top-1000 in thick black. Model beyond 1000 dashed light gray. ",
+                       "Top-1000 share = ", scales::percent(top1000_share_model, accuracy=0.01)),
+       x="Rank (log10)", y="Activity share μ_(k) (log10)") +
+  theme_minimal(base_size=11)
+
+if (nrow(emp_cdc)) {
+  p_cdc <- p_cdc +
+    geom_line(data = emp_cdc %>% filter(rank <= 1000),
+              aes(x=rank, y=emp_share), linewidth=1.1, color="black")
+}
+print(p_cdc)
+
+# Functional form report
+g_form <- if (isTRUE(fit$tail_fit$ok) && fit$tail_fit$alpha > 0) {
+  sprintf("g_k: isotonic head for k≤%d; tail g_k = -a (k+%d)^(-alpha), a=%.4g, alpha=%.3f.",
+          K_use, fit$tail_fit$b, fit$tail_fit$a, fit$tail_fit$alpha)
+} else {
+  "g_k: isotonic head for k≤K; tail uses gentle exponential decay fallback."
+}
+cat("\nEstimated functional form for g_k:\n", g_form, "\n")
+```
+
+
+

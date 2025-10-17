@@ -1,0 +1,792 @@
+---
+title: "Estimating the Capital Distribution Curve (CDC) from Weekly Ranked Activity using an Atlas‑Style Stochastic Portfolio Theory Model"
+author: "Prepared for Matthew Hindman"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+  pdf_document:
+    number_sections: true
+params:
+  parquet_path: "./fb_top2000_ranked_daily.parquet"
+  seed: 20251009
+  k_head: 1000
+  micro_share_threshold: 1e-8
+  block_len: 8                 # weeks per bootstrap/CV block
+  k0_min: 300
+  k0_max: 600
+  N_grid: !r c(5000, 10000, 20000, 50000, 100000, 200000)
+  bootstrap_B: 200
+  lambda_tv: 1e-4              # small TV penalty
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 5
+)
+set.seed(params$seed)
+```
+
+# 0) Purpose and scope
+
+Implements the Atlas‑style SPT workflow to estimate the **Capital Distribution Curve (CDC)** from weekly ranked activity using only the **top‑1000** ranks, extrapolates a softening tail, enforces stationarity, and constructs **MCE** weights. This revision reads a **single Parquet file** and builds `daily` and `weekly` tibbles internally.
+
+---
+
+# 1) Packages and reproducibility
+
+```{r packages}
+need_pkgs <- c(
+  "tidyverse","data.table","lubridate","isotone","CVXR","MASS",
+  "robustbase","car","boot","ggplot2","scales","matrixStats",
+  "minpack.lm","RcppRoll","slider","glue","arrow"
+)
+new_pkgs <- need_pkgs[!(need_pkgs %in% installed.packages()[,"Package"])]
+if(length(new_pkgs)) suppressWarnings(install.packages(new_pkgs, quiet = TRUE))
+
+suppressPackageStartupMessages({
+  library(tidyverse); library(data.table); library(lubridate)
+  library(isotone); library(CVXR); library(MASS); library(robustbase)
+  library(car); library(boot); library(ggplot2); library(scales)
+  library(matrixStats); library(minpack.lm); library(RcppRoll)
+  library(slider); library(glue); library(arrow)
+})
+
+dir.create("outputs", showWarnings = FALSE)
+dir.create("outputs/figures", showWarnings = FALSE)
+dir.create("outputs/tables", showWarnings = FALSE)
+
+sessionInfo()
+```
+
+---
+
+# 2) Data and conventions
+
+## 2.1 Read Parquet and construct `daily` and `weekly`
+
+```{r data-load}
+# Helper to pick first present column name
+first_present <- function(df, candidates){
+  found <- intersect(candidates, names(df))
+  if (length(found) == 0) return(NA_character_) else return(found[1])
+}
+
+# If daily/weekly already exist, use them; otherwise read Parquet
+if (!(exists("daily", inherits = TRUE) && exists("weekly", inherits = TRUE))) {
+  stopifnot(!is.null(params$parquet_path))
+  raw_df <- arrow::read_parquet(params$parquet_path)
+  
+  # Standardize columns for daily
+  date_col   <- first_present(raw_df, c("date","day","dt","Date"))
+  id_col     <- first_present(raw_df, c("endpoint_id","page_id","channel_id","id"))
+  metric_col <- first_present(raw_df, c("metric_value","daily_metric","interactions","value","count","daily_interactions"))
+  rank_col   <- first_present(raw_df, c("rank","rank_d","daily_rank"))
+  total_col  <- first_present(raw_df, c("total_metric","platform_total","daily_total","sum_metric","total"))
+  share_col  <- first_present(raw_df, c("share","daily_share","p_share","prop"))
+  
+  if (is.na(date_col) || is.na(id_col) || is.na(metric_col)) {
+    stop("Parquet must contain at least date, endpoint_id, and metric columns.")
+  }
+  
+  daily <- raw_df %>%
+    transmute(
+      date        = as.Date(.data[[date_col]]),
+      endpoint_id = as.character(.data[[id_col]]),
+      metric_value= as.numeric(.data[[metric_col]]),
+      rank        = if (!is.na(rank_col)) as.integer(.data[[rank_col]]) else NA_integer_,
+      total_metric= if (!is.na(total_col)) as.numeric(.data[[total_col]]) else NA_real_,
+      share       = if (!is.na(share_col)) as.numeric(.data[[share_col]]) else NA_real_
+    ) %>%
+    filter(is.finite(metric_value), !is.na(date), !is.na(endpoint_id))
+  
+  # If total_metric missing or mostly NA, compute per-date totals from metric_value
+  if (!("total_metric" %in% names(daily)) || mean(is.na(daily$total_metric)) > 0.25) {
+    totals_by_day <- daily %>% group_by(date) %>% summarise(total_metric = sum(metric_value, na.rm = TRUE), .groups="drop")
+  } else {
+    # Use distinct platform totals per day if provided
+    totals_by_day <- daily %>%
+      group_by(date) %>%
+      summarise(total_metric = suppressWarnings(max(total_metric, na.rm = TRUE)), .groups="drop") %>%
+      mutate(total_metric = ifelse(is.finite(total_metric), total_metric, NA_real_))
+    # If still NA for some days, backfill from sums
+    if (any(is.na(totals_by_day$total_metric))) {
+      fill_sum <- daily %>% group_by(date) %>% summarise(total_metric_fill = sum(metric_value, na.rm = TRUE), .groups="drop")
+      totals_by_day <- totals_by_day %>% left_join(fill_sum, by = "date") %>%
+        mutate(total_metric = ifelse(is.na(total_metric), total_metric_fill, total_metric)) %>%
+        select(date, total_metric)
+    }
+  }
+  daily <- daily %>% left_join(totals_by_day, by = "date", suffix = c("", "_day"))
+  # Only use the _day suffix column if it exists, otherwise the join already updated total_metric
+  if ("total_metric_day" %in% names(daily)) {
+    daily <- daily %>% mutate(total_metric = coalesce(total_metric, total_metric_day)) %>% select(-total_metric_day)
+  }
+  
+  # Compute share if missing
+  if (!("share" %in% names(daily)) || mean(is.na(daily$share)) > 0.25) {
+    daily <- daily %>% mutate(share = metric_value / total_metric)
+  }
+  
+  # Compute rank if missing: deterministic tie-break by endpoint_id
+  if (!("rank" %in% names(daily)) || mean(is.na(daily$rank)) > 0.25) {
+    daily <- daily %>% group_by(date) %>%
+      arrange(date, desc(share), endpoint_id, .by_group = TRUE) %>%
+      mutate(rank = rank(-share, ties.method = "first") %>% as.integer()) %>%
+      ungroup()
+  }
+  
+  # Build weekly totals from distinct daily totals
+  weekly_totals <- daily %>%
+    mutate(week_start = lubridate::floor_date(date, unit = "week", week_start = 1)) %>%
+    distinct(date, week_start, total_metric) %>%
+    group_by(week_start) %>%
+    summarise(weekly_total = sum(total_metric, na.rm = TRUE), .groups = "drop")
+  
+  # Build weekly per-endpoint metrics
+  weekly_metrics <- daily %>%
+    mutate(week_start = lubridate::floor_date(date, unit = "week", week_start = 1)) %>%
+    group_by(week_start, endpoint_id) %>%
+    summarise(weekly_metric = sum(metric_value, na.rm = TRUE), .groups = "drop")
+  
+  weekly <- weekly_metrics %>%
+    left_join(weekly_totals, by = "week_start") %>%
+    mutate(
+      weekly_share = weekly_metric / weekly_total
+    ) %>%
+    group_by(week_start) %>%
+    arrange(week_start, desc(weekly_share), endpoint_id, .by_group = TRUE) %>%
+    mutate(rank_w = rank(-weekly_share, ties.method = "first") %>% as.integer()) %>%
+    ungroup()
+}
+
+# Coerce types and finalize
+weekly <- weekly %>%
+  mutate(
+    week_start = as.Date(week_start),
+    endpoint_id = as.character(endpoint_id),
+    weekly_total = as.numeric(weekly_total),
+    weekly_share = as.numeric(weekly_share),
+    rank_w = as.integer(rank_w),
+    weekly_metric = as.numeric(weekly_metric)
+  )
+
+daily <- daily %>%
+  mutate(
+    date = as.Date(date),
+    endpoint_id = as.character(endpoint_id),
+    metric_value = as.numeric(metric_value),
+    rank = as.integer(rank),
+    total_metric = as.numeric(total_metric),
+    share = as.numeric(share)
+  )
+```
+
+## 2.2 Keep only top‑1000 per week and validate
+
+```{r head-filter}
+K <- params$k_head
+
+head_weeks <- weekly %>% 
+  filter(rank_w <= K) %>%
+  group_by(week_start) %>%
+  summarise(
+    n_ranks = n_distinct(rank_w),
+    min_r = min(rank_w, na.rm = TRUE),
+    max_r = max(rank_w, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  filter(n_ranks >= K, min_r == 1L, max_r >= K)
+
+weekly_head <- weekly %>% 
+  semi_join(head_weeks, by = "week_start") %>%
+  group_by(week_start) %>%
+  filter(rank_w <= K) %>%
+  ungroup() %>%
+  mutate(log_share = log(weekly_share)) %>%
+  filter(is.finite(log_share), weekly_share > 0, weekly_share > params$micro_share_threshold)
+
+if(n_distinct(weekly_head$week_start) < 5) warning("Few valid weeks after head-contiguity checks.")
+
+n_weeks <- n_distinct(weekly_head$week_start)
+glue("Using {n_weeks} weeks with ranks 1:{K}.") %>% print()
+```
+
+---
+
+# 3) Estimands and intermediate metrics
+
+```{r estimands}
+# Occupant-forward growth r_f = log mu_{t+1} - log mu_t for the occupant of rank k at t
+
+# Next-week log_share per endpoint
+weekly_head <- weekly_head %>% arrange(endpoint_id, week_start)
+weekly_head <- weekly_head %>% group_by(endpoint_id) %>%
+  mutate(
+    next_week = lead(week_start),
+    log_share_next = lead(log_share)
+  ) %>% ungroup()
+
+# Consecutive weeks only and presence at t and t+1
+occupant_growth <- weekly_head %>%
+  filter(!is.na(log_share_next), next_week == week_start + 7) %>%
+  transmute(
+    week_start, endpoint_id, k = rank_w,
+    r_f = log_share_next - log_share
+  )
+
+# Rank-conditional summaries
+rank_stats <- occupant_growth %>%
+  group_by(k) %>%
+  summarise(
+    bar_g = mean(r_f),
+    tilde_g = median(r_f),
+    v_k = var(r_f),
+    n_k = n(),
+    .groups = "drop"
+  )
+
+# Adjacent log-gaps Δ_k(t) = log μ_(k) - log μ_(k+1)
+Delta_bar <- weekly_head %>%
+  arrange(week_start, rank_w) %>%
+  group_by(week_start) %>%
+  mutate(next_log_share = lead(log_share)) %>%
+  filter(rank_w <= K - 1) %>%
+  transmute(k = rank_w, Delta = log_share - next_log_share) %>%
+  ungroup() %>%
+  group_by(k) %>%
+  summarise(overline_Delta_k = mean(Delta, na.rm = TRUE), .groups = "drop")
+
+# Empirical CDC head m̂(k)
+mhat <- weekly_head %>%
+  group_by(k = rank_w) %>%
+  summarise(m_hat = mean(log_share), .groups = "drop")
+
+# Observed top-1000 share by week
+top1000_share_by_week <- weekly_head %>%
+  group_by(week_start) %>%
+  summarise(S_obs_1000 = sum(weekly_share), .groups = "drop")
+
+S_obs_1000 <- mean(top1000_share_by_week$S_obs_1000)
+
+# Save summaries
+write_csv(rank_stats, "outputs/tables/rank_stats_head.csv")
+write_csv(Delta_bar, "outputs/tables/gap_means_head.csv")
+write_csv(mhat, "outputs/tables/cdc_head_mhat.csv")
+write_csv(top1000_share_by_week, "outputs/tables/top1000_share_by_week.csv")
+```
+
+---
+
+# 4) Estimation procedures
+
+## 4.1 Constant variance \\(\\hat\\sigma^2\\)
+
+```{r const-variance}
+# Levene/Brown–Forsythe test across rank deciles using raw r_f by decile
+decile_cut <- cut(1:K, breaks = quantile(1:K, probs = seq(0,1,0.1)), include.lowest = TRUE, labels = FALSE)
+decile_df <- tibble(k = 1:K, decile = decile_cut)
+og_with_decile <- occupant_growth %>% left_join(decile_df, by = "k")
+
+levene_bf <- tryCatch({
+  car::leveneTest(r_f ~ as.factor(decile), center = "median", data = og_with_decile)
+}, error = function(e) e)
+
+# Pool a single variance; robust Huber mean of v_k with weights n_k
+fit_huber <- MASS::rlm(v_k ~ 1, data = rank_stats, weights = n_k, psi = psi.huber, maxit = 200)
+sigma2_huber <- as.numeric(coef(fit_huber))
+
+# 10% weighted trimmed mean as alternative
+wtd_trimmed_mean <- function(x, w, trim = 0.10){
+  ord <- order(x)
+  x <- x[ord]; w <- w[ord]
+  cumw <- cumsum(w) / sum(w)
+  keep <- (cumw >= trim) & (cumw <= 1 - trim)
+  if(!any(keep)) keep <- rep(TRUE, length(x))
+  sum(x[keep] * w[keep]) / sum(w[keep])
+}
+sigma2_trim <- wtd_trimmed_mean(rank_stats$v_k, rank_stats$n_k, trim = 0.10)
+sigma2_naive <- weighted.mean(rank_stats$v_k, rank_stats$n_k)
+
+sigma2_hat <- sigma2_huber
+glue("sigma2_hat (Huber) = {signif(sigma2_hat,4)}; trimmed = {signif(sigma2_trim,4)}; naive = {signif(sigma2_naive,4)}") %>% print()
+
+if (inherits(levene_bf, "anova")) {
+  write.csv(as.data.frame(levene_bf), "outputs/tables/levene_brown_forsythe.csv", row.names = FALSE)
+} else {
+  writeLines("Levene/BF test failed; see warnings.", "outputs/tables/levene_brown_forsythe.txt")
+}
+```
+
+## 4.2 Rank‑drift schedule \\(g_k\\) on \\(k=1{:}1000\\)
+
+```{r drift-estimation}
+# Primary Approach A: isotonic regression with small TV penalty (CVXR) and optional Huber loss
+
+y <- rank_stats$bar_g
+w <- pmax(1, rank_stats$n_k)
+K <- length(y)
+
+# Heuristic check for robust loss need
+diff_mm <- abs(rank_stats$bar_g - rank_stats$tilde_g)
+need_robust <- mean(diff_mm > 3*mad(diff_mm, constant = 1)) > 0.25
+
+lambda_tv <- params$lambda_tv
+
+fit_monotone_tv <- function(y, w, lambda_tv = 0, robust = FALSE){
+  K <- length(y)
+  g <- CVXR::Variable(K)
+  gamma <- CVXR::Variable(1)
+  resid <- y - gamma - g
+  if (robust) {
+    loss <- sum(w * CVXR::huber(resid))
+  } else {
+    loss <- sum(w * CVXR::square(resid))
+  }
+  tv <- if (K > 1) sum(CVXR::abs(g[2:K] - g[1:(K-1)])) else 0
+  constraints <- list(g[1:(K-1)] <= g[2:K])
+  obj <- CVXR::Minimize(loss + lambda_tv * tv)
+  prob <- CVXR::Problem(obj, constraints)
+  res <- tryCatch(CVXR::solve(prob, solver = "OSQP"), error = function(e) NULL)
+  if (is.null(res) || is.null(res$value)) return(NULL)
+  list(g_hat = as.numeric(value(g)), gamma_hat = as.numeric(value(gamma)))
+}
+
+cvxr_fit <- fit_monotone_tv(y, w, lambda_tv = lambda_tv, robust = need_robust)
+if (is.null(cvxr_fit)) {
+  message("CVXR fit failed; falling back to gpava without TV penalty.")
+  wy_mean <- weighted.mean(y, w)
+  fit_iso <- isotone::gpava(1:K, y - wy_mean, weights = w, decreasing = FALSE)
+  g_hat <- as.numeric(fit_iso$x)
+  gamma_hat <- wy_mean - weighted.mean(g_hat, w)
+} else {
+  g_hat <- cvxr_fit$g_hat
+  gamma_hat <- cvxr_fit$gamma_hat
+}
+
+drift_hat <- tibble(k = 1:K, g_hat = g_hat, gamma_hat = gamma_hat)
+
+# Approach B: gap-based cross-check
+if (nrow(Delta_bar) != (K-1)) stop("Gap means Δ̄_k length mismatch.")
+r_gap <- 1 / Delta_bar$overline_Delta_k
+G_gap <- -(sigma2_hat/2) * r_gap  # length K-1 for k=1..K-1
+g_gap <- c(G_gap[1], diff(G_gap)) # length K-1 => g_1..g_(K-1); extend to K
+g_gap <- c(g_gap, tail(g_gap,1))
+
+fit_gap_iso <- isotone::gpava(1:K, g_gap, decreasing = FALSE)
+g_hat_gap <- as.numeric(fit_gap_iso$x)
+
+drift_compare <- tibble(k = 1:K, g_hat = g_hat, g_hat_gap = g_hat_gap)
+write_csv(drift_compare, "outputs/tables/drift_compare_head.csv")
+```
+
+## 4.3 Tail extrapolation for \\(k>1000\\)
+
+```{r tail-fit}
+k0_candidates <- seq(params$k0_min, params$k0_max, by = 50)
+tail_family <- c("power","log")
+
+fit_tail_family <- function(k0, fam, k, gk, w){
+  stopifnot(all(k >= k0))
+  df <- tibble(k = k, y = gk, w = w)
+  if (fam == "power") {
+    # g_k = -a * (k/k0)^(-alpha), a>0, alpha in (0,1]
+    start <- list(a = max(1e-8, -df$y[df$k==k0][1] %||% abs(median(df$y))), alpha = 0.5)
+    mod <- tryCatch(
+      minpack.lm::nlsLM(y ~ -a * (k/k0)^(-alpha),
+                        start = start, data = df,
+                        control = minpack.lm::nls.lm.control(maxiter = 300)),
+      error = function(e) NULL
+    )
+    pred_fun <- function(kk){
+      if (is.null(mod)) return(rep(NA_real_, length(kk)))
+      pars <- coef(mod); with(as.list(pars), -a * (kk/k0)^(-alpha))
+    }
+  } else if (fam == "log") {
+    # g_k = -a / (1 + c * log(k/k0)), with a>0, c>0
+    start <- list(a = max(1e-8, -df$y[df$k==k0][1] %||% abs(median(df$y))), c = 1.0)
+    mod <- tryCatch(
+      minpack.lm::nlsLM(y ~ -a / (1 + c * log(k/k0)),
+                        start = start, data = df,
+                        control = minpack.lm::nls.lm.control(maxiter = 300)),
+      error = function(e) NULL
+    )
+    pred_fun <- function(kk){
+      if (is.null(mod)) return(rep(NA_real_, length(kk)))
+      pars <- coef(mod); with(as.list(pars), -a / (1 + c * log(kk/k0)))
+    }
+  } else stop("Unknown tail family.")
+  list(model = mod, predict = pred_fun)
+}
+
+choose_tail <- function(k0_vals, fams, k, gk, w){
+  best <- NULL
+  for (k0 in k0_vals){
+    sel <- k >= k0
+    for (fam in fams){
+      ft <- fit_tail_family(k0, fam, k[sel], gk[sel], w[sel])
+      if (is.null(ft$model)) next
+      yhat <- ft$predict(k[sel])
+      se <- sum(w[sel] * (gk[sel] - yhat)^2, na.rm = TRUE)
+      cand <- list(k0 = k0, family = fam, se = se, fit = ft)
+      if (is.null(best) || se < best$se) best <- cand
+    }
+  }
+  best
+}
+
+tail_choice <- choose_tail(k0_candidates, tail_family, drift_hat$k, drift_hat$g_hat, w)
+if (is.null(tail_choice)) stop("Tail fit failed.")
+glue("Tail choice: family={tail_choice$family}, k0={tail_choice$k0}, SE={signif(tail_choice$se,4)}") %>% print()
+
+tail_predict <- function(kk){
+  y <- tail_choice$fit$predict(kk)
+  # Monotone-adjust toward zero
+  cummax(y)
+}
+```
+
+## 4.4 Enforce stationarity and choose effective population size \\(N\\)
+
+```{r stationarity-selection}
+build_full_schedule <- function(N, head_k, head_g, tail_fun){
+  k_all <- 1:N
+  g_all <- numeric(N)
+  g_all[head_k] <- head_g
+  if (N > max(head_k)) {
+    k_tail <- (max(head_k)+1):N
+    g_all[k_tail] <- tail_fun(k_tail)
+  }
+  list(k = k_all, g = g_all)
+}
+
+enforce_stationarity <- function(g, N, m_seq = c(50,100,200,500,1000,2500,5000)){
+  S <- sum(g)
+  if (S >= 0) return(NULL) # pathological; skip this N
+  for (m in m_seq[m_seq < N]){
+    c_uplift <- -S / m
+    g_new <- g
+    g_new[(N-m+1):N] <- g_new[(N-m+1):N] + c_uplift
+    G_partial <- cumsum(g_new)
+    if (all(G_partial[1:(N-1)] < 0)) {
+      return(list(g = g_new, m = m, c = c_uplift, G = G_partial))
+    }
+  }
+  NULL
+}
+
+cdc_from_g <- function(g, sigma2, m1_anchor){
+  G <- cumsum(g)
+  r_k <- -2 * G[1:(length(G)-1)] / sigma2
+  if (any(r_k <= 0, na.rm = TRUE)) return(NULL)
+  rho <- 1 / r_k
+  m_inc <- -rho
+  m_mod <- numeric(length(g))
+  m_mod[1] <- m1_anchor
+  for (kk in 1:(length(g)-1)) m_mod[kk+1] <- m_mod[kk] + m_inc[kk]
+  list(m = m_mod, rho = rho, r = r_k)
+}
+
+m1_anchor <- mhat$m_hat[mhat$k==1]
+
+score_N <- function(N){
+  sched <- build_full_schedule(N, drift_hat$k, drift_hat$g_hat, tail_predict)
+  enforced <- enforce_stationarity(sched$g, N)
+  if (is.null(enforced)) return(NULL)
+  gN <- enforced$g
+  cdc <- cdc_from_g(gN, sigma2_hat, m1_anchor = m1_anchor)
+  if (is.null(cdc)) return(NULL)
+  rho <- cdc$rho
+  S_k <- rev(cumsum(rev(c(rho, 0))))
+  w_star <- exp(S_k)
+  MCE <- w_star / sum(w_star)
+  S_mod_1000 <- sum(MCE[1:K])
+  m_model_head <- cdc$m[1:K]
+  rmse_head <- sqrt(mean((m_model_head - mhat$m_hat)^2, na.rm = TRUE))
+  list(N = N, m = enforced$m, c = enforced$c, S_mod_1000 = S_mod_1000,
+       rmse_head = rmse_head, MCE = MCE, g = gN, G = enforced$G, m_model = cdc$m, r = cdc$r)
+}
+
+scores <- lapply(params$N_grid, score_N)
+scores <- scores[!vapply(scores, is.null, logical(1))]
+if (length(scores) == 0) stop("No feasible (N, uplift) combinations satisfied stationarity.")
+
+score_df <- tibble(
+  N = sapply(scores, `[[`, "N"),
+  rmse_head = sapply(scores, `[[`, "rmse_head"),
+  S_mod_1000 = sapply(scores, `[[`, "S_mod_1000")
+) %>%
+  mutate(share_gap = abs(S_mod_1000 - S_obs_1000),
+         objective = rmse_head + share_gap)
+
+best_idx <- which.min(score_df$objective)
+best <- scores[[best_idx]]
+score_df %>% arrange(objective) %>% write_csv("outputs/tables/N_selection_scores.csv")
+
+glue("Selected N = {best$N}; uplift m = {best$m}; uplift c = {signif(best$c,4)}; head RMSE = {signif(best$rmse_head,4)}; modeled top-1000 share = {signif(best$S_mod_1000,4)}; observed = {signif(S_obs_1000,4)}") %>% print()
+```
+
+## 4.5 From drifts to gaps to CDC and MCE
+
+```{r cdc-mce}
+g_final <- best$g
+G_final <- best$G
+r_final <- best$r
+rho_final <- 1 / r_final
+
+m_final <- best$m_model
+
+S_k <- rev(cumsum(rev(c(rho_final, 0))))
+w_star <- exp(S_k)
+MCE <- w_star / sum(w_star)
+
+out_tab <- tibble(
+  k = 1:length(g_final),
+  g_k = g_final,
+  G_k = G_final,
+  m_k = m_final,
+  MCE_k = MCE[k]
+)
+write_csv(out_tab, "outputs/tables/final_schedule_and_mce.csv")
+```
+
+---
+
+# 5) Descriptive analysis and initial plots (top‑1000 only)
+
+```{r plots-descriptive, fig.height=5.5}
+p1 <- rank_stats %>%
+  ggplot(aes(x = k)) +
+  geom_line(aes(y = bar_g)) +
+  geom_line(aes(y = tilde_g), linetype = "dashed") +
+  labs(x = "Rank k", y = "Forward log-growth", title = "Rank-conditional forward log-growth: mean (solid) vs median (dashed)")
+
+p2 <- rank_stats %>%
+  ggplot(aes(x = k, y = v_k)) +
+  geom_line() +
+  geom_hline(yintercept = sigma2_hat, linetype = "dotted") +
+  labs(x = "Rank k", y = "Var[r_f]", title = "Rank-conditional variance with pooled σ²")
+
+p3 <- Delta_bar %>%
+  ggplot(aes(x = k, y = overline_Delta_k)) +
+  geom_line() +
+  labs(x = "Rank k", y = "Mean adjacent log-gap Δ̄_k", title = "Mean adjacent log-gaps")
+
+p4 <- mhat %>%
+  ggplot(aes(x = k, y = m_hat)) +
+  geom_line() +
+  scale_x_log10() +
+  labs(x = "log rank", y = "log weight", title = "CDC head: log rank vs log weight")
+
+p1; p2; p3; p4
+
+ggsave("outputs/figures/desc_growth_mean_median.png", p1, width = 8, height = 5)
+ggsave("outputs/figures/desc_variance_sigma.png", p2, width = 8, height = 5)
+ggsave("outputs/figures/desc_gap_means.png", p3, width = 8, height = 5)
+ggsave("outputs/figures/desc_cdc_head_loglog.png", p4, width = 8, height = 5)
+```
+
+---
+
+# 6) Functional form for \\(g_k\\): fit, tail, and checks
+
+```{r tail-checks, fig.height=5.5}
+p_g <- drift_compare %>%
+  pivot_longer(cols = c(g_hat, g_hat_gap), names_to = "type", values_to = "value") %>%
+  ggplot(aes(x = k, y = value, color = type)) +
+  geom_line() +
+  labs(x = "Rank k", y = "g_k", title = "Drift schedule: isotonic (primary) vs gap-based check")
+
+k_seq <- 1:max(best$N, K+2000)
+g_tail_only <- tail_predict((K+1):best$N)
+tail_df <- tibble(k = (K+1):best$N, g_tail = g_tail_only)
+
+p_tail <- ggplot() +
+  geom_line(data = drift_hat, aes(x = k, y = g_hat), color = "black") +
+  geom_line(data = tail_df, aes(x = k, y = g_tail), linetype = "dashed") +
+  labs(x = "Rank k", y = "g_k", title = glue("Tail extrapolation: {tail_choice$family} with k0={tail_choice$k0}"))
+
+p_g; p_tail
+
+ggsave("outputs/figures/drift_primary_vs_gap.png", p_g, width = 8, height = 5)
+ggsave("outputs/figures/tail_extrapolation.png", p_tail, width = 8, height = 5)
+```
+
+---
+
+# 7) Robustness and uncertainty
+
+```{r robustness}
+if (inherits(levene_bf, "anova")) print(levene_bf)
+
+decile_sigma <- og_with_decile %>%
+  group_by(decile) %>% summarise(var_decile = var(r_f), .groups = "drop")
+
+write_csv(decile_sigma, "outputs/tables/variance_by_decile.csv")
+```
+
+## 7.1 Block bootstrap for bands
+
+```{r bootstrap, eval=TRUE}
+core_pipeline_from_weeks <- function(weeks_subset){
+  wh <- weekly_head %>% semi_join(tibble(week_start = weeks_subset), by = "week_start")
+  if (n_distinct(wh$week_start) < 3) return(NULL)
+  wh <- wh %>% arrange(endpoint_id, week_start) %>% group_by(endpoint_id) %>%
+    mutate(next_week = lead(week_start), log_share_next = lead(log_share)) %>% ungroup()
+  og <- wh %>% filter(!is.na(log_share_next), next_week == week_start + 7) %>%
+    transmute(week_start, endpoint_id, k = rank_w, r_f = log_share_next - log_share)
+  rs <- og %>% group_by(k) %>% summarise(bar_g = mean(r_f), n_k = n(), .groups = "drop")
+  wy_mean <- weighted.mean(rs$bar_g, rs$n_k)
+  g_iso <- isotone::gpava(1:nrow(rs), rs$bar_g - wy_mean, weights = rs$n_k)$x %>% as.numeric()
+  v_k <- og %>% group_by(k) %>% summarise(v_k = var(r_f), n_k = n(), .groups="drop")
+  sig2 <- weighted.mean(v_k$v_k, v_k$n_k)
+  G <- cumsum(g_iso)
+  r <- -2 * G[1:(length(G)-1)] / sig2
+  if (any(r <= 0)) return(NULL)
+  rho <- 1 / r
+  m1 <- wh %>% group_by(k=rank_w) %>% summarise(m_hat = mean(log_share), .groups="drop") %>% filter(k==1) %>% pull(m_hat)
+  m <- numeric(length(g_iso)); m[1] <- m1
+  for (kk in 1:(length(g_iso)-1)) m[kk+1] <- m[kk] - rho[kk]
+  S <- rev(cumsum(rev(c(rho,0)))); wstar <- exp(S); MCE <- wstar/sum(wstar)
+  list(g = g_iso, r = r, m = m, top1000_share_mod = sum(MCE[1:min(K, length(MCE))]))
+}
+
+weeks_all <- sort(unique(weekly_head$week_start))
+B <- as.integer(params$bootstrap_B)
+block_len <- params$block_len
+if (length(weeks_all) >= block_len*2 && B > 0){
+  block_starts <- 1:(length(weeks_all)-block_len+1)
+  res_list <- vector("list", B)
+  for (b in 1:B){
+    idx <- sample(block_starts, size = ceiling(length(weeks_all)/block_len), replace = TRUE)
+    sel_weeks <- unlist(lapply(idx, function(s) weeks_all[s:(s+block_len-1)]))
+    sel_weeks <- sel_weeks[sel_weeks %in% weeks_all][1:length(weeks_all)]
+    res_list[[b]] <- core_pipeline_from_weeks(sel_weeks)
+  }
+  m_mat <- do.call(cbind, lapply(res_list, function(x) if (is.null(x)) NULL else x$m))
+  if (!is.null(m_mat)){
+    m_q <- apply(m_mat, 1, function(v) quantile(v, probs = c(0.1,0.5,0.9), na.rm = TRUE))
+    m_band <- tibble(k = 1:nrow(m_q), m_p10 = m_q[1,], m_med = m_q[2,], m_p90 = m_q[3,])
+    write_csv(m_band, "outputs/tables/bootstrap_cdc_bands.csv")
+  }
+  share_vec <- sapply(res_list, function(x) if (is.null(x)) NA_real_ else x$top1000_share_mod)
+  share_vec <- share_vec[is.finite(share_vec)]
+  if (length(share_vec)){
+    share_band <- quantile(share_vec, probs = c(0.1,0.5,0.9), na.rm = TRUE)
+    write_csv(tibble(p = c(0.1,0.5,0.9), S = as.numeric(share_band)), "outputs/tables/bootstrap_top1000_share_bands.csv")
+  }
+}
+```
+
+---
+
+# 8) Estimating platform totals and the top‑1000 share
+
+```{r totals}
+S_mod_1000 <- sum(MCE[1:K])
+
+if (!"weekly_total" %in% names(weekly_head) || all(is.na(weekly_head$weekly_total))) {
+  A1000 <- weekly_head %>% group_by(week_start) %>% summarise(A1000 = sum(weekly_metric), .groups="drop")
+  totals_est <- A1000 %>% mutate(weekly_total_hat = A1000 / S_mod_1000)
+  write_csv(totals_est, "outputs/tables/weekly_total_estimated.csv")
+} else {
+  comp <- top1000_share_by_week %>% mutate(S_mod_1000 = S_mod_1000, gap = S_obs_1000 - S_mod_1000)
+  write_csv(comp, "outputs/tables/top1000_share_comparison.csv")
+}
+```
+
+---
+
+# 9) Final CDC visualization
+
+```{r final-cdc, fig.height=5.8}
+cdc_df_head <- mhat %>% mutate(part = "observed")
+cdc_df_tail <- tibble(k = (K+1):best$N, m_hat = m_final[(K+1):best$N], part = "estimated")
+
+p_final <- bind_rows(cdc_df_head, cdc_df_tail) %>%
+  ggplot(aes(x = k, y = m_hat, linetype = part)) +
+  geom_line(size = 0.8) +
+  scale_x_log10() +
+  scale_linetype_manual(values = c(observed = "solid", estimated = "dashed")) +
+  labs(x = "log rank", y = "log weight", title = "Capital Distribution Curve (CDC): head and estimated tail") +
+  theme(legend.position = "bottom")
+
+p_final
+ggsave("outputs/figures/final_cdc_loglog.png", p_final, width = 8, height = 5.5)
+```
+
+---
+
+# 10) Sanity checks and acceptance criteria
+
+```{r acceptance}
+checks <- list(
+  monotonicity = all(diff(drift_hat$g_hat) >= -1e-10),
+  positivity_r = all(r_final > 0),
+  stationarity = all(G_final[1:(length(G_final)-1)] < 0),
+  top1000_share_close = abs(sum(MCE[1:K]) - S_obs_1000) < 0.05
+)
+checks
+
+if (!checks$monotonicity) warning("Monotonicity of g_k violated in head estimate.")
+if (!checks$positivity_r) warning("Some gap rates r_k are non-positive.")
+if (!checks$stationarity) warning("Stationarity G(k)<0 violated for some k<N.")
+if (!checks$top1000_share_close) warning("Modeled vs observed top-1000 share differs by >= 5 percentage points.")
+```
+
+---
+
+# 11) Edge cases and data hygiene
+
+```{r optional-winsor, eval=FALSE}
+winsor_by_rank <- function(df, p = 0.99){
+  df %>% group_by(k) %>%
+    mutate(
+      lo = quantile(r_f, 1-p, na.rm = TRUE),
+      hi = quantile(r_f, p, na.rm = TRUE),
+      r_f = pmax(pmin(r_f, hi), lo)
+    ) %>%
+    ungroup() %>%
+    select(-lo,-hi)
+}
+occupant_growth <- winsor_by_rank(occupant_growth, p = 0.99)
+```
+
+---
+
+# 12) Mathematical appendix
+
+We use the Atlas‑style relations:
+\\[
+r_k = -\\frac{2\\,G(k)}{\\sigma^2},\\qquad
+m(k+1)-m(k) = -\\frac{1}{r_k},\\qquad
+\\rho_k = \\frac{1}{r_k},\\quad
+S_k = \\sum_{j=k}^{N-1}\\rho_j,\\quad
+w_k^\\star = e^{S_k},\\quad
+\\mathrm{MCE}_k = \\frac{w_k^\\star}{\\sum_{i=1}^{N} w_i^\\star}.
+\\]
+
+---
+
+# 13) References
+
+Banner, A. D., Fernholz, R., & Karatzas, I. (2005). Atlas models of equity markets. *Annals of Applied Probability, 15*(4), 2296–2330. Project Euclid: https://projecteuclid.org/journals/annals-of-applied-probability/volume-15/issue-4/Atlas-models-of-equity-markets/10.1214/105051605000000575.full  |  arXiv: https://arxiv.org/abs/math/0602521
+
+Fernholz, E. R., & Karatzas, I. (2009). Stochastic portfolio theory: An overview. Retrieved from Columbia University: https://www.math.columbia.edu/~ik/FernKarSPT.pdf
+
+Pal, S., & Pitman, J. (2008). One-dimensional Brownian particle systems with rank-dependent drifts. *Annals of Applied Probability, 18*(6), 2179–2207. Project Euclid: https://projecteuclid.org/journals/annals-of-applied-probability/volume-18/issue-6/One-dimensional-Brownian-particle-systems-with-rank-dependent-drifts/10.1214/08-AAP528.full
+
+Ichiba, T., Papathanakos, V., Banner, A., Karatzas, I., & Fernholz, R. (2011). Hybrid Atlas models. *Annals of Applied Probability, 21*(2), 609–644. Project Euclid: https://projecteuclid.org/journals/annals-of-applied-probability/volume-21/issue-2/Hybrid-Atlas-models/10.1214/10-AAP720.full  |  arXiv: https://arxiv.org/abs/0909.0065
+
+Fernholz, E. R. (2002). On stochastic portfolio theory. INTECH. PDF: https://www.intechinvestments.com/wp-content/uploads/2023/06/OnStochasticPortfolioTheory_2002.pdf
+
+---
+
+# 14) Session info
+
+```{r}
+sessionInfo()
+```
