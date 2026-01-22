@@ -1,0 +1,594 @@
+---
+title: "Rank Diffusion and Simulation of FB Data (v10)"
+format: pdf
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+This report builds on v9. All main modeling choices remain unchanged: rank-indexed Gaussian increment model, the use of smoothed per-rank mean and variance of weekly log share changes, the focus on reproducing the empirical CDC curve, etc. The purpose of v10, then, is to focus on finding an optimal value of sigma. As such, we will calibrate sigma using an explicit empirical target that captures how much endpoints change over time.
+
+Two empirical summaries are used throughout:
+
+  - CDC (as before) operates as our static benchmark for the long-run distribution of attention across ranks. Fit to the CDC is evaluated using an RMSE on log shares between empirical and simulated mean curves.
+
+  - Durable change across endpoints, which is a summary of the amount of change in endpoint shares over fixed time horizons. For each rank bucket and horizon, we produce empirical targets that show how much endpoints typically move over 4- and 8-week horizons, separately for large, midsize, and small ranks. Note: these buckets are the same since v1; and also, I've updated the simulation function to allow for varying the time horizons for potential future runs/tests.
+
+So, our main focus here is to calibrate sigma so that the simulation reproduces the observed magnitude of endpoint change across both time horizons and rank ranges, while still balancing with a reasonable CDC fit. Though there are several ways we could think about calibration, in this report, I've chosen to do so by minimizing a mismatch score based primarily on durable-change RMSE, with a secondary penalty for CDC deviation between empirical and simulated curves.
+
+The result: 
+
+  - We get a best overall sigma, which is defined as the value that minimizes mismatch across all horizons and rank buckets
+  - We also get a best sigma by horizon, which allows sigma to vary by time horizon to diagnose any potential scale dependence in the dynamics
+
+## Setup
+
+Unchanged from v9. 
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(arrow)
+library(lubridate)
+library(scales)
+library(here)
+library(broom)
+
+set.seed(1823)
+
+raw <- read_parquet(
+  here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/fb_ranked_weekly.parquet")
+)
+```
+
+```{r}
+endpoint_weekly <- raw %>%
+  transmute(
+    week = date,
+    endpoint_id,
+    metric_value,
+    rank = rank
+  ) %>%
+  group_by(week) %>%
+  arrange(desc(metric_value), .by_group = TRUE) %>%
+  mutate(
+    rank  = row_number(),
+    share = metric_value / sum(metric_value, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+max_rank_by_week <- endpoint_weekly %>%
+  group_by(week) %>%
+  summarise(max_rank = max(rank), .groups = "drop")
+
+max_rank_seen <- max(max_rank_by_week$max_rank, na.rm = TRUE)
+```
+
+```{r}
+# baseline CDC curve (mean share by rank)
+mean_share <- endpoint_weekly %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") %>%
+  arrange(rank)
+
+# rank-wise weekly delta log(share) pools
+rank_panel <- endpoint_weekly %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    share = pmax(share, 1e-12),
+    log_w = log(share),
+    dlogw = log_w - lag(log_w)
+  ) %>%
+  ungroup() %>%
+  filter(is.finite(dlogw))
+```
+
+```{r}
+K_cut   <- min(12000L, max_rank_seen)
+K_max   <- min(K_cut + 2000L, max_rank_seen)
+T_weeks <- 52
+N_paths <- 120
+
+# seed curve w0 up to K_max
+w0_raw <- mean_share$w_bar[seq_len(min(K_max, nrow(mean_share)))]
+w0_raw <- w0_raw / sum(w0_raw)
+
+buffer_tail <- 2000L
+
+entrant_pool <- endpoint_weekly %>%
+  filter(rank > K_cut,
+         rank <= min(K_cut + buffer_tail, max_rank_seen)) %>%
+  transmute(share) %>%
+  filter(is.finite(share), share > 0)
+
+entrant_sampler <- function(n) {
+  sample(entrant_pool$share, size = n, replace = TRUE)
+}
+```
+
+## Moving-average smoothing over ranks
+
+Unchanged from v9. Recall, we want a smooth rank-indexed vector using a centered window of half-width `h` (so window size is `2h+1`).
+
+```{r}
+moving_average_rank <- function(x, h) {
+  stopifnot(h >= 0L)
+  n <- length(x)
+  if (h == 0L) return(x)
+
+  cs <- c(0, cumsum(replace_na(x, 0)))
+  out <- numeric(n)
+
+  for (r in seq_len(n)) {
+    lo <- max(1L, r - h)
+    hi <- min(n, r + h)
+    out[r] <- (cs[hi + 1L] - cs[lo]) / (hi - lo + 1L)
+  }
+  out
+}
+```
+
+Steps: 
+
+  1. compute *raw* per-rank mean and sd of `d_log_w`
+  2. for a given smoothing half-width `h`, compute smoothed per-rank mean and sd vectors
+
+```{r}
+# raw (unsmoothed) Gaussian params by rank
+gauss_params_raw <- rank_panel %>%
+  filter(rank <= K_max) %>%
+  group_by(rank) %>%
+  summarise(
+    mean_dlogw = mean(dlogw, na.rm = TRUE),
+    sd_dlogw   = sd(dlogw,   na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  right_join(tibble(rank = 1:K_max), by = "rank") %>%
+  arrange(rank) %>%
+  mutate(
+    mean_dlogw = replace_na(mean_dlogw, 0),
+    sd_dlogw   = replace_na(sd_dlogw,   0),
+    sd_dlogw   = if_else(sd_dlogw <= 0 | !is.finite(sd_dlogw), 1e-6, sd_dlogw)
+  )
+
+# build smoothed parameters for a chosen smoothing half-width h
+build_gaussian_params_smoothed <- function(h) {
+  m <- gauss_params_raw$mean_dlogw
+  s <- gauss_params_raw$sd_dlogw
+
+  tibble(
+    rank = 1:K_max,
+    mean_dlogw_s = moving_average_rank(m, h = h),
+    sd_dlogw_s   = pmax(moving_average_rank(s, h = h), 1e-6)
+  )
+}
+```
+
+## Empirical CDC and durable-change
+
+Unchanged from v9. Define the empirical curve. And also, we extend the original idea of time horizons to give generalized targets for amount of change across endpoints. 
+
+```{r}
+# empirical CDC (top-K_cut, normalized within top-K)
+emp_cdc <- endpoint_weekly %>%
+  group_by(week) %>%
+  arrange(desc(share), .by_group = TRUE) %>%
+  mutate(rank_in_week = row_number()) %>%
+  filter(rank_in_week <= K_cut) %>%
+  mutate(shareK = share / sum(share)) %>%
+  ungroup() %>%
+  group_by(rank = rank_in_week) %>%
+  summarise(w_bar = mean(shareK, na.rm = TRUE), .groups = "drop")
+
+# time horizons we want to match (keep v9 = 4,8; can add more later)
+horizons_emp <- c(4L, 8L)
+
+# single bucket scheme (v9)
+bucket_def <- list(
+  breaks = c(0, 25, 250, Inf),
+  labels = c("large", "midsize", "small")
+)
+
+assign_bucket <- function(rank, bucket_def) {
+  cut(
+    rank,
+    breaks = bucket_def$breaks,
+    labels = bucket_def$labels,
+    include.lowest = TRUE,
+    right = TRUE
+  )
+}
+
+# empirical endpoint change summary
+compute_emp_endpoint_change <- function(df, horizons, bucket_def) {
+
+  df2 <- df %>%
+    group_by(rank) %>%
+    arrange(week, .by_group = TRUE) %>%
+    mutate(log_w = log(pmax(share, 1e-12)))
+
+  out <- purrr::map_dfr(horizons, function(h) {
+    df2 %>%
+      mutate(d = dplyr::lead(log_w, h) - log_w) %>%
+      ungroup() %>%
+      mutate(
+        horizon = h,
+        bucket = assign_bucket(rank, bucket_def)
+      ) %>%
+      filter(!is.na(d), !is.na(bucket)) %>%
+      group_by(bucket, horizon) %>%
+      summarise(
+        med_abs_emp = median(abs(d), na.rm = TRUE),
+        .groups = "drop"
+      )
+  })
+
+  out
+}
+
+emp_targets <- compute_emp_endpoint_change(
+  df = endpoint_weekly,
+  horizons = horizons_emp,
+  bucket_def = bucket_def
+)
+```
+
+## Simulation: Gaussian increments with smoothed moments / moving average
+
+This simulator is the same as v8 and v9, except it takes the smoothed per-rank mean and sd vectors as input (from v9) in addition to new time horizons (default at 4 and 8 weeks out).
+
+```{r}
+simulate_rank_paths <- function(
+  w0, K_cut, K_max, T = 52, n_paths = 200,
+  mu = 0, sigma = 1, entry_frac = 0.10,
+  mean_vec, sd_vec,
+  horizons = c(4L, 8L)
+) {
+  stopifnot(length(mean_vec) == K_max, length(sd_vec) == K_max)
+
+  top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
+
+  # sample one Gaussian increment per rank
+  sample_increments_gaussian <- function(mu = 0, sigma = 1) {
+    rnorm(K_max, mean = mu + mean_vec, sd = sigma * sd_vec)
+  }
+
+  snapshots <- vector("list", n_paths)
+  horizons <- as.integer(horizons)
+  stopifnot(all(horizons >= 1L), all(horizons <= T))
+
+  growth_collect <- setNames(vector('list', length(horizons)), 
+                             paste0('h', horizons))
+
+  for (p in seq_len(n_paths)) {
+    # initialize universe to K_max
+    if (length(w0) < K_max) {
+      w <- c(w0, entrant_sampler(K_max - length(w0)))
+      w <- w / sum(w)
+    } else {
+      w <- w0[1:K_max]; w <- w / sum(w)
+    }
+
+    # baseline top-K for durable change
+    w_base <- top_n_sorted(w, K_cut)
+    w_base <- w_base / sum(w_base)
+
+    snaps_p <- vector("list", T)
+
+    for (t in seq_len(T)) {
+      dlogw <- sample_increments_gaussian(mu = mu, 
+                                          sigma = sigma)
+
+      w <- w * exp(dlogw)
+      w <- pmax(w, 1e-18)
+      w <- w / sum(w)
+
+      # exit & entry: keep top-K_cut, refill to K_max
+      w_top  <- top_n_sorted(w, K_cut)
+      n_tail <- K_max - K_cut
+      if (n_tail > 0) {
+        n_add <- max(1L, floor(n_tail * entry_frac))
+        w <- c(w_top, entrant_sampler(n_add), 
+               entrant_sampler(n_tail - n_add))
+      } else {
+        w <- w_top
+      }
+      w <- w / sum(w)
+
+      # CDC snapshot at time t (top-K, renormalized)
+      wK <- top_n_sorted(w, K_cut)
+      wK <- wK / sum(wK)
+      snaps_p[[t]] <- tibble(path = p, 
+                             t = t, 
+                             rank = seq_len(K_cut), 
+                             share = wK)
+
+      # durable change at 4w and 8w relative to baseline
+      if (t %in% horizons) {
+        lg  <- log(wK / w_base)
+        lbl <- paste0("h", t)
+        growth_collect[[lbl]] <- rbind(
+          growth_collect[[lbl]],
+          cbind(path = p, rank = seq_len(K_cut),
+                horizon = t, log_growth = lg)
+        )
+      }
+    }
+
+    snapshots[[p]] <- bind_rows(snaps_p)
+  }
+
+  growth_df <- bind_rows(lapply(growth_collect, as_tibble))
+
+  list(
+    snapshots = bind_rows(snapshots),
+    growth    = growth_df
+  )
+}
+
+# extend w0 to K_max once
+if (length(w0_raw) < K_max) {
+  w0_ext <- c(w0_raw, entrant_sampler(K_max - length(w0_raw)))
+  w0_ext <- w0_ext / sum(w0_ext)
+} else {
+  w0_ext <- w0_raw[1:K_max]; w0_ext <- w0_ext / sum(w0_ext)
+}
+
+# metrics
+cdc_rmse <- function(emp, sim) {
+  df <- emp %>%
+    inner_join(sim, by = "rank", suffix = c("_emp", "_sim"))
+  sqrt(mean((log(df$w_bar_emp) - log(df$w_bar_sim))^2, 
+            na.rm = TRUE))
+}
+
+durable_rmse <- function(emp_targets, sim_growth, bucket_def) {
+  sim_targets <- sim_growth %>%
+    mutate(bucket = assign_bucket(rank, bucket_def)) %>%
+    filter(!is.na(bucket)) %>%
+    group_by(bucket, horizon) %>%
+    summarise(med_abs_sim = median(abs(log_growth), na.rm = TRUE), 
+              .groups = "drop")
+
+  emp_targets %>%
+    inner_join(sim_targets, by = c("bucket", "horizon")) %>%
+    summarise(rmse = sqrt(mean((med_abs_emp - med_abs_sim)^2, 
+                               na.rm = TRUE))) %>%
+    pull(rmse)
+}
+```
+
+## Sigma calibration (v10): match endpoint change across horizons + rank ranges
+
+Now, in this current version we want to focus on calibrating sigma in order to match the amount of change across endpoints that we see empirically (or get pretty close ideally). 
+
+To do so, as a first take: 
+
+  - Empirical target: for each rank bucket + horizon `h`, compute `d_h = log(w_{t+h}) - log(w_t)` and summarize with `median(|d_h|)`
+  
+  - Simulation target: for the same rank bucket + horizon, compute `log_growth = log(w_{t+h} / w_t)` (already what the sim records) and summarize with `median(|log_growth|)`
+
+From here, pick sigma to minimize the mismatch between empirical and simulated `median(|.|)` values.
+
+As such, the only real change to the v9 simulation approach is adding a calibration loop that returns:
+
+  - best sigma overall (across all horizons)
+  
+  - best sigma by horizon (same buckets, but optimizing sigma separately for each horizon)
+
+```{r eval = FALSE}
+mu_fixed <- 0.0
+h_fixed  <- 5L
+T_sim    <- 52
+n_paths  <- 200
+entry_fr <- 0.10
+
+# n weeks forward to calibrate against (must match horizons_emp)
+horizons_sim <- horizons_emp
+
+# sigma search grid
+sigma_grid <- seq(0.15, 0.40, by = 0.01)
+
+# run it
+calibrate_sigma <- function(sigma, w0_ext, mean_vec_s, sd_vec_s) {
+  sim_res <- simulate_rank_paths(
+    w0 = w0_ext,
+    K_cut = K_cut,
+    K_max = K_max,
+    T = T_sim,
+    n_paths = n_paths,
+    mu = mu_fixed,
+    sigma = sigma,
+    entry_frac = entry_fr,
+    mean_vec = mean_vec_s,
+    sd_vec = sd_vec_s,
+    horizons = horizons_sim
+  )
+
+  rmse_dur <- durable_rmse(emp_targets, sim_res$growth, bucket_def)
+
+  rmse_cdc <- cdc_rmse(emp_cdc, sim_res$snapshots %>%
+                         group_by(rank) %>%
+                         summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop"))
+
+  tibble(
+    sigma = sigma,
+    rmse_dur = rmse_dur,
+    rmse_cdc = rmse_cdc,
+    score = rmse_dur + 0.25 * rmse_cdc
+  )
+}
+
+# smoothed moments at h_fixed
+sm <- build_gaussian_params_smoothed(h = h_fixed)
+mean_vec_s <- sm$mean_dlogw_s
+sd_vec_s   <- sm$sd_dlogw_s
+
+sigma_results <- map_dfr(sigma_grid, calibrate_sigma,
+                         w0_ext = w0_ext,
+                         mean_vec_s = mean_vec_s,
+                         sd_vec_s = sd_vec_s) %>%
+  arrange(score)
+
+best_sigma_overall <- sigma_results %>% slice(1)
+
+write_rds(sigma_results, "sigma_results_v10.rds")
+write_rds(best_sigma_overall, "best_sigma_overall_v10.rds")
+```
+
+### Best sigma by horizon
+
+This is the same idea, except we compute the mismatch **within each horizon** separately, then pick the sigma that minimizes it for that horizon.
+
+```{r eval = FALSE}
+sigma_by_horizon <- function(sigma, w0_ext, mean_vec_s, sd_vec_s, bucket_def) {
+  sim_res <- simulate_rank_paths(
+    w0 = w0_ext,
+    K_cut = K_cut,
+    K_max = K_max,
+    T = T_sim,
+    n_paths = n_paths,
+    mu = mu_fixed,
+    sigma = sigma,
+    entry_frac = entry_fr,
+    mean_vec = mean_vec_s,
+    sd_vec = sd_vec_s,
+    horizons = horizons_sim
+  )
+
+  # simulated targets per (bucket, horizon)
+  sim_targets <- sim_res$growth %>%
+    mutate(bucket = assign_bucket(rank, bucket_def)) %>%
+    filter(!is.na(bucket)) %>%
+    group_by(bucket, horizon) %>%
+    summarise(med_abs_sim = median(abs(log_growth), na.rm = TRUE), .groups = "drop")
+
+  # horizon-specific RMSE table (this is what downstream code expects)
+  emp_targets %>%
+    inner_join(sim_targets, by = c("bucket", "horizon")) %>%
+    group_by(horizon) %>%
+    summarise(
+      sigma = sigma,
+      rmse_h = sqrt(mean((med_abs_emp - med_abs_sim)^2, na.rm = TRUE)),
+      .groups = "drop"
+    )
+}
+
+sigma_h_tbl <- map_dfr(
+  sigma_grid, sigma_by_horizon,
+  w0_ext = w0_ext,
+  mean_vec_s = mean_vec_s,
+  sd_vec_s = sd_vec_s,
+  bucket_def = bucket_def
+)
+
+best_sigma_by_horizon <- sigma_h_tbl %>%
+  group_by(horizon) %>%
+  arrange(rmse_h, .by_group = TRUE) %>%
+  slice(1) %>%
+  ungroup()
+
+write_rds(sigma_h_tbl, "sigma_by_horizon_v10.rds")
+write_rds(best_sigma_by_horizon, "best_sigma_by_horizon_v10.rds")
+```
+
+### Sigma calibration results
+
+```{r}
+#| fig-width: 7
+#| fig-height: 7
+
+sigma_results <- read_rds("sigma_results_v10.rds")
+sigma_h_tbl   <- read_rds("sigma_by_horizon_v10.rds")
+best_sigma_by_horizon <- read_rds("best_sigma_by_horizon_v10.rds")
+
+ggplot(sigma_results, aes(x = sigma, y = score)) +
+  geom_line() +
+  geom_vline(xintercept = 0.16, linetype = "dashed", col = "red") +
+  labs(
+    title = "Sigma calibration overall",
+    x = "sigma",
+    y = "score (durable mismatch + 0.25 * CDC mismatch)"
+  ) +
+  theme_bw()
+```
+
+```{r}
+#| fig-width: 9
+#| fig-height: 7
+
+ggplot(sigma_h_tbl, aes(x = sigma, y = rmse_h)) +
+  geom_line() +
+  facet_wrap(~ horizon, scales = "free_y") +
+  labs(
+    title = "Sigma calibration by horizon",
+    x = "sigma",
+    y = "RMSE within horizon"
+  ) +
+  theme_bw()
+```
+
+## Check on CDC fit at optimal sigma
+
+```{r}
+best_sigma_overall <- read_rds("best_sigma_overall_v10.rds")
+
+best_sigma_overall
+```
+
+```{r}
+#| fig-width: 7
+#| fig-height: 7
+
+h_fixed <- 5L
+n_paths  <- 200
+mu_fixed <- 0.0
+T_sim    <- 52
+entry_fr <- 0.10
+horizons_sim <- horizons_emp
+
+sm <- build_gaussian_params_smoothed(h = h_fixed)
+mean_vec_s <- sm$mean_dlogw_s
+sd_vec_s   <- sm$sd_dlogw_s
+
+opt_sig <- best_sigma_overall$sigma[[1]]
+
+sim_star <- simulate_rank_paths(
+  w0 = w0_ext,
+  K_cut = K_cut,
+  K_max = K_max,
+  T = T_sim,
+  n_paths = n_paths,
+  mu = mu_fixed,
+  sigma = opt_sig,
+  entry_frac = entry_fr,
+  mean_vec = mean_vec_s,
+  sd_vec = sd_vec_s,
+  horizons = horizons_sim
+)
+
+sim_cdc <- sim_star$snapshots %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop")
+
+cdc_plot_df <- bind_rows(
+  emp_cdc %>% mutate(source = "Empirical"),
+  sim_cdc %>% mutate(source = "Simulated")
+)
+
+ggplot(cdc_plot_df, aes(x = rank, y = w_bar, linetype = source)) +
+  geom_line(linewidth = 0.8) +
+  scale_x_continuous(trans = "log10") +
+  scale_y_continuous(trans = "log10", labels = label_number(accuracy = 0.001)) +
+  labs(
+    title = paste0("CDC: Empirical vs Simulated at sigma = ", round(opt_sig, 3)),
+    x = "Rank (log)",
+    y = "Mean share (log)",
+    linetype = NULL
+  ) +
+  theme_bw() +
+  theme(legend.position = "top")
+```

@@ -1,0 +1,476 @@
+---
+title: "Rank Diffusion and Simulation of FB Data (v9)"
+format:
+  pdf:
+    geometry: landscape
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+Building on v8, this script smooths the Gaussian increment model across neighboring ranks. Namely, instead of treating rank 1, rank 2, rank 3, etc. as fully separate processes, we replace the per-rank mean and variance of weekly log-share changes with a *moving-average estimate over a local rank neighborhood* (defined and tunable as a new parameter in the sim, `h`).
+
+This is the first step attempting to reduce noise. That is the goal here is to make the mean and variance in rank space smoother, reduce high-frequency rank-to-rank movement, and (hopefully) make it easier to see and eventually fit the global patterns that drive CDC shape and durable change.
+
+So, building on the setup from v8, we update here accordingly:
+
+  - We still compute one-week log-share changes `d_log_w` by rank from the empirical data
+
+  - Estimate per-rank step "moments": $\bar d_r = \mathbb{E}[d\log w_r]$ and $s_r = \mathrm{sd}(d\log w_r)$
+
+  - Then we smooth these moments across ranks using a moving window of size $2h+1$ centered at each rank $r$:
+    - $\tilde d_r = \mathrm{MA}_h(\bar d)_r$
+    - $\tilde s_r = \mathrm{MA}_h(s)_r$
+
+  - The sim then draws increments using:
+  
+$$
+\Delta\log w_r \sim \mathcal{N}\bigl(\mu + \tilde d_r,\; (\sigma\,\tilde s_r)^2\bigr)
+$$
+
+  where:
+  
+  - $\mu$ is a global drift parameter capturing the shifts of all ranks' increments (up/down)
+  - $\sigma$ is a global volatility parameter
+  - $h$ is the smoothing half-width (i.e., how many ranks above/below to average over)
+
+In addition to the update to account for the moving average to smooth things out, the next key update in this v9 report is likelwise updating the grid search to include $h$ as a third parameter.
+
+## Setup
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(arrow)
+library(lubridate)
+library(scales)
+library(here)
+library(broom)
+
+set.seed(1823)
+
+raw <- read_parquet(
+  here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/fb_ranked_weekly.parquet")
+)
+```
+
+
+```{r}
+endpoint_weekly <- raw %>%
+  transmute(
+    week = date,
+    endpoint_id,
+    metric_value,
+    rank = rank
+  ) %>%
+  group_by(week) %>%
+  arrange(desc(metric_value), .by_group = TRUE) %>%
+  mutate(
+    rank  = row_number(),
+    share = metric_value / sum(metric_value, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+max_rank_by_week <- endpoint_weekly %>%
+  group_by(week) %>%
+  summarise(max_rank = max(rank), .groups = "drop")
+
+max_rank_seen <- max(max_rank_by_week$max_rank, na.rm = TRUE)
+```
+
+
+```{r}
+# baseline CDC curve (mean share by rank)
+mean_share <- endpoint_weekly %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") %>%
+  arrange(rank)
+
+# rank-wise weekly delta log(share) pools
+rank_panel <- endpoint_weekly %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    share = pmax(share, 1e-12),
+    log_w = log(share),
+    dlogw = log_w - lag(log_w)
+  ) %>%
+  ungroup() %>%
+  filter(is.finite(dlogw))
+```
+
+
+```{r}
+K_cut   <- min(12000L, max_rank_seen)
+K_max   <- min(K_cut + 2000L, max_rank_seen)
+T_weeks <- 52
+N_paths <- 120
+
+# seed curve w0 up to K_max
+w0_raw <- mean_share$w_bar[seq_len(min(K_max, nrow(mean_share)))]
+w0_raw <- w0_raw / sum(w0_raw)
+
+buffer_tail <- 2000L
+
+entrant_pool <- endpoint_weekly %>%
+  filter(rank > K_cut,
+         rank <= min(K_cut + buffer_tail, max_rank_seen)) %>%
+  transmute(share) %>%
+  filter(is.finite(share), share > 0)
+
+stopifnot(nrow(entrant_pool) > 100)
+
+entrant_sampler <- function(n) {
+  sample(entrant_pool$share, size = n, replace = TRUE)
+}
+```
+
+## Moving-average smoothing helper over ranks
+
+Here's where updates start. We smooth a rank-indexed vector using a centered window of half-width `h` (so window size is `2h+1`).
+
+```{r}
+moving_average_rank <- function(x, h) {
+  stopifnot(h >= 0L)
+  n <- length(x)
+  if (h == 0L) return(x)
+
+  cs <- c(0, cumsum(replace_na(x, 0)))
+  out <- numeric(n)
+
+  for (r in seq_len(n)) {
+    lo <- max(1L, r - h)
+    hi <- min(n, r + h)
+    out[r] <- (cs[hi + 1L] - cs[lo]) / (hi - lo + 1L)
+  }
+  out
+}
+```
+
+Now, these steps: 
+
+  1. compute *raw* per-rank mean and sd of `d_log_w`
+  
+  2. for a given smoothing half-width `h`, compute *smoothed* per-rank mean and sd vectors
+
+```{r}
+# raw (unsmoothed) Gaussian params by rank
+gauss_params_raw <- rank_panel %>%
+  filter(rank <= K_max) %>%
+  group_by(rank) %>%
+  summarise(
+    mean_dlogw = mean(dlogw, na.rm = TRUE),
+    sd_dlogw   = sd(dlogw,   na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  right_join(tibble(rank = 1:K_max), by = "rank") %>%
+  arrange(rank) %>%
+  mutate(
+    mean_dlogw = replace_na(mean_dlogw, 0),
+    sd_dlogw   = replace_na(sd_dlogw,   0),
+    sd_dlogw   = if_else(sd_dlogw <= 0 | !is.finite(sd_dlogw), 1e-6, sd_dlogw)
+  )
+
+# build smoothed parameters for a chosen smoothing half-width h
+build_gaussian_params_smoothed <- function(h) {
+  m <- gauss_params_raw$mean_dlogw
+  s <- gauss_params_raw$sd_dlogw
+
+  tibble(
+    rank = 1:K_max,
+    mean_dlogw_s = moving_average_rank(m, h = h),
+    sd_dlogw_s   = pmax(moving_average_rank(s, h = h), 1e-6)
+  )
+}
+```
+
+## Empirical CDC and durable-change
+
+```{r}
+# Empirical CDC (top-K_cut, normalized within top-K)
+emp_cdc <- endpoint_weekly %>%
+  group_by(week) %>%
+  arrange(desc(share), .by_group = TRUE) %>%
+  mutate(rank_in_week = row_number()) %>%
+  filter(rank_in_week <= K_cut) %>%
+  mutate(shareK = share / sum(share)) %>%
+  ungroup() %>%
+  group_by(rank = rank_in_week) %>%
+  summarise(w_bar = mean(shareK, na.rm = TRUE), .groups = "drop")
+
+rank_bucket <- function(r) {
+  case_when(
+    r <= 25   ~ "large",
+    r <= 250  ~ "midsize",
+    TRUE      ~ "small"
+  )
+}
+
+emp_durable <- endpoint_weekly %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    log_w = log(pmax(share, 1e-12)),
+    log_w_lead4 = lead(log_w, 4),
+    log_w_lead8 = lead(log_w, 8),
+    d4 = log_w_lead4 - log_w,
+    d8 = log_w_lead8 - log_w
+  ) %>%
+  ungroup() %>%
+  mutate(bucket = rank_bucket(rank)) %>%
+  filter(!is.na(d4) | !is.na(d8))
+
+emp_durable_long <- emp_durable %>%
+  select(bucket, d4, d8) %>%
+  pivot_longer(cols = c(d4, d8),
+               names_to = "horizon",
+               values_to = "d") %>%
+  mutate(horizon = if_else(horizon == "d4", 4L, 8L)) %>%
+  group_by(bucket, horizon) %>%
+  summarise(med_abs_emp = median(abs(d), na.rm = TRUE), .groups = "drop")
+```
+
+## Sim: Gaussian increments with smoothed moments / moving average
+
+This simulator is the same as v8, except it takes the *smoothed per-rank mean and sd vectors* as input.
+
+```{r}
+simulate_rank_paths <- function(
+  w0, K_cut, K_max, T = 52, n_paths = 200,
+  mu = 0, sigma = 1, entry_frac = 0.10,
+  mean_vec, sd_vec
+) {
+  stopifnot(length(mean_vec) == K_max, length(sd_vec) == K_max)
+
+  top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
+
+  # sample one Gaussian increment per rank
+  sample_increments_gaussian <- function(mu = 0, sigma = 1) {
+    rnorm(K_max, mean = mu + mean_vec, sd = sigma * sd_vec)
+  }
+
+  snapshots <- vector("list", n_paths)
+  growth_collect <- list(h4 = NULL, h8 = NULL)
+  horizons <- c(4L, 8L)
+
+  for (p in seq_len(n_paths)) {
+    # initialize universe to K_max
+    if (length(w0) < K_max) {
+      w <- c(w0, entrant_sampler(K_max - length(w0)))
+      w <- w / sum(w)
+    } else {
+      w <- w0[1:K_max]; w <- w / sum(w)
+    }
+
+    # baseline top-K for durable change
+    w_base <- top_n_sorted(w, K_cut)
+    w_base <- w_base / sum(w_base)
+
+    snaps_p <- vector("list", T)
+
+    for (t in seq_len(T)) {
+      dlogw <- sample_increments_gaussian(mu = mu, sigma = sigma)
+
+      w <- w * exp(dlogw)
+      w <- pmax(w, 1e-18)
+      w <- w / sum(w)
+
+      # exit & entry: keep top-K_cut, refill to K_max
+      w_top  <- top_n_sorted(w, K_cut)
+      n_tail <- K_max - K_cut
+      if (n_tail > 0) {
+        n_add <- max(1L, floor(n_tail * entry_frac))
+        w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
+      } else {
+        w <- w_top
+      }
+      w <- w / sum(w)
+
+      # CDC snapshot at time t (top-K, renormalized)
+      wK <- top_n_sorted(w, K_cut)
+      wK <- wK / sum(wK)
+      snaps_p[[t]] <- tibble(path = p, t = t, rank = seq_len(K_cut), share = wK)
+
+      # durable change at 4w and 8w relative to baseline
+      if (t %in% horizons) {
+        lg  <- log(wK / w_base)
+        lbl <- paste0("h", t)
+        growth_collect[[lbl]] <- rbind(
+          growth_collect[[lbl]],
+          cbind(path = p, rank = seq_len(K_cut),
+                horizon = t, log_growth = lg)
+        )
+      }
+    }
+
+    snapshots[[p]] <- bind_rows(snaps_p)
+  }
+
+  growth_df <- bind_rows(
+    as_tibble(growth_collect$h4),
+    as_tibble(growth_collect$h8)
+  )
+
+  list(
+    snapshots = bind_rows(snapshots),
+    growth    = growth_df
+  )
+}
+
+# extend w0 to K_max once
+if (length(w0_raw) < K_max) {
+  w0_ext <- c(w0_raw, entrant_sampler(K_max - length(w0_raw)))
+  w0_ext <- w0_ext / sum(w0_ext)
+} else {
+  w0_ext <- w0_raw[1:K_max]; w0_ext <- w0_ext / sum(w0_ext)
+}
+
+# metrics
+cdc_rmse <- function(emp, sim) {
+  df <- emp %>%
+    inner_join(sim, by = "rank", suffix = c("_emp", "_sim"))
+  sqrt(mean((log(df$w_bar_emp) - log(df$w_bar_sim))^2, na.rm = TRUE))
+}
+
+durable_rmse <- function(emp_long, sim_long) {
+  df <- emp_long %>%
+    inner_join(sim_long, by = c("bucket", "horizon"),
+               suffix = c("_emp", "_sim"))
+  sqrt(mean((df$med_abs_emp - df$med_abs_sim)^2, na.rm = TRUE))
+}
+```
+
+## Grid search over (mu, sigma, h)
+
+We now grid over:
+
+- `mu`: global drift
+- `sigma`: global volatility scaling
+- `h`: smoothing half-width over ranks (again, window size = `2h+1`)
+
+Interpretation of `h`:
+
+- `h = 0`: no smoothing (this reduces to v8 Gaussian moments, with each rank, r, in isolation)
+- `h = 5`: $\pm$ $h$ ranks, e.g., if `h = 5`, we get a window size of 11
+- thus, a larger `h` results in more aggressive smoothing, and less rank-to-rank noise
+
+```{r eval = FALSE}
+mu_grid     <- c(-0.01, -0.005, 0.0, 0.005)
+sigma_grid  <- c(0.1, 0.3, 0.5, 0.7, 1.0)
+h_grid      <- c(0L, 2L, 5L)
+
+lambda_cdc <- 0.7
+
+param_grid <- expand_grid(mu = mu_grid, sigma = sigma_grid, h = h_grid)
+
+grid_results <- vector("list", nrow(param_grid))
+
+for (i in seq_len(nrow(param_grid))) {
+  mu_i    <- param_grid$mu[i]
+  sigma_i <- param_grid$sigma[i]
+  h_i     <- param_grid$h[i]
+
+  message("running sim for mu=", mu_i, ", sigma=", sigma_i, ", h=", h_i)
+
+  # build smoothed mean/sd vectors for this h
+  sm <- build_gaussian_params_smoothed(h = h_i)
+  mean_vec <- sm$mean_dlogw_s
+  sd_vec   <- sm$sd_dlogw_s
+
+  set.seed(500 + i)
+
+  sim_i <- simulate_rank_paths(
+    w0 = w0_ext, K_cut = K_cut, K_max = K_max,
+    T = T_weeks, n_paths = N_paths,
+    mu = mu_i, sigma = sigma_i, entry_frac = 0.10,
+    mean_vec = mean_vec, sd_vec = sd_vec
+  )
+
+  # CDC for current sim
+  sim_cdc_i <- sim_i$snapshots %>%
+    group_by(rank) %>%
+    summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop")
+
+  # durable-change for current sim (median abs log growth by bucket and horizon)
+  sim_durable_long <- sim_i$growth %>%
+    mutate(bucket = rank_bucket(rank)) %>%
+    group_by(bucket, horizon) %>%
+    summarise(med_abs_sim = median(abs(log_growth), na.rm = TRUE),
+              .groups = "drop")
+
+  rmse_cdc_i <- cdc_rmse(emp_cdc, sim_cdc_i)
+  rmse_dur_i <- durable_rmse(emp_durable_long, sim_durable_long)
+
+  score_i <- lambda_cdc * rmse_cdc_i + (1 - lambda_cdc) * rmse_dur_i
+
+  grid_results[[i]] <- list(
+    mu       = mu_i,
+    sigma    = sigma_i,
+    h        = h_i,
+    cdc      = sim_cdc_i,
+    rmse_cdc = rmse_cdc_i,
+    rmse_dur = rmse_dur_i,
+    score    = score_i
+  )
+}
+
+metrics_tbl <- map_dfr(grid_results, ~ tibble(
+  mu       = .x$mu,
+  sigma    = .x$sigma,
+  h        = .x$h,
+  rmse_cdc = .x$rmse_cdc,
+  rmse_dur = .x$rmse_dur,
+  score    = .x$score
+)) %>%
+  arrange(score)
+
+write_rds(grid_results, "grid_results_v9.rds")
+write_rds(metrics_tbl,   "metrics_tbl_v9.rds")
+```
+
+## CDC grid results (empirical vs simulated)
+
+Note: cols are labeled with both `sigma` and `h` making it straightforward to see how smoothing impacts the fit.
+
+```{r}
+grid_results <- read_rds("grid_results_v9.rds")
+metrics_tbl  <- read_rds("metrics_tbl_v9.rds")
+
+grid_cdc_plot_df <- map_dfr(grid_results, function(res) {
+  bind_rows(
+    emp_cdc %>% mutate(source = "Empirical"),
+    res$cdc  %>% mutate(source = "Simulated")
+  ) %>%
+    mutate(
+      mu = res$mu,
+      sigma_h = paste0("sigma=", res$sigma, ", h=", res$h)
+    )
+})
+
+facet_labs <- labeller(
+  mu = function(x) paste0("mu = ", x),
+  sigma_h = function(x) x
+)
+```
+
+```{r eval = FALSE}
+ggplot(grid_cdc_plot_df, aes(rank, w_bar, linetype = source)) +
+  geom_line() +
+  scale_x_log10() +
+  scale_y_log10(labels = percent_format(accuracy = 0.01)) +
+  facet_grid(mu ~ sigma_h, labeller = facet_labs) +
+  labs(
+    title = "CDC grid search (rank smoothing): Empirical vs Simulated",
+    x = "Rank (log)",
+    y = "Mean share (log)",
+    linetype = NULL
+  ) +
+  theme_bw() +
+  theme(legend.position = "top")
+```
+
+
+![](sim.png){fig-align="center"}
+

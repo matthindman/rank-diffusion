@@ -1,0 +1,494 @@
+---
+title: "Rank Diffusion and Simulation of FB Data (v7)"
+format: pdf
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+Building on v6 which worked, this script offers a grid search over relevant parameters to show variation in fit / CDC curves as we adjust mean and the dampening parameter (sigma) in the simulation. We also take a look at whether this is likely a martingale (ish) process or not with a quick diagnostic check. 
+
+## Setup
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(arrow)
+library(lubridate)
+library(scales)
+
+set.seed(1823)
+
+raw <- read_parquet(
+  here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/fb_ranked_weekly.parquet")
+)
+```
+
+First, and as before, define `endpoint_weekly` as a weekly panel of endpoints with rank and share variables. And ensure the max rank seen is > 14k (in line with past checks). 
+
+```{r}
+endpoint_weekly <- raw %>%
+  transmute(
+    week = date,
+    endpoint_id,
+    metric_value,
+    rank = rank
+  ) %>%
+  group_by(week) %>%
+  arrange(desc(metric_value), .by_group = TRUE) %>%
+  mutate(
+    rank  = row_number(),
+    share = metric_value / sum(metric_value, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# per-week observed rank maxima 
+# (should go well above 10k on many weeks; 
+# again, counter to what we were previously seeing with the day-level data)
+
+max_rank_by_week <- endpoint_weekly %>%
+  group_by(week) %>%
+  summarise(max_rank = max(rank), .groups = "drop")
+
+max_rank_seen <- max(max_rank_by_week$max_rank, na.rm = TRUE)
+```
+
+Next, define the baseline and then treat each rank position as its own time series, e.g., all "rank 1" endpoints over time, then all "rank 2" endpoints, etc. From there, compute the one-week log change in share for the given rank. Then, define the entrant pool and our sampler for the sim. 
+
+```{r}
+# mean share by rank / baseline
+# recall: w_bar is the empirical mean share curve
+mean_share <- endpoint_weekly %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") %>%
+  arrange(rank)
+
+# rank-wise weekly delta log(share) pools (rank paths)
+rank_panel <- endpoint_weekly %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    share = pmax(share, 1e-12),
+    log_w = log(share),
+    dlogw = log_w - lag(log_w)
+  ) %>%
+  ungroup() %>%
+  filter(is.finite(dlogw))
+
+# set some values
+K_cut  <- min(12000L, max_rank_seen) # top-K we track
+K_max  <- min(K_cut + 2000L, max_rank_seen)  # extra tail for entrants
+T_weeks  <- 52
+N_paths  <- 120
+
+w0_raw <- mean_share$w_bar[seq_len(min(K_max, nrow(mean_share)))]
+w0_raw <- w0_raw / sum(w0_raw)
+
+# entrant pool defined by ranks just below the cutoff
+buffer_tail <- 2000L
+
+entrant_pool <- endpoint_weekly %>%
+  filter(rank > K_cut,
+         rank <= min(K_cut + buffer_tail, max_rank_seen)) %>%
+  transmute(share) %>%
+  filter(is.finite(share), share > 0)
+
+# sampler for backfilling when endpoints leave top-K
+entrant_sampler <- function(n) {
+  sample(entrant_pool$share, size = n, replace = TRUE)
+}
+```
+
+## Increments by rank and parameterized sampler
+
+Now, for each rank up to K_max, we will collect the vector of historical dlogw val, so increments is where we store each element as the empirical step distribution for that rank. This preserves the rank-specific volatility pattern we are modeling, e.g., rank 1 might have smaller variance than rank 3000, etc.
+
+So, for the `sample_increments_param()`, for each rank: 
+
+- draw one empirical dlogw from that rank's historical pool
+
+- multiply by sigma and then add mu: The drawn increment becomes `mu + sigma * dlogw_empirical`
+
+So, as defined here (which could be off...), mu is a global "drift" parameter that gets added to *every* rank's log change, s.t., mu > 0, on average shares drift upward in log space leading to inflated curve relative to its starting position, and if mu < 0, shares drift downward, where the whole curve tends to shrink.
+
+As such, it should be clear here that this is not rank-specific; rather, it is a global shift. Similarly, sigma is our *global* volatility scale/dampening parameter as before:
+
+- sigma = 1, use the historical volatility as is
+
+- sigma < 1, shrink the size of all steps; process is smoother, with less week-to-week movement
+
+- sigma > 1, then increase volatility; curve wiggles more, and tails get fatter
+
+We end up with emp_cdc, which is the empirical capital distribution when we only look at the top-K and renormalize within that truncated set. This is our comparative empirical reality against which we wil later compare each sim run. 
+
+```{r}
+# rank-wise increments list
+increments_by_rank <- rank_panel %>%
+  filter(rank <= K_max) %>%
+  group_by(rank) %>%
+  summarise(increments = list(dlogw), .groups = "drop") %>%
+  arrange(rank)
+
+# helper to sample one delta log(share) per rank, with mean and sigma
+sample_increments_param <- function(mu = 0, sigma = 1) {
+  vapply(increments_by_rank$increments, function(x) {
+    if (length(x) == 0) return(0)
+    mu + sigma * sample(x, size = 1, replace = TRUE)
+  }, numeric(1))
+}
+
+# define the empirical CDC (top-K_cut, normalized within top-K)
+emp_cdc <- endpoint_weekly %>%
+  group_by(week) %>%
+  arrange(desc(share), .by_group = TRUE) %>%
+  mutate(rank_in_week = row_number()) %>%
+  filter(rank_in_week <= K_cut) %>%
+  mutate(shareK = share / sum(share)) %>%
+  ungroup() %>%
+  group_by(rank = rank_in_week) %>%
+  summarise(w_bar = mean(shareK, na.rm = TRUE), .groups = "drop")
+
+emp_coverage <- sum(emp_cdc$w_bar)  # share captured by top-K_cut
+```
+
+## Empirical durable change (4w & 8w) by bucket
+
+Now, here is a first attempt at measuring how big are stable changes over a month (4 wks) or two (8 wks), by size tier? If understood correctly, this is what Matt meant by "durable change". So, for a definition, again treat each rank as a time series: 
+
+- log_w is log share
+
+- log_w_lead4 is log share 4 weeks ahead for that rank
+
+- d4 is log change over 4 weeks
+
+- d8 is log change over 8 weeks
+
+These are meant to capture this notion of durable change, again, how much a rank’s share has moved over longer horizons, not just week-to-week noise. From here for interpretation/simplicity, bucket ranks into large/midsize/small based on rank. Print the summary. 
+
+```{r}
+rank_bucket <- function(r) {
+  case_when(
+    r <= 25   ~ "large",
+    r <= 250  ~ "midsize",
+    TRUE      ~ "small"
+  )
+}
+
+emp_durable <- endpoint_weekly %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    log_w = log(pmax(share, 1e-12)),
+    log_w_lead4 = lead(log_w, 4),
+    log_w_lead8 = lead(log_w, 8),
+    d4 = log_w_lead4 - log_w,
+    d8 = log_w_lead8 - log_w
+  ) %>%
+  ungroup() %>%
+  mutate(bucket = rank_bucket(rank)) %>%
+  filter(!is.na(d4) | !is.na(d8))
+
+emp_durable_summary <- emp_durable %>%
+  summarise(
+    med_abs_d4 = median(abs(d4), na.rm = TRUE),
+    med_abs_d8 = median(abs(d8), na.rm = TRUE),
+    .by = bucket
+  )
+
+emp_durable_summary
+```
+
+So these results are showing how much pages typically drift in attention over a month or two. Large pages move the most, with median shifts of about 9% at 4 weeks and 11 at 8 weeks. Midsize pages are the most stable, changing only around 4-5%. And small pages fall in between, drifting about 6-7%.
+
+## Martingale diagnostics (rank paths)
+
+Now an initial check on martingale process or not. Set up a martingale-style regression asking whether the next change predictable from the current change. For each rank bucket, fit a regression (dlogw_t+1 = b_0 + b_1 * dlogw_t). So, if the process is close to a martingale, the the betas should be near zero (no autocorrelation).
+
+```{r}
+#| fig-width: 7
+#| fig-height: 7
+
+# one-step-ahead regression of dlogw_{t+1} on dlogw_t within rank bucket
+diag_df <- rank_panel %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    dlogw_t   = dlogw,
+    dlogw_t1  = lead(dlogw_t, 1)
+  ) %>%
+  ungroup() %>%
+  mutate(bucket = rank_bucket(rank)) %>%
+  filter(is.finite(dlogw_t), is.finite(dlogw_t1))
+
+martingale_results <- diag_df %>%
+  group_by(bucket) %>%
+  group_modify(~ {
+    fit <- lm(dlogw_t1 ~ dlogw_t, data = .x)
+    broom::tidy(fit)
+  }) %>%
+  ungroup()
+
+# plot dlogw_t by bucket
+ggplot(
+  martingale_results %>% filter(term == "dlogw_t"),
+  aes(bucket, estimate)
+) +
+  geom_point() +
+  geom_errorbar(aes(ymin = estimate - 1.96 * std.error,
+                    ymax = estimate + 1.96 * std.error),
+                width = 0.1) +
+  geom_hline(yintercept = 0, linetype = 3) +
+  labs(
+    title = "Martingale diagnostic: slope of dlogw(t+1) on dlogw(t)",
+    x = "rank bucket",
+    y = "beta estimate"
+  ) +
+  theme_minimal()
+```
+
+## Simulator (CDC snapshots + growth for 4w/8w)
+
+Now, same simulation as before, but explicitly naming mu and sigma for the grid search to follow: 
+
+For each path, store w_base (normalized top-K_cut at t = 0) as baseline for durable change
+
+Now, at each time step, draw a vector of increments dlogw (one per rank). And for interpretation of our mu and sigma:
+
+- If mu is negative, the updated w should shrink relative to w_base, which makes simulated ranks lose share faster
+
+- If sigma is larger, w moves around more, s.t. some ranks gain a lot, others lose a lot
+
+```{r}
+simulate_rank_paths <- function(
+  w0, K_cut, K_max, T = 52, n_paths = 200,
+  mu = 0, sigma = 1, entry_frac = 0.10
+) {
+  stopifnot(length(w0) <= K_max, K_max >= K_cut)
+
+  top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
+
+  snapshots <- vector("list", n_paths)
+  growth_collect <- list(h4 = NULL, h8 = NULL)
+  horizons <- c(4L, 8L)
+
+  for (p in seq_len(n_paths)) {
+    if (length(w0) < K_max) {
+      w <- c(w0, entrant_sampler(K_max - length(w0)))
+      w <- w / sum(w)
+    } else {
+      w <- w0[1:K_max]; w <- w / sum(w)
+    }
+
+    w_base <- top_n_sorted(w, K_cut)
+    w_base <- w_base / sum(w_base)
+
+    snaps_p <- vector("list", T)
+
+    for (t in seq_len(T)) {
+      dlogw <- sample_increments_param(mu = mu, sigma = sigma)
+      if (length(dlogw) != length(w)) {
+        dlogw <- rep_len(dlogw, length.out = length(w))
+      }
+
+      w <- w * exp(dlogw)
+      w <- pmax(w, 1e-18)
+      w <- w / sum(w)
+
+      w_top <- top_n_sorted(w, K_cut)
+      n_tail <- K_max - K_cut
+      if (n_tail > 0) {
+        n_add <- max(1L, floor(n_tail * entry_frac))
+        w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
+      } else {
+        w <- w_top
+      }
+      w <- w / sum(w)
+
+      wK <- top_n_sorted(w, K_cut)
+      wK <- wK / sum(wK)
+      snaps_p[[t]] <- tibble(path = p, t = t, rank = seq_len(K_cut), share = wK)
+
+      if (t %in% horizons) {
+        lg <- log(wK / w_base)
+        lbl <- paste0("h", t)
+        growth_collect[[lbl]] <- rbind(
+          growth_collect[[lbl]],
+          cbind(path = p, rank = seq_len(K_cut),
+                horizon = t, log_growth = lg)
+        )
+      }
+    }
+
+    snapshots[[p]] <- bind_rows(snaps_p)
+  }
+
+  growth_df <- bind_rows(
+    as_tibble(growth_collect$h4),
+    as_tibble(growth_collect$h8)
+  )
+
+  list(
+    snapshots = bind_rows(snapshots),
+    growth    = growth_df
+  )
+}
+
+# extend w0 to K_max
+if (length(w0_raw) < K_max) {
+  w0_ext <- c(w0_raw, entrant_sampler(K_max - length(w0_raw)))
+  w0_ext <- w0_ext / sum(w0_ext)
+} else {
+  w0_ext <- w0_raw[1:K_max]; w0_ext <- w0_ext / sum(w0_ext)
+}
+
+# CDC RMSE in log-space (to help with grid search assessment)
+cdc_rmse <- function(emp, sim) {
+  df <- emp %>%
+    inner_join(sim, by = "rank", suffix = c("_emp", "_sim"))
+  sqrt(mean((log(df$w_bar_emp) - log(df$w_bar_sim))^2, na.rm = TRUE))
+}
+
+# durable change RMSE (4 & 8 weeks) over buckets
+durable_rmse <- function(emp_summary, sim_summary) {
+  df <- emp_summary %>%
+    inner_join(sim_summary, by = c("bucket", "horizon"),
+               suffix = c("_emp", "_sim"))
+  sqrt(mean((df$med_abs_emp - df$med_abs_sim)^2, na.rm = TRUE))
+}
+```
+
+## Grid search over (mu, sigma)
+
+Now, for our grid search: 
+
+- mu: from -0.01 to 0.005, giving global drift small and slightly negative or slightly positive
+
+- sigma: from 0.1 to 0.7, our dampening/volatility scaled way down relative to raw increments
+
+- lambda_cdc is set to 0.7, meaning we are weighting the CDC fit more than durable-change fit in the combined score
+
+Now, defining and setting the lambda parameter this way is a choice. The idea is to weight the CDC fit more heavily because it captures the core structural shape of the platform, and the simulation needs to get that shape right before anything else matters. As such, durable-change dynamics, though important, should be thought of as refining the model, but *only after* the underlying distribution is correct. As such, we are favoring CDC over durable change in the combined score. And as you can see below, the combined score is a value we are using to rank each parameter combination in the grid search, and its a weighted average of two errors for CDC (how far sim CDC deviates from the empirical curve) vs. durable change (how far 4 and 8 week change stats deviate between sim and empirical). 
+
+```{r eval = FALSE}
+mu_grid    <- c(-0.01, -0.005, 0.0, 0.005)
+sigma_grid <- c(0.1, 0.3, 0.5, 0.7)
+lambda_cdc <- 0.7
+
+param_grid <- expand_grid(mu = mu_grid, sigma = sigma_grid)
+
+grid_results <- vector("list", nrow(param_grid))
+
+for (i in seq_len(nrow(param_grid))) {
+  mu_i    <- param_grid$mu[i]
+  sigma_i <- param_grid$sigma[i]
+
+  message("running sim for mu=", mu_i, ", sigma=", sigma_i)
+
+  set.seed(500 + i)
+  sim_i <- simulate_rank_paths(
+    w0 = w0_ext, K_cut = K_cut, K_max = K_max,
+    T = T_weeks, n_paths = N_paths,
+    mu = mu_i, sigma = sigma_i, entry_frac = 0.10
+  )
+
+  # CDC for current sim
+  sim_cdc_i <- sim_i$snapshots %>%
+    group_by(rank) %>%
+    summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop")
+
+  # durable change summary for current sim
+  sim_durable <- sim_i$growth %>%
+    mutate(bucket = rank_bucket(rank)) %>%
+    group_by(bucket, horizon) %>%
+    summarise(med_abs_sim = median(abs(log_growth), na.rm = TRUE),
+              .groups = "drop")
+
+  emp_durable_long <- emp_durable %>%
+    select(bucket, d4, d8) %>%
+    pivot_longer(cols = c(d4, d8),
+                 names_to = "horizon",
+                 values_to = "d") %>%
+    mutate(horizon = if_else(horizon == "d4", 4L, 8L)) %>%
+    group_by(bucket, horizon) %>%
+    summarise(med_abs_emp = median(abs(d), na.rm = TRUE), .groups = "drop")
+
+  sim_durable_long <- sim_durable %>%
+    mutate(horizon = as.integer(horizon))
+
+  rmse_cdc_i <- cdc_rmse(emp_cdc, sim_cdc_i)
+  rmse_dur_i <- durable_rmse(emp_durable_long, sim_durable_long)
+
+  score_i <- lambda_cdc * rmse_cdc_i + (1 - lambda_cdc) * rmse_dur_i
+
+  grid_results[[i]] <- list(
+    mu        = mu_i,
+    sigma     = sigma_i,
+    cdc       = sim_cdc_i,
+    rmse_cdc  = rmse_cdc_i,
+    rmse_dur  = rmse_dur_i,
+    score     = score_i
+  )
+}
+
+# summary of the search
+metrics_tbl <- map_dfr(grid_results, ~ tibble(
+  mu       = .x$mu,
+  sigma    = .x$sigma,
+  rmse_cdc = .x$rmse_cdc,
+  rmse_dur = .x$rmse_dur,
+  score    = .x$score
+)) %>%
+  arrange(score)
+```
+
+```{r echo = FALSE}
+#write_rds(grid_results, "grid_results.rds")
+#write_rds(metrics_tbl, "metrics_tbl.rds")
+```
+
+```{r}
+#| fig-width: 9
+#| fig-height: 7
+
+grid_results <- read_rds("grid_results.rds")
+metrics_tbl <- read_rds("metrics_tbl.rds")
+
+#metrics_tbl
+
+best_params <- metrics_tbl %>% slice(1)
+
+grid_cdc_plot_df <- map_dfr(grid_results, function(res) {
+  sim_cdc_i <- res$cdc
+  mu_i      <- res$mu
+  sigma_i   <- res$sigma
+
+  bind_rows(
+    emp_cdc %>% mutate(source = "Empirical"),
+    sim_cdc_i %>% mutate(source = "Simulated")
+  ) %>%
+    mutate(mu = mu_i, sigma = sigma_i)
+})
+
+facet_labs <- labeller(
+  mu    = function(x) paste0("mu = ", x),
+  sigma = function(x) paste0("sigma = ", x)
+)
+
+ggplot(grid_cdc_plot_df, aes(rank, w_bar, linetype = source)) +
+  geom_line() +
+  scale_x_log10() +
+  scale_y_log10(labels = percent_format(accuracy = 0.01)) +
+  facet_grid(mu ~ sigma, labeller = facet_labs) +
+  labs(
+    title = "CDC grid search: Empirical vs Simulated",
+    x = "Rank (log)",
+    y = "Mean share (log)",
+    linetype = NULL
+  ) +
+  theme_bw() +
+  theme(legend.position = "top")
+```
+
+

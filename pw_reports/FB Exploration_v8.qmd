@@ -1,0 +1,496 @@
+---
+title: "Rank Diffusion and Simulation of FB Data (v8)"
+format: pdf
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+Building on v7, this script replaces the bootstrap resampling of weekly log-share changes with a Gaussian increment model. The goal is to check whether a simple Gaussian process, calibrated to the empirical mean and variance of each rank's log changes, can reproduce the same CDC and durable-change behavior as the bootstrap simulator. This serves as a validation step for the bootstrap approach and gives us a cleaner link to continuous-time diffusion intuition ("crossing behavior", decay rates, etc.).
+
+## Setup
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(arrow)
+library(lubridate)
+library(scales)
+library(here)
+library(broom)
+
+set.seed(1823)
+
+raw <- read_parquet(
+  here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/fb_ranked_weekly.parquet")
+)
+```
+
+First, as before, we'll define `endpoint_weekly` as a weekly panel of endpoints with rank and share vars. Then, confirm that the maximum rank seen in any week is well above 10k (in line with earlier checks).
+
+```{r}
+endpoint_weekly <- raw %>%
+  transmute(
+    week = date,
+    endpoint_id,
+    metric_value,
+    rank = rank
+    ) %>%
+  group_by(week) %>%
+  arrange(desc(metric_value), .by_group = TRUE) %>%
+  mutate(
+    rank  = row_number(),
+    share = metric_value / sum(metric_value, na.rm = TRUE)
+    ) %>%
+  ungroup()
+
+# per-week observed rank maxima
+max_rank_by_week <- endpoint_weekly %>%
+  group_by(week) %>%
+  summarise(max_rank = max(rank), .groups = "drop")
+
+max_rank_seen <- max(max_rank_by_week$max_rank, na.rm = TRUE)
+max_rank_seen
+```
+
+All good. 
+
+## Baseline curves and rank paths
+
+Next, define the baseline CDC curve and treat each rank position as its own time series. So, for each rank, compute the one-week log change in share, which will be used to calibrate the Gaussian increment model.
+
+```{r}
+# mean share by rank / baseline
+mean_share <- endpoint_weekly %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") %>%
+  arrange(rank)
+
+# rank-wise weekly delta log(share) pools (rank paths)
+rank_panel <- endpoint_weekly %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    share = pmax(share, 1e-12),
+    log_w = log(share),
+    dlogw = log_w - lag(log_w)
+    ) %>%
+  ungroup() %>%
+  filter(is.finite(dlogw))
+```
+
+Next, set the main structural quantities for the simulation: 
+
+  - the top-K we track (`K_cut`)
+  - extended universe (`K_max`)
+  - time horizon (`T_weeks`)
+  - number of MC paths (`N_paths`)
+
+Then, as before, define the entrant pool using ranks just below the cutoff (same as v7). Entrants will be used to refill the tail when endpoints exit the top-K universe.
+
+```{r}
+K_cut   <- min(12000L, max_rank_seen)
+K_max   <- min(K_cut + 2000L, max_rank_seen)
+T_weeks <- 52
+N_paths <- 120
+
+# seed curve w0 (up to K_max)
+w0_raw <- mean_share$w_bar[seq_len(min(K_max, nrow(mean_share)))]
+w0_raw <- w0_raw / sum(w0_raw)
+
+buffer_tail <- 2000L
+
+entrant_pool <- endpoint_weekly %>%
+  filter(rank > K_cut,
+         rank <= min(K_cut + buffer_tail, max_rank_seen)) %>%
+  transmute(share) %>%
+  filter(is.finite(share), share > 0)
+
+entrant_sampler <- function(n) {
+  sample(entrant_pool$share, size = n, replace = TRUE)
+}
+```
+
+## Gaussian increment model (per-rank mu_r and sigman_r)
+
+Now, recall, in v7 we sampled one historical `dlogw` per rank and then applied global parameters `mu` and `sigma` as `mu + sigma * dlogw_empirical`. That was the bootstrap over the empirical step distribution.
+
+But now, to take a step toward a Gaussain process, we instead will try out a Gaussian model per rank:
+
+For each rank $r \le K_{\max}$, compute
+
+$$
+\bar{d}_r = \mathbb{E}\!\left[d\log w_r\right]
+$$
+
+$$
+s_r = \mathrm{sd}\!\left(d\log w_r\right)
+$$
+
+Then, in the simulator, draw
+
+$$
+\Delta \log w_r \sim \mathcal{N}\!\left(
+\mu + \bar{d}_r,\; (\sigma \cdot s_r)^2
+\right)
+$$
+
+where $\mu$ and $\sigma$ are global drift and volatility scale parameters in the grid search.
+
+The hope is that this keeps the rank-specific mean and variance structure from the data, but replaces the empirical distributions with a Gaussian approximation.
+
+```{r}
+# Gaussian params by rank (mean and sd of dlogw)
+gauss_params_by_rank <- rank_panel %>%
+  filter(rank <= K_max) %>%
+  group_by(rank) %>%
+  summarise(
+    mean_dlogw = mean(dlogw, na.rm = TRUE),
+    sd_dlogw   = sd(dlogw,   na.rm = TRUE),
+    .groups = "drop"
+    ) %>%
+  right_join(tibble(rank = 1:K_max), by = "rank") %>%
+  arrange(rank) %>%
+  mutate(
+    mean_dlogw = replace_na(mean_dlogw, 0),
+    sd_dlogw   = replace_na(sd_dlogw,   0),
+    sd_dlogw   = if_else(sd_dlogw <= 0 | !is.finite(sd_dlogw), 1e-6, sd_dlogw)
+    )
+
+# func to sample one Gaussian increment per rank given global mu and sigma
+sample_increments_gaussian <- function(mu = 0, sigma = 1) {
+  m <- gauss_params_by_rank$mean_dlogw
+  s <- gauss_params_by_rank$sd_dlogw
+  rnorm(length(m), mean = mu + m, sd = sigma * s)
+}
+```
+
+If set up correctly, the interpretation would be: 
+
+  - `mean_dlogw` and `sd_dlogw` would encode how each rank position tends to move in log-share space, s.t. lower ranks typically move more (higher sd), and top ranks move less
+  - `mu` shifts all ranks up or down in expectation; `sigma` globally inflates or shrinks the volatility around those rank-specific baselines
+
+## Empirical run: CDC and durable change
+
+Now, define the empirical CDC curve of the top-K and the empirical durable-change statistics (again, in line with v7, 4-week and 8-week changes) by size bucket.
+
+```{r}
+# empirical CDC (top-K_cut, normalized within top-K)
+emp_cdc <- endpoint_weekly %>%
+  group_by(week) %>%
+  arrange(desc(share), .by_group = TRUE) %>%
+  mutate(rank_in_week = row_number()) %>%
+  filter(rank_in_week <= K_cut) %>%
+  mutate(shareK = share / sum(share)) %>%
+  ungroup() %>%
+  group_by(rank = rank_in_week) %>%
+  summarise(w_bar = mean(shareK, na.rm = TRUE), .groups = "drop")
+
+emp_coverage <- sum(emp_cdc$w_bar)  # should be ~1
+
+# durable change
+rank_bucket <- function(r) {
+  case_when(
+    r <= 25   ~ "large",
+    r <= 250  ~ "midsize",
+    TRUE      ~ "small"
+  )
+  }
+
+emp_durable <- endpoint_weekly %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    log_w = log(pmax(share, 1e-12)),
+    log_w_lead4 = lead(log_w, 4),
+    log_w_lead8 = lead(log_w, 8),
+    d4 = log_w_lead4 - log_w,
+    d8 = log_w_lead8 - log_w
+    ) %>%
+  ungroup() %>%
+  mutate(bucket = rank_bucket(rank)) %>%
+  filter(!is.na(d4) | !is.na(d8))
+
+emp_durable_summary <- emp_durable %>%
+  summarise(
+    med_abs_d4 = median(abs(d4), na.rm = TRUE),
+    med_abs_d8 = median(abs(d8), na.rm = TRUE),
+    .by = bucket
+    )
+
+emp_durable_summary
+```
+
+The idea with the above `emp_durable_summary` is that these values describe *typical* durable changes in attention for each rank bucket over 4 and 8 weeks, and thus will be used as a target for checking the Gaussian simulator to come. 
+
+## Martingale diagnostics (unchanged)
+
+Next, for completeness, the martingale-style regression is the same as in v7: we regress next week's `dlogw` on this week's within bucket and check whether slopes are near zero.
+
+```{r}
+#| fig-width: 7
+#| fig-height: 7
+
+diag_df <- rank_panel %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    dlogw_t  = dlogw,
+    dlogw_t1 = lead(dlogw_t, 1)
+    ) %>%
+  ungroup() %>%
+  mutate(bucket = rank_bucket(rank)) %>%
+  filter(is.finite(dlogw_t), is.finite(dlogw_t1))
+
+martingale_results <- diag_df %>%
+  group_by(bucket) %>%
+  group_modify(~ {
+    fit <- lm(dlogw_t1 ~ dlogw_t, data = .x)
+    broom::tidy(fit)
+    }) %>%
+  ungroup()
+
+ggplot(martingale_results %>% filter(term == "dlogw_t"), aes(bucket, estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = estimate - 1.96 * std.error,
+                    ymax = estimate + 1.96 * std.error),
+                width = 0.1) +
+  geom_hline(yintercept = 0, linetype = 3) +
+  labs(title = "Martingale diagnostic: slope of dlogw(t+1) on dlogw(t)",
+       subtitle = "Note: should be near 0 if martingale-ish",
+       x = "Rank bucket",
+       y = "Slope est") +
+  theme_minimal()
+```
+
+## Gaussian simulator (CDC snapshots + 4w/8w growth)
+
+Now we simply update the bootstrapped version of the simulator from v7 with the Gaussian increments. For each path, we keep track of:
+
+  - The CDC snapshots for the top-K at each week, to construct a simulated CDC curve
+  - The 4-week and 8-week log-growth of top-K shares relative to their baseline, to assess durable-change behavior and crossing dynamics
+
+```{r}
+simulate_rank_paths <- function(
+  w0, K_cut, K_max, T = 52, n_paths = 200,
+  mu = 0, sigma = 1, entry_frac = 0.10
+  ) {
+  
+  top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
+  snapshots <- vector("list", n_paths)
+  growth_collect <- list(h4 = NULL, h8 = NULL)
+  horizons <- c(4L, 8L)
+
+  for (p in seq_len(n_paths)) {
+    # initialize universe
+    if (length(w0) < K_max) {
+      w <- c(w0, entrant_sampler(K_max - length(w0)))
+      w <- w / sum(w)
+      } else {
+        w <- w0[1:K_max]; w <- w / sum(w)
+        }
+    # baseline top-K for durable change
+    w_base <- top_n_sorted(w, K_cut)
+    w_base <- w_base / sum(w_base)
+    snaps_p <- vector("list", T)
+    
+    for (t in seq_len(T)) {
+      # Gaussian increments by rank
+      dlogw <- sample_increments_gaussian(mu = mu, sigma = sigma)
+      if (length(dlogw) != length(w)) {
+        dlogw <- rep_len(dlogw, length.out = length(w))
+        }
+      w <- w * exp(dlogw)
+      w <- pmax(w, 1e-18)
+      w <- w / sum(w)
+      
+      # exit & entry
+      w_top  <- top_n_sorted(w, K_cut)
+      n_tail <- K_max - K_cut
+      if (n_tail > 0) {
+        n_add <- max(1L, floor(n_tail * entry_frac))
+        w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
+        } else {
+          w <- w_top
+          }
+      w <- w / sum(w)
+      
+      # CDC snapshot at time t (top-K, renormalized)
+      wK <- top_n_sorted(w, K_cut)
+      wK <- wK / sum(wK)
+      snaps_p[[t]] <- tibble(path = p, t = t, rank = seq_len(K_cut), share = wK)
+      
+      # durable change relative to baseline at 4 and 8 weeks
+      if (t %in% horizons) {
+        lg  <- log(wK / w_base)
+        lbl <- paste0("h", t)
+        growth_collect[[lbl]] <- rbind(
+          growth_collect[[lbl]],
+          cbind(path = p, rank = seq_len(K_cut),
+                horizon = t, log_growth = lg)
+          )
+  }
+}
+
+  snapshots[[p]] <- bind_rows(snaps_p)
+
+}
+  
+  growth_df <- bind_rows(
+  as_tibble(growth_collect$h4),
+  as_tibble(growth_collect$h8)
+  )
+
+  list(
+    snapshots = bind_rows(snapshots),
+    growth = growth_df
+    )
+}
+
+if (length(w0_raw) < K_max) {
+  w0_ext <- c(w0_raw, entrant_sampler(K_max - length(w0_raw)))
+  w0_ext <- w0_ext / sum(w0_ext)
+  } else {
+    w0_ext <- w0_raw[1]; w0_ext <- w0_ext / sum(w0_ext)
+  }
+
+# CDC RMSE in log space
+cdc_rmse <- function(emp, sim) {
+  df <- emp %>%
+  inner_join(sim, by = "rank", suffix = c("_emp", "_sim"))
+  sqrt(mean((log(df$w_bar_emp) - log(df$w_bar_sim))^2, na.rm = TRUE))
+}
+
+# durable-change RMSE across buckets and horizons
+durable_rmse <- function(emp_summary, sim_summary) {
+  df <- emp_summary %>%
+    inner_join(sim_summary, by = c("bucket", "horizon"),
+               suffix = c("_emp", "_sim"))
+  sqrt(mean((df$med_abs_emp - df$med_abs_sim)^2, na.rm = TRUE))
+}
+```
+
+## Grid search over (mu, sigma) under Gaussian increments
+
+Now, we are ready to run the same grid search as before over mu and sigma as in v7, but the simulator is now Gaussian instead of bootstrap. Again, the broader goal is to allow us to check whether the Gaussian approximation gives similar best parameters and similar fit to the empirical platform as the bootstrap model.
+
+```{r eval = FALSE, echo = TRUE}
+mu_grid    <- c(-0.01, -0.005, 0.0, 0.005)
+sigma_grid <- c(0.1, 0.3, 0.5, 0.7, 1.0)
+lambda_cdc <- 0.7   # recall: weight on CDC vs durable-change fit
+
+param_grid   <- expand_grid(mu = mu_grid, sigma = sigma_grid)
+grid_results <- vector("list", nrow(param_grid))
+
+for (i in seq_len(nrow(param_grid))) {
+  mu_i    <- param_grid$mu[i]
+  sigma_i <- param_grid$sigma[i]
+
+  message("running Gaussian sim for mu=", mu_i, ", sigma=", sigma_i)
+
+  set.seed(500 + i)
+  sim_i <- simulate_rank_paths(
+    w0 = w0_ext, K_cut = K_cut, K_max = K_max,
+    T = T_weeks, n_paths = N_paths,
+    mu = mu_i, sigma = sigma_i, entry_frac = 0.10
+    )
+
+  # CDC for current sim
+  sim_cdc_i <- sim_i$snapshots %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop")
+
+# durable change summary for current sim
+  sim_durable <- sim_i$growth %>%
+    mutate(bucket = rank_bucket(rank)) %>%
+    group_by(bucket, horizon) %>%
+    summarise(med_abs_sim = median(abs(log_growth), na.rm = TRUE),
+              .groups = "drop")
+
+  emp_durable_long <- emp_durable %>%
+    select(bucket, d4, d8) %>%
+    pivot_longer(cols = c(d4, d8), 
+                 names_to = "horizon",
+                 values_to = "d") %>%
+    mutate(horizon = if_else(horizon == "d4", 4L, 8L)) %>%
+    group_by(bucket, horizon) %>%
+    summarise(med_abs_emp = median(abs(d), na.rm = TRUE), .groups = "drop")
+
+  sim_durable_long <- sim_durable %>%
+    mutate(horizon = as.integer(horizon))
+
+  rmse_cdc_i <- cdc_rmse(emp_cdc, sim_cdc_i)
+  rmse_dur_i <- durable_rmse(emp_durable_long, sim_durable_long)
+
+  score_i <- lambda_cdc * rmse_cdc_i + (1 - lambda_cdc) * rmse_dur_i
+
+  grid_results[[i]] <- list(
+    mu = mu_i,
+    sigma = sigma_i,
+    cdc = sim_cdc_i,
+    rmse_cdc = rmse_cdc_i,
+    rmse_dur = rmse_dur_i,
+    score = score_i
+    )
+}
+
+  metrics_tbl <- map_dfr(grid_results, ~ tibble(
+    mu = .x$mu,
+    sigma = .x$sigma,
+    rmse_cdc = .x$rmse_cdc,
+    rmse_dur = .x$rmse_dur,
+    score = .x$score
+    )) %>%
+    arrange(score)
+```
+
+```{r eval = FALSE, echo = FALSE}
+write_rds(grid_results, "grid_results_gaussian.rds")
+write_rds(metrics_tbl,   "metrics_tbl_gaussian.rds")
+```
+
+And finally, visualize the CDC fit across all parameter combinations as in v7 for direct comparison. As each panel shows empirical vs simulated CDC for one (mu, sigma) pair under the Gaussian increment model, if the Gaussian and bootstrap approaches are both reasonable, then the best panels here should look similar to the best panels from v7's bootstrap grid search.
+
+```{r}
+#| fig-width: 9
+#| fig-height: 7
+
+grid_results <- read_rds("grid_results_gaussian.rds")
+metrics_tbl <- read_rds("metrics_tbl_gaussian.rds")
+
+best_params <- metrics_tbl %>% slice(1)
+
+grid_cdc_plot_df <- map_dfr(grid_results, function(res) {
+  sim_cdc_i <- res$cdc
+  mu_i <- res$mu
+  sigma_i <- res$sigma
+
+  bind_rows(
+    emp_cdc %>% mutate(source = "Empirical"),
+    sim_cdc_i %>% mutate(source = "Simulated")
+    ) %>%
+  mutate(mu = mu_i, sigma = sigma_i)
+})
+
+facet_labs <- labeller(
+  mu = function(x) paste0("mu = ", x),
+  sigma = function(x) paste0("sigma = ", x)
+  )
+
+ggplot(grid_cdc_plot_df, aes(rank, w_bar, linetype = source)) +
+  geom_line() +
+  scale_x_log10() +
+  scale_y_log10(labels = percent_format(accuracy = 0.01)) +
+  facet_grid(mu ~ sigma, labeller = facet_labs) +
+  labs(title = "CDC grid search (Gaussian): Empirical vs Simulated",
+       x = "Rank (log)",
+       y = "Mean share (log)",
+       linetype = NULL) +
+  theme_bw() +
+  theme(legend.position = "top")
+```
+
+Some observations, given that these two simulations are pretty different from each other. Of note, the fact that the bootstrapped model fits best at a low sigma (~0.3) while the Gaussian model needs a much larger sigma (~1.0) seems to show that the real week-to-week movements are not well described by a simple bell-curve process. That is, the bootstrap already contains the true asymmetry, fat tails, spike and then crash-type behavior of real pages, and so on. So it needs much less artificial volatility to match the CDC. On the other hand, if I am reading this correctly, the Gaussian approach has to inflate volatility just to approximate that behavior, and even then it still misses important structure in the empirical distribution. Indeed, even the sigma = 1.0 doesn't match the empirical CDC as closely as the bootstrapped sigma = 0.3 version, meaning a sigma even greater than 1.0 is likely needed to approximate the true, empirical structure of the data. So practically, the bootstrapped version is picking up on platform dyanmics better than the Gaussian approach. 
+

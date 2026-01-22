@@ -1,0 +1,595 @@
+---
+title: "Rank Diffusion and Simulation of FB Data (v11)"
+format: pdf
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+This report builds on v10. At focus here is $Xi_k(t)$, which is the log gap between adjacent ranks. Per Matt, it is defined as $Xi_k(t) = log(w_k(t) / w_{k+1}(t))$, and its measuring the local spacing between neighboring endpoints in the rank-share distribution at a given moment in time. 
+
+As such, in the report we will: 
+
+  1. Compute $Xi_k(t) = log( w_k(t) / w_{k+1}(t) )$ within each week
+  2. Visualize $Xi_k$ vs $k$ on a logged x-axis to explore stability over time
+  3. Update the simulator to compute Xi, and also an RMSE between simulated and empirical Xi (*just a record; won't use it in this report*)
+  4. Give a first attempt at all 5 new "next steps" from Matt email on January 11
+
+## Setup
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(arrow)
+library(lubridate)
+library(scales)
+library(here)
+library(broom)
+
+set.seed(1823)
+
+raw <- read_parquet(
+  here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/fb_ranked_weekly.parquet")
+)
+```
+
+```{r}
+endpoint_weekly <- raw %>%
+  transmute(
+    week = date,
+    endpoint_id,
+    metric_value,
+    rank = rank
+  ) %>%
+  group_by(week) %>%
+  arrange(desc(metric_value), .by_group = TRUE) %>%
+  mutate(
+    rank  = row_number(),
+    share = metric_value / sum(metric_value, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+max_rank_by_week <- endpoint_weekly %>%
+  group_by(week) %>%
+  summarise(max_rank = max(rank), .groups = "drop")
+
+max_rank_seen <- max(max_rank_by_week$max_rank, na.rm = TRUE)
+
+K_cut <- min(12000L, max_rank_seen) 
+K_max <- min(K_cut + 2000L, max_rank_seen)
+```
+
+## Compute $Xi_k(t) = log( w_k(t) / w_{k+1}(t) )$ within each week
+
+```{r}
+xi_weekly <- endpoint_weekly %>%
+  group_by(week) %>%
+  arrange(rank, .by_group = TRUE) %>%
+  mutate(
+    share = pmax(share, 1e-18),
+    share_next = lead(share),
+    xi = log(share / share_next),
+    k = rank
+  ) %>%
+  ungroup() %>%
+  filter(!is.na(share_next), is.finite(xi), xi > 0)
+
+glimpse(xi_weekly)
+```
+
+Importantly, since Xi is inherently local (e.g., $k$ vs $k+1$), we can make the calculation for all ranks that exist each week. Later, if we want to apply a cutoff for downstream operations, etc., e.g., plotting, we could do that at some point.
+
+## Investigate $Xi_k$ vs $k$ over time
+
+Now, here's a quick view showing $log(w_k / w_{k+1})$) for a given week (ranks on a log scale). Of note: this plot is restricted to the top 500 ranks to see more clearly the local spacing structure between adjacent endpoints where the signal should be strongest and least dominated by the potential of noise at the tail. In the following figure, each point denotes the log gap between the shares of two adjacent ranks, $k$ and $k+1$, in a given week.
+
+```{r message=FALSE, warning=FALSE}
+#| fig-width: 7
+#| fig-height: 7
+
+ggplot(filter(xi_weekly, k <= 500 - 1L), aes(x = k, y = xi)) +
+  geom_point(alpha = 0.35) +
+  scale_x_continuous(trans = "log10") +
+  labs(main = "Empirical log gaps between adjacent ranks (X_ik)") +
+  theme_bw()
+```
+
+Next we move on to the figure below, which shows a view of the full empirical distribution of adjacent log gaps across *all* ranks and *all* weeks, which gives some insight into how the spacing between neighboring ranks changes as we move down the ranking. Re: the skewed cloud in the upper right at the deep tail, that cloud seems to reflect the extreme tail where shares are very small, s.t. small fluctuations in shares produce large relative log gaps. So, my guess is that this is probably mostly noise and instability rather than meaningful structure. But in case it matters, its here for discussion if desired. 
+
+```{r}
+#| fig-width: 7
+#| fig-height: 7
+
+ggplot(xi_weekly, aes(x = k, y = xi)) +
+  geom_point(alpha = 0.35, size = 0.4) +
+  scale_x_continuous(trans = "log10") +
+  labs(
+    title = "Full dist of log gaps: Xi_k(t) = log(w_k / w_{k+1})",
+    x = "Rank k (log)",
+    y = "Xi_k(t)"
+  ) +
+  theme_bw()
+```
+
+Next, what is the central trend over time? The following plot shows the typical spacing between adjacent ranks via the median log gap as a function of rank, with a 10-90% surrounding band summarizing how that spacing varies over time.
+
+```{r message=FALSE, warning=FALSE}
+#| fig-width: 7
+#| fig-height: 7
+
+xi_summary_by_k <- xi_weekly %>%
+  group_by(k) %>%
+  summarise(
+    xi_med = median(xi, na.rm = TRUE),
+    xi_p10 = quantile(xi, 0.10, na.rm = TRUE),
+    xi_p90 = quantile(xi, 0.90, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(xi_summary_by_k, aes(x = k, y = xi_med)) +
+  geom_line(linewidth = 0.8) +
+  geom_ribbon(aes(ymin = xi_p10, ymax = xi_p90), alpha = 0.2) +
+  scale_x_continuous(trans = "log10") +
+  ylim(0, 1) +
+  labs(
+    title = "Empirical log-gaps by rank (median + 10-90% band)",
+    x = "Rank (log)",
+    y = "Xi_k"
+  ) +
+  theme_bw()
+```
+
+The good news is the downward-sloping median line seems to indicate that adjacent ranks are widely spaced at the top of the distribution and become progressively closer together as rank increases, with the narrowing band showing increasing stability at mid ranks.
+
+The (potential) bad news is the big spike at the far right of the X-axis. Yet as previously noted, this is likely that same noise we saw above, where shares are extremely small and rank identities change frequently. 
+
+Now, here's one more check on stability over time. The following plot shows a summary of Xi within each bucket in order to learn whether the bucket-level Xi is stable over time or not. 
+
+```{r message=FALSE, warning=FALSE}
+#| fig-width: 7
+#| fig-height: 7
+
+bucket_def <- list(
+  breaks = c(0, 25, 250, Inf),
+  labels = c("large", "midsize", "small")
+)
+
+assign_bucket <- function(rank, bucket_def) {
+  cut(
+    rank,
+    breaks = bucket_def$breaks,
+    labels = bucket_def$labels,
+    include.lowest = TRUE,
+    right = TRUE
+  )
+}
+
+xi_bucket_week <- xi_weekly %>%
+  mutate(bucket = assign_bucket(k, bucket_def)) %>%
+  group_by(week, bucket) %>%
+  summarise(
+    xi_med = median(xi, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(xi_bucket_week, aes(x = week, y = xi_med, color = bucket)) +
+  geom_line() +
+  geom_smooth() +
+  labs(
+    title = "Weekly median Xi by rank bucket",
+    subtitle = "Overlaid loess smoother to emphasize nature temporal trends",
+    x = NULL,
+    y = "Median Xi"
+  ) +
+  theme_bw()
+```
+
+From this figure a few things jump out. 
+
+  - First, it shows that the local spacing between adjacent ranks (via median Xi within each rank bucket), is quite stable over time but clearly stratified by rank. 
+  - Further, the large bucket (top ranks) show much larger and more volatile gaps, which seems to reflect intense competition and potentially episodic reshuffling of ranks at the very top of the distribution. 
+  - On the other extreme, small and midsize ranks show smaller, smoother gaps overall. This seems to indicate more dense packing and relative stability. 
+  - So, a key take away here is that the persistence of these distinct levels over multiple years largely supports the idea that this platform operates in a roughly stationary regime with rank-dependent dynamics, and as such, it reinforces the case for modeling Xi as a *stable* object rather than treating the CDC alone as the primary target as we've done in prior reports to this point.
+
+## Update the Simulator
+
+Step 3 from Matt's original next steps list is to: 
+
+> *"3.) make the simulations output xi too. We should also 4.) calculate an RMSE for simulated vs empirical xi."*
+
+So, in this section, I have updated the simulator (starting from the latest from v10) to compute Xi, and also an RMSE between simulated and empirical Xi. The changes include: 
+
+  1. have `simulate_rank_paths()` also return simulated Xi values (for a chosen rank range), and
+  2. add an `xi_rmse` metric that compares the empirical vs simulated median Xi profile by rank
+
+Of note re: `xi_rmse`: if we try to store Xi for *all* $k$, and for *all* $t$, and for *all* `paths`, it will very likely explode in size. So there's a need to add an extra parameter, `K_xi`, allowing us to compute/store Xi *only for the top K_xi ranks*. So, for this choice, I've set the default `K_xi = min(500L, K_cut))`.
+
+Here's the updated simulator: 
+
+```{r}
+simulate_rank_paths <- function(
+  w0, K_cut, K_max, T = 52, n_paths = 200,
+  mu = 0, sigma = 1, entry_frac = 0.10,
+  mean_vec, sd_vec,
+  horizons = c(4L, 8L),
+  K_xi = NULL
+) {
+  stopifnot(length(mean_vec) == K_max, length(sd_vec) == K_max)
+
+  if (is.null(K_xi)) K_xi <- min(500L, K_cut)
+  K_xi <- as.integer(K_xi)
+  stopifnot(K_xi >= 2L, K_xi <= K_cut)
+
+  top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
+
+  sample_increments_gaussian <- function(mu = 0, sigma = 1) {
+    rnorm(K_max, mean = mu + mean_vec, sd = sigma * sd_vec)
+  }
+
+  snapshots <- vector("list", n_paths)
+  horizons <- as.integer(horizons)
+  stopifnot(all(horizons >= 1L), all(horizons <= T))
+
+  growth_collect <- setNames(vector("list", length(horizons)), paste0("h", horizons))
+  xi_collect <- vector("list", n_paths) # note: store per-path Xi 
+
+  for (p in seq_len(n_paths)) {
+
+    if (length(w0) < K_max) {
+      w <- c(w0, entrant_sampler(K_max - length(w0)))
+      w <- w / sum(w)
+    } else {
+      w <- w0[1:K_max]; w <- w / sum(w)
+    }
+
+    # baseline top-K for durable change (use top-K, normalized within top-K)
+    w_base <- top_n_sorted(w, K_cut)
+    w_base <- w_base / sum(w_base)
+
+    snaps_p <- vector("list", T)
+    xi_p    <- vector("list", T)
+
+    for (t in seq_len(T)) {
+
+      dlogw <- sample_increments_gaussian(mu = mu, sigma = sigma)
+
+      w <- w * exp(dlogw)
+      w <- pmax(w, 1e-18)
+      w <- w / sum(w)
+
+      # exit & entry: keep top-K_cut, refill to K_max
+      w_top  <- top_n_sorted(w, K_cut) # note: these are GLOBAL shares (sum <= 1)
+      n_tail <- K_max - K_cut
+      if (n_tail > 0) {
+        n_add <- max(1L, floor(n_tail * entry_frac))
+        w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
+      } else {
+        w <- w_top
+      }
+      w <- w / sum(w)
+
+      # CDC snapshot at time t (top-K, renormalized within top-K)
+      wK <- top_n_sorted(w, K_cut)
+      wK <- wK / sum(wK)
+
+      snaps_p[[t]] <- tibble(
+        path = p,
+        t = t,
+        rank = seq_len(K_cut),
+        share = wK
+      )
+
+      # CHANGES: Xi computed from global top-K shares (not renormalized within top-K)
+      # we will reuse the w_top from above (top-K of the GLOBAL distribution at this step)
+      w_top2 <- pmax(w_top, 1e-18)
+      xi_vals <- log(w_top2[seq_len(K_xi - 1L)] / w_top2[seq(2L, K_xi)])
+
+      xi_p[[t]] <- tibble(
+        path = p,
+        t = t,
+        k = seq_len(K_xi - 1L),
+        xi = xi_vals
+      )
+
+      # durable change at selected horizons relative to baseline (top-K, within-top-K)
+      if (t %in% horizons) {
+        lg  <- log(wK / w_base)
+        lbl <- paste0("h", t)
+        growth_collect[[lbl]] <- rbind(
+          growth_collect[[lbl]],
+          cbind(path = p, 
+                rank = seq_len(K_cut), 
+                horizon = t, 
+                log_growth = lg)
+        )
+      }
+    }
+
+    snapshots[[p]] <- bind_rows(snaps_p)
+    xi_collect[[p]] <- bind_rows(xi_p)
+  }
+
+  growth_df <- bind_rows(lapply(growth_collect, as_tibble))
+
+  list(
+    snapshots = bind_rows(snapshots),
+    growth = growth_df,
+    xi = bind_rows(xi_collect)
+  )
+}
+```
+
+## Latest round of next steps
+
+Now, we are ready for the most recent round of next steps, including: 
+
+  1. rho_k (median Xi by rank)
+  2. S_k from smoothed drift g_k
+  3. sigma_hat(k)
+  4. stability across rank + time
+  5. bootstrap CI over time (*first attempt; simplest*)
+
+### rho_k (median Xi by rank)
+
+```{r}
+#| fig-width: 7
+#| fig-height: 7
+
+K_xi_est <- 2000L
+
+rho_by_k_med <- xi_weekly %>%
+  filter(k <= (K_xi_est - 1L)) %>%
+  group_by(k) %>%
+  summarise(rho_k = median(xi, na.rm = TRUE), .groups = "drop")
+
+ggplot(rho_by_k_med, aes(k, rho_k)) + 
+  geom_line() + 
+  theme_minimal() + 
+  labs(title = "Median Xi by rank (rho_k)",
+       x = "Rank (k)",
+       y = "Rho (k)")
+```
+
+### S_k from smoothed drift g_k
+
+```{r}
+## FIRST: recycle code from v10 setup
+# baseline CDC curve (mean share by rank)
+mean_share <- endpoint_weekly %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") %>%
+  arrange(rank)
+
+# rank-wise weekly delta log(share) pools
+rank_panel <- endpoint_weekly %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    share = pmax(share, 1e-12),
+    log_w = log(share),
+    dlogw = log_w - lag(log_w)
+  ) %>%
+  ungroup() %>%
+  filter(is.finite(dlogw))
+
+K_cut   <- min(12000L, max_rank_seen)
+K_max   <- min(K_cut + 2000L, max_rank_seen)
+T_weeks <- 52
+N_paths <- 120
+
+# seed curve w0 up to K_max
+w0_raw <- mean_share$w_bar[seq_len(min(K_max, nrow(mean_share)))]
+w0_raw <- w0_raw / sum(w0_raw)
+
+buffer_tail <- 2000L
+
+entrant_pool <- endpoint_weekly %>%
+  filter(rank > K_cut,
+         rank <= min(K_cut + buffer_tail, max_rank_seen)) %>%
+  transmute(share) %>%
+  filter(is.finite(share), share > 0)
+
+entrant_sampler <- function(n) {
+  sample(entrant_pool$share, size = n, replace = TRUE)
+}
+
+moving_average_rank <- function(x, h) {
+  stopifnot(h >= 0L)
+  n <- length(x)
+  if (h == 0L) return(x)
+
+  cs <- c(0, cumsum(replace_na(x, 0)))
+  out <- numeric(n)
+
+  for (r in seq_len(n)) {
+    lo <- max(1L, r - h)
+    hi <- min(n, r + h)
+    out[r] <- (cs[hi + 1L] - cs[lo]) / (hi - lo + 1L)
+  }
+  out
+}
+
+# raw (unsmoothed) Gaussian params by rank
+gauss_params_raw <- rank_panel %>%
+  filter(rank <= K_max) %>%
+  group_by(rank) %>%
+  summarise(
+    mean_dlogw = mean(dlogw, na.rm = TRUE),
+    sd_dlogw   = sd(dlogw,   na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  right_join(tibble(rank = 1:K_max), by = "rank") %>%
+  arrange(rank) %>%
+  mutate(
+    mean_dlogw = replace_na(mean_dlogw, 0),
+    sd_dlogw   = replace_na(sd_dlogw,   0),
+    sd_dlogw   = if_else(sd_dlogw <= 0 | !is.finite(sd_dlogw), 1e-6, sd_dlogw)
+  )
+
+# build smoothed parameters for a chosen smoothing half-width h
+build_gaussian_params_smoothed <- function(h) {
+  m <- gauss_params_raw$mean_dlogw
+  s <- gauss_params_raw$sd_dlogw
+
+  tibble(
+    rank = 1:K_max,
+    mean_dlogw_s = moving_average_rank(m, h = h),
+    sd_dlogw_s   = pmax(moving_average_rank(s, h = h), 1e-6)
+  )
+}
+
+
+## 
+## NOW: using the above v10 code, do: 
+h_fixed <- 5L
+sm <- build_gaussian_params_smoothed(h = h_fixed)
+
+g_by_k <- sm %>%
+  transmute(k = rank, g_k = mean_dlogw_s) %>%
+  filter(k <= (K_xi_est + 1L)) %>%
+  arrange(k)
+
+S_by_k <- g_by_k %>%
+  mutate(S_k = cumsum(g_k))
+```
+
+### sigma_hat(k)
+
+```{r warning=FALSE, message=FALSE}
+sigma_hat_by_k <- rho_by_k_med %>%
+  inner_join(S_by_k %>% select(k, S_k), by = "k") %>%
+  mutate(
+    sigma2_hat = -2 * S_k * rho_k,
+    sigma_hat  = if_else(sigma2_hat > 0, sqrt(sigma2_hat), NA_real_)
+  )
+
+# quick check
+sigma_hat_by_k %>%
+  summarise(
+    med_sigma = median(sigma_hat, na.rm = TRUE)
+  )
+```
+
+### stability across rank + time
+
+```{r}
+#| fig-width: 7
+#| fig-height: 7
+
+ggplot(
+  filter(sigma_hat_by_k, k >= 10L, !is.na(sigma_hat)),
+  aes(x = k, y = sigma_hat)
+) +
+  geom_line() +
+  scale_x_continuous(trans = "log10") +
+  theme_bw()
+```
+
+```{r warning=FALSE}
+#| fig-width: 7
+#| fig-height: 7
+
+xi_weekly_q <- xi_weekly %>%
+  mutate(period = lubridate::floor_date(week, "quarter")) %>%
+  filter(k <= (K_xi_est - 1L))
+
+rho_q_by_k <- xi_weekly_q %>%
+  group_by(period, k) %>%
+  summarise(rho_k = median(xi, na.rm = TRUE), .groups = "drop")
+
+sigma_hat_q <- rho_q_by_k %>%
+  inner_join(S_by_k %>% select(k, S_k), by = "k") %>%
+  mutate(
+    sigma2_hat = -2 * S_k * rho_k,
+    sigma_hat  = if_else(sigma2_hat > 0, sqrt(sigma2_hat), NA_real_)
+  )
+
+sigma_hat_q_summ <- sigma_hat_q %>%
+  group_by(period) %>%
+  summarise(
+    sigma_med = median(sigma_hat, na.rm = TRUE),
+    sigma_p25 = quantile(sigma_hat, 0.25, na.rm = TRUE),
+    sigma_p75 = quantile(sigma_hat, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(sigma_hat_q_summ, aes(x = period, y = sigma_med)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = sigma_p25, ymax = sigma_p75), alpha = 0.2) +
+  theme_bw()
+```
+
+### bootstrap CI over time (first attempt; simplest)
+
+Finally, here's a first attempt at bootstrapping to derive CIs over time. Namely, we will bootstrap weeks within each period, recompute rho_k (median), then compute sigma_hat using fixed S_k. This yields a CI for the period-level sigma summary (median across ranks).
+
+```{r warning=FALSE}
+#| fig-width: 7
+#| fig-height: 7
+
+bootstrap_sigma_period <- function(
+  xi_df_period,
+  S_by_k,
+  B = 200,
+  k_min = 10L,
+  K_xi_est = 2000L
+) {
+  weeks <- unique(xi_df_period$week)
+  boot_stats <- numeric(B)
+
+  for (b in seq_len(B)) {
+
+    boot_stats[b] <- suppressWarnings({
+      w_samp <- sample(weeks, size = length(weeks), replace = TRUE)
+
+      rho_b <- xi_df_period %>%
+        filter(week %in% w_samp, k <= (K_xi_est - 1L)) %>%
+        group_by(k) %>%
+        summarise(rho_k = median(xi, na.rm = TRUE), .groups = "drop")
+
+      sig_b <- rho_b %>%
+        inner_join(S_by_k %>% select(k, S_k), by = "k") %>%
+        mutate(
+          sigma2_hat = -2 * S_k * rho_k,
+          sigma_hat  = if_else(sigma2_hat > 0, sqrt(sigma2_hat), NA_real_)
+        ) %>%
+        filter(k >= k_min, k <= (K_xi_est - 1L))
+
+      median(sig_b$sigma_hat, na.rm = TRUE)
+    })
+  }
+
+  tibble(
+    sigma_hat_med = median(boot_stats, na.rm = TRUE),
+    ci_lo = quantile(boot_stats, 0.025, na.rm = TRUE),
+    ci_hi = quantile(boot_stats, 0.975, na.rm = TRUE)
+  )
+}
+
+xi_weekly_q <- xi_weekly %>%
+  mutate(period = floor_date(week, "quarter"))
+
+sigma_ci_by_q <- xi_weekly_q %>%
+  group_by(period) %>%
+  group_modify(~ bootstrap_sigma_period(
+    .x,
+    S_by_k,
+    B = 200,
+    k_min = 10L,
+    K_xi_est = K_xi_est
+  )) %>%
+  ungroup()
+
+# plot
+ggplot(sigma_ci_by_q, aes(x = period, y = sigma_hat_med)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ci_lo, ymax = ci_hi), alpha = 0.2) +
+  labs(
+    title = "Bootstrap CI for sigma_hat over time (quarterly)",
+    x = NULL,
+    y = "sigma_hat (median across k)"
+  ) +
+  theme_bw()
+```
