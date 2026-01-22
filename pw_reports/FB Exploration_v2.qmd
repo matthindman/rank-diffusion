@@ -1,0 +1,337 @@
+---
+title: "Rank Diffusion and Simulation of FB Data (v2)"
+format: pdf
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+In this script we walk through the steps for moving from raw Facebook post-level engagement data to endpoint-level time series (calculating growth rate distributions across multiple time horizons), and offer a first attempt at simulating rank diffusion based on empirical patterns/data. 
+
+## Setup
+
+```{r}
+library(tidyverse)
+library(arrow)
+library(scales)
+library(here)
+
+set.seed(1823)
+
+raw <- read_parquet(here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/fb_top2000_ranked_daily.parquet"))
+
+glimpse(raw)
+```
+
+## Step 1: Construct endpoint-level weekly series
+
+```{r}
+endpoint_weekly <- raw |>
+  mutate(week = floor_date(date, unit = "week", week_start = 1)) |>
+  group_by(week, endpoint_id) |>
+  summarise(metric_value = sum(metric_value, na.rm = TRUE), .groups = "drop") |>
+  group_by(week) |>
+  arrange(desc(metric_value), .by_group = TRUE) |>
+  mutate(
+    rank = row_number(),
+    share = metric_value / sum(metric_value, na.rm = TRUE)
+  ) |>
+  ungroup()
+
+head(endpoint_weekly)
+```
+
+In the above chunk we are collapsing the raw post-level engagement into endpoint-level weekly totals. Then, we rank endpoints within each week (rank = row_number()), with rank 1 being the most engaged endpoint that week. Then, compute weekly share, which equals endpoint's `metric_value / total metric_value` across all endpoints for that week.
+
+This gives a consistent panel with one row per endpoint per week, with both rank and relative share.
+
+## Step 2: Compute forward-looking log growth
+
+```{r}
+endpoint_panel <- endpoint_weekly |>
+  group_by(endpoint_id) |>
+  arrange(week, .by_group = TRUE) |>
+  mutate(
+    log_growth_1w  = log(lead(share, 1)  / share),
+    log_growth_7w  = log(lead(share, 7)  / share),
+    log_growth_28w = log(lead(share, 28) / share)
+  ) |>
+  ungroup()
+
+head(endpoint_panel)
+```
+
+Now, within each endpoint's time series, compute forward growth rates at horizons of 1, 7, and 28 weeks *ahead*, and express growth in log differences. These values are meant to capture volatility and drift in relative shares.
+
+## Step 3: Categorize Endpoints by Size
+
+```{r}
+endpoint_panel <- endpoint_panel |>
+  mutate(
+    rank_group = case_when(
+      rank <= 25 ~ "large",
+      rank <= 250 ~ "midsize",
+      TRUE ~ "small"
+    )
+  )
+
+head(endpoint_panel)
+```
+
+Now, endpoints are bucketed by rank:
+
+  - Top 25 = `large`
+  - 26–250 = `midsize`
+  - 251+ = `small`
+
+This categorization is a bit arbitrary at the moment, but is meant to mirror the categorization idea from the book, which is useful for analyzing differences in volatility by some scale.
+
+Now, take a look at the growth distributions: 
+
+```{r}
+#| fig-width: 8
+#| fig-height: 6
+
+plot_df <- endpoint_panel |>
+  pivot_longer(
+    cols = starts_with("log_growth_"),
+    names_to = "horizon",
+    values_to = "log_growth"
+  ) |>
+  mutate(
+    horizon = recode(horizon,
+                     log_growth_1w = "1 Week",
+                     log_growth_7w = "7 Week",
+                     log_growth_28w = "28 Week"),
+    horizon = factor(horizon, levels = c("1 Week", "7 Week", "28 Week"))
+  ) |>
+  filter(!is.na(log_growth), !is.infinite(log_growth))
+
+ggplot(plot_df, aes(x = log_growth, fill = rank_group, col = rank_group)) +
+  geom_density(alpha = 0.3) +
+  facet_wrap(~ horizon, scales = "fixed") +
+  labs(
+    title = "Distribution of log growth rates by rank group",
+    x = "Log growth rate",
+    y = "Density",
+    fill = "Rank group", color = "Rank group"
+  ) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+From here, we get:
+
+  - At 1-week horizon: distributions are tight, centered near zero
+  - At longer horizons: distributions widen reflecting potentially higher volatility
+
+\newpage
+
+## Simulation
+
+Now, we will make a first attempt at simulating rank diffusion using the empirical weekly increments data.
+
+### Seed simulation with mean shares
+
+```{r}
+mean_share <- endpoint_weekly |>
+  group_by(rank) |>
+  summarise(w_bar = mean(share, na.rm = TRUE), 
+            .groups = "drop") |>
+  arrange(rank)
+```
+
+From this code, we are computing average weekly share for each rank, which gives a baseline distribution (`w0`) from which simulations start.
+
+### Construct increment pools
+
+```{r}
+rank_panel <- endpoint_weekly |>
+  group_by(rank) |>
+  arrange(week, .by_group = TRUE) |>
+  mutate(
+    share = pmax(share, 1e-12),
+    log_w = log(share),
+    dlogw = log_w - lag(log_w)
+  ) |>
+  ungroup() |>
+  filter(!is.na(dlogw), is.finite(dlogw))
+```
+
+Now, for each rank position, compute weekly change in log share (`dlogw`), which forms the empirical pool of increments we will sample from. Also adding a small epsilon (`pmax(share, 1e-12)`) to prevent issues with zeros.
+
+### Choose K, build w₀, increment pools, and a sampler
+
+```{r}
+K <- min(500, nrow(mean_share))
+ranks <- 1:K
+
+w0 <- mean_share$w_bar[ranks]
+w0 <- w0 / sum(w0)
+
+increments_by_rank <- rank_panel |>
+  filter(rank %in% ranks, is.finite(dlogw)) |>
+  group_by(rank) |>
+  summarise(increments = list(dlogw), .groups = "drop") |>
+  arrange(rank)
+
+# note: draw one delta_log(share) for every rank slot (length K) for a simulated week
+sample_increments <- function() {
+  vapply(increments_by_rank$increments, function(x) {
+    if (length(x) == 0) return(0)
+    sample(x, size = 1, replace = TRUE) # nonparametric bootstrap per Matt suggestion
+  }, numeric(1))
+}
+```
+
+- `w_0` anchors all paths at a realistic starting curve
+
+- `increments_by_rank` preserves rank-specific volatility structure
+
+- `sample_increments()` is the core nonparametric resampling step
+
+### Define sim
+
+```{r}
+simulate_rank_paths <- function(w0, K, T = 52, n_paths = 200, block = 1) {
+  paths_final <- matrix(NA_real_, nrow = n_paths, ncol = K)
+  horizons <- c(1, 7, 28)  # in weeks (was days originally)
+  growth_collect <- vector("list", length(horizons))
+  names(growth_collect) <- paste0("h", horizons)
+
+  for (p in seq_len(n_paths)) {
+    w <- w0
+    for (t in seq_len(T)) {
+      dlogw <- sample_increments()
+      w <- w * exp(dlogw)
+      w <- w / sum(w)
+      if (t %in% horizons) {
+        log_growth <- log(w / w0)
+        growth_collect[[paste0("h", t)]] <- rbind(
+          growth_collect[[paste0("h", t)]],
+          cbind(path = p, 
+                rank = ranks,
+                horizon = t, 
+                log_growth = log_growth)
+        )
+      }
+    }
+    paths_final[p, ] <- w
+  }
+
+  list(final = paths_final, 
+       growth = bind_rows(growth_collect))
+}
+```
+
+This function simulates `n_paths` independent evolutions of the rank-share distribution. So, for each week, `block`, (or some other time interval), sample increments (`dlogw`) from historical pools. Then, update shares (`w * exp(dlogw)`), then renormalize to ensure shares sum to 1. Collect growth outcomes at horizons of 1, 7, and 28 weeks in the future. From this we get shares and a dataset of growth results.
+
+### Run sim
+
+```{r}
+set.seed(42)
+
+sim <- simulate_rank_paths(w0 = w0, 
+                           K = K, 
+                           T = 52, 
+                           n_paths = 300, 
+                           block = 1)
+```
+
+### Simulated growth
+
+```{r}
+extract_horizon <- function(growth_df, col_name, label) {
+  mat <- growth_df[[col_name]]
+  df  <- as_tibble(mat)
+
+  req <- c("rank", "log_growth")
+  if (!all(req %in% names(df))) {
+    stop("Horizon ", col_name, " is missing required columns: ",
+         paste(setdiff(req, names(df)), collapse = ", "))
+  }
+
+  # build a path vector (if missing, fill NAs of correct length)
+  path_vec <- if ("path" %in% names(df)) as.integer(df$path) else rep(NA_integer_, nrow(df))
+
+  tibble(
+    path       = path_vec,
+    rank_slot  = as.integer(df$rank),
+    horizon    = factor(label, levels = c("1 Week","7 Week","28 Week")),
+    log_growth = as.numeric(df$log_growth)
+  )
+}
+
+sim_growth <- bind_rows(
+  extract_horizon(sim$growth, "h1",  "1 Week"),
+  extract_horizon(sim$growth, "h7",  "7 Week"),
+  extract_horizon(sim$growth, "h28", "28 Week")
+) |>
+  mutate(
+    rank_group = case_when(
+      rank_slot <= 25  ~ "large",
+      rank_slot <= 250 ~ "midsize",
+      TRUE             ~ "small"
+    ),
+    rank_group = factor(rank_group, levels = c("large","midsize","small"))
+  )
+```
+
+Now, we collect simulated outcomes for horizons 1, 7, 28 weeks, and assign each rank slot to a rank group. Quick note note the structure: we grab the horizon-specific matrix (`growth_df[[col_name]]`) and convert it into a df. Output includes:
+
+  - `path` (simulation path ID)
+  - `rank_slot` (the rank position)
+  - `horizon` (e.g., "1 Week")
+  - `log_growth` (the simulated growth value)
+
+Now, take a look at simulated distributions:
+
+```{r}
+#| fig-width: 8
+#| fig-height: 6
+
+ggplot(sim_growth, aes(x = log_growth, color = rank_group, 
+                       fill = rank_group)) +
+  geom_density(alpha = 0.25) +
+  facet_wrap(~ horizon, scales = "fixed") +
+  labs(
+    title = "Simulated log growth distributions by rank group & time",
+    subtitle = "Fixed scales for direct comparison",
+    x = "Log growth", 
+    y = "Density",
+    color = "Rank group", 
+    fill = "Rank group"
+  ) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+
+```{r}
+#| fig-width: 8
+#| fig-height: 6
+
+ggplot(sim_growth, aes(x = log_growth, color = rank_group, 
+                       fill = rank_group)) +
+  geom_density(alpha = 0.25) +
+  facet_wrap(~ horizon, scales = "free_y") +
+  labs(
+    title = "Simulated log growth distributions by rank group & time",
+    subtitle = "Variable scales for easier viewing of nuance",
+    x = "Log growth", 
+    y = "Density",
+    color = "Rank group", 
+    fill = "Rank group"
+  ) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+
+From this:
+
+  - At 1-week: sharp spike near 0 (i.e., most weeks involve tiny changes)
+  - At 7-week and 28-week: distributions get wider

@@ -1,0 +1,372 @@
+---
+title: "Rank Diffusion and Simulation of FB Data (v4)"
+format: pdf
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+This script builds on the simple simulation from v4 by 1) considering the full data set (5563 max ranks observed), adn then 2) conduct a grid search over varying growth rates to attempt to reconstruct the empirical distribution as closely as possible. 
+
+First, read in the data and load some libraries as before. 
+
+```{r}
+library(tidyverse)
+library(arrow)
+library(scales)
+library(here)
+library(lubridate)
+
+set.seed(1823)
+
+raw <- read_parquet(
+  here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/fb_top2000_ranked_daily.parquet")
+)
+```
+
+## Construct endpoint-level weekly series
+
+```{r}
+endpoint_weekly <- raw |>
+  mutate(week = floor_date(date, unit = "week", week_start = 1)) |>
+  group_by(week, endpoint_id) |>
+  summarise(metric_value = sum(metric_value, na.rm = TRUE), .groups = "drop") |>
+  group_by(week) |>
+  arrange(desc(metric_value), .by_group = TRUE) |>
+  mutate(
+    rank  = row_number(),
+    share = metric_value / sum(metric_value, na.rm = TRUE)
+    ) |>
+  ungroup()
+```
+
+In the above chunk we are collapsing the raw post-level engagement into endpoint-level weekly totals. Then, we rank endpoints within each week (rank = row_number()), with rank 1 being the most engaged endpoint that week. Then, compute weekly share, which equals endpoint's `metric_value / total metric_value` across all endpoints for that week.
+
+This gives a consistent panel with one row per endpoint per week, with both rank and relative share.
+
+For the sim, then, we have `r summary(endpoint_weekly$rank)[6]` unique ranks to work with. 
+
+So, now, we set the baseline curve, which is the mean share by rank: 
+
+```{r}
+mean_share <- endpoint_weekly |>
+  group_by(rank) |>
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") |>
+  arrange(rank)
+```
+
+From here, define the rank-wise delta log(share) pools (weekly):
+
+```{r}
+rank_panel <- endpoint_weekly |>
+  group_by(rank) |>
+  arrange(week, .by_group = TRUE) |>
+  mutate(
+    share = pmax(share, 1e-12),
+    log_w = log(share),
+    dlogw = log_w - lag(log_w)
+  ) |>
+  ungroup() |>
+  filter(is.finite(dlogw))
+```
+
+## Setup for simulation
+
+Now, 1) allow a large top-K cutoff to essentially include the entire sample, and then 2) build entrant pools for entry/exit. After this, we can update the CDC plot for comparison as in v3. 
+
+```{r}
+K_target_cut <- 5000L
+K_target_max <- 6000L # max simulated "universe" size (top-K we keep + extra tail)
+buffer_tail <- 2000L # how far below the cutoff to "harvest" entrants
+T_weeks <- 52
+N_paths <- 250
+
+# limits given the data
+max_rank_seen <- max(endpoint_weekly$rank, na.rm = TRUE)
+K_cut  <- min(K_target_cut,  max_rank_seen)
+K_max  <- min(K_target_max,  max_rank_seen + buffer_tail)
+
+# baseline w0 (length = min(K_max, nrow(mean_share)))
+w0_raw <- mean_share$w_bar[seq_len(min(K_max, nrow(mean_share)))]
+w0_raw <- w0_raw / sum(w0_raw)
+
+# tail entrant pool: ranks just below the cutoff (or as deep as available)
+entrant_pool <- endpoint_weekly |>
+filter(rank > K_cut, 
+       rank <= min(K_cut + buffer_tail, max_rank_seen)) |>
+  transmute(share) |>
+  filter(is.finite(share), share > 0)
+
+entrant_sampler <- function(n) sample(entrant_pool$share, 
+                                      size = n, 
+                                      replace = TRUE)
+
+# rank-wise increment lists
+increments_by_rank <- rank_panel |>
+  filter(rank <= K_max) |>
+  group_by(rank) |>
+  summarise(increments = list(dlogw), .groups = "drop") |>
+  arrange(rank)
+
+# sample one delta log(share) per rank, with a scale on volatility (sigma_scale); come back to this later
+sample_increments <- function(sigma_scale = 1) {
+  vapply(increments_by_rank$increments, function(x) {
+    if (length(x) == 0) return(0)
+    sigma_scale * sample(x, size = 1, replace = TRUE)
+    }, numeric(1))
+}
+```
+
+## Simulation
+
+This version updates v3 subtly. Steps include: 1) simulate K_max rank slots each step, 2) renormalize across K_max, 3) keep top K_cut as the tracked set, and 4) record snapshots of the top-K distribution at each time for CDC plot.
+
+```{r}
+simulate_rank_paths <- function(
+    w0, K_cut, K_max, T = 52, n_paths = 200,
+    sigma_scale = 1, entry_frac = 0.10) {
+  
+  stopifnot(length(w0) <= K_max, K_max >= K_cut)
+  horizons <- c(1, 7, 28)
+  growth_collect <- vector("list", length(horizons))
+  names(growth_collect) <- paste0("h", horizons)
+  snapshots <- vector("list", n_paths)
+  final_top <- matrix(NA_real_, nrow = n_paths, ncol = K_cut)
+
+top_n_sorted <- function(w, n) { w[order(w, decreasing = TRUE)][seq_len(n)] }
+
+for (p in seq_len(n_paths)) {
+  if (length(w0) < K_max) {
+    w <- c(w0, entrant_sampler(K_max - length(w0)))
+    w <- w / sum(w)
+    } else {
+      w <- w0[1:K_max]; w <- w / sum(w)
+      }
+  
+  snaps_p <- vector("list", T)
+
+  for (t in seq_len(T)) {
+    dlogw <- sample_increments(sigma_scale = sigma_scale)
+    if (length(dlogw) != length(w)) dlogw <- rep_len(dlogw, length.out = length(w))
+
+    w <- w * exp(dlogw)
+    w <- pmax(w, 1e-18)
+    w <- w / sum(w) # normalize across K_max
+
+  # keep top-K_cut, then refill tail to K_max with entrants
+  w_top <- top_n_sorted(w, K_cut)
+  n_tail <- K_max - K_cut
+  if (n_tail > 0) {
+    n_add <- max(1L, floor(n_tail * entry_frac))
+    w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
+  } else {
+    w <- w_top
+  }
+  w <- w / sum(w)
+
+  # CDC snapshot at time t: top-K_cut, renormalized within K_cut
+  wK <- top_n_sorted(w, K_cut)
+  wK <- wK / sum(wK)
+  snaps_p[[t]] <- tibble(path = p, t = t, rank = seq_len(K_cut), share = wK)
+
+  # growth (relative to start) at horizons
+  if (t %in% horizons) {
+    w0K <- top_n_sorted(w0, K_cut); w0K <- w0K / sum(w0K)
+    lg  <- log(wK / w0K)
+    growth_collect[[paste0("h", t)]] <- rbind(
+      growth_collect[[paste0("h", t)]],
+      cbind(path = p, rank = seq_len(K_cut), horizon = t, log_growth = lg)
+    )
+  }
+}
+
+  final_top[p, ] <- top_n_sorted(w, K_cut)
+  snapshots[[p]] <- bind_rows(snaps_p)
+
+}
+
+  list(
+    # n_paths x K_cut
+    final = final_top,
+    # snapshots for CDC
+    snapshots = bind_rows(snapshots),  
+    # time horizons
+    growth = bind_rows(growth_collect)
+  )
+}
+```
+
+## Run sim at K and compare CDC visually
+
+```{r eval = FALSE}
+# build an initial w0 for K_max
+if (length(w0_raw) < K_max) {
+  w0_ext <- c(w0_raw, entrant_sampler(K_max - length(w0_raw)))
+  w0_ext <- w0_ext / sum(w0_ext)
+  } else {
+    w0_ext <- w0_raw[1:K_max]; w0_ext <- w0_ext / sum(w0_ext)
+    }
+
+set.seed(123)
+
+sim_v4 <- simulate_rank_paths(
+  w0 = w0_ext, K_cut = K_cut, K_max = K_max,
+  T = T_weeks, n_paths = N_paths, entry_frac  = 0.10
+)
+
+# empirical CDC (top-K_cut, normalized within K)
+emp_cdc <- endpoint_weekly |>
+  group_by(week) |>
+  arrange(desc(share), .by_group = TRUE) |>
+  mutate(rank_in_week = row_number()) |>
+  filter(rank_in_week <= K_cut) |>
+  mutate(shareK = share / sum(share)) |>
+  ungroup() |>
+  group_by(rank = rank_in_week) |>
+  summarise(w_bar = mean(shareK, na.rm = TRUE), 
+            .groups = "drop")
+
+# sim CDC
+sim_cdc <- sim_v4$snapshots |>
+  group_by(rank) |>
+  summarise(w_bar = mean(share, na.rm = TRUE), 
+            .groups = "drop")
+
+write_rds(sim_v4, here::here("Desktop", "sim_v4.rds"))
+write_rds(emp_cdc, here::here("Desktop", "emp_cdc.rds"))
+write_rds(sim_cdc, here::here("Desktop", "sim_cdc.rds"))
+```
+
+Now visualize: 
+
+```{r}
+
+emp_cdc <- read_rds(here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/shared w Matt/v4/emp_cdc.rds"))
+sim_cdc <- read_rds(here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/shared w Matt/v4/sim_cdc.rds"))
+
+# compare CDC for empirical and simulated
+bind_rows(
+  emp_cdc |> mutate(source = "Empirical"),
+  sim_cdc |> mutate(source = "Simulated")
+  ) |>
+  ggplot(aes(rank, w_bar, linetype = source)) +
+  geom_line() +
+  scale_x_log10() +
+  scale_y_log10(labels = percent_format(accuracy = 0.01)) +
+  labs(
+    title = paste0("CDC: Empirical (mean share) vs Sim (K_cut=", K_cut, ", K_max=", K_max, ")"),
+    x = "Rank (log scale)", 
+    y = "Mean share (log scale)", 
+    linetype = NULL
+  ) +
+  theme_minimal()
+```
+
+## Grid Search
+
+Next, let's conduct a grid search over growth rates. We will vary the `sigma_scale` parameter, which multiplies every rank’s change in log(share) draw. The idea is:
+
+  - $<$ 1 shrinks volatility (flatter CDC tail)
+  - $>$ 1 inflates volatility (heavier tail)
+
+For each of assessment, we'll compute RMSE in log-share space, and then plot all curves against each other for direct comparison. 
+
+```{r eval = FALSE}
+# distance metric between two CDC curves (log-space RMSE)
+cdc_rmse <- function(emp, sim) {
+  df <- emp |> 
+    inner_join(sim, 
+               by = "rank", 
+               suffix = c("_emp", "_sim"))
+  sqrt(mean((log(df$w_bar_emp) - log(df$w_bar_sim))^2, na.rm = TRUE))
+}
+
+# try out a grid of sigma scales
+sigma_grid <- c(0.6, 0.75, 0.9, 1.0, 1.1, 1.25, 1.5)
+
+results <- vector("list", length(sigma_grid))
+
+for (i in seq_along(sigma_grid)) {
+  s <- sigma_grid[i]
+  set.seed(500 + i)
+  sim_i <- simulate_rank_paths(
+    w0 = w0_ext, K_cut = K_cut, K_max = K_max,
+    T = T_weeks, n_paths = N_paths,
+    sigma_scale = s, entry_frac = 0.10
+    )
+
+  sim_cdc_i <- sim_i$snapshots |>
+    group_by(rank) |>
+    summarise(w_bar = mean(share, na.rm = TRUE), 
+              .groups = "drop")
+
+  rmse_i <- cdc_rmse(emp_cdc, sim_cdc_i)
+  
+  results[[i]] <- list(scale = s, 
+                       cdc = sim_cdc_i, 
+                       rmse = rmse_i)
+}
+
+grid_tbl <- map_dfr(results, ~ .x$cdc |> 
+                      mutate(sigma_scale = .x$scale))
+
+rmse_tbl <- tibble(
+  sigma_scale = map_dbl(results, "scale"),
+  rmse = map_dbl(results, "rmse")
+) |>
+  arrange(rmse)
+
+best_sigma <- rmse_tbl$sigma_scale[1]
+
+#best_sigma
+#rmse_tbl
+```
+
+```{r eval = FALSE, echo = FALSE}
+write_rds(rmse_tbl, here::here("Desktop", "rmse_tbl.rds"))
+write_rds(grid_tbl, here::here("Desktop", "grid_tbl.rds"))
+write_rds(results, here::here("Desktop", "results.rds"))
+```
+
+Now, visualize: 
+
+```{r}
+results <- read_rds(here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/shared w Matt/v4/results.rds"))
+grid_tbl <- read_rds(here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/shared w Matt/v4/grid_tbl.rds"))
+rmse_tbl <- read_rds(here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/shared w Matt/v4/rmse_tbl.rds"))
+
+best_sigma <- 0.6
+
+emp_line <- emp_cdc |> mutate(source = "Empirical")
+
+sims_all <- grid_tbl |>
+  mutate(source = paste0("Sim sigma =", sigma_scale))
+
+ggplot() +
+  geom_line(data = sims_all, aes(rank, w_bar, group = source),
+            color = "grey70", alpha = 0.7) +
+  geom_line(
+    data = filter(sims_all, sigma_scale == best_sigma),
+    aes(rank, w_bar), color = "steelblue", linewidth = 1.1) +
+  geom_line(data = emp_line, aes(rank, w_bar), color = "black") +
+  scale_x_log10() +
+  scale_y_log10(labels = percent_format(accuracy = 0.01)) +
+  labs(
+    title = paste0("CDC grid search (K_cut=", K_cut, ", K_max=", K_max, ")"),
+    subtitle = paste0("Blue = best fit from sims (sigma = 0.6); black = empirical"),
+    x = "Rank (log scale)", 
+    y = "Mean share (log scale)") +
+  theme_minimal()
+```
+
+So from this we can see the grid search found that scaling empirical growth by `sigma = 0.6` gives the most realistic long-run capital distribution. This means rank diffusion on this platform is moderately damped, i.e., about 60% as volatile as unconstrained random diffusion. **Is this a correct understanding?**
+
+If so, here's how to unpack it a little more. When the simulated log-share increments were scaled to 60% of their original empirical variance, the resulting CDC best matched the real Facebook data. So, in other words, the rank diffusion model reproduces the long-run shape of the empirical power-law best when we "dampen" the volatility by about 40%. If correct, this implies at least 2 things:
+
+  1. The raw empirical increment distribution, if applied directly, over-diffuses, s.t. it erodes the heavy tail too quickly.
+  
+  2. But applying a scaling of `sigma = 0.6` stabilizes the system, so to speak, letting the simulated "capital"/share concentrate near the top ranks in a way consistent with reality/Facebook data
+

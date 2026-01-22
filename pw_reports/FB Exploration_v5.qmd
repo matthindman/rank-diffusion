@@ -1,0 +1,417 @@
+---
+title: "Rank Diffusion and Simulation of FB Data (v5)"
+format: pdf
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+This script builds on the simple simulation from v4 by first investigating why we ended up last time with 5563 max endpoints per week, compared to Matt's snapshot that showed a max of 14k, and much bigger numbers than mine. Then, once explored, we re-run the v4 simulation (no grid search yet) to be able to compare CDC curves to see whether and how different the empirical and simulated curves are. This gives a good foundation for moving forward as we decide how to define the sample. In future versions, once decided, we will continue the analysis to, e.g., conduct a grid search over mean and variance, and also martingales, etc. per Matt email. 
+
+```{r}
+library(tidyverse)
+library(arrow)
+library(scales)
+library(here)
+library(lubridate)
+library(glue)
+
+set.seed(1823)
+
+raw <- read_parquet(
+  here::here("/Users/philipwaggoner/Dropbox (Personal)/GW - IDDP/Projects/Rank Diffusion (Matt)/Facebook/fb_top2000_ranked_daily.parquet")
+)
+```
+
+## Pages per week
+
+```{r}
+#| fig-width: 8
+#| fig-height: 6
+
+# Weekly count of unique endpoints
+weekly_counts <- raw %>%
+  mutate(week = floor_date(date, "week", week_start = 1)) %>%
+  distinct(week, endpoint_id) %>%
+  count(week, name = "n_endpoints")
+
+summary_weekly <- weekly_counts %>%
+  summarise(
+    start = min(week), end = max(week),
+    weeks = n(),
+    min  = min(n_endpoints), which_min  = week[which.min(n_endpoints)],
+    max  = max(n_endpoints), which_max  = week[which.max(n_endpoints)],
+    median = median(n_endpoints), mean = mean(n_endpoints)
+  )
+
+#print(summary_weekly)
+
+ggplot(weekly_counts, aes(week, n_endpoints)) +
+  geom_line() +
+  geom_smooth(se = FALSE, method = "loess", span = 0.2) +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Weekly unique endpoints",
+       x = "Week", 
+       y = "Count of unique endpoint_id") + 
+  theme_bw()
+```
+
+Still only seeing max of 5563. Why? 
+
+```{r}
+# 0) date range and overall unique pages
+raw %>%
+  summarise(min_date = min(date), max_date = max(date),
+            n_pages  = n_distinct(endpoint_id))
+```
+
+Ok, we do see 14k + rows and 176 unique weeks and the same dates as the snapshot from Matt
+
+So now, recreate that snapshot from Matt. Note the use of the term "unique". So we will start there: 
+
+```{r}
+# 1) Weekly unique pages (Monday-based weeks)
+weekly_counts <- raw %>%
+  mutate(
+    endpoint_id = str_squish(endpoint_id),
+    week        = floor_date(date, unit = "week", week_start = 1) # Monday
+  ) %>%
+  distinct(week, endpoint_id) %>%     # unique pages within each week
+  count(week, name = "n_endpoints") %>%
+  arrange(week)
+
+# 2) Summary stats + coverage
+summary_weekly <- weekly_counts %>%
+  summarise(
+    start   = min(week),
+    end     = max(week),
+    weeks   = n(),                           # should be 176
+    max_n   = max(n_endpoints),
+    max_wk  = week[which.max(n_endpoints)],
+    min_n   = min(n_endpoints),
+    min_wk  = week[which.min(n_endpoints)],
+    median  = median(n_endpoints),
+    mean    = mean(n_endpoints)
+  )
+
+# 3) First/last 5 weeks
+first5 <- weekly_counts %>% slice_head(n = 5)
+last5  <- weekly_counts %>% slice_tail(n = 5)
+
+# 4) Pretty-print to match the style you pasted
+fmt <- function(x) formatC(x, big.mark = ",", format = "f", digits = 0)
+fmt1 <- function(x) formatC(x, big.mark = ",", format = "f", digits = 1)
+
+cat(glue(
+"Weekly Unique Pages
+
+  - Coverage: {summary_weekly$start} >>> {summary_weekly$end} ({summary_weekly$weeks} weeks)
+  - Metric: unique endpoint_id per week (Monday-based snapshot)
+  - Summary:
+      - Max: {fmt(summary_weekly$max_n)} on {summary_weekly$max_wk}
+      - Min: {fmt(summary_weekly$min_n)} on {summary_weekly$min_wk}
+      - Median: {fmt(summary_weekly$median)}
+      - Mean: {fmt1(summary_weekly$mean)}
+  - First 5 weeks:
+{paste0('      - ', first5$week, ' >>> ', fmt(first5$n_endpoints), collapse = '\n')}
+  - Last 5 weeks:
+{paste0('      - ', last5$week,  ' >>> ', fmt(last5$n_endpoints), collapse = '\n')}
+"))
+```
+
+Ok, from *unique* endpoints per week, we are back to 5563 (not 14k). 
+
+So, now, let's relax "unique" and try with all endpoints:
+
+```{r}
+weekly_counts_all <- raw %>%
+  mutate(
+    endpoint_id = str_squish(endpoint_id),
+    week        = floor_date(date, unit = "week", week_start = 1)  # Monday
+  ) %>%
+  count(week, name = "n_rows") %>%     # <-- count all rows, not unique pages
+  arrange(week)
+
+summary_all <- weekly_counts_all %>%
+  summarise(
+    start   = min(week),
+    end     = max(week),
+    weeks   = n(),
+    max_n   = max(n_rows),
+    max_wk  = week[which.max(n_rows)],
+    min_n   = min(n_rows),
+    min_wk  = week[which.min(n_rows)],
+    median  = median(n_rows),
+    mean    = mean(n_rows)
+  )
+
+# first/last 5 weeks to match Matt
+first5_all <- weekly_counts_all %>% slice_head(n = 5)
+last5_all  <- weekly_counts_all %>% slice_tail(n = 5)
+
+fmt  <- function(x) formatC(x, big.mark = ",", format = "f", digits = 0)
+fmt1 <- function(x) formatC(x, big.mark = ",", format = "f", digits = 1)
+
+cat(glue(
+"Weekly Totals (no de-duplication)
+
+  - Coverage: {summary_all$start} >>> {summary_all$end} ({summary_all$weeks} weeks)
+  - Metric: total rows per week (Monday-based snapshot)
+  - Summary:
+      - Max: {fmt(summary_all$max_n)} on {summary_all$max_wk}
+      - Min: {fmt(summary_all$min_n)} on {summary_all$min_wk}
+      - Median: {fmt(summary_all$median)}
+      - Mean: {fmt1(summary_all$mean)}
+  - First 5 weeks:
+{paste0('      - ', first5_all$week, ' >>> ', fmt(first5_all$n_rows), collapse = '\n')}
+  - Last 5 weeks:
+{paste0('      - ', last5_all$week,  ' >>> ', fmt(last5_all$n_rows), collapse = '\n')}
+"))
+```
+
+Ok, so these values are quite tidy and feel odd. They are close to Matt's but don't match exactly. Look a bit more. Start with looking at daily row counts:
+
+```{r}
+daily_rows <- raw %>%
+  mutate(date = as.Date(date)) %>%
+  count(date, name = "n_rows_day") %>%
+  arrange(date)
+
+summary(daily_rows$n_rows_day)
+```
+
+This proves we are working with the "top 2000 daily" file, as days are capped at 2000.
+
+Now, any head/tail unique patterns? 
+
+```{r}
+head(daily_rows, 10); tail(daily_rows, 10)
+```
+
+No. Capped at 2k.
+
+So, what about weekly totals, now, in light of the above? Look next at sum of daily rows in each Monday-based week (i.e., *no* de-dup):
+
+```{r}
+weekly_totals <- daily_rows %>%
+  mutate(week = floor_date(date, "week", week_start = 1)) %>%
+  group_by(week) %>%
+  summarise(n_rows = sum(n_rows_day), .groups = "drop") %>%
+  arrange(week)
+
+weekly_unique <- raw %>%
+  mutate(week = floor_date(date, "week", week_start = 1),
+         endpoint_id = str_squish(endpoint_id)) %>%
+  distinct(week, endpoint_id) %>%
+  count(week, name = "n_unique") %>%
+  arrange(week)
+
+# side-by-side (rows vs unique endpoints)
+weekly_compare <- weekly_totals %>%
+  left_join(weekly_unique, by = "week")
+
+head(weekly_compare, 10)
+```
+
+```{r}
+summary(weekly_compare$n_rows); summary(weekly_compare$n_unique)
+```
+
+Ok, so we have confirmed that there's a real difference in looking at unique pages per week versus all pages (non-unique) per week. 
+
+**Question at hand: which approach should we take?**
+
+The v4 simulation took the unique approach, which is why we maxed out at 5,563 (instead of 14k as in Matt's version). 
+
+So, to round out the first main sim approach, the following updates the v4 sim, and re-runs on the full (non-unique) universe and then looks at the capital plot to see if things look different or not. Once we decide on what should be included in the sample (unique vs. non-unique), we can update, and diagnose downstream accordingly. 
+
+## Simulation on full data
+
+Here, we'll do: a simple, large-k simulation and then a visual CDC comparison of the simulated curve vs the empirical curve: 
+
+```{r}
+# endpoint-level weekly series from all rows/endpoints
+endpoint_weekly <- raw %>%
+  mutate(week = floor_date(date, unit = "week", week_start = 1)) %>%
+  group_by(week) %>%
+  arrange(desc(metric_value), .by_group = TRUE) %>%
+  mutate(
+    rank  = row_number(),
+    share = metric_value / sum(metric_value, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# baselines for the sim
+# first, mean share by rank to seed curve
+mean_share <- endpoint_weekly |>
+  group_by(rank) |>
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") |>
+  arrange(rank)
+
+# next, rank-wise weekly delta log(share) pools
+rank_panel <- endpoint_weekly |>
+  group_by(rank) |>
+  arrange(week, .by_group = TRUE) |>
+  mutate(
+    share = pmax(share, 1e-12),
+    log_w = log(share),
+    dlogw = log_w - lag(log_w)
+  ) |>
+  ungroup() |>
+  filter(is.finite(dlogw))
+
+# def max (which is 14k to match Matt's approach)
+max_rank_seen <- max(endpoint_weekly$rank, na.rm = TRUE)
+
+# def "universe" (note: tail gets refilled by entrants)
+K_cut       <- min(12000L, max_rank_seen)
+K_max       <- min(K_cut + 2000L, max_rank_seen)
+buffer_tail <- 2000L # entrant pool depth below cutoff
+
+# seed curve w0 (length up to K_max)
+w0_raw <- mean_share$w_bar[seq_len(min(K_max, nrow(mean_share)))]
+w0_raw <- w0_raw / sum(w0_raw)
+
+# def entrant pool: ranks just below the cutoff
+entrant_pool <- endpoint_weekly |>
+  filter(rank > K_cut,
+         rank <= min(K_cut + buffer_tail, max_rank_seen)) |>
+  transmute(share) |>
+  filter(is.finite(share), share > 0)
+
+# bootstrapping helper
+entrant_sampler <- function(n) {
+  sample(entrant_pool$share, size = n, replace = TRUE)
+}
+
+# rank-wise increment lists and a sampler
+increments_by_rank <- rank_panel |>
+  filter(rank <= K_max) |>
+  group_by(rank) |>
+  summarise(increments = list(dlogw), .groups = "drop") |>
+  arrange(rank)
+
+sample_increments <- function(sigma_scale = 0.1) {
+  vapply(increments_by_rank$increments, function(x) {
+    if (length(x) == 0) return(0)
+    sigma_scale * sample(x, size = 1, replace = TRUE)
+  }, numeric(1))
+}
+
+# def the simulator (entry/exit, track top-K_cut, etc. for CDC)
+simulate_rank_paths <- function(
+  w0, K_cut, K_max, T = 52, n_paths = 200,
+  sigma_scale = 1, entry_frac = 0.10
+) {
+  stopifnot(length(w0) <= K_max, K_max >= K_cut)
+
+  top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
+
+  snapshots <- vector("list", n_paths)
+
+  for (p in seq_len(n_paths)) {
+    if (length(w0) < K_max) {
+      w <- c(w0, entrant_sampler(K_max - length(w0)))
+      w <- w / sum(w)
+    } else {
+      w <- w0[1:K_max]; w <- w / sum(w)
+    }
+
+    snaps_p <- vector("list", T)
+
+    for (t in seq_len(T)) {
+      dlogw <- sample_increments(sigma_scale = sigma_scale)
+      if (length(dlogw) != length(w)) dlogw <- rep_len(dlogw, length.out = length(w))
+
+      w <- w * exp(dlogw)
+      w <- pmax(w, 1e-18)
+      w <- w / sum(w)
+
+      # keep top-K_cut, refill tail from entrant pool to K_max
+      w_top  <- top_n_sorted(w, K_cut)
+      n_tail <- K_max - K_cut
+      if (n_tail > 0) {
+        n_add <- max(1L, floor(n_tail * entry_frac))
+        w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
+      } else {
+        w <- w_top
+      }
+      w <- w / sum(w)
+
+      # CDC snapshot at time t: top-K_cut only, renormalized within K_cut
+      wK <- top_n_sorted(w, K_cut)
+      wK <- wK / sum(wK)
+      snaps_p[[t]] <- tibble(path = p, t = t, rank = seq_len(K_cut), share = wK)
+    }
+
+    snapshots[[p]] <- bind_rows(snaps_p)
+  }
+
+  list(snapshots = bind_rows(snapshots))
+}
+
+# run a single, simple sim and build CDCs for comparison
+set.seed(123)
+
+T_weeks <- 52
+N_paths <- 150
+
+if (length(w0_raw) < K_max) { # extend w0 to K_max once
+  w0_ext <- c(w0_raw, entrant_sampler(K_max - length(w0_raw)))
+  w0_ext <- w0_ext / sum(w0_ext)
+} else {
+  w0_ext <- w0_raw[1:K_max]; w0_ext <- w0_ext / sum(w0_ext)
+}
+```
+
+```{r echo = TRUE, eval = FALSE}
+sim_out <- simulate_rank_paths(
+  w0 = w0_ext, K_cut = K_cut, K_max = K_max,
+  T = T_weeks, n_paths = N_paths,
+  sigma_scale = 1.0, entry_frac = 0.10
+)
+```
+
+```{r echo = FALSE, eval=TRUE}
+sim_out <- read_rds("sim_out.rds")
+```
+
+```{r}
+#| fig-width: 8
+#| fig-height: 6
+
+# first: empirical CDC showing average share curve within top-K_cut
+emp_cdc <- endpoint_weekly |>
+  group_by(week) |>
+  arrange(desc(share), .by_group = TRUE) |>
+  mutate(rank_in_week = row_number()) |>
+  filter(rank_in_week <= K_cut) |>
+  mutate(shareK = share / sum(share)) |>
+  ungroup() |>
+  group_by(rank = rank_in_week) |>
+  summarise(w_bar = mean(shareK, na.rm = TRUE), .groups = "drop")
+
+# second: sim CDC showing the average across snapshots and paths per sim
+sim_cdc <- sim_out$snapshots |>
+  group_by(rank) |>
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop")
+
+bind_rows(
+  emp_cdc |> mutate(source = "Empirical"),
+  sim_cdc |> mutate(source = "Simulated")
+) |>
+  ggplot(aes(rank, w_bar, linetype = source)) +
+  geom_line() +
+  scale_x_log10() +
+  scale_y_log10(labels = percent_format(accuracy = 0.01)) +
+  labs(
+    title = paste0("CDC: Empirical vs Simulated  (K_cut=", K_cut, ", K_max=", K_max, ")"),
+    x = "Rank (log scale)",
+    y = "Mean share (log scale)",
+    linetype = NULL
+  ) +
+  theme_bw()
+```
