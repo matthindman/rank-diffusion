@@ -30,8 +30,8 @@ params:
   turnover_horizons: !r c(1L, 4L, 12L)
   pca_K: 500L
   run_grid_search: false
-  run_bootstrap_model: false
-  run_jump_model: false
+  run_bootstrap_model: true
+  run_jump_model: true
   jump_model_type: "jump_factor"
   jump_df_F: 5
   jump_phi_F: 0

@@ -216,16 +216,36 @@ ggplot(sigma_hat_period_summ, aes(x = period, y = sigma_med)) +
 ### Bootstrap CI over time (v11-style)
 
 ```{r bootstrap-ci}
-sigma_ci_by_period <- xi_by_period %>%
-  group_by(period) %>%
-  group_modify(~ bootstrap_sigma_period(
-    xi_df_period = .x,
-    S_by_k = S_by_k,
-    B = as.integer(bootstrap_B),
-    k_min = as.integer(bootstrap_k_min),
-    K_xi_est = K_xi_est
-  )) %>%
-  ungroup()
+bootstrap_ci_deps <- list(
+  cache_version = CFG$cache_version,
+  upstream = list(endpoint_weekly_fp = read_cache_fingerprint("endpoint_weekly", CFG)),
+  bootstrap_period_unit = bootstrap_period_unit,
+  bootstrap_B = as.integer(bootstrap_B),
+  bootstrap_k_min = as.integer(bootstrap_k_min),
+  K_xi_est = K_xi_est,
+  S_by_k_fp = digest::digest(S_by_k$S_k, algo = "xxhash64"),
+  code = deps_code_mtime(here::here("analysis", "04_model_variants.Rmd"))
+)
+
+sigma_ci_by_period <- cache_or_compute(
+  name = "sigma_ci_by_period_bootstrap_variants",
+  compute_fn = function() {
+    withr::with_seed(CFG$seed, {
+      xi_by_period %>%
+        group_by(period) %>%
+        group_modify(~ bootstrap_sigma_period(
+          xi_df_period = .x,
+          S_by_k = S_by_k,
+          B = as.integer(bootstrap_B),
+          k_min = as.integer(bootstrap_k_min),
+          K_xi_est = K_xi_est
+        )) %>%
+        ungroup()
+    })
+  },
+  deps = bootstrap_ci_deps,
+  cfg = CFG
+)
 
 ggplot(sigma_ci_by_period, aes(x = period, y = sigma_hat_med)) +
   geom_line() +
@@ -580,129 +600,137 @@ score_tbl
 
 ```{r run-jump-model}
 if (isTRUE(CFG$run_jump_model)) {
-  moment_curves_jump <- list(
-    mean_vec = mean_vec_s,
-    sd_vec = sd_vec_s,
-    log_wbar = log(pmax(w0_ext, 1e-18)),
-    bucket_def = bucket_def
-  )
+  jump_out <- tryCatch({
+    moment_curves_jump <- list(
+      mean_vec = mean_vec_s,
+      sd_vec = sd_vec_s,
+      log_wbar = log(pmax(w0_ext, 1e-18)),
+      bucket_def = bucket_def
+    )
 
-  jump_model_type_i <- ifelse(is.na(CFG$jump_model_type) || CFG$jump_model_type == "", "jump_factor", CFG$jump_model_type)
-  jump_dist_i <- ifelse(is.na(CFG$jump_dist) || CFG$jump_dist == "", "laplace", CFG$jump_dist)
-  jump_sys_loading_i <- ifelse(is.na(CFG$jump_sys_loading) || CFG$jump_sys_loading == "", "beta", CFG$jump_sys_loading)
+    jump_model_type_i <- ifelse(is.na(CFG$jump_model_type) || CFG$jump_model_type == "", "jump_factor", CFG$jump_model_type)
+    jump_dist_i <- ifelse(is.na(CFG$jump_dist) || CFG$jump_dist == "", "laplace", CFG$jump_dist)
+    jump_sys_loading_i <- ifelse(is.na(CFG$jump_sys_loading) || CFG$jump_sys_loading == "", "beta", CFG$jump_sys_loading)
 
-  jump_df_F_i <- ifelse(is.na(CFG$jump_df_F), 5, CFG$jump_df_F)
-  jump_phi_F_i <- ifelse(is.na(CFG$jump_phi_F), 0, CFG$jump_phi_F)
+    jump_df_F_i <- ifelse(is.na(CFG$jump_df_F), 5, CFG$jump_df_F)
+    jump_phi_F_i <- ifelse(is.na(CFG$jump_phi_F), 0, CFG$jump_phi_F)
 
-  jump_df_eps_large_i <- ifelse(is.na(CFG$jump_df_eps_large), 6, CFG$jump_df_eps_large)
-  jump_df_eps_midsize_i <- ifelse(is.na(CFG$jump_df_eps_midsize), 8, CFG$jump_df_eps_midsize)
-  jump_df_eps_small_i <- ifelse(is.na(CFG$jump_df_eps_small), 10, CFG$jump_df_eps_small)
+    jump_df_eps_large_i <- ifelse(is.na(CFG$jump_df_eps_large), 6, CFG$jump_df_eps_large)
+    jump_df_eps_midsize_i <- ifelse(is.na(CFG$jump_df_eps_midsize), 8, CFG$jump_df_eps_midsize)
+    jump_df_eps_small_i <- ifelse(is.na(CFG$jump_df_eps_small), 10, CFG$jump_df_eps_small)
 
-  jump_p_sys_i <- ifelse(is.na(CFG$jump_p_sys), 0.02, CFG$jump_p_sys)
-  jump_p_idio_large_i <- ifelse(is.na(CFG$jump_p_idio_large), 0.01, CFG$jump_p_idio_large)
-  jump_p_idio_midsize_i <- ifelse(is.na(CFG$jump_p_idio_midsize), 0.005, CFG$jump_p_idio_midsize)
-  jump_p_idio_small_i <- ifelse(is.na(CFG$jump_p_idio_small), 0.002, CFG$jump_p_idio_small)
+    jump_p_sys_i <- ifelse(is.na(CFG$jump_p_sys), 0.02, CFG$jump_p_sys)
+    jump_p_idio_large_i <- ifelse(is.na(CFG$jump_p_idio_large), 0.01, CFG$jump_p_idio_large)
+    jump_p_idio_midsize_i <- ifelse(is.na(CFG$jump_p_idio_midsize), 0.005, CFG$jump_p_idio_midsize)
+    jump_p_idio_small_i <- ifelse(is.na(CFG$jump_p_idio_small), 0.002, CFG$jump_p_idio_small)
 
-  jump_scale_sys_i <- ifelse(is.na(CFG$jump_scale_sys), 0.35, CFG$jump_scale_sys)
-  jump_scale_idio_i <- ifelse(is.na(CFG$jump_scale_idio), 0.20, CFG$jump_scale_idio)
-  jump_scale_i <- ifelse(is.na(CFG$jump_scale), 0.10, CFG$jump_scale)
-  jump_df_i <- ifelse(is.na(CFG$jump_df), 5, CFG$jump_df)
+    jump_scale_sys_i <- ifelse(is.na(CFG$jump_scale_sys), 0.35, CFG$jump_scale_sys)
+    jump_scale_idio_i <- ifelse(is.na(CFG$jump_scale_idio), 0.20, CFG$jump_scale_idio)
+    jump_scale_i <- ifelse(is.na(CFG$jump_scale), 0.10, CFG$jump_scale)
+    jump_df_i <- ifelse(is.na(CFG$jump_df), 5, CFG$jump_df)
 
-  jump_kappa_large_i <- ifelse(is.na(CFG$jump_kappa_large), 0.04, CFG$jump_kappa_large)
-  jump_kappa_midsize_i <- ifelse(is.na(CFG$jump_kappa_midsize), 0.03, CFG$jump_kappa_midsize)
-  jump_kappa_small_i <- ifelse(is.na(CFG$jump_kappa_small), 0.02, CFG$jump_kappa_small)
+    jump_kappa_large_i <- ifelse(is.na(CFG$jump_kappa_large), 0.04, CFG$jump_kappa_large)
+    jump_kappa_midsize_i <- ifelse(is.na(CFG$jump_kappa_midsize), 0.03, CFG$jump_kappa_midsize)
+    jump_kappa_small_i <- ifelse(is.na(CFG$jump_kappa_small), 0.02, CFG$jump_kappa_small)
 
-  jump_model <- list(
-    type = jump_model_type_i,
-    mu = CFG$sim_mu,
-    sigma = CFG$sim_sigma,
-    df_F = jump_df_F_i,
-    phi_F = jump_phi_F_i,
-    df_eps = c(large = jump_df_eps_large_i, midsize = jump_df_eps_midsize_i, small = jump_df_eps_small_i),
-    p_sys = jump_p_sys_i,
-    p_idio = c(large = jump_p_idio_large_i, midsize = jump_p_idio_midsize_i, small = jump_p_idio_small_i),
-    jump_dist = jump_dist_i,
-    jump_scale_sys = jump_scale_sys_i,
-    jump_scale_idio = jump_scale_idio_i,
-    jump_scale = jump_scale_i,
-    jump_df = jump_df_i,
-    sys_loading = jump_sys_loading_i,
-    mean_reversion = CFG$jump_mean_reversion,
-    kappa = c(large = jump_kappa_large_i, midsize = jump_kappa_midsize_i, small = jump_kappa_small_i)
-  )
+    jump_model <- list(
+      type = jump_model_type_i,
+      mu = CFG$sim_mu,
+      sigma = CFG$sim_sigma,
+      df_F = jump_df_F_i,
+      phi_F = jump_phi_F_i,
+      df_eps = c(large = jump_df_eps_large_i, midsize = jump_df_eps_midsize_i, small = jump_df_eps_small_i),
+      p_sys = jump_p_sys_i,
+      p_idio = c(large = jump_p_idio_large_i, midsize = jump_p_idio_midsize_i, small = jump_p_idio_small_i),
+      jump_dist = jump_dist_i,
+      jump_scale_sys = jump_scale_sys_i,
+      jump_scale_idio = jump_scale_idio_i,
+      jump_scale = jump_scale_i,
+      jump_df = jump_df_i,
+      sys_loading = jump_sys_loading_i,
+      mean_reversion = CFG$jump_mean_reversion,
+      kappa = c(large = jump_kappa_large_i, midsize = jump_kappa_midsize_i, small = jump_kappa_small_i)
+    )
 
-  jump_cache <- list(
-    beta_k = pca_cache$beta_k,
-    state = new.env(parent = emptyenv())
-  )
+    jump_cache <- list(
+      beta_k = pca_cache$beta_k,
+      state = new.env(parent = emptyenv())
+    )
 
-  sim_jump <- simulate_rank_paths(
-    w0 = w0_ext,
-    K_cut = K_cut,
-    K_max = K_max,
-    T = CFG$sim_T_weeks,
-    n_paths = CFG$sim_n_paths,
-    mu = CFG$sim_mu,
-    sigma = CFG$sim_sigma,
-    entry_frac = CFG$sim_entry_frac,
-    mean_vec = mean_vec_s,
-    sd_vec = sd_vec_s,
-    horizons = CFG$horizons_durable,
-    K_xi = sim_K_xi,
-    model = jump_model,
-    moment_curves = moment_curves_jump,
-    cache = jump_cache,
-    entrant_sampler = entrant_sampler
-  )
+    sim_jump <- simulate_rank_paths(
+      w0 = w0_ext,
+      K_cut = K_cut,
+      K_max = K_max,
+      T = CFG$sim_T_weeks,
+      n_paths = CFG$sim_n_paths,
+      mu = CFG$sim_mu,
+      sigma = CFG$sim_sigma,
+      entry_frac = CFG$sim_entry_frac,
+      mean_vec = mean_vec_s,
+      sd_vec = sd_vec_s,
+      horizons = CFG$horizons_durable,
+      K_xi = sim_K_xi,
+      model = jump_model,
+      moment_curves = moment_curves_jump,
+      cache = jump_cache,
+      entrant_sampler = entrant_sampler
+    )
 
-  sim_jump_cdc <- sim_jump$snapshots %>%
-    group_by(rank) %>%
-    summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") %>%
-    arrange(rank)
+    sim_jump_cdc <- sim_jump$snapshots %>%
+      group_by(rank) %>%
+      summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") %>%
+      arrange(rank)
 
-  score_jump <- tibble(
-    model = "jump_factor",
-    rmse_cdc = cdc_rmse(emp_cdc, sim_jump_cdc),
-    rmse_durable = durable_rmse(emp_targets, sim_jump$growth, bucket_def),
-    rmse_xi = xi_rmse(rho_by_k_med %>% filter(k <= sim_K_xi - 1L),
-                      sim_jump$xi %>% filter(k <= sim_K_xi - 1L))
-  )
+    score_jump <- tibble(
+      model = "jump_factor",
+      rmse_cdc = cdc_rmse(emp_cdc, sim_jump_cdc),
+      rmse_durable = durable_rmse(emp_targets, sim_jump$growth, bucket_def),
+      rmse_xi = xi_rmse(rho_by_k_med %>% filter(k <= sim_K_xi - 1L),
+                        sim_jump$xi %>% filter(k <= sim_K_xi - 1L))
+    )
 
-  score_jump
+    # Tail-metric comparison (empirical vs jump simulation)
+    tail_sample_steps <- 200L
+    tail_sample_paths <- 30L
+    tail_sample_ranks_per_bucket <- 200L
 
-  # Tail-metric comparison (empirical vs jump simulation)
-  tail_sample_steps <- 200L
-  tail_sample_paths <- 30L
-  tail_sample_ranks_per_bucket <- 200L
+    tail_cache <- list(
+      beta_k = pca_cache$beta_k,
+      state = new.env(parent = emptyenv())
+    )
 
-  tail_cache <- list(
-    beta_k = pca_cache$beta_k,
-    state = new.env(parent = emptyenv())
-  )
+    sim_inc_tail <- sample_increments_for_tail(
+      model = jump_model,
+      moment_curves = moment_curves_jump,
+      cache = tail_cache,
+      K_cut = K_cut,
+      n_steps = tail_sample_steps,
+      n_paths = tail_sample_paths,
+      ranks_per_bucket = tail_sample_ranks_per_bucket
+    )
 
-  sim_inc_tail <- sample_increments_for_tail(
-    model = jump_model,
-    moment_curves = moment_curves_jump,
-    cache = tail_cache,
-    K_cut = K_cut,
-    n_steps = tail_sample_steps,
-    n_paths = tail_sample_paths,
-    ranks_per_bucket = tail_sample_ranks_per_bucket
-  )
+    tail_summ_jump <- tail_diagnostics(sim_inc_tail, bucket_def)
 
-  tail_summ_jump <- tail_diagnostics(sim_inc_tail, bucket_def)
+    tail_comp_jump <- tail_summ %>%
+      select(bucket, p_gt_5sd, p_gt_3sd, q_0.001, q_0.999) %>%
+      pivot_longer(-bucket, names_to = "metric", values_to = "emp") %>%
+      left_join(
+        tail_summ_jump %>%
+          select(bucket, p_gt_5sd, p_gt_3sd, q_0.001, q_0.999) %>%
+          pivot_longer(-bucket, names_to = "metric", values_to = "sim"),
+        by = c("bucket", "metric")
+      ) %>%
+      arrange(bucket, metric)
 
-  tail_comp_jump <- tail_summ %>%
-    select(bucket, p_gt_5sd, p_gt_3sd, q_0.001, q_0.999) %>%
-    pivot_longer(-bucket, names_to = "metric", values_to = "emp") %>%
-    left_join(
-      tail_summ_jump %>%
-        select(bucket, p_gt_5sd, p_gt_3sd, q_0.001, q_0.999) %>%
-        pivot_longer(-bucket, names_to = "metric", values_to = "sim"),
-      by = c("bucket", "metric")
-    ) %>%
-    arrange(bucket, metric)
+    list(score_jump = score_jump, tail_comp_jump = tail_comp_jump)
+  }, error = function(e) {
+    cat("Jump model failed: ", conditionMessage(e), "\n")
+    NULL
+  })
 
-  tail_comp_jump
+  if (!is.null(jump_out)) {
+    jump_out$score_jump
+    jump_out$tail_comp_jump
+  }
 }
 ```
