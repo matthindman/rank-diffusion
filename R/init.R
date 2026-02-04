@@ -13,6 +13,7 @@ suppressPackageStartupMessages({
 source(here("R", "config.R"))
 source(here("R", "cache.R"))
 source(here("R", "utils.R"))
+source(here("R", "bootstrap_increment_sampler.R"))
 source(here("R", "jump_model.R"))
 source(here("R", "data_prep.R"))
 source(here("R", "metrics.R"))

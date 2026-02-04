@@ -1,7 +1,14 @@
-## Alternative model: nonparametric bootstrap increments (v2/v6) (optional)
+## Alternative model: bootstrap increment samplers (best-practice) (optional)
 
-This implements the earliest simulator variant: sample each rank-slot increment from the empirical
-pool of observed `dlogw` values at that rank (rather than Gaussian).
+This generalizes the early nonparametric bootstrap simulator to support:
+
+- `iid_rank` (per-rank iid pool; the original simple bootstrap)
+- `local_rank` (pooled neighborhoods in rank; recommended baseline)
+- `factor_local` (common-shock factors + local residual bootstrap)
+- `week_vector` (resample entire weekly increment profiles; preserves cross-rank dependence)
+- `factor_local_tailsplice` (optional: semi-parametric tail splicing for residuals)
+
+Control these with `CFG$bootstrap_*` params (see `report/master_report.Rmd` YAML).
 
 ```{r bootstrap-setup, include=FALSE}
 if (!exists("endpoint_bundle")) {
@@ -24,15 +31,31 @@ w0_ext <- build_w0_ext(endpoint_weekly, K_max, entrant_sampler)
 ```{r bootstrap-model}
 if (isTRUE(CFG$run_bootstrap_model)) {
 
-  increment_pools <- rank_panel %>%
-    filter(rank <= K_max) %>%
-    group_by(rank) %>%
-    summarise(pool = list(dlogw), .groups = "drop") %>%
-    arrange(rank)
+  bootstrap_cfg <- list(
+    K_cut = K_cut,
+    K_max = K_max,
+    T_sim = CFG$sim_T_weeks,
+    n_paths = CFG$sim_n_paths,
+    entry_frac = CFG$sim_entry_frac,
+    bootstrap_method = CFG$bootstrap_method,
+    rank_bandwidth = CFG$bootstrap_rank_bandwidth,
+    kernel = CFG$bootstrap_kernel,
+    block_bootstrap = CFG$bootstrap_block_bootstrap,
+    block_length = CFG$bootstrap_block_length,
+    n_factors = CFG$bootstrap_n_factors,
+    K_pca = CFG$bootstrap_K_pca,
+    tailsplice = CFG$bootstrap_tailsplice,
+    tail_q = CFG$bootstrap_tail_q,
+    tail_fit_min_n = CFG$bootstrap_tail_fit_min_n
+  )
 
-  stopifnot(nrow(increment_pools) == K_max)
+  increment_sampler <- build_increment_sampler(
+    rank_panel,
+    cfg = bootstrap_cfg,
+    bucket_assigner = function(r) assign_bucket(r, CFG$bucket_def)
+  )
 
-  sim_boot <- simulate_rank_paths_bootstrap(
+  sim_boot <- simulate_rank_paths_generic(
     w0 = w0_ext,
     K_cut = K_cut,
     K_max = K_max,
@@ -41,9 +64,12 @@ if (isTRUE(CFG$run_bootstrap_model)) {
     mu = CFG$sim_mu,
     sigma = CFG$sim_sigma,
     entry_frac = CFG$sim_entry_frac,
+    increment_generator = increment_sampler,
     horizons = CFG$horizons_durable,
     K_xi = NULL,
-    increment_pools = increment_pools,
+    store_increments = CFG$bootstrap_diag_paths > 0,
+    increments_paths = CFG$bootstrap_diag_paths,
+    increments_K = K_cut,
     entrant_sampler = entrant_sampler
   )
 

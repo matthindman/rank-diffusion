@@ -321,6 +321,171 @@ simulate_rank_paths_bootstrap <- function(
   out
 }
 
+simulate_rank_paths_generic <- function(
+  w0, K_cut, K_max, T = 52, n_paths = 200,
+  mu = 0, sigma = 1, entry_frac = 0.10,
+  increment_generator,
+  horizons = c(4L, 8L),
+  K_xi = NULL,
+  store_increments = FALSE,
+  increments_paths = 0L,
+  increments_K = K_cut,
+  entrant_sampler = NULL
+) {
+  stopifnot(is.list(increment_generator))
+  if (!is.null(increment_generator$K_max)) {
+    stopifnot(increment_generator$K_max == K_max)
+  }
+
+  if (is.null(entrant_sampler)) {
+    entrant_sampler <- get("entrant_sampler", inherits = TRUE)
+  }
+
+  top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
+
+  horizons <- as.integer(horizons)
+  stopifnot(all(horizons >= 1L), all(horizons <= T))
+
+  if (!is.null(K_xi)) {
+    K_xi <- as.integer(K_xi)
+    stopifnot(K_xi >= 2L, K_xi <= K_cut)
+  }
+
+  increments_paths <- as.integer(increments_paths)
+  increments_K <- as.integer(min(increments_K, K_max))
+
+  snapshots <- vector("list", n_paths)
+  growth_collect <- setNames(vector("list", length(horizons)), paste0("h", horizons))
+  xi_collect <- vector("list", n_paths)
+  increments_collect <- vector("list", if (store_increments) min(n_paths, increments_paths) else 0L)
+
+  for (p in seq_len(n_paths)) {
+
+    if (length(w0) < K_max) {
+      w <- c(w0, entrant_sampler(K_max - length(w0)))
+      w <- w / sum(w)
+    } else {
+      w <- w0[1:K_max]
+      w <- w / sum(w)
+    }
+
+    w_baseK <- top_n_sorted(w, K_cut)
+    w_baseK <- w_baseK / sum(w_baseK)
+
+    snaps_p <- vector("list", T)
+    xi_p <- vector("list", T)
+    inc_p <- if (store_increments && p <= increments_paths) vector("list", T) else NULL
+
+    dlogw_mat <- NULL
+    if (!is.null(increment_generator$sample_path)) {
+      dlogw_mat <- increment_generator$sample_path(T_sim = T, mu = mu, sigma = sigma)
+      stopifnot(is.matrix(dlogw_mat), nrow(dlogw_mat) == T, ncol(dlogw_mat) == K_max)
+    }
+
+    for (t in seq_len(T)) {
+      dlogw <- if (!is.null(dlogw_mat)) {
+        dlogw_mat[t, ]
+      } else if (!is.null(increment_generator$sample_one_week)) {
+        increment_generator$sample_one_week(mu = mu, sigma = sigma)
+      } else {
+        stop("increment_generator must provide sample_path or sample_one_week")
+      }
+
+      stopifnot(length(dlogw) == K_max)
+
+      w <- w * exp(dlogw)
+      w <- pmax(w, 1e-18)
+      w <- w / sum(w)
+
+      w_sorted <- w[order(w, decreasing = TRUE)]
+      w_top <- w_sorted[seq_len(K_cut)]
+      n_tail <- K_max - K_cut
+
+      if (n_tail > 0) {
+        w_tail <- w_sorted[(K_cut + 1L):K_max]
+        n_add <- as.integer(floor(n_tail * entry_frac))
+        if (is.na(n_add) || !is.finite(n_add)) n_add <- 0L
+        n_add <- max(0L, min(n_tail, n_add))
+        if (n_add <= 0L) {
+          w <- c(w_top, w_tail)
+        } else if (n_add >= n_tail) {
+          w <- c(w_top, entrant_sampler(n_tail))
+        } else {
+          w <- c(w_top, entrant_sampler(n_add), w_tail[seq_len(n_tail - n_add)])
+        }
+      } else {
+        w <- w_top
+      }
+
+      w <- w / sum(w)
+
+      wK <- top_n_sorted(w, K_cut)
+      wK <- wK / sum(wK)
+
+      snaps_p[[t]] <- tibble::tibble(
+        path = p,
+        t = t,
+        rank = seq_len(K_cut),
+        share = wK
+      )
+
+      if (store_increments && p <= increments_paths) {
+        inc_p[[t]] <- tibble::tibble(
+          path = p,
+          t = t,
+          rank = seq_len(increments_K),
+          dlogw = dlogw[seq_len(increments_K)]
+        )
+      }
+
+      if (!is.null(K_xi)) {
+        w_top_now <- top_n_sorted(w, K_cut) %>% pmax(1e-18)
+        xi_vals <- log(w_top_now[seq_len(K_xi - 1L)] / w_top_now[seq(2L, K_xi)])
+        xi_p[[t]] <- tibble::tibble(
+          path = p,
+          t = t,
+          k = seq_len(K_xi - 1L),
+          xi = xi_vals
+        )
+      }
+
+      if (t %in% horizons) {
+        lg <- log(wK / w_baseK)
+        lbl <- paste0("h", t)
+        growth_collect[[lbl]] <- rbind(
+          growth_collect[[lbl]],
+          cbind(
+            path = p,
+            rank = seq_len(K_cut),
+            horizon = t,
+            log_growth = lg
+          )
+        )
+      }
+    }
+
+    snapshots[[p]] <- dplyr::bind_rows(snaps_p)
+    if (!is.null(K_xi)) xi_collect[[p]] <- dplyr::bind_rows(xi_p)
+    if (store_increments && p <= increments_paths) {
+      increments_collect[[p]] <- dplyr::bind_rows(inc_p)
+    }
+  }
+
+  growth_df <- dplyr::bind_rows(lapply(growth_collect, tibble::as_tibble))
+
+  out <- list(
+    snapshots = dplyr::bind_rows(snapshots),
+    growth = growth_df
+  )
+
+  if (!is.null(K_xi)) out$xi <- dplyr::bind_rows(xi_collect)
+  if (store_increments && length(increments_collect) > 0) {
+    out$increments <- dplyr::bind_rows(increments_collect)
+  }
+
+  out
+}
+
 calibrate_sigma <- function(
   sigma,
   w0_ext,
