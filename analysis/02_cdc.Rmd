@@ -1,0 +1,127 @@
+## Stylized fact A: Capital Distribution Curve (CDC) and stability
+
+The empirical CDC is the mean (across weeks) of `share_topK` at each rank within top-K.
+
+```{r cdc-setup, include=FALSE}
+if (!exists("endpoint_bundle")) {
+  endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
+}
+endpoint_weekly <- endpoint_bundle$endpoint_weekly
+K_cut <- endpoint_bundle$K_cut
+
+horizons_growth <- CFG$horizons_growth
+
+if (!exists("emp_cdc")) {
+  emp_cdc <- load_emp_cdc(endpoint_weekly, K_cut, cfg = CFG)
+}
+```
+
+```{r emp-cdc}
+emp_cdc
+
+ggplot(emp_cdc, aes(rank, w_bar)) +
+  geom_line() +
+  scale_x_log10() +
+  scale_y_log10(labels = percent_format(accuracy = 0.01)) +
+  labs(
+    title = "Empirical CDC (mean share within top-K)",
+    subtitle = paste0("K_cut = ", K_cut),
+    x = "Rank (log scale)",
+    y = "Mean share within top-K (log scale)"
+  ) +
+  theme_bw()
+```
+
+### CDC stability over time windows
+
+A simple stability check: compute period-level CDCs and compare to the full-sample CDC.
+
+```{r cdc-stability}
+cdc_by_period <- compute_cdc_by_period(endpoint_weekly, K_cut, period_unit = "quarter")
+
+ggplot(cdc_by_period, aes(rank, w_bar, group = period)) +
+  geom_line(alpha = 0.25) +
+  scale_x_log10() +
+  scale_y_log10(labels = percent_format(accuracy = 0.01)) +
+  labs(
+    title = "CDC curves by quarter (visual stability check)",
+    x = "Rank (log scale)",
+    y = "Mean share within top-K (log scale)"
+  ) +
+  theme_bw()
+
+cdc_rmse_vs_full <- cdc_by_period %>%
+  inner_join(emp_cdc, by = "rank", suffix = c("_period", "_full")) %>%
+  group_by(period) %>%
+  summarise(
+    rmse_log = sqrt(mean((log(w_bar_period) - log(w_bar_full))^2, na.rm = TRUE)),
+    .groups = "drop"
+  )
+
+ggplot(cdc_rmse_vs_full, aes(period, rmse_log)) +
+  geom_line() +
+  geom_point(size = 1.5) +
+  labs(
+    title = "CDC stability: RMSE (log shares) vs full-sample curve",
+    x = NULL,
+    y = "RMSE in log space"
+  ) +
+  theme_bw()
+```
+
+## Endpoint-level forward growth distributions (v2/v3)
+
+Compute forward-looking log growth in *global share* for individual endpoints over multiple horizons,
+and compare distributions across rank buckets.
+
+```{r endpoint-growth}
+endpoint_base <- endpoint_weekly %>%
+  transmute(
+    week,
+    endpoint_id,
+    rank,
+    bucket = rank_bucket_simple(rank),
+    log_share = log(pmax(share_global, 1e-12))
+  )
+
+growth_long <- purrr::map_dfr(horizons_growth, function(h) {
+  endpoint_base %>%
+    mutate(
+      horizon_weeks = as.integer(h),
+      week_tp = week + lubridate::weeks(as.integer(h))
+    ) %>%
+    left_join(
+      endpoint_base %>%
+        transmute(endpoint_id, week_tp = week, log_share_tp = log_share),
+      by = c("endpoint_id", "week_tp")
+    ) %>%
+    mutate(dlog_share = log_share_tp - log_share) %>%
+    filter(is.finite(dlog_share))
+})
+
+growth_summ <- growth_long %>%
+  group_by(bucket, horizon_weeks) %>%
+  summarise(
+    n = n(),
+    med = median(dlog_share, na.rm = TRUE),
+    p10 = quantile(dlog_share, 0.10, na.rm = TRUE),
+    p90 = quantile(dlog_share, 0.90, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+growth_summ
+```
+
+```{r endpoint-growth-plot}
+ggplot(growth_long, aes(x = dlog_share, fill = bucket)) +
+  geom_density(alpha = 0.35) +
+  facet_wrap(~ horizon_weeks, scales = "free_y") +
+  labs(
+    title = "Forward log-growth in global share by rank bucket",
+    subtitle = "Endpoint-level growth distributions (identity-based), as in v2/v3",
+    x = "Delta log(share_global) over horizon",
+    y = "Density",
+    fill = "Bucket"
+  ) +
+  theme_bw()
+```

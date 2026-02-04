@@ -1,0 +1,56 @@
+## Alternative model: nonparametric bootstrap increments (v2/v6) (optional)
+
+This implements the earliest simulator variant: sample each rank-slot increment from the empirical
+pool of observed `dlogw` values at that rank (rather than Gaussian).
+
+```{r bootstrap-setup, include=FALSE}
+if (!exists("endpoint_bundle")) {
+  endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
+}
+endpoint_weekly <- endpoint_bundle$endpoint_weekly
+K_cut <- endpoint_bundle$K_cut
+K_max <- endpoint_bundle$K_max
+max_rank_seen <- endpoint_bundle$max_rank_seen
+
+if (!exists("rank_panel")) {
+  rank_panel <- load_rank_panel(endpoint_weekly, cfg = CFG)
+}
+
+entrant_pool <- build_entrant_pool(endpoint_weekly, K_cut, CFG$K_tail_buffer, max_rank_seen)
+entrant_sampler <- make_entrant_sampler(entrant_pool)
+w0_ext <- build_w0_ext(endpoint_weekly, K_max, entrant_sampler)
+```
+
+```{r bootstrap-model}
+if (isTRUE(CFG$run_bootstrap_model)) {
+
+  increment_pools <- rank_panel %>%
+    filter(rank <= K_max) %>%
+    group_by(rank) %>%
+    summarise(pool = list(dlogw), .groups = "drop") %>%
+    arrange(rank)
+
+  stopifnot(nrow(increment_pools) == K_max)
+
+  sim_boot <- simulate_rank_paths_bootstrap(
+    w0 = w0_ext,
+    K_cut = K_cut,
+    K_max = K_max,
+    T = CFG$sim_T_weeks,
+    n_paths = CFG$sim_n_paths,
+    mu = CFG$sim_mu,
+    sigma = CFG$sim_sigma,
+    entry_frac = CFG$sim_entry_frac,
+    horizons = CFG$horizons_durable,
+    K_xi = NULL,
+    increment_pools = increment_pools,
+    entrant_sampler = entrant_sampler
+  )
+
+  sim_boot
+}
+```
+
+## Notes for SPT-facing interpretation (non-quantitative)
+
+(Place SPT-facing narrative notes here.)

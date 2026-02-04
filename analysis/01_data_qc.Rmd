@@ -1,0 +1,52 @@
+## Data QA and coverage
+
+This reproduces the “weekly coverage & scale checks” used in v6.
+
+```{r data-qc-setup, include=FALSE}
+if (!exists("endpoint_bundle")) {
+  endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
+}
+endpoint_weekly <- endpoint_bundle$endpoint_weekly
+max_rank_by_week <- endpoint_bundle$max_rank_by_week
+```
+
+```{r qa-summary}
+endpoint_weekly %>%
+  summarise(
+    min_week = min(week),
+    max_week = max(week),
+    n_weeks = n_distinct(week),
+    n_endpoints = n_distinct(endpoint_id),
+    max_rank_seen = max(rank)
+  )
+```
+
+```{r qa-weekly-row-counts}
+weekly_totals <- endpoint_weekly %>%
+  count(week, name = "n_rows") %>%
+  arrange(week)
+
+summary(weekly_totals$n_rows)
+
+ggplot(weekly_totals, aes(week, n_rows)) +
+  geom_line() +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Weekly row counts (weekly snapshots)",
+    x = "Week",
+    y = "Rows"
+  ) +
+  theme_bw()
+```
+
+```{r qa-max-rank}
+ggplot(max_rank_by_week, aes(week, max_rank)) +
+  geom_line() +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Maximum observed rank by week",
+    x = "Week",
+    y = "Max rank"
+  ) +
+  theme_bw()
+```

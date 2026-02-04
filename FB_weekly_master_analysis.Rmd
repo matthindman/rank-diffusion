@@ -30,9 +30,21 @@ params:
   pca_K: 500L
   run_grid_search: false
   run_bootstrap_model: false
+  run_jump_model: false
   bootstrap_B: 200L
   bootstrap_k_min: 10L
   bootstrap_period_unit: quarter
+  bootstrap_method: "local_rank"
+  bootstrap_rank_bandwidth: 25L
+  bootstrap_kernel: "triangular"
+  bootstrap_block_bootstrap: false
+  bootstrap_block_length: 4L
+  bootstrap_n_factors: 1L
+  bootstrap_K_pca: 500L
+  bootstrap_tailsplice: false
+  bootstrap_tail_q: 0.99
+  bootstrap_tail_fit_min_n: 30L
+  bootstrap_diag_paths: 3L
 ---
 
 ```{r setup, include=FALSE}
@@ -104,6 +116,17 @@ K_tail_buffer <- coerce_numeric(params$K_tail_buffer)
 Smoothing_h <- coerce_numeric(params$smoothing_h)
 bootstrap_B <- coerce_numeric(params$bootstrap_B)
 bootstrap_k_min <- coerce_numeric(params$bootstrap_k_min)
+bootstrap_method <- params$bootstrap_method
+bootstrap_rank_bandwidth <- params$bootstrap_rank_bandwidth
+bootstrap_kernel <- params$bootstrap_kernel
+bootstrap_block_bootstrap <- isTRUE(params$bootstrap_block_bootstrap)
+bootstrap_block_length <- as.integer(coerce_numeric(params$bootstrap_block_length))
+bootstrap_n_factors <- as.integer(coerce_numeric(params$bootstrap_n_factors))
+bootstrap_K_pca <- as.integer(coerce_numeric(params$bootstrap_K_pca))
+bootstrap_tailsplice <- isTRUE(params$bootstrap_tailsplice)
+bootstrap_tail_q <- coerce_numeric(params$bootstrap_tail_q)
+bootstrap_tail_fit_min_n <- as.integer(coerce_numeric(params$bootstrap_tail_fit_min_n))
+bootstrap_diag_paths <- as.integer(coerce_numeric(params$bootstrap_diag_paths))
 sim_T_weeks <- as.integer(coerce_numeric(params$sim_T_weeks))
 sim_n_paths <- as.integer(coerce_numeric(params$sim_n_paths))
 sim_mu <- coerce_numeric(params$sim_mu)
@@ -111,6 +134,22 @@ sim_sigma <- coerce_numeric(params$sim_sigma)
 sim_entry_frac <- coerce_numeric(params$sim_entry_frac)
 sim_K_xi <- as.integer(coerce_numeric(params$sim_K_xi))
 pca_K <- as.integer(coerce_numeric(params$pca_K))
+
+bootstrap_method <- if (is.null(bootstrap_method)) "iid_rank" else as.character(bootstrap_method)
+bootstrap_kernel <- if (is.null(bootstrap_kernel)) "uniform" else as.character(bootstrap_kernel)
+if (!is.function(bootstrap_rank_bandwidth)) {
+  bootstrap_rank_bandwidth <- coerce_numeric(bootstrap_rank_bandwidth)
+}
+if (is.na(bootstrap_rank_bandwidth) && !is.function(bootstrap_rank_bandwidth)) {
+  bootstrap_rank_bandwidth <- 25L
+}
+if (is.na(bootstrap_block_length)) bootstrap_block_length <- 4L
+if (is.na(bootstrap_n_factors) || bootstrap_n_factors < 1L) bootstrap_n_factors <- 1L
+if (is.na(bootstrap_K_pca) || bootstrap_K_pca < 2L) bootstrap_K_pca <- pca_K
+if (is.na(bootstrap_tail_q)) bootstrap_tail_q <- 0.99
+if (is.na(bootstrap_tail_fit_min_n)) bootstrap_tail_fit_min_n <- 30L
+if (is.na(bootstrap_diag_paths) || bootstrap_diag_paths < 0L) bootstrap_diag_paths <- 0L
+bootstrap_tailsplice <- isTRUE(bootstrap_tailsplice) || identical(bootstrap_method, "factor_local_tailsplice")
 
 horizons_growth <- as.integer(coerce_numeric_vec(params$horizons_growth))
 horizons_durable <- as.integer(coerce_numeric_vec(params$horizons_durable))
@@ -137,6 +176,55 @@ if (is.na(bootstrap_B) || bootstrap_B < 1) {
 
 if (is.na(bootstrap_k_min) || bootstrap_k_min < 1) {
   stop("bootstrap_k_min must be a positive integer. Got: ", params$bootstrap_k_min)
+}
+
+valid_bootstrap_methods <- c(
+  "iid_rank", "local_rank", "factor_local", "week_vector", "factor_local_tailsplice"
+)
+if (!bootstrap_method %in% valid_bootstrap_methods) {
+  stop(
+    "bootstrap_method must be one of: ", paste(valid_bootstrap_methods, collapse = ", "),
+    ". Got: ", bootstrap_method
+  )
+}
+
+valid_bootstrap_kernels <- c("uniform", "triangular", "exp")
+if (!bootstrap_kernel %in% valid_bootstrap_kernels) {
+  stop(
+    "bootstrap_kernel must be one of: ", paste(valid_bootstrap_kernels, collapse = ", "),
+    ". Got: ", bootstrap_kernel
+  )
+}
+
+if (!is.function(bootstrap_rank_bandwidth)) {
+  if (is.na(bootstrap_rank_bandwidth) || bootstrap_rank_bandwidth < 0) {
+    stop("bootstrap_rank_bandwidth must be >= 0. Got: ", params$bootstrap_rank_bandwidth)
+  }
+}
+
+if (isTRUE(bootstrap_block_bootstrap) && (is.na(bootstrap_block_length) || bootstrap_block_length < 1)) {
+  stop("bootstrap_block_length must be a positive integer when block bootstrap is on. Got: ",
+       params$bootstrap_block_length)
+}
+
+if (is.na(bootstrap_n_factors) || bootstrap_n_factors < 1) {
+  stop("bootstrap_n_factors must be >= 1. Got: ", params$bootstrap_n_factors)
+}
+
+if (is.na(bootstrap_K_pca) || bootstrap_K_pca < 2) {
+  stop("bootstrap_K_pca must be >= 2. Got: ", params$bootstrap_K_pca)
+}
+
+if (is.na(bootstrap_tail_q) || bootstrap_tail_q <= 0.5 || bootstrap_tail_q >= 1) {
+  stop("bootstrap_tail_q must be in (0.5, 1). Got: ", params$bootstrap_tail_q)
+}
+
+if (is.na(bootstrap_tail_fit_min_n) || bootstrap_tail_fit_min_n < 10) {
+  stop("bootstrap_tail_fit_min_n must be >= 10. Got: ", params$bootstrap_tail_fit_min_n)
+}
+
+if (is.na(bootstrap_diag_paths) || bootstrap_diag_paths < 0) {
+  stop("bootstrap_diag_paths must be >= 0. Got: ", params$bootstrap_diag_paths)
 }
 
 if (is.na(sim_T_weeks) || sim_T_weeks < 1) {
@@ -1008,7 +1096,14 @@ ggplot(trans_1w, aes(x = bin_tp, y = bin_t, fill = p)) +
 A pragmatic diagnostic: PCA on rank-slot increments for the top `pca_K` ranks.
 
 ```{r common-shocks-pca}
+
 K_pca <- min(pca_K, K_cut)
+
+pca_cache <- list(
+  beta_k = rep(0, K_max),
+  pc1_var_explained = NA_real_,
+  pc1 = NULL
+)
 
 if (is.na(K_pca) || K_pca < 2) {
   message("Skipping PCA: K_pca < 2 (K_pca=", K_pca, ").")
@@ -1070,6 +1165,20 @@ if (is.na(K_pca) || K_pca < 2) {
         y = "PC1 score"
       ) +
       theme_bw()
+
+    # cache loadings for jump-factor model (smoothed, padded to K_max)
+    beta_raw <- pca_fit$rotation[, 1]
+    beta_vec <- rep(0, K_max)
+    beta_vec[seq_len(K_pca)] <- beta_raw
+    beta_vec <- moving_average_rank(beta_vec, h = as.integer(Smoothing_h))
+    beta_scale <- sqrt(mean(beta_vec^2, na.rm = TRUE))
+    if (is.finite(beta_scale) && beta_scale > 0) {
+      beta_vec <- beta_vec / beta_scale
+    }
+
+    pca_cache$beta_k <- beta_vec
+    pca_cache$pc1_var_explained <- var_explained[1]
+    pca_cache$pc1 <- pc1_df
   }
 }
 ```
@@ -1079,27 +1188,41 @@ if (is.na(K_pca) || K_pca < 2) {
 This section checks whether rank-slot increments have tails that are substantially heavier than Gaussian.
 
 ```{r tail-diagnostics}
-# Build standardized increments by bucket
-inc_by_bucket <- rank_panel %>%
-  filter(rank <= K_cut) %>%
-  mutate(bucket = assign_bucket(rank, bucket_def)) %>%
-  filter(!is.na(bucket)) %>%
-  group_by(bucket) %>%
-  mutate(
-    z = (dlogw - mean(dlogw, na.rm = TRUE)) / sd(dlogw, na.rm = TRUE)
-  ) %>%
-  ungroup()
+build_bucket_z <- function(increments_df, bucket_def) {
+  increments_df %>%
+    mutate(bucket = assign_bucket(rank, bucket_def)) %>%
+    filter(!is.na(bucket)) %>%
+    group_by(bucket) %>%
+    mutate(
+      z = (dlogw - mean(dlogw, na.rm = TRUE)) / sd(dlogw, na.rm = TRUE)
+    ) %>%
+    ungroup()
+}
 
-tail_summ <- inc_by_bucket %>%
-  group_by(bucket) %>%
-  summarise(
-    n = n(),
-    p_gt_5sd = mean(abs(z) >= 5, na.rm = TRUE),
-    p_gt_3sd = mean(abs(z) >= 3, na.rm = TRUE),
-    q_0.001 = quantile(z, 0.001, na.rm = TRUE),
-    q_0.999 = quantile(z, 0.999, na.rm = TRUE),
-    .groups = "drop"
-  )
+tail_diagnostics <- function(increments_df, bucket_def) {
+  inc_by_bucket <- build_bucket_z(increments_df, bucket_def)
+  inc_by_bucket %>%
+    group_by(bucket) %>%
+    summarise(
+      n = n(),
+      p_gt_5sd = mean(abs(z) >= 5, na.rm = TRUE),
+      p_gt_3sd = mean(abs(z) >= 3, na.rm = TRUE),
+      q_0.001 = quantile(z, 0.001, na.rm = TRUE),
+      q_0.999 = quantile(z, 0.999, na.rm = TRUE),
+      .groups = "drop"
+    )
+}
+
+# Build standardized increments by bucket
+inc_by_bucket <- build_bucket_z(
+  rank_panel %>% filter(rank <= K_cut) %>% select(rank, dlogw),
+  bucket_def
+)
+
+tail_summ <- tail_diagnostics(
+  rank_panel %>% filter(rank <= K_cut) %>% select(rank, dlogw),
+  bucket_def
+)
 
 tail_summ
 ```
@@ -1151,26 +1274,192 @@ if (length(w0_raw) < K_max) {
 }
 ```
 
-### 12.2 Simulator (Gaussian increments with smoothed moments; optional Xi output)
+### 12.2 Simulator (Gaussian + heavy-tail/jump innovations; optional Xi output)
 
-This merges v9’s simulator with v11’s Xi storage.
+This merges v9’s simulator with v11’s Xi storage and abstracts the innovation draw so we can plug in heavy-tail and jump models.
 
 ```{r simulator}
+
+`%||%` <- function(x, y) if (!is.null(x)) x else y
+
+clamp01 <- function(x) pmin(pmax(x, 0), 1)
+
+rstd_t <- function(n, df) {
+  if (df <= 2) stop("df must be > 2 for unit-variance t")
+  rt(n, df) * sqrt((df - 2) / df)
+}
+
+rstd_t_vec <- function(df_vec) {
+  out <- numeric(length(df_vec))
+  for (d in unique(df_vec)) {
+    idx <- which(df_vec == d)
+    out[idx] <- rstd_t(length(idx), d)
+  }
+  out
+}
+
+rlaplace <- function(n, scale) {
+  scale <- as.numeric(scale)
+  if (!is.finite(scale) || scale <= 0) stop("scale must be > 0")
+  sign <- sample(c(-1, 1), size = n, replace = TRUE)
+  sign * rexp(n, rate = 1 / scale)
+}
+
+resolve_bucket_param <- function(param, K_max, bucket_def = NULL, default = NULL) {
+  if (is.null(param)) return(rep(default, K_max))
+  if (length(param) == 1L) return(rep(param, K_max))
+  if (length(param) == K_max) return(param)
+  if (is.null(bucket_def) || is.null(bucket_def$breaks)) return(rep(default, K_max))
+
+  if (!is.null(names(param))) {
+    buckets <- assign_bucket(seq_len(K_max), bucket_def)
+    out <- rep(default, K_max)
+    for (b in levels(buckets)) {
+      if (b %in% names(param)) out[buckets == b] <- param[[b]]
+    }
+    return(out)
+  }
+  if (!is.null(bucket_def$labels) && length(param) == length(bucket_def$labels)) {
+    buckets <- assign_bucket(seq_len(K_max), bucket_def)
+    out <- rep(default, K_max)
+    for (i in seq_along(bucket_def$labels)) {
+      out[buckets == bucket_def$labels[i]] <- param[i]
+    }
+    return(out)
+  }
+  rep(default, K_max)
+}
+
+resolve_beta_k <- function(model, cache, K_max) {
+  if (!is.null(model$beta_k)) {
+    if (length(model$beta_k) >= K_max) return(model$beta_k[seq_len(K_max)])
+    return(c(model$beta_k, rep(0, K_max - length(model$beta_k))))
+  }
+  if (!is.null(cache$beta_k) && length(cache$beta_k) == K_max) return(cache$beta_k)
+  rep(0, K_max)
+}
+
+resolve_sys_loading <- function(model, beta_k, sd_vec) {
+  if (is.character(model$sys_loading)) {
+    if (model$sys_loading == "beta") return(beta_k)
+    if (model$sys_loading == "sigma") {
+      s <- sd_vec / mean(sd_vec)
+      return(s)
+    }
+  }
+  if (is.numeric(model$sys_loading) && length(model$sys_loading) == length(sd_vec)) {
+    return(model$sys_loading)
+  }
+  sd_vec / mean(sd_vec)
+}
+
+draw_jump_sizes <- function(n, spec) {
+  if (n <= 0) return(numeric(0))
+  dist <- spec$dist %||% "laplace"
+  if (dist == "laplace") {
+    scale <- spec$scale %||% 0.1
+    return(rlaplace(n, scale = scale))
+  }
+  if (dist == "t") {
+    df <- spec$df %||% 5
+    scale <- spec$scale %||% 0.1
+    return(rstd_t(n, df = df) * scale)
+  }
+  stop("Unknown jump dist: ", dist)
+}
+
+draw_increments <- function(t, w_t, moment_curves, model, cache) {
+  type <- model$type %||% "gaussian"
+  mean_vec <- moment_curves$mean_vec
+  sd_vec <- moment_curves$sd_vec
+  K_max <- length(mean_vec)
+
+  mu <- model$mu %||% 0
+  sigma <- model$sigma %||% 1
+
+  if (type == "gaussian") {
+    return(rnorm(K_max, mean = mu + mean_vec, sd = sigma * sd_vec))
+  }
+
+  if (type %in% c("t", "student_t")) {
+    df <- model$df %||% 6
+    z <- rstd_t(K_max, df = df)
+    return(mu + mean_vec + sigma * sd_vec * z)
+  }
+
+  if (type == "jump_factor") {
+    df_F <- model$df_F %||% 6
+    phi_F <- model$phi_F %||% 0
+
+    state <- cache$state
+    if (is.null(state$F_prev)) state$F_prev <- 0
+
+    if (abs(phi_F) >= 1) phi_F <- sign(phi_F) * 0.99
+    eta <- rstd_t(1, df = df_F)
+    F_t <- phi_F * state$F_prev + sqrt(1 - phi_F^2) * eta
+    state$F_prev <- F_t
+
+    beta_k <- resolve_beta_k(model, cache, K_max)
+
+    df_eps_vec <- resolve_bucket_param(
+      param = model$df_eps %||% 8,
+      K_max = K_max,
+      bucket_def = moment_curves$bucket_def,
+      default = model$df_eps %||% 8
+    )
+    df_eps_vec <- pmax(df_eps_vec, 2.01)
+    eps <- rstd_t_vec(df_eps_vec)
+
+    p_sys <- clamp01(model$p_sys %||% 0)
+    I_sys <- rbinom(1, 1, p_sys)
+    J_sys <- rep(0, K_max)
+    if (I_sys == 1) {
+      S_sys <- draw_jump_sizes(1, spec = model$jump_sys %||% list(
+        dist = model$jump_dist %||% "laplace",
+        scale = model$jump_scale_sys %||% model$jump_scale %||% 0.1,
+        df = model$jump_df_sys %||% model$jump_df
+      ))
+      a_k <- resolve_sys_loading(model, beta_k, sd_vec)
+      J_sys <- a_k * S_sys
+    }
+
+    p_idio_vec <- resolve_bucket_param(
+      param = model$p_idio %||% 0,
+      K_max = K_max,
+      bucket_def = moment_curves$bucket_def,
+      default = 0
+    )
+    p_idio_vec <- clamp01(p_idio_vec)
+    I_idio <- rbinom(K_max, 1, p_idio_vec)
+    J_idio <- rep(0, K_max)
+    if (any(I_idio == 1)) {
+      S_idio <- draw_jump_sizes(sum(I_idio == 1), spec = model$jump_idio %||% list(
+        dist = model$jump_dist %||% "laplace",
+        scale = model$jump_scale_idio %||% model$jump_scale %||% 0.05,
+        df = model$jump_df_idio %||% model$jump_df
+      ))
+      J_idio[I_idio == 1] <- S_idio
+    }
+
+    return(mu + mean_vec + beta_k * F_t + sigma * sd_vec * eps + J_sys + J_idio)
+  }
+
+  stop("Unknown model type: ", type)
+}
+
 simulate_rank_paths <- function(
   w0, K_cut, K_max, T = 52, n_paths = 200,
   mu = 0, sigma = 1, entry_frac = 0.10,
   mean_vec, sd_vec,
   horizons = c(4L, 8L),
-  K_xi = NULL
+  K_xi = NULL,
+  model = list(type = "gaussian"),
+  moment_curves = NULL,
+  cache = NULL
 ) {
   stopifnot(length(mean_vec) == K_max, length(sd_vec) == K_max)
 
   top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
-
-  # sample one Gaussian increment per slot
-  sample_increments_gaussian <- function(mu = 0, sigma = 1) {
-    rnorm(K_max, mean = mu + mean_vec, sd = sigma * sd_vec)
-  }
 
   horizons <- as.integer(horizons)
   stopifnot(all(horizons >= 1L), all(horizons <= T))
@@ -1180,11 +1469,55 @@ simulate_rank_paths <- function(
     stopifnot(K_xi >= 2L, K_xi <= K_cut)
   }
 
+  if (is.null(moment_curves)) {
+    moment_curves <- list(
+      mean_vec = mean_vec,
+      sd_vec = sd_vec,
+      bucket_def = if (exists("bucket_def")) bucket_def else NULL
+    )
+  } else {
+    moment_curves$mean_vec <- mean_vec
+    moment_curves$sd_vec <- sd_vec
+    if (is.null(moment_curves$bucket_def) && exists("bucket_def")) {
+      moment_curves$bucket_def <- bucket_def
+    }
+  }
+
+  if (is.null(cache)) cache <- list()
+  if (is.null(cache$state)) cache$state <- new.env(parent = emptyenv())
+
+  if (is.null(model$mu)) model$mu <- mu
+  if (is.null(model$sigma)) model$sigma <- sigma
+
+  # baseline for mean reversion (if enabled)
+  if (isTRUE(model$mean_reversion)) {
+    if (is.null(moment_curves$log_wbar)) {
+      w_base <- if (length(w0) < K_max) {
+        w0_ext <- c(w0, entrant_sampler(K_max - length(w0)))
+        w0_ext / sum(w0_ext)
+      } else {
+        w0[1:K_max] / sum(w0[1:K_max])
+      }
+      moment_curves$log_wbar <- log(pmax(w_base, 1e-18))
+    }
+    if (is.null(moment_curves$kappa_vec)) {
+      moment_curves$kappa_vec <- resolve_bucket_param(
+        param = model$kappa %||% 0,
+        K_max = K_max,
+        bucket_def = moment_curves$bucket_def,
+        default = 0
+      )
+    }
+  }
+
   snapshots <- vector("list", n_paths)
   growth_collect <- setNames(vector("list", length(horizons)), paste0("h", horizons))
   xi_collect <- vector("list", n_paths)
 
   for (p in seq_len(n_paths)) {
+
+    # reset common-factor state per path
+    cache$state$F_prev <- 0
 
     # initialize to full universe length K_max
     if (length(w0) < K_max) {
@@ -1204,8 +1537,19 @@ simulate_rank_paths <- function(
 
     for (t in seq_len(T)) {
 
-      dlogw <- sample_increments_gaussian(mu = mu, sigma = sigma)
-      w <- w * exp(dlogw)
+      dlogw <- draw_increments(t = t, w_t = w, moment_curves = moment_curves,
+                               model = model, cache = cache)
+
+      if (isTRUE(model$mean_reversion)) {
+        log_wbar <- moment_curves$log_wbar
+        kappa_vec <- moment_curves$kappa_vec %||% rep(0, K_max)
+        y <- log(pmax(w, 1e-18)) - log_wbar
+        y_new <- (1 - kappa_vec) * y + dlogw
+        w <- exp(log_wbar + y_new)
+      } else {
+        w <- w * exp(dlogw)
+      }
+
       w <- pmax(w, 1e-18)
       w <- w / sum(w)
 
@@ -1365,6 +1709,75 @@ score_tbl <- tibble(
 
 score_tbl
 ```
+
+## Jump model simulation (heavy tails; optional)
+
+```{r run-jump-model}
+if (isTRUE(params$run_jump_model)) {
+  moment_curves_jump <- list(
+    mean_vec = mean_vec_s,
+    sd_vec = sd_vec_s,
+    log_wbar = log(pmax(w0_ext, 1e-18)),
+    bucket_def = bucket_def
+  )
+
+  jump_model <- list(
+    type = "jump_factor",
+    mu = sim_mu,
+    sigma = sim_sigma,
+    df_F = 5,
+    phi_F = 0,
+    df_eps = c(large = 6, midsize = 8, small = 10),
+    p_sys = 0.02,
+    p_idio = c(large = 0.01, midsize = 0.005, small = 0.002),
+    jump_dist = "laplace",
+    jump_scale_sys = 0.35,
+    jump_scale_idio = 0.20,
+    sys_loading = "beta",
+    mean_reversion = TRUE,
+    kappa = c(large = 0.04, midsize = 0.03, small = 0.02)
+  )
+
+  jump_cache <- list(
+    beta_k = pca_cache$beta_k,
+    state = new.env(parent = emptyenv())
+  )
+
+  sim_jump <- simulate_rank_paths(
+    w0 = w0_ext,
+    K_cut = K_cut,
+    K_max = K_max,
+    T = sim_T_weeks,
+    n_paths = sim_n_paths,
+    mu = sim_mu,
+    sigma = sim_sigma,
+    entry_frac = sim_entry_frac,
+    mean_vec = mean_vec_s,
+    sd_vec = sd_vec_s,
+    horizons = horizons_durable,
+    K_xi = sim_K_xi,
+    model = jump_model,
+    moment_curves = moment_curves_jump,
+    cache = jump_cache
+  )
+
+  sim_jump_cdc <- sim_jump$snapshots %>%
+    group_by(rank) %>%
+    summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") %>%
+    arrange(rank)
+
+  score_jump <- tibble(
+    model = "jump_factor",
+    rmse_cdc = cdc_rmse(emp_cdc, sim_jump_cdc),
+    rmse_durable = durable_rmse(emp_targets, sim_jump$growth, bucket_def),
+    rmse_xi = xi_rmse(rho_by_k_med %>% filter(k <= sim_K_xi - 1L),
+                      sim_jump$xi %>% filter(k <= sim_K_xi - 1L))
+  )
+
+  score_jump
+}
+```
+
 
 ## Micro-level movement validation (v12) + rank-slot comparator
 
@@ -1799,121 +2212,606 @@ if (isTRUE(params$run_grid_search)) {
 }
 ```
 
-## Alternative model: nonparametric bootstrap increments (v2/v6) (optional)
+## Alternative model: bootstrap increment samplers (best-practice)
 
-This implements the earliest simulator variant: sample each rank-slot increment from the empirical
-pool of observed `dlogw` values at that rank (rather than Gaussian).
+This section generalizes the bootstrap simulator to preserve heavy tails and local rank dependence,
+with optional common-shock factors and week-profile resampling.
+
+```{r bootstrap-samplers}
+build_pool_by_rank <- function(rank_panel, K_max, value_col = "dlogw") {
+  pools <- vector("list", K_max)
+  if (!value_col %in% names(rank_panel)) {
+    stop("value_col not in rank_panel: ", value_col)
+  }
+  rp <- rank_panel %>% filter(rank <= K_max)
+  split_vals <- split(rp[[value_col]], rp$rank)
+  for (r in seq_len(K_max)) {
+    v <- split_vals[[as.character(r)]]
+    if (is.null(v)) v <- numeric(0)
+    pools[[r]] <- v
+  }
+  pools
+}
+
+resolve_rank_bandwidth <- function(rank_bandwidth, r) {
+  h <- if (is.function(rank_bandwidth)) {
+    rank_bandwidth(r)
+  } else if (length(rank_bandwidth) > 1L) {
+    rank_bandwidth[pmin(r, length(rank_bandwidth))]
+  } else {
+    rank_bandwidth
+  }
+  h <- as.integer(round(h))
+  if (!is.finite(h) || h < 0L) h <- 0L
+  h
+}
+
+kernel_weights <- function(dist, h, kernel) {
+  if (length(dist) == 0) return(numeric(0))
+  if (h <= 0L) return(rep(1, length(dist)))
+  if (kernel == "uniform") return(rep(1, length(dist)))
+  if (kernel == "triangular") return(pmax(0, 1 - dist / (h + 1)))
+  if (kernel == "exp") {
+    tau <- max(1e-6, h / 2)
+    return(exp(-dist / tau))
+  }
+  rep(1, length(dist))
+}
+
+build_rank_neighborhoods <- function(K_max, rank_bandwidth, kernel = "uniform") {
+  neighbors <- vector("list", K_max)
+  probs <- vector("list", K_max)
+  for (r in seq_len(K_max)) {
+    h <- resolve_rank_bandwidth(rank_bandwidth, r)
+    lo <- max(1L, r - h)
+    hi <- min(K_max, r + h)
+    nbrs <- lo:hi
+    dist <- abs(nbrs - r)
+    w <- kernel_weights(dist, h, kernel)
+    if (length(w) == 0 || sum(w) <= 0) w <- rep(1, length(nbrs))
+    w <- w / sum(w)
+    neighbors[[r]] <- nbrs
+    probs[[r]] <- w
+  }
+  list(neighbors = neighbors, probs = probs)
+}
+
+stationary_bootstrap_indices <- function(n, L, size) {
+  if (n <= 0) stop("n must be positive")
+  if (L <= 1) return(sample.int(n, size = size, replace = TRUE))
+  p <- 1 / L
+  idx <- integer(size)
+  idx[1] <- sample.int(n, size = 1)
+  for (i in 2:size) {
+    if (runif(1) < p) {
+      idx[i] <- sample.int(n, size = 1)
+    } else {
+      idx[i] <- idx[i - 1L] + 1L
+      if (idx[i] > n) idx[i] <- 1L
+    }
+  }
+  idx
+}
+
+gpd_fit_mle <- function(excess) {
+  excess <- excess[is.finite(excess) & excess >= 0]
+  if (length(excess) < 5) return(NULL)
+
+  nll <- function(par) {
+    xi <- par[1]
+    beta <- par[2]
+    if (!is.finite(beta) || beta <= 0) return(Inf)
+    if (any(1 + xi * excess / beta <= 0)) return(Inf)
+    if (abs(xi) < 1e-6) {
+      return(length(excess) * log(beta) + sum(excess) / beta)
+    }
+    length(excess) * log(beta) + (1 / xi + 1) * sum(log(1 + xi * excess / beta))
+  }
+
+  init <- c(0.1, max(mean(excess), 1e-6))
+  fit <- tryCatch(
+    optim(
+      init,
+      nll,
+      method = "L-BFGS-B",
+      lower = c(-0.5, 1e-6),
+      upper = c(5, Inf)
+    ),
+    error = function(e) NULL
+  )
+
+  if (is.null(fit) || fit$convergence != 0 || any(!is.finite(fit$par))) return(NULL)
+  list(xi = fit$par[1], beta = fit$par[2])
+}
+
+rgpd <- function(n, xi, beta) {
+  if (n <= 0) return(numeric(0))
+  u <- runif(n)
+  if (abs(xi) < 1e-6) return(rexp(n, rate = 1 / beta))
+  beta / xi * (u^(-xi) - 1)
+}
+
+build_tail_splice_fits <- function(residual_pools, bucket_assigner, tail_q, tail_fit_min_n) {
+  if (is.null(bucket_assigner)) return(NULL)
+  bucket_by_rank <- bucket_assigner(seq_along(residual_pools))
+  bucket_levels <- unique(bucket_by_rank[!is.na(bucket_by_rank)])
+  if (length(bucket_levels) == 0) return(NULL)
+
+  fits <- list()
+  for (bucket in bucket_levels) {
+    ranks <- which(bucket_by_rank == bucket)
+    resids <- unlist(residual_pools[ranks], use.names = FALSE)
+    resids <- resids[is.finite(resids)]
+    if (length(resids) == 0) next
+
+    abs_resids <- abs(resids)
+    u <- as.numeric(quantile(abs_resids, tail_q, na.rm = TRUE))
+    exceed <- abs_resids[abs_resids > u] - u
+    if (length(exceed) < tail_fit_min_n) next
+
+    fit <- gpd_fit_mle(exceed)
+    if (is.null(fit)) next
+
+    fits[[as.character(bucket)]] <- list(
+      u = u,
+      p_tail = mean(abs_resids > u, na.rm = TRUE),
+      sign_prob = mean(resids[abs_resids > u] >= 0, na.rm = TRUE),
+      xi = fit$xi,
+      beta = fit$beta
+    )
+  }
+
+  list(fits = fits, bucket_by_rank = bucket_by_rank)
+}
+
+sample_from_pool <- function(pool) {
+  if (length(pool) == 0) return(0)
+  pool[sample.int(length(pool), 1L)]
+}
+
+sample_from_pool_tail_splice <- function(pool, tail_fit) {
+  if (length(pool) == 0) return(0)
+  if (is.null(tail_fit)) return(sample_from_pool(pool))
+
+  u <- tail_fit$u
+  body <- pool[abs(pool) <= u]
+  if (length(body) == 0) body <- pool
+
+  if (runif(1) < tail_fit$p_tail) {
+    sign <- ifelse(runif(1) < tail_fit$sign_prob, 1, -1)
+    return(sign * (u + rgpd(1, tail_fit$xi, tail_fit$beta)))
+  }
+
+  body[sample.int(length(body), 1L)]
+}
+
+build_sampler_iid_rank <- function(rank_panel, cfg) {
+  pool_by_rank <- build_pool_by_rank(rank_panel, cfg$K_max, "dlogw")
+
+  sample_one_week <- function(mu = 0, sigma = 1) {
+    inc <- numeric(cfg$K_max)
+    for (r in seq_len(cfg$K_max)) {
+      inc[r] <- sample_from_pool(pool_by_rank[[r]])
+    }
+    mu + sigma * inc
+  }
+
+  list(
+    method = "iid_rank",
+    K_max = cfg$K_max,
+    sample_one_week = sample_one_week,
+    debug_info = list()
+  )
+}
+
+build_sampler_local_rank <- function(rank_panel, cfg) {
+  pool_by_rank <- build_pool_by_rank(rank_panel, cfg$K_max, "dlogw")
+  neighborhoods <- build_rank_neighborhoods(cfg$K_max, cfg$rank_bandwidth, cfg$kernel)
+
+  sample_one_week <- function(mu = 0, sigma = 1) {
+    inc <- numeric(cfg$K_max)
+    for (r in seq_len(cfg$K_max)) {
+      nbrs <- neighborhoods$neighbors[[r]]
+      probs <- neighborhoods$probs[[r]]
+      r_prime <- if (length(nbrs) == 1L) nbrs else sample(nbrs, size = 1L, prob = probs)
+      inc[r] <- sample_from_pool(pool_by_rank[[r_prime]])
+    }
+    mu + sigma * inc
+  }
+
+  list(
+    method = "local_rank",
+    K_max = cfg$K_max,
+    sample_one_week = sample_one_week,
+    debug_info = list(neighborhoods = neighborhoods)
+  )
+}
+
+build_sampler_week_vector <- function(rank_panel, cfg) {
+  max_rank_by_week <- rank_panel %>%
+    group_by(week) %>%
+    summarise(max_rank = max(rank), .groups = "drop")
+
+  K_use <- min(cfg$K_max, min(max_rank_by_week$max_rank, na.rm = TRUE))
+
+  rank_wide <- rank_panel %>%
+    filter(rank <= K_use) %>%
+    select(week, rank, dlogw) %>%
+    tidyr::pivot_wider(names_from = rank, values_from = dlogw) %>%
+    arrange(week)
+
+  X <- as.matrix(rank_wide %>% select(-week))
+  complete <- complete.cases(X)
+  X_complete <- X[complete, , drop = FALSE]
+
+  if (nrow(X_complete) < 2) {
+    stop("Not enough complete weeks for week_vector bootstrap.")
+  }
+
+  sample_path <- function(T_sim, mu = 0, sigma = 1) {
+    idx <- if (isTRUE(cfg$block_bootstrap)) {
+      stationary_bootstrap_indices(nrow(X_complete), cfg$block_length, T_sim)
+    } else {
+      sample.int(nrow(X_complete), T_sim, replace = TRUE)
+    }
+
+    mat <- X_complete[idx, , drop = FALSE]
+    if (K_use < cfg$K_max) {
+      mat <- cbind(mat, matrix(0, nrow = T_sim, ncol = cfg$K_max - K_use))
+    }
+
+    mu + sigma * mat
+  }
+
+  list(
+    method = "week_vector",
+    K_max = cfg$K_max,
+    sample_path = sample_path,
+    debug_info = list(K_use = K_use)
+  )
+}
+
+build_sampler_factor_local <- function(rank_panel, cfg, bucket_assigner = NULL) {
+  K_max <- cfg$K_max
+  K_pca <- min(cfg$K_pca, K_max)
+
+  rp <- rank_panel %>% filter(rank <= K_max)
+
+  rank_wide <- rp %>%
+    filter(rank <= K_pca) %>%
+    select(week, rank, dlogw) %>%
+    tidyr::pivot_wider(names_from = rank, values_from = dlogw) %>%
+    arrange(week)
+
+  X <- as.matrix(rank_wide %>% select(-week))
+  complete <- complete.cases(X)
+  X_complete <- X[complete, , drop = FALSE]
+
+  if (nrow(X_complete) < 2) {
+    stop("Not enough complete weeks for factor PCA.")
+  }
+
+  pca_fit <- prcomp(X_complete, center = TRUE, scale. = TRUE)
+  J <- min(cfg$n_factors, ncol(pca_fit$x))
+  if (J < 1) stop("bootstrap_n_factors must be >= 1.")
+
+  F_emp <- pca_fit$x[, seq_len(J), drop = FALSE]
+  factor_weeks <- rank_wide$week[complete]
+
+  rp_factor <- rp %>% filter(week %in% factor_weeks)
+  split_by_rank <- split(rp_factor, rp_factor$rank)
+
+  a_vec <- numeric(K_max)
+  b_mat <- matrix(0, nrow = K_max, ncol = J)
+  residual_pools <- vector("list", K_max)
+
+  for (r in seq_len(K_max)) {
+    df_r <- split_by_rank[[as.character(r)]]
+    v_all <- rp %>% filter(rank == r) %>% pull(dlogw)
+
+    fallback <- function() {
+      if (length(v_all) == 0) {
+        a_vec[r] <<- 0
+        residual_pools[[r]] <<- numeric(0)
+      } else {
+        a_vec[r] <<- mean(v_all, na.rm = TRUE)
+        residual_pools[[r]] <<- v_all - a_vec[r]
+      }
+    }
+
+    if (is.null(df_r) || nrow(df_r) < (J + 2L)) {
+      fallback()
+      next
+    }
+
+    idx <- match(df_r$week, factor_weeks)
+    valid <- !is.na(idx)
+    if (sum(valid) < (J + 2L)) {
+      fallback()
+      next
+    }
+
+    y <- df_r$dlogw[valid]
+    Xr <- cbind(1, F_emp[idx[valid], , drop = FALSE])
+    fit <- lm.fit(x = Xr, y = y)
+    coef <- fit$coefficients
+
+    if (any(!is.finite(coef))) {
+      fallback()
+      next
+    }
+
+    a_vec[r] <- coef[1]
+    b_mat[r, ] <- coef[-1]
+    residual_pools[[r]] <- as.numeric(y - Xr %*% coef)
+  }
+
+  neighborhoods <- build_rank_neighborhoods(K_max, cfg$rank_bandwidth, cfg$kernel)
+  tail_fits <- NULL
+  if (isTRUE(cfg$tailsplice) && !is.null(bucket_assigner)) {
+    tail_fits <- build_tail_splice_fits(
+      residual_pools,
+      bucket_assigner,
+      cfg$tail_q,
+      cfg$tail_fit_min_n
+    )
+  }
+
+  sample_residuals <- function() {
+    e <- numeric(K_max)
+    for (r in seq_len(K_max)) {
+      nbrs <- neighborhoods$neighbors[[r]]
+      probs <- neighborhoods$probs[[r]]
+      r_prime <- if (length(nbrs) == 1L) nbrs else sample(nbrs, size = 1L, prob = probs)
+      pool <- residual_pools[[r_prime]]
+      if (length(pool) == 0) {
+        e[r] <- 0
+        next
+      }
+
+      if (!is.null(tail_fits) && length(tail_fits$fits) > 0) {
+        bucket <- tail_fits$bucket_by_rank[r_prime]
+        fit <- tail_fits$fits[[as.character(bucket)]]
+        e[r] <- sample_from_pool_tail_splice(pool, fit)
+      } else {
+        e[r] <- sample_from_pool(pool)
+      }
+    }
+    e
+  }
+
+  sample_path <- function(T_sim, mu = 0, sigma = 1) {
+    F_boot <- if (isTRUE(cfg$block_bootstrap)) {
+      idx <- stationary_bootstrap_indices(nrow(F_emp), cfg$block_length, T_sim)
+      F_emp[idx, , drop = FALSE]
+    } else {
+      F_emp[sample.int(nrow(F_emp), T_sim, replace = TRUE), , drop = FALSE]
+    }
+
+    out <- matrix(0, nrow = T_sim, ncol = K_max)
+    for (t in seq_len(T_sim)) {
+      e <- sample_residuals()
+      inc_raw <- a_vec + as.vector(b_mat %*% F_boot[t, ]) + e
+      out[t, ] <- mu + sigma * inc_raw
+    }
+    out
+  }
+
+  list(
+    method = if (isTRUE(cfg$tailsplice)) "factor_local_tailsplice" else "factor_local",
+    K_max = K_max,
+    sample_path = sample_path,
+    debug_info = list(
+      a = a_vec,
+      b = b_mat,
+      F_emp = F_emp,
+      factor_weeks = factor_weeks
+    )
+  )
+}
+
+build_increment_sampler <- function(rank_panel, cfg, bucket_assigner = NULL) {
+  method <- cfg$bootstrap_method
+  if (method == "factor_local_tailsplice") {
+    cfg$tailsplice <- TRUE
+    method <- "factor_local"
+  }
+
+  if (method == "iid_rank") {
+    return(build_sampler_iid_rank(rank_panel, cfg))
+  }
+  if (method == "local_rank") {
+    return(build_sampler_local_rank(rank_panel, cfg))
+  }
+  if (method == "factor_local") {
+    return(build_sampler_factor_local(rank_panel, cfg, bucket_assigner))
+  }
+  if (method == "week_vector") {
+    return(build_sampler_week_vector(rank_panel, cfg))
+  }
+
+  stop("Unknown bootstrap method: ", method)
+}
+
+simulate_rank_paths_generic <- function(
+  w0, K_cut, K_max, T = 52, n_paths = 200,
+  mu = 0, sigma = 1, entry_frac = 0.10,
+  increment_generator,
+  horizons = c(4L, 8L),
+  K_xi = NULL,
+  store_increments = FALSE,
+  increments_paths = 0L,
+  increments_K = K_cut
+) {
+  stopifnot(is.list(increment_generator))
+  if (!is.null(increment_generator$K_max)) {
+    stopifnot(increment_generator$K_max == K_max)
+  }
+
+  top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
+
+  horizons <- as.integer(horizons)
+  stopifnot(all(horizons >= 1L), all(horizons <= T))
+
+  if (!is.null(K_xi)) {
+    K_xi <- as.integer(K_xi)
+    stopifnot(K_xi >= 2L, K_xi <= K_cut)
+  }
+
+  increments_paths <- as.integer(increments_paths)
+  increments_K <- as.integer(min(increments_K, K_max))
+
+  snapshots <- vector("list", n_paths)
+  growth_collect <- setNames(vector("list", length(horizons)), paste0("h", horizons))
+  xi_collect <- vector("list", n_paths)
+  increments_collect <- vector("list", if (store_increments) min(n_paths, increments_paths) else 0L)
+
+  for (p in seq_len(n_paths)) {
+
+    if (length(w0) < K_max) {
+      w <- c(w0, entrant_sampler(K_max - length(w0)))
+      w <- w / sum(w)
+    } else {
+      w <- w0[1:K_max]
+      w <- w / sum(w)
+    }
+
+    w_baseK <- top_n_sorted(w, K_cut)
+    w_baseK <- w_baseK / sum(w_baseK)
+
+    snaps_p <- vector("list", T)
+    xi_p <- vector("list", T)
+    inc_p <- if (store_increments && p <= increments_paths) vector("list", T) else NULL
+
+    dlogw_mat <- NULL
+    if (!is.null(increment_generator$sample_path)) {
+      dlogw_mat <- increment_generator$sample_path(T, mu = mu, sigma = sigma)
+      stopifnot(is.matrix(dlogw_mat), nrow(dlogw_mat) == T, ncol(dlogw_mat) == K_max)
+    }
+
+    for (t in seq_len(T)) {
+      dlogw <- if (!is.null(dlogw_mat)) {
+        dlogw_mat[t, ]
+      } else if (!is.null(increment_generator$sample_one_week)) {
+        increment_generator$sample_one_week(mu = mu, sigma = sigma)
+      } else {
+        stop("increment_generator must provide sample_path or sample_one_week")
+      }
+
+      stopifnot(length(dlogw) == K_max)
+
+      w <- w * exp(dlogw)
+      w <- pmax(w, 1e-18)
+      w <- w / sum(w)
+
+      w_top <- top_n_sorted(w, K_cut)
+      n_tail <- K_max - K_cut
+
+      if (n_tail > 0) {
+        n_add <- max(1L, floor(n_tail * entry_frac))
+        w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
+      } else {
+        w <- w_top
+      }
+
+      w <- w / sum(w)
+
+      wK <- top_n_sorted(w, K_cut)
+      wK <- wK / sum(wK)
+
+      snaps_p[[t]] <- tibble(
+        path = p,
+        t = t,
+        rank = seq_len(K_cut),
+        share = wK
+      )
+
+      if (store_increments && p <= increments_paths) {
+        inc_p[[t]] <- tibble(
+          path = p,
+          t = t,
+          rank = seq_len(increments_K),
+          dlogw = dlogw[seq_len(increments_K)]
+        )
+      }
+
+      if (!is.null(K_xi)) {
+        w_top_now <- top_n_sorted(w, K_cut) %>% pmax(1e-18)
+        xi_vals <- log(w_top_now[seq_len(K_xi - 1L)] / w_top_now[seq(2L, K_xi)])
+        xi_p[[t]] <- tibble(
+          path = p,
+          t = t,
+          k = seq_len(K_xi - 1L),
+          xi = xi_vals
+        )
+      }
+
+      if (t %in% horizons) {
+        lg <- log(wK / w_baseK)
+        lbl <- paste0("h", t)
+        growth_collect[[lbl]] <- rbind(
+          growth_collect[[lbl]],
+          cbind(
+            path = p,
+            rank = seq_len(K_cut),
+            horizon = t,
+            log_growth = lg
+          )
+        )
+      }
+    }
+
+    snapshots[[p]] <- bind_rows(snaps_p)
+    if (!is.null(K_xi)) xi_collect[[p]] <- bind_rows(xi_p)
+    if (store_increments && p <= increments_paths) {
+      increments_collect[[p]] <- bind_rows(inc_p)
+    }
+  }
+
+  growth_df <- bind_rows(lapply(growth_collect, as_tibble))
+
+  out <- list(
+    snapshots = bind_rows(snapshots),
+    growth = growth_df
+  )
+
+  if (!is.null(K_xi)) out$xi <- bind_rows(xi_collect)
+  if (store_increments && length(increments_collect) > 0) {
+    out$increments <- bind_rows(increments_collect)
+  }
+
+  out
+}
+```
 
 ```{r bootstrap-model}
 if (isTRUE(params$run_bootstrap_model)) {
 
-  increment_pools <- rank_panel %>%
-    filter(rank <= K_max) %>%
-    group_by(rank) %>%
-    summarise(pool = list(dlogw), .groups = "drop") %>%
-    arrange(rank)
+  bootstrap_cfg <- list(
+    K_cut = K_cut,
+    K_max = K_max,
+    T_sim = sim_T_weeks,
+    n_paths = sim_n_paths,
+    entry_frac = sim_entry_frac,
+    bootstrap_method = bootstrap_method,
+    rank_bandwidth = bootstrap_rank_bandwidth,
+    kernel = bootstrap_kernel,
+    block_bootstrap = bootstrap_block_bootstrap,
+    block_length = bootstrap_block_length,
+    n_factors = bootstrap_n_factors,
+    K_pca = bootstrap_K_pca,
+    tailsplice = bootstrap_tailsplice,
+    tail_q = bootstrap_tail_q,
+    tail_fit_min_n = bootstrap_tail_fit_min_n
+  )
 
-  stopifnot(nrow(increment_pools) == K_max)
+  increment_sampler <- build_increment_sampler(
+    rank_panel,
+    cfg = bootstrap_cfg,
+    bucket_assigner = function(r) assign_bucket(r, bucket_def)
+  )
 
-  sample_increments_bootstrap <- function(mu = 0, sigma = 1) {
-    # one sampled increment per rank slot
-    inc <- map_dbl(seq_len(K_max), function(r) {
-      v <- increment_pools$pool[[r]]
-      if (length(v) == 0) return(0)
-      sample(v, size = 1, replace = TRUE)
-    })
-    mu + sigma * inc
-  }
-
-  simulate_rank_paths_bootstrap <- function(
-    w0, K_cut, K_max, T = 52, n_paths = 200,
-    mu = 0, sigma = 1, entry_frac = 0.10,
-    horizons = c(4L, 8L),
-    K_xi = NULL
-  ) {
-
-    top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
-
-    horizons <- as.integer(horizons)
-    if (!is.null(K_xi)) {
-      K_xi <- as.integer(K_xi)
-      stopifnot(K_xi >= 2L, K_xi <= K_cut)
-    }
-
-    snapshots <- vector("list", n_paths)
-    growth_collect <- setNames(vector("list", length(horizons)), paste0("h", horizons))
-    xi_collect <- vector("list", n_paths)
-
-    for (p in seq_len(n_paths)) {
-
-      if (length(w0) < K_max) {
-        w <- c(w0, entrant_sampler(K_max - length(w0)))
-        w <- w / sum(w)
-      } else {
-        w <- w0[1:K_max]
-        w <- w / sum(w)
-      }
-
-      w_baseK <- top_n_sorted(w, K_cut)
-      w_baseK <- w_baseK / sum(w_baseK)
-
-      snaps_p <- vector("list", T)
-      xi_p <- vector("list", T)
-
-      for (t in seq_len(T)) {
-
-        dlogw <- sample_increments_bootstrap(mu = mu, sigma = sigma)
-        w <- w * exp(dlogw)
-        w <- pmax(w, 1e-18)
-        w <- w / sum(w)
-
-        w_top <- top_n_sorted(w, K_cut)
-        n_tail <- K_max - K_cut
-
-        if (n_tail > 0) {
-          n_add <- max(1L, floor(n_tail * entry_frac))
-          w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
-        } else {
-          w <- w_top
-        }
-
-        w <- w / sum(w)
-
-        wK <- top_n_sorted(w, K_cut)
-        wK <- wK / sum(wK)
-
-        snaps_p[[t]] <- tibble(
-          path = p, t = t, rank = seq_len(K_cut), share = wK
-        )
-
-        if (!is.null(K_xi)) {
-          w_top_now <- top_n_sorted(w, K_cut) %>% pmax(1e-18)
-          xi_vals <- log(w_top_now[seq_len(K_xi - 1L)] / w_top_now[seq(2L, K_xi)])
-          xi_p[[t]] <- tibble(path = p, t = t, k = seq_len(K_xi - 1L), xi = xi_vals)
-        }
-
-        if (t %in% horizons) {
-          lg <- log(wK / w_baseK)
-          lbl <- paste0("h", t)
-          growth_collect[[lbl]] <- rbind(
-            growth_collect[[lbl]],
-            cbind(path = p, rank = seq_len(K_cut), horizon = t, log_growth = lg)
-          )
-        }
-      }
-
-      snapshots[[p]] <- bind_rows(snaps_p)
-      if (!is.null(K_xi)) xi_collect[[p]] <- bind_rows(xi_p)
-    }
-
-    growth_df <- bind_rows(lapply(growth_collect, as_tibble))
-
-    out <- list(snapshots = bind_rows(snapshots), growth = growth_df)
-    if (!is.null(K_xi)) out$xi <- bind_rows(xi_collect)
-    out
-  }
-
-  sim_boot <- simulate_rank_paths_bootstrap(
+  sim_boot <- simulate_rank_paths_generic(
     w0 = w0_ext,
     K_cut = K_cut,
     K_max = K_max,
@@ -1922,8 +2820,12 @@ if (isTRUE(params$run_bootstrap_model)) {
     mu = sim_mu,
     sigma = sim_sigma,
     entry_frac = sim_entry_frac,
+    increment_generator = increment_sampler,
     horizons = horizons_durable,
-    K_xi = sim_K_xi
+    K_xi = sim_K_xi,
+    store_increments = bootstrap_diag_paths > 0,
+    increments_paths = bootstrap_diag_paths,
+    increments_K = K_cut
   )
 
   sim_boot_cdc <- sim_boot$snapshots %>%
@@ -1931,11 +2833,13 @@ if (isTRUE(params$run_bootstrap_model)) {
     summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop")
 
   score_boot <- tibble(
-    model = "bootstrap",
+    model = paste0("bootstrap_", increment_sampler$method),
     rmse_cdc = cdc_rmse(emp_cdc, sim_boot_cdc),
     rmse_durable = durable_rmse(emp_targets, sim_boot$growth, bucket_def),
-    rmse_xi = xi_rmse(rho_by_k_med %>% filter(k <= sim_K_xi - 1L),
-                      sim_boot$xi %>% filter(k <= sim_K_xi - 1L))
+    rmse_xi = xi_rmse(
+      rho_by_k_med %>% filter(k <= sim_K_xi - 1L),
+      sim_boot$xi %>% filter(k <= sim_K_xi - 1L)
+    )
   )
 
   score_gauss <- score_tbl %>% mutate(model = "gaussian_smoothed")
@@ -1946,7 +2850,7 @@ if (isTRUE(params$run_bootstrap_model)) {
   bind_rows(
     emp_cdc %>% mutate(source = "Empirical"),
     sim_cdc %>% mutate(source = "Gaussian"),
-    sim_boot_cdc %>% mutate(source = "Bootstrap")
+    sim_boot_cdc %>% mutate(source = paste0("Bootstrap (", increment_sampler$method, ")"))
   ) %>%
     ggplot(aes(rank, w_bar, linetype = source)) +
     geom_line() +
@@ -1959,9 +2863,57 @@ if (isTRUE(params$run_bootstrap_model)) {
       linetype = NULL
     ) +
     theme_bw()
+
+  if (!is.null(sim_boot$increments)) {
+    tail_summ_boot <- tail_diagnostics(sim_boot$increments, bucket_def) %>%
+      mutate(source = paste0("Bootstrap (", increment_sampler$method, ")"))
+
+    bind_rows(
+      tail_summ %>% mutate(source = "Empirical"),
+      tail_summ_boot
+    ) %>%
+      select(source, everything())
+  }
+
+  # Minimal invariants / smoke checks
+  stopifnot(nrow(sim_boot$snapshots) == sim_n_paths * sim_T_weeks * K_cut)
+  stopifnot(all(is.finite(sim_boot$snapshots$share)))
+  stopifnot(min(sim_boot$snapshots$share, na.rm = TRUE) > 0)
+
+  sum_by_pt <- tapply(
+    sim_boot$snapshots$share,
+    list(sim_boot$snapshots$path, sim_boot$snapshots$t),
+    sum
+  )
+  stopifnot(all(abs(sum_by_pt - 1) < 1e-6))
+
+  # Deterministic with fixed seed
+  seed_state <- if (exists(".Random.seed", envir = .GlobalEnv)) {
+    get(".Random.seed", envir = .GlobalEnv)
+  } else {
+    NULL
+  }
+
+  set.seed(params$seed)
+  if (!is.null(increment_sampler$sample_one_week)) {
+    test1 <- increment_sampler$sample_one_week(mu = sim_mu, sigma = sim_sigma)
+    set.seed(params$seed)
+    test2 <- increment_sampler$sample_one_week(mu = sim_mu, sigma = sim_sigma)
+    stopifnot(isTRUE(all.equal(test1, test2)))
+  } else {
+    test1 <- increment_sampler$sample_path(T_sim = 5L, mu = sim_mu, sigma = sim_sigma)
+    set.seed(params$seed)
+    test2 <- increment_sampler$sample_path(T_sim = 5L, mu = sim_mu, sigma = sim_sigma)
+    stopifnot(isTRUE(all.equal(test1, test2)))
+  }
+
+  if (is.null(seed_state)) {
+    rm(".Random.seed", envir = .GlobalEnv)
+  } else {
+    assign(".Random.seed", seed_state, envir = .GlobalEnv)
+  }
 }
 ```
-
 
 ## Notes for SPT-facing interpretation (non-quantitative)
 

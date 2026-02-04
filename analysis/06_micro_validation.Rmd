@@ -1,0 +1,235 @@
+## Micro-level movement validation (v12) + rank-slot comparator
+
+### 14.1 Empirical micro object (identity-based, v12)
+
+```{r micro-setup, include=FALSE}
+if (!exists("endpoint_bundle")) {
+  endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
+}
+endpoint_weekly <- endpoint_bundle$endpoint_weekly
+K_cut <- endpoint_bundle$K_cut
+K_max <- endpoint_bundle$K_max
+max_rank_seen <- endpoint_bundle$max_rank_seen
+sim_K_xi <- endpoint_bundle$sim_K_xi
+
+horizons_micro <- CFG$horizons_micro
+
+if (!exists("rank_panel")) {
+  rank_panel <- load_rank_panel(endpoint_weekly, cfg = CFG)
+}
+if (!exists("gauss_params_raw")) {
+  gauss_params_raw <- load_gauss_params_raw(rank_panel, K_max, cfg = CFG)
+}
+if (!exists("sm_params")) {
+  sm_params <- load_gauss_params_smoothed(gauss_params_raw, K_max, CFG$smoothing_h, cfg = CFG)
+}
+
+entrant_pool <- build_entrant_pool(endpoint_weekly, K_cut, CFG$K_tail_buffer, max_rank_seen)
+entrant_sampler <- make_entrant_sampler(entrant_pool)
+w0_ext <- build_w0_ext(endpoint_weekly, K_max, entrant_sampler)
+
+mean_vec_s <- sm_params$mean_dlogw_s
+sd_vec_s <- sm_params$sd_dlogw_s
+
+if (!exists("sim_out")) {
+  sim_out <- load_sim_baseline(
+    w0_ext = w0_ext,
+    mean_vec_s = mean_vec_s,
+    sd_vec_s = sd_vec_s,
+    K_cut = K_cut,
+    K_max = K_max,
+    sim_K_xi = sim_K_xi,
+    cfg = CFG,
+    entrant_sampler = entrant_sampler
+  )
+}
+```
+
+```{r micro-emp}
+emp_micro_k12 <- emp_micro_for_k(
+  endpoint_weekly = endpoint_weekly %>% filter(rank <= K_cut),
+  k = 12L,
+  horizons = horizons_micro
+)
+
+emp_summary_k12 <- emp_micro_k12 %>%
+  group_by(horizon) %>%
+  summarise(
+    n_total = n(),
+    retention = mean(present_tp),
+    n_present = sum(present_tp),
+    med = median(share_tp[present_tp], na.rm = TRUE),
+    p10 = quantile(share_tp[present_tp], 0.10, na.rm = TRUE),
+    p90 = quantile(share_tp[present_tp], 0.90, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(source = "empirical")
+```
+
+### 14.2 Simulation micro object (rank-slot, v12 style)
+
+```{r micro-sim}
+sim_micro_k12 <- sim_micro_for_k(
+  sim_snapshots = sim_out$snapshots,
+  k = 12L,
+  horizons = horizons_micro
+)
+
+sim_summary_k12 <- sim_micro_k12 %>%
+  group_by(horizon) %>%
+  summarise(
+    n_total = n(),
+    retention = 1.0,
+    n_present = n(),
+    med = median(share_tp, na.rm = TRUE),
+    p10 = quantile(share_tp, 0.10, na.rm = TRUE),
+    p90 = quantile(share_tp, 0.90, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(source = "simulation")
+
+micro_summary_k12 <- bind_rows(emp_summary_k12, sim_summary_k12)
+
+micro_summary_k12
+```
+
+```{r micro-k12-plot}
+ggplot(micro_summary_k12, aes(x = horizon, y = med, group = source, linetype = source)) +
+  geom_ribbon(
+    aes(ymin = p10, ymax = p90, fill = source),
+    alpha = 0.35,
+    color = NA
+  ) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
+  scale_x_continuous(breaks = horizons_micro) +
+  labs(
+    title = "Micro movement for rank k = 12",
+    subtitle = "Median share at t+h with 10-90% band (empirical vs simulation)",
+    x = "Horizon (weeks ahead)",
+    y = "Share at t+h"
+  ) +
+  theme_bw()
+```
+
+### 14.3 Empirical rank-slot micro comparator (new)
+
+```{r micro-emp-rankslot}
+emp_rs_k12 <- emp_rankslot_micro_for_k(
+  endpoint_weekly = endpoint_weekly %>% filter(rank <= K_cut),
+  k = 12L,
+  horizons = horizons_micro
+)
+
+emp_rs_summary_k12 <- emp_rs_k12 %>%
+  group_by(horizon) %>%
+  summarise(
+    n_total = n(),
+    med = median(share_tp, na.rm = TRUE),
+    p10 = quantile(share_tp, 0.10, na.rm = TRUE),
+    p90 = quantile(share_tp, 0.90, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(source = "emp_rankslot")
+
+micro_summary_k12_3way <- bind_rows(
+  emp_summary_k12 %>% select(horizon, med, p10, p90, source),
+  emp_rs_summary_k12,
+  sim_summary_k12 %>% select(horizon, med, p10, p90, source)
+)
+
+ggplot(micro_summary_k12_3way, aes(x = horizon, y = med, group = source, linetype = source)) +
+  geom_ribbon(
+    aes(ymin = p10, ymax = p90, fill = source),
+    alpha = 0.25,
+    color = NA
+  ) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
+  scale_x_continuous(breaks = horizons_micro) +
+  labs(
+    title = "Micro movement (k=12): identity vs rank-slot vs simulation",
+    subtitle = "Empirical identity-tracking differs conceptually from rank-slot tracking",
+    x = "Horizon (weeks ahead)",
+    y = "Share at t+h"
+  ) +
+  theme_bw()
+```
+
+## Micro fit across ranks (v12-style)
+
+This reproduces the v12 idea of scoring micro-movement fit across a grid of ranks (here: 10, 20, …, 200).
+It compares empirical **identity-based** future shares (conditioned on presence at t+h) to the simulated
+**rank-slot** future shares.
+
+```{r micro-fit-grid}
+k_grid_micro <- seq(10L, 200L, by = 10L)
+
+micro_fit_tbl <- purrr::map_dfr(k_grid_micro, function(k) {
+
+  emp <- emp_micro_for_k(
+    endpoint_weekly = endpoint_weekly %>% filter(rank <= K_cut),
+    k = k,
+    horizons = horizons_micro
+  ) %>%
+    group_by(horizon) %>%
+    summarise(
+      emp_retention = mean(present_tp),
+      emp_med = median(share_tp[present_tp], na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  sim <- sim_micro_for_k(
+    sim_snapshots = sim_out$snapshots,
+    k = k,
+    horizons = horizons_micro
+  ) %>%
+    group_by(horizon) %>%
+    summarise(
+      sim_med = median(share_tp, na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  emp %>%
+    inner_join(sim, by = "horizon") %>%
+    mutate(
+      k = k,
+      sq_err = (emp_med - sim_med)^2
+    )
+})
+
+micro_rmse_by_k <- micro_fit_tbl %>%
+  group_by(k) %>%
+  summarise(
+    rmse = sqrt(mean(sq_err, na.rm = TRUE)),
+    avg_retention = mean(emp_retention, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+micro_rmse_by_k
+```
+
+```{r micro-fit-grid-plot}
+ggplot(micro_rmse_by_k, aes(k, rmse)) +
+  geom_line() +
+  geom_point(size = 1.5) +
+  labs(
+    title = "Micro-movement RMSE by rank (k)",
+    subtitle = "RMSE over horizons between empirical identity-based median(share_tp) and simulated median(share_tp)",
+    x = "Rank k",
+    y = "RMSE"
+  ) +
+  theme_bw()
+
+ggplot(micro_rmse_by_k, aes(k, avg_retention)) +
+  geom_line() +
+  geom_point(size = 1.5) +
+  scale_y_continuous(labels = percent_format(accuracy = 0.1)) +
+  labs(
+    title = "Empirical retention by rank (k)",
+    subtitle = "Average across horizons",
+    x = "Rank k",
+    y = "Retention"
+  ) +
+  theme_bw()
+```

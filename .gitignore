@@ -1,18 +1,30 @@
-
-# Project defaults (compiled/large and local files)
+# OS
 .DS_Store
+
+# R / IDE
+.Rproj.user/
 .Rhistory
 .RData
-.Rproj.user/
 .Ruserdata
 .Renviron
+
+# Env
 .env
 .env.*
+
+# Jupyter
 .ipynb_checkpoints/
+
+# Caches & outputs
+cache/
+output/
 outputs/
 results/
 website/_site/
 *_files/
+
+# Data & artifacts
+data/raw/*
 *.html
 *.pdf
 *.parquet

@@ -1,0 +1,102 @@
+---
+title: "Facebook Weekly Rank Diffusion: Master Analysis"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+params:
+  mode: "dev"
+  output_type: "full"
+  use_cache: true
+  run_heavy: false
+  cache_version: "v1"
+  fb_weekly_parquet: !r here::here("data", "raw", "fb_ranked_weekly.parquet")
+  seed: 1823
+  K_cut_target: 12000L
+  K_tail_buffer: 2000L
+  horizons_growth: !r c(1L, 7L, 28L)
+  horizons_durable: !r c(4L, 8L)
+  horizons_micro: !r c(1L, 4L, 12L)
+  bucket_breaks: !r c(0, 25, 250, Inf)
+  bucket_labels: !r c("large", "midsize", "small")
+  smoothing_h: 5L
+  sim_T_weeks: 52L
+  sim_n_paths: 200L
+  sim_mu: 0
+  sim_sigma: 0.16
+  sim_entry_frac: 0.1
+  sim_K_xi: 500L
+  turnover_K_list: !r c(25L, 250L, 1000L)
+  turnover_horizons: !r c(1L, 4L, 12L)
+  pca_K: 500L
+  run_grid_search: false
+  run_bootstrap_model: false
+  bootstrap_B: 200L
+  bootstrap_k_min: 10L
+  bootstrap_period_unit: "quarter"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 9,
+  fig.height = 5
+)
+source(here::here("R", "init.R"))
+```
+
+# Setup
+
+```{r child = here::here("analysis", "00_setup.Rmd")}
+```
+
+# Data Quality
+
+```{r child = here::here("analysis", "01_data_qc.Rmd")}
+```
+
+# CDC
+
+```{r child = here::here("analysis", "02_cdc.Rmd")}
+```
+
+# Durable Change
+
+```{r child = here::here("analysis", "03_durable_change.Rmd")}
+```
+
+# Model Variants
+
+```{r child = here::here("analysis", "04_model_variants.Rmd")}
+```
+
+# Sigma Calibration
+
+```{r child = if (params$run_heavy) here::here("analysis", "05_sigma_calibration.Rmd")}
+```
+
+# Micro Validation
+
+```{r child = here::here("analysis", "06_micro_validation.Rmd")}
+```
+
+# Supplement
+
+```{r child = if (params$output_type %in% c("supplement", "full"))
+  here::here("analysis", "90_supplement.Rmd")}
+```
+
+# Provenance
+
+```{r provenance, echo=FALSE}
+cat("Rendered at:", as.character(Sys.time()), "\n\n")
+
+git_hash <- tryCatch(system("git rev-parse HEAD", intern = TRUE), error = function(e) NA_character_)
+if (!is.na(git_hash)) {
+  cat("Git commit:", git_hash, "\n\n")
+}
+
+sessionInfo()
+```

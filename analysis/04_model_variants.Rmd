@@ -1,0 +1,542 @@
+## Stylized fact B: Rank-dependent drift and volatility (rank-slot increments)
+
+We work with rank-slot series: for each rank `k`, the sequence of shares of the endpoint
+occupying that rank each week. This is the object that rank-based diffusion models target.
+
+```{r model-setup, include=FALSE}
+if (!exists("endpoint_bundle")) {
+  endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
+}
+endpoint_weekly <- endpoint_bundle$endpoint_weekly
+K_cut <- endpoint_bundle$K_cut
+K_max <- endpoint_bundle$K_max
+max_rank_seen <- endpoint_bundle$max_rank_seen
+sim_K_xi <- endpoint_bundle$sim_K_xi
+
+bucket_def <- CFG$bucket_def
+Smoothing_h <- CFG$smoothing_h
+turnover_K_list <- CFG$turnover_K_list
+turnover_horizons <- CFG$turnover_horizons
+horizons_micro <- CFG$horizons_micro
+bootstrap_period_unit <- CFG$bootstrap_period_unit
+bootstrap_B <- CFG$bootstrap_B
+bootstrap_k_min <- CFG$bootstrap_k_min
+pca_K <- CFG$pca_K
+
+if (!exists("rank_panel")) {
+  rank_panel <- load_rank_panel(endpoint_weekly, cfg = CFG)
+}
+if (!exists("gauss_params_raw")) {
+  gauss_params_raw <- load_gauss_params_raw(rank_panel, K_max, cfg = CFG)
+}
+if (!exists("sm_params")) {
+  sm_params <- load_gauss_params_smoothed(gauss_params_raw, K_max, Smoothing_h, cfg = CFG)
+}
+```
+
+```{r rank-panel}
+rank_panel %>% glimpse()
+
+ggplot(gauss_params_raw, aes(rank, sd_dlogw)) +
+  geom_line() +
+  scale_x_continuous(trans = "log10") +
+  labs(
+    title = "Rank-dependent volatility proxy",
+    subtitle = "sd(d log w) by rank (rank-slot series, global shares)",
+    x = "Rank (log scale)",
+    y = "sd(d log w)"
+  ) +
+  theme_bw()
+```
+
+### Smoothed per-rank moments (v9+)
+
+```{r smoothing-helpers}
+sm_plot <- sm_params %>%
+  select(rank, mean_dlogw_s, sd_dlogw_s) %>%
+  left_join(gauss_params_raw %>% select(rank, mean_dlogw, sd_dlogw), by = "rank") %>%
+  pivot_longer(
+    cols = c(mean_dlogw, mean_dlogw_s, sd_dlogw, sd_dlogw_s),
+    names_to = "series",
+    values_to = "value"
+  ) %>%
+  mutate(kind = case_when(
+    str_detect(series, "^mean") ~ "mean",
+    TRUE ~ "sd"
+  ))
+
+ggplot(filter(sm_plot, kind == "mean"), aes(rank, value, color = series)) +
+  geom_line() +
+  scale_x_continuous(trans = "log10") +
+  labs(
+    title = "Per-rank drift proxy: raw vs smoothed",
+    x = "Rank (log scale)",
+    y = "mean(d log w)"
+  ) +
+  theme_bw() +
+  guides(color = "none")
+
+ggplot(filter(sm_plot, kind == "sd"), aes(rank, value, color = series)) +
+  geom_line() +
+  scale_x_continuous(trans = "log10") +
+  labs(
+    title = "Per-rank volatility proxy: raw vs smoothed",
+    x = "Rank (log scale)",
+    y = "sd(d log w)"
+  ) +
+  theme_bw() +
+  guides(color = "none")
+```
+
+## Stylized fact D: Gap structure via Xi_k(t) = log(w_k / w_{k+1}) (v11)
+
+We compute Xi using *global* shares, with ranks recomputed within each week.
+
+```{r xi-weekly}
+xi_weekly <- endpoint_weekly %>%
+  group_by(week) %>%
+  arrange(rank, .by_group = TRUE) %>%
+  mutate(
+    w = pmax(share_global, 1e-18),
+    w_next = lead(w),
+    xi = log(w / w_next),
+    k = rank
+  ) %>%
+  ungroup() %>%
+  filter(is.finite(xi), is.finite(k))
+
+K_xi_est <- min(2000L, K_cut)
+
+# scatter (restricted for clarity)
+ggplot(filter(xi_weekly, k <= 500L), aes(x = k, y = xi)) +
+  geom_point(alpha = 0.35, size = 0.4) +
+  scale_x_continuous(trans = "log10") +
+  labs(
+    title = "Log gaps (Xi) by rank: Xi_k(t) = log(w_k / w_{k+1})",
+    subtitle = "Restricted to top 500 ranks for visibility",
+    x = "Rank k (log scale)",
+    y = "Xi"
+  ) +
+  theme_bw()
+
+rho_by_k_med <- xi_weekly %>%
+  filter(k <= (K_xi_est - 1L)) %>%
+  group_by(k) %>%
+  summarise(rho_k = median(xi, na.rm = TRUE), .groups = "drop")
+
+ggplot(rho_by_k_med, aes(k, rho_k)) +
+  geom_line() +
+  theme_bw() +
+  labs(
+    title = "Median Xi by rank (rho_k)",
+    x = "Rank k",
+    y = "rho_k"
+  )
+```
+
+### v11-style sigma_hat(k) construction
+
+Following v11:
+
+- Let `g_k` be smoothed per-rank drift proxy (mean of `d log w`) for ranks.
+- Define `S_k = cumsum(g_k)`.
+- Combine with `rho_k` to form `sigma_hat(k) = sqrt( -2 S_k rho_k )` when positive.
+
+```{r sigma-hat}
+g_by_k <- sm_params %>%
+  transmute(k = rank, g_k = mean_dlogw_s) %>%
+  filter(k <= (K_xi_est + 1L)) %>%
+  arrange(k)
+
+S_by_k <- g_by_k %>%
+  mutate(S_k = cumsum(g_k))
+
+sigma_hat_by_k <- rho_by_k_med %>%
+  inner_join(S_by_k %>% select(k, S_k), by = "k") %>%
+  mutate(
+    sigma2_hat = -2 * S_k * rho_k,
+    sigma_hat = if_else(sigma2_hat > 0, sqrt(sigma2_hat), NA_real_)
+  )
+
+sigma_hat_by_k %>%
+  summarise(med_sigma = median(sigma_hat, na.rm = TRUE))
+
+ggplot(
+  filter(sigma_hat_by_k, k >= 10L, !is.na(sigma_hat)),
+  aes(x = k, y = sigma_hat)
+) +
+  geom_line() +
+  scale_x_continuous(trans = "log10") +
+  labs(
+    title = "sigma_hat(k) vs rank (v11-style)",
+    x = "Rank k (log scale)",
+    y = "sigma_hat(k)"
+  ) +
+  theme_bw()
+```
+
+### Stability across time (quarterly summary)
+
+```{r sigma-hat-over-time}
+xi_by_period <- xi_weekly %>%
+  mutate(period = floor_date(week, bootstrap_period_unit)) %>%
+  filter(k <= (K_xi_est - 1L))
+
+rho_period_by_k <- xi_by_period %>%
+  group_by(period, k) %>%
+  summarise(rho_k = median(xi, na.rm = TRUE), .groups = "drop")
+
+sigma_hat_period <- rho_period_by_k %>%
+  inner_join(S_by_k %>% select(k, S_k), by = "k") %>%
+  mutate(
+    sigma2_hat = -2 * S_k * rho_k,
+    sigma_hat = if_else(sigma2_hat > 0, sqrt(sigma2_hat), NA_real_)
+  )
+
+sigma_hat_period_summ <- sigma_hat_period %>%
+  group_by(period) %>%
+  summarise(
+    sigma_med = median(sigma_hat, na.rm = TRUE),
+    sigma_p25 = quantile(sigma_hat, 0.25, na.rm = TRUE),
+    sigma_p75 = quantile(sigma_hat, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(sigma_hat_period_summ, aes(x = period, y = sigma_med)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = sigma_p25, ymax = sigma_p75), alpha = 0.2) +
+  labs(
+    title = "sigma_hat over time (median across ranks) with IQR band",
+    x = NULL,
+    y = "sigma_hat (median)"
+  ) +
+  theme_bw()
+```
+
+### Bootstrap CI over time (v11-style)
+
+```{r bootstrap-ci}
+sigma_ci_by_period <- xi_by_period %>%
+  group_by(period) %>%
+  group_modify(~ bootstrap_sigma_period(
+    xi_df_period = .x,
+    S_by_k = S_by_k,
+    B = as.integer(bootstrap_B),
+    k_min = as.integer(bootstrap_k_min),
+    K_xi_est = K_xi_est
+  )) %>%
+  ungroup()
+
+ggplot(sigma_ci_by_period, aes(x = period, y = sigma_hat_med)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ci_lo, ymax = ci_hi), alpha = 0.2) +
+  labs(
+    title = "Bootstrap CI for sigma_hat over time",
+    x = NULL,
+    y = "sigma_hat (median across k)"
+  ) +
+  theme_bw()
+```
+
+## Stylized fact C (expanded): Turnover and rank mobility (new)
+
+### 9.1 Top-K membership turnover (set overlap)
+
+```{r topk-turnover}
+turnover_tbl <- purrr::map_dfr(
+  turnover_K_list,
+  ~ topK_overlap(endpoint_weekly, K = .x, horizons = turnover_horizons)
+)
+
+ggplot(turnover_tbl, aes(x = week, y = overlap_frac, color = factor(horizon))) +
+  geom_line(alpha = 0.6) +
+  facet_wrap(~ K, scales = "free_y") +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(
+    title = "Top-K overlap over time",
+    subtitle = "Fraction of endpoints in top-K at week t that also appear in top-K at t+h",
+    x = "Week",
+    y = "Overlap fraction",
+    color = "Horizon (weeks)"
+  ) +
+  theme_bw()
+```
+
+### 9.2 Rank-conditioned mobility: where does the endpoint at rank k go?
+
+```{r micro-emp-extended}
+k_grid_mobility <- c(1L, 5L, 12L, 25L, 100L, 500L, 1000L)
+
+emp_micro_mobility <- purrr::map_dfr(
+  k_grid_mobility,
+  ~ emp_micro_for_k(endpoint_weekly, k = .x, horizons = horizons_micro) %>%
+    mutate(k = .x)
+)
+
+mobility_summ <- emp_micro_mobility %>%
+  group_by(k, horizon) %>%
+  summarise(
+    retention = mean(present_tp),
+    p_within_1 = mean(abs(rank_change) <= 1, na.rm = TRUE),
+    p_within_5 = mean(abs(rank_change) <= 5, na.rm = TRUE),
+    med_abs_rank_change = median(abs(rank_change), na.rm = TRUE),
+    .groups = "drop"
+  )
+
+mobility_summ
+```
+
+```{r mobility-plots}
+ggplot(mobility_summ, aes(x = horizon, y = retention, group = factor(k))) +
+  geom_line() +
+  geom_point(size = 1.5) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  scale_x_continuous(breaks = horizons_micro) +
+  labs(
+    title = "Retention by horizon for rank-conditioned cohorts",
+    x = "Horizon (weeks ahead)",
+    y = "Fraction still observed",
+    caption = "Cohort: endpoint that sits at rank k at week t"
+  ) +
+  theme_bw()
+
+ggplot(mobility_summ, aes(x = horizon, y = med_abs_rank_change, group = factor(k))) +
+  geom_line() +
+  geom_point(size = 1.5) +
+  scale_x_continuous(breaks = horizons_micro) +
+  labs(
+    title = "Median |rank change| for rank-conditioned cohorts",
+    x = "Horizon (weeks ahead)",
+    y = "Median absolute rank change"
+  ) +
+  theme_bw()
+```
+
+### 9.3 Rank transition matrix (deciles + out-of-topK)
+
+```{r transition-matrix}
+rank_bins <- endpoint_weekly %>%
+  select(week, endpoint_id, rank) %>%
+  mutate(bin = make_rank_bin(rank, K = 1000L, n_bins = 10L))
+
+trans_1w <- rank_bins %>%
+  transmute(
+    endpoint_id,
+    week_t = week,
+    bin_t = bin,
+    week_tp = week + lubridate::weeks(1L)
+  ) %>%
+  left_join(
+    rank_bins %>% transmute(endpoint_id, week_tp = week, bin_tp = bin),
+    by = c("endpoint_id", "week_tp")
+  ) %>%
+  mutate(bin_tp = replace_na(bin_tp, "out")) %>%
+  count(bin_t, bin_tp) %>%
+  group_by(bin_t) %>%
+  mutate(p = n / sum(n)) %>%
+  ungroup()
+
+ggplot(trans_1w, aes(x = bin_tp, y = bin_t, fill = p)) +
+  geom_tile() +
+  scale_fill_continuous(labels = percent_format(accuracy = 0.1)) +
+  labs(
+    title = "Rank-bin transition matrix (1 week)",
+    subtitle = "Bins are deciles within top 1000 ranks; 'out' means rank>1000 or missing",
+    x = "Bin at t+1",
+    y = "Bin at t"
+  ) +
+  theme_bw()
+```
+
+## Stylized fact E: Common shocks vs idiosyncratic movement (new)
+
+A pragmatic diagnostic: PCA on rank-slot increments for the top `pca_K` ranks.
+
+```{r common-shocks-pca}
+K_pca <- min(pca_K, K_cut)
+
+if (is.na(K_pca) || K_pca < 2) {
+  message("Skipping PCA: K_pca < 2 (K_pca=", K_pca, ").")
+} else {
+  rank_slot_wide <- rank_panel %>%
+    filter(rank <= K_pca) %>%
+    select(week, rank, dlogw) %>%
+    pivot_wider(names_from = rank, values_from = dlogw)
+
+  rank_slot_mat <- rank_slot_wide %>%
+    drop_na() %>%
+    arrange(week)
+
+  X <- rank_slot_mat %>%
+    select(-week) %>%
+    as.matrix()
+
+  if (nrow(X) < 2 || ncol(X) < 2) {
+    message(
+      "Skipping PCA: need at least 2 complete weeks and 2 rank columns; got ",
+      nrow(X), "x", ncol(X), "."
+    )
+  } else {
+    pca_fit <- prcomp(X, center = TRUE, scale. = TRUE)
+
+    var_explained <- (pca_fit$sdev^2) / sum(pca_fit$sdev^2)
+
+    tibble(
+      component = seq_along(var_explained),
+      var_explained = var_explained
+    ) %>%
+      slice(1:10)
+
+    ggplot(
+      tibble(component = seq_along(var_explained), var_explained = var_explained) %>% slice(1:20),
+      aes(component, var_explained)
+    ) +
+      geom_line() +
+      geom_point(size = 1.5) +
+      scale_y_continuous(labels = percent_format(accuracy = 0.1)) +
+      labs(
+        title = "PCA on rank-slot increments: variance explained",
+        subtitle = paste0("Top ", K_pca, " ranks; complete weeks only"),
+        x = "Principal component",
+        y = "Share of variance explained"
+      ) +
+      theme_bw()
+
+    pc1 <- pca_fit$x[, 1]
+    pc1_df <- tibble(week = rank_slot_mat$week, pc1 = pc1)
+
+    ggplot(pc1_df, aes(week, pc1)) +
+      geom_line() +
+      labs(
+        title = "First principal component over time (common shock proxy)",
+        x = "Week",
+        y = "PC1 score"
+      ) +
+      theme_bw()
+  }
+}
+```
+
+## Heavy-tail / jump diagnostics for increments (new)
+
+This section checks whether rank-slot increments have tails that are substantially heavier than Gaussian.
+
+```{r tail-diagnostics}
+inc_by_bucket <- rank_panel %>%
+  filter(rank <= K_cut) %>%
+  mutate(bucket = assign_bucket(rank, bucket_def)) %>%
+  filter(!is.na(bucket)) %>%
+  group_by(bucket) %>%
+  mutate(
+    z = (dlogw - mean(dlogw, na.rm = TRUE)) / sd(dlogw, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+tail_summ <- inc_by_bucket %>%
+  group_by(bucket) %>%
+  summarise(
+    n = n(),
+    p_gt_5sd = mean(abs(z) >= 5, na.rm = TRUE),
+    p_gt_3sd = mean(abs(z) >= 3, na.rm = TRUE),
+    q_0.001 = quantile(z, 0.001, na.rm = TRUE),
+    q_0.999 = quantile(z, 0.999, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+tail_summ
+```
+
+```{r qq-plot}
+ggplot(inc_by_bucket, aes(sample = z)) +
+  stat_qq() +
+  stat_qq_line() +
+  facet_wrap(~ bucket, scales = "free") +
+  labs(
+    title = "QQ plot of standardized increments by bucket",
+    subtitle = "Visual check for heavy tails vs Gaussian"
+  ) +
+  theme_bw()
+```
+
+## Simulation framework (v8–v11) + unified fit metrics
+
+### 12.1 Empirical entrant pool for entry/exit
+
+```{r entrant-pool}
+entrant_pool <- build_entrant_pool(endpoint_weekly, K_cut, CFG$K_tail_buffer, max_rank_seen)
+
+stopifnot(nrow(entrant_pool) > 100)
+
+entrant_sampler <- make_entrant_sampler(entrant_pool)
+
+w0_ext <- build_w0_ext(endpoint_weekly, K_max, entrant_sampler)
+```
+
+### 12.2 Simulator (Gaussian increments with smoothed moments; optional Xi output)
+
+This merges v9’s simulator with v11’s Xi storage.
+
+### 12.3 Fit metrics (CDC, durable change, Xi)
+
+```{r fit-metrics, include=FALSE}
+if (!exists("emp_cdc")) {
+  emp_cdc <- load_emp_cdc(endpoint_weekly, K_cut, cfg = CFG)
+}
+if (!exists("emp_targets")) {
+  emp_targets <- load_emp_targets(endpoint_weekly, K_cut, CFG$horizons_durable, bucket_def, cfg = CFG)
+}
+```
+
+## Baseline simulation run + comparison (CDC, durable, Xi)
+
+```{r run-sim}
+mean_vec_s <- sm_params$mean_dlogw_s
+sd_vec_s <- sm_params$sd_dlogw_s
+
+if (!exists("sim_out")) {
+  sim_out <- load_sim_baseline(
+    w0_ext = w0_ext,
+    mean_vec_s = mean_vec_s,
+    sd_vec_s = sd_vec_s,
+    K_cut = K_cut,
+    K_max = K_max,
+    sim_K_xi = sim_K_xi,
+    cfg = CFG,
+    entrant_sampler = entrant_sampler
+  )
+}
+
+# CDC comparison
+sim_cdc <- sim_out$snapshots %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop") %>%
+  arrange(rank)
+
+bind_rows(
+  emp_cdc %>% mutate(source = "Empirical"),
+  sim_cdc %>% mutate(source = "Simulated")
+) %>%
+  ggplot(aes(rank, w_bar, linetype = source)) +
+  geom_line() +
+  scale_x_log10() +
+  scale_y_log10(labels = percent_format(accuracy = 0.01)) +
+  labs(
+    title = "CDC: Empirical vs Simulated",
+    subtitle = paste0("mu=", CFG$sim_mu, ", sigma=", CFG$sim_sigma,
+                      ", h=", Smoothing_h),
+    x = "Rank (log scale)",
+    y = "Mean share within top-K (log scale)",
+    linetype = NULL
+  ) +
+  theme_bw()
+
+# Scoreboard
+score_tbl <- tibble(
+  rmse_cdc = cdc_rmse(emp_cdc, sim_cdc),
+  rmse_durable = durable_rmse(emp_targets, sim_out$growth, bucket_def),
+  rmse_xi = xi_rmse(rho_by_k_med %>% filter(k <= sim_K_xi - 1L),
+                    sim_out$xi %>% filter(k <= sim_K_xi - 1L))
+)
+
+score_tbl
+```

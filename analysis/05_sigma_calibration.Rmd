@@ -1,0 +1,173 @@
+## Sigma calibration loop (v10) (optional but included)
+
+This reproduces the v10 approach: scan `sigma` and pick the value that minimizes durable mismatch, with a small CDC penalty.
+
+```{r sigma-setup, include=FALSE}
+if (!exists("endpoint_bundle")) {
+  endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
+}
+endpoint_weekly <- endpoint_bundle$endpoint_weekly
+K_cut <- endpoint_bundle$K_cut
+K_max <- endpoint_bundle$K_max
+max_rank_seen <- endpoint_bundle$max_rank_seen
+
+bucket_def <- CFG$bucket_def
+Smoothing_h <- CFG$smoothing_h
+
+if (!exists("rank_panel")) {
+  rank_panel <- load_rank_panel(endpoint_weekly, cfg = CFG)
+}
+if (!exists("gauss_params_raw")) {
+  gauss_params_raw <- load_gauss_params_raw(rank_panel, K_max, cfg = CFG)
+}
+if (!exists("sm_params")) {
+  sm_params <- load_gauss_params_smoothed(gauss_params_raw, K_max, Smoothing_h, cfg = CFG)
+}
+
+if (!exists("emp_cdc")) {
+  emp_cdc <- load_emp_cdc(endpoint_weekly, K_cut, cfg = CFG)
+}
+if (!exists("emp_targets")) {
+  emp_targets <- load_emp_targets(endpoint_weekly, K_cut, CFG$horizons_durable, bucket_def, cfg = CFG)
+}
+
+entrant_pool <- build_entrant_pool(endpoint_weekly, K_cut, CFG$K_tail_buffer, max_rank_seen)
+entrant_sampler <- make_entrant_sampler(entrant_pool)
+w0_ext <- build_w0_ext(endpoint_weekly, K_max, entrant_sampler)
+
+mean_vec_s <- sm_params$mean_dlogw_s
+sd_vec_s <- sm_params$sd_dlogw_s
+```
+
+```{r sigma-calibration}
+sigma_grid <- seq(0.15, 0.40, by = 0.01)
+
+sigma_results <- purrr::map_dfr(
+  sigma_grid,
+  calibrate_sigma,
+  w0_ext = w0_ext,
+  mean_vec_s = mean_vec_s,
+  sd_vec_s = sd_vec_s
+) %>%
+  arrange(score)
+
+best_sigma <- sigma_results %>% slice(1)
+best_sigma
+
+ggplot(sigma_results, aes(x = sigma, y = score)) +
+  geom_line() +
+  geom_vline(xintercept = best_sigma$sigma, linetype = "dashed") +
+  labs(
+    title = "Sigma calibration (v10-style)",
+    x = "sigma",
+    y = "score = durable RMSE + 0.25 * CDC RMSE"
+  ) +
+  theme_bw()
+```
+
+## Sigma calibration by horizon (v10-style) (optional)
+
+This is the v10 extension: pick a separate `sigma` for each horizon by minimizing the horizon-specific
+durable-change mismatch.
+
+```{r sigma-calibration-by-horizon}
+if (isTRUE(CFG$run_grid_search)) {
+  sigma_h_tbl <- purrr::map_dfr(
+    sigma_grid,
+    sigma_by_horizon,
+    w0_ext = w0_ext,
+    mean_vec_s = mean_vec_s,
+    sd_vec_s = sd_vec_s
+  )
+
+  best_sigma_by_horizon <- sigma_h_tbl %>%
+    group_by(horizon) %>%
+    arrange(rmse_h, .by_group = TRUE) %>%
+    slice(1) %>%
+    ungroup()
+
+  best_sigma_by_horizon
+
+  ggplot(sigma_h_tbl, aes(x = sigma, y = rmse_h)) +
+    geom_line() +
+    facet_wrap(~ horizon, scales = "free_y") +
+    labs(
+      title = "Sigma calibration by horizon",
+      x = "sigma",
+      y = "RMSE within horizon"
+    ) +
+    theme_bw()
+}
+```
+
+## Grid search over (mu, sigma, h) (v9-style) (optional)
+
+This reproduces v9’s idea: jointly tune a global drift `mu`, global volatility scale `sigma`,
+and smoothing half-width `h`, using a weighted score combining CDC and durable-change mismatch.
+
+```{r grid-search-mu-sigma-h}
+if (isTRUE(CFG$run_grid_search)) {
+
+  mu_grid <- c(-0.01, -0.005, 0.0, 0.005)
+  sigma_grid2 <- c(0.1, 0.3, 0.5, 0.7, 1.0)
+  h_grid <- c(0L, 2L, 5L)
+
+  lambda_cdc <- 0.7
+
+  param_grid <- tidyr::expand_grid(mu = mu_grid, sigma = sigma_grid2, h = h_grid)
+  grid_results <- vector("list", nrow(param_grid))
+
+  for (i in seq_len(nrow(param_grid))) {
+
+    mu_i <- param_grid$mu[i]
+    sigma_i <- param_grid$sigma[i]
+    h_i <- as.integer(param_grid$h[i])
+
+    sm_i <- build_gaussian_params_smoothed(gauss_params_raw, K_max, h = h_i)
+
+    sim_i <- simulate_rank_paths(
+      w0 = w0_ext,
+      K_cut = K_cut,
+      K_max = K_max,
+      T = CFG$sim_T_weeks,
+      n_paths = CFG$sim_n_paths,
+      mu = mu_i,
+      sigma = sigma_i,
+      entry_frac = CFG$sim_entry_frac,
+      mean_vec = sm_i$mean_dlogw_s,
+      sd_vec = sm_i$sd_dlogw_s,
+      horizons = CFG$horizons_durable,
+      K_xi = NULL,
+      entrant_sampler = entrant_sampler
+    )
+
+    sim_cdc_i <- sim_i$snapshots %>%
+      group_by(rank) %>%
+      summarise(w_bar = mean(share, na.rm = TRUE), .groups = "drop")
+
+    rmse_cdc_i <- cdc_rmse(emp_cdc, sim_cdc_i)
+    rmse_dur_i <- durable_rmse(emp_targets, sim_i$growth, bucket_def)
+
+    score_i <- lambda_cdc * rmse_cdc_i + (1 - lambda_cdc) * rmse_dur_i
+
+    grid_results[[i]] <- tibble(
+      mu = mu_i, sigma = sigma_i, h = h_i,
+      rmse_cdc = rmse_cdc_i,
+      rmse_durable = rmse_dur_i,
+      score = score_i
+    )
+  }
+
+  grid_tbl <- bind_rows(grid_results) %>% arrange(score)
+  grid_tbl %>% slice(1:10)
+
+  ggplot(grid_tbl, aes(x = score)) +
+    geom_histogram(bins = 30) +
+    labs(
+      title = "Grid-search score distribution",
+      x = "score",
+      y = "count"
+    ) +
+    theme_bw()
+}
+```

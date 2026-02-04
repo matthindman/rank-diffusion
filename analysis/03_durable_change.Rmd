@@ -1,0 +1,78 @@
+## Stylized fact C: Durable change targets (v7–v10)
+
+These targets summarize the typical magnitude of change over horizons (default 4 and 8 weeks),
+separately by rank buckets.
+
+```{r durable-setup, include=FALSE}
+if (!exists("endpoint_bundle")) {
+  endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
+}
+endpoint_weekly <- endpoint_bundle$endpoint_weekly
+K_cut <- endpoint_bundle$K_cut
+
+bucket_def <- CFG$bucket_def
+horizons_durable <- CFG$horizons_durable
+
+if (!exists("emp_targets")) {
+  emp_targets <- load_emp_targets(endpoint_weekly, K_cut, horizons_durable, bucket_def, cfg = CFG)
+}
+```
+
+```{r durable-targets}
+emp_targets
+
+ggplot(emp_targets, aes(x = factor(horizon), y = med_abs_emp, fill = bucket)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  labs(
+    title = "Empirical durable change targets",
+    x = "Horizon (weeks ahead)",
+    y = "median(|Delta log share_topK|)",
+    fill = "Bucket"
+  ) +
+  theme_bw()
+```
+
+## Martingale-style diagnostic (v7)
+
+A simple one-step regression: `dlogw(t+1)` on `dlogw(t)` for rank-slot series, summarized by bucket.
+
+```{r martingale-diagnostic, include=FALSE}
+if (!exists("rank_panel")) {
+  rank_panel <- load_rank_panel(endpoint_weekly, cfg = CFG)
+}
+```
+
+```{r martingale-diagnostic}
+diag_df <- rank_panel %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    dlogw_t = dlogw,
+    dlogw_t1 = lead(dlogw_t, 1)
+  ) %>%
+  ungroup() %>%
+  mutate(bucket = assign_bucket(rank, bucket_def)) %>%
+  filter(is.finite(dlogw_t), is.finite(dlogw_t1), !is.na(bucket))
+
+martingale_results <- diag_df %>%
+  group_by(bucket) %>%
+  group_modify(~ {
+    fit <- lm(dlogw_t1 ~ dlogw_t, data = .x)
+    broom::tidy(fit)
+  }) %>%
+  ungroup()
+
+ggplot(martingale_results %>% filter(term == "dlogw_t"), aes(bucket, estimate)) +
+  geom_point() +
+  geom_errorbar(
+    aes(ymin = estimate - 1.96 * std.error, ymax = estimate + 1.96 * std.error),
+    width = 0.1
+  ) +
+  geom_hline(yintercept = 0, linetype = 3) +
+  labs(
+    title = "Martingale diagnostic: slope of dlogw(t+1) on dlogw(t)",
+    x = "Rank bucket",
+    y = "Beta estimate"
+  ) +
+  theme_bw()
+```

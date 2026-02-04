@@ -1,0 +1,52 @@
+## Setup
+
+This section initializes parameters and loads the weekly Facebook data into a core panel.
+
+```{r setup-vars, include=FALSE}
+K_cut_target <- CFG$K_cut_target
+K_tail_buffer <- CFG$K_tail_buffer
+Smoothing_h <- CFG$smoothing_h
+
+horizons_growth <- CFG$horizons_growth
+horizons_durable <- CFG$horizons_durable
+horizons_micro <- CFG$horizons_micro
+turnover_K_list <- CFG$turnover_K_list
+turnover_horizons <- CFG$turnover_horizons
+
+bucket_def <- CFG$bucket_def
+bootstrap_B <- CFG$bootstrap_B
+bootstrap_k_min <- CFG$bootstrap_k_min
+bootstrap_period_unit <- CFG$bootstrap_period_unit
+
+sim_T_weeks <- CFG$sim_T_weeks
+sim_n_paths <- CFG$sim_n_paths
+sim_mu <- CFG$sim_mu
+sim_sigma <- CFG$sim_sigma
+sim_entry_frac <- CFG$sim_entry_frac
+sim_K_xi <- CFG$sim_K_xi
+pca_K <- CFG$pca_K
+
+if (!exists("endpoint_bundle")) {
+  endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
+}
+endpoint_weekly <- endpoint_bundle$endpoint_weekly
+max_rank_by_week <- endpoint_bundle$max_rank_by_week
+max_rank_seen <- endpoint_bundle$max_rank_seen
+K_cut <- endpoint_bundle$K_cut
+K_max <- endpoint_bundle$K_max
+sim_K_xi <- endpoint_bundle$sim_K_xi
+```
+
+## Load weekly Facebook data and construct core panel
+
+The exploration treats the weekly Facebook file as weekly snapshots with (at least):
+`date`, `endpoint_id`, `metric_value`, `rank` (rank is recomputed defensively below).
+
+We construct:
+
+- `share_global`: each endpoint's share of total weekly attention (sums to 1 within week).
+- `share_topK`: same share, renormalized within the top-K (`K_cut`) each week.
+
+```{r load-data}
+endpoint_weekly %>% glimpse()
+```
