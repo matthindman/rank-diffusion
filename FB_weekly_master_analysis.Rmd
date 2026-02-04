@@ -2002,8 +2002,8 @@ if (isTRUE(params$run_jump_model)) {
   })
 
   if (!is.null(jump_out)) {
-    jump_out$score_jump
-    jump_out$tail_comp_jump
+    print(jump_out$score_jump)
+    print(jump_out$tail_comp_jump)
   }
 }
 ```
