@@ -31,9 +31,41 @@ params:
   pca_K: 500L
   run_grid_search: false
   run_bootstrap_model: false
+  run_jump_model: false
+  jump_model_type: "jump_factor"
+  jump_df_F: 5
+  jump_phi_F: 0
+  jump_df_eps_large: 6
+  jump_df_eps_midsize: 8
+  jump_df_eps_small: 10
+  jump_p_sys: 0.02
+  jump_p_idio_large: 0.01
+  jump_p_idio_midsize: 0.005
+  jump_p_idio_small: 0.002
+  jump_dist: "laplace"
+  jump_scale_sys: 0.35
+  jump_scale_idio: 0.20
+  jump_scale: 0.10
+  jump_df: 5
+  jump_sys_loading: "beta"
+  jump_mean_reversion: true
+  jump_kappa_large: 0.04
+  jump_kappa_midsize: 0.03
+  jump_kappa_small: 0.02
   bootstrap_B: 200L
   bootstrap_k_min: 10L
   bootstrap_period_unit: "quarter"
+  bootstrap_method: "local_rank"
+  bootstrap_rank_bandwidth: 25L
+  bootstrap_kernel: "triangular"
+  bootstrap_block_bootstrap: false
+  bootstrap_block_length: 4L
+  bootstrap_n_factors: 1L
+  bootstrap_K_pca: 500L
+  bootstrap_tailsplice: false
+  bootstrap_tail_q: 0.99
+  bootstrap_tail_fit_min_n: 30L
+  bootstrap_diag_paths: 3L
 ---
 
 ```{r setup, include=FALSE}

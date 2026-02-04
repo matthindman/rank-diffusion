@@ -31,6 +31,26 @@ params:
   run_grid_search: false
   run_bootstrap_model: false
   run_jump_model: false
+  jump_model_type: "jump_factor"
+  jump_df_F: 5
+  jump_phi_F: 0
+  jump_df_eps_large: 6
+  jump_df_eps_midsize: 8
+  jump_df_eps_small: 10
+  jump_p_sys: 0.02
+  jump_p_idio_large: 0.01
+  jump_p_idio_midsize: 0.005
+  jump_p_idio_small: 0.002
+  jump_dist: "laplace"
+  jump_scale_sys: 0.35
+  jump_scale_idio: 0.20
+  jump_scale: 0.10
+  jump_df: 5
+  jump_sys_loading: "beta"
+  jump_mean_reversion: true
+  jump_kappa_large: 0.04
+  jump_kappa_midsize: 0.03
+  jump_kappa_small: 0.02
   bootstrap_B: 200L
   bootstrap_k_min: 10L
   bootstrap_period_unit: quarter
@@ -134,6 +154,48 @@ sim_sigma <- coerce_numeric(params$sim_sigma)
 sim_entry_frac <- coerce_numeric(params$sim_entry_frac)
 sim_K_xi <- as.integer(coerce_numeric(params$sim_K_xi))
 pca_K <- as.integer(coerce_numeric(params$pca_K))
+
+
+jump_model_type <- if (is.null(params$jump_model_type) || is.na(params$jump_model_type)) {
+  "jump_factor"
+} else {
+  as.character(params$jump_model_type)
+}
+
+jump_dist <- if (is.null(params$jump_dist) || is.na(params$jump_dist)) {
+  "laplace"
+} else {
+  as.character(params$jump_dist)
+}
+
+jump_sys_loading <- if (is.null(params$jump_sys_loading) || is.na(params$jump_sys_loading)) {
+  "beta"
+} else {
+  as.character(params$jump_sys_loading)
+}
+
+jump_df_F <- coerce_numeric(params$jump_df_F)
+jump_phi_F <- coerce_numeric(params$jump_phi_F)
+
+jump_df_eps_large <- coerce_numeric(params$jump_df_eps_large)
+jump_df_eps_midsize <- coerce_numeric(params$jump_df_eps_midsize)
+jump_df_eps_small <- coerce_numeric(params$jump_df_eps_small)
+
+jump_p_sys <- coerce_numeric(params$jump_p_sys)
+jump_p_idio_large <- coerce_numeric(params$jump_p_idio_large)
+jump_p_idio_midsize <- coerce_numeric(params$jump_p_idio_midsize)
+jump_p_idio_small <- coerce_numeric(params$jump_p_idio_small)
+
+jump_scale_sys <- coerce_numeric(params$jump_scale_sys)
+jump_scale_idio <- coerce_numeric(params$jump_scale_idio)
+jump_scale <- coerce_numeric(params$jump_scale)
+jump_df <- coerce_numeric(params$jump_df)
+
+jump_mean_reversion <- isTRUE(params$jump_mean_reversion)
+
+jump_kappa_large <- coerce_numeric(params$jump_kappa_large)
+jump_kappa_midsize <- coerce_numeric(params$jump_kappa_midsize)
+jump_kappa_small <- coerce_numeric(params$jump_kappa_small)
 
 bootstrap_method <- if (is.null(bootstrap_method)) "iid_rank" else as.character(bootstrap_method)
 bootstrap_kernel <- if (is.null(bootstrap_kernel)) "uniform" else as.character(bootstrap_kernel)
@@ -1447,6 +1509,82 @@ draw_increments <- function(t, w_t, moment_curves, model, cache) {
   stop("Unknown model type: ", type)
 }
 
+
+
+sample_increments_for_tail <- function(
+  model, moment_curves, cache,
+  K_cut,
+  n_steps = 200L,
+  n_paths = 30L,
+  ranks_per_bucket = 200L
+) {
+  K_max <- length(moment_curves$mean_vec)
+  ranks <- seq_len(min(K_cut, K_max))
+
+  bucket_def <- moment_curves$bucket_def %||%
+    (if (exists("bucket_def")) bucket_def else NULL)
+  if (is.null(bucket_def)) stop("bucket_def is required for tail sampling")
+
+  buckets <- assign_bucket(ranks, bucket_def)
+  keep <- !is.na(buckets)
+  ranks <- ranks[keep]
+  buckets <- buckets[keep]
+
+  if (is.null(cache)) cache <- list()
+  if (is.null(cache$state)) cache$state <- new.env(parent = emptyenv())
+
+  use_mean_reversion <- isTRUE(model$mean_reversion)
+  if (use_mean_reversion) {
+    kappa_vec <- moment_curves$kappa_vec
+    if (is.null(kappa_vec)) {
+      kappa_vec <- resolve_bucket_param(
+        param = model$kappa %||% 0,
+        K_max = K_max,
+        bucket_def = bucket_def,
+        default = 0
+      )
+    }
+  }
+
+  res <- vector("list", n_paths * n_steps)
+  idx <- 1
+
+  for (p in seq_len(n_paths)) {
+    cache$state$F_prev <- 0
+    if (use_mean_reversion) y <- rep(0, K_max)
+
+    for (t in seq_len(n_steps)) {
+      dlogw_innov <- draw_increments(
+        t = t,
+        w_t = rep(1 / K_max, K_max),
+        moment_curves = moment_curves,
+        model = model,
+        cache = cache
+      )
+
+      if (use_mean_reversion) {
+        dlogw <- dlogw_innov - kappa_vec * y
+        y <- (1 - kappa_vec) * y + dlogw_innov
+      } else {
+        dlogw <- dlogw_innov
+      }
+
+      dlogw <- dlogw[ranks]
+
+      df <- tibble(rank = ranks, dlogw = dlogw, bucket = buckets)
+      if (!is.null(ranks_per_bucket) && is.finite(ranks_per_bucket)) {
+        df <- df %>%
+          group_by(bucket) %>%
+          slice_sample(n = min(as.integer(ranks_per_bucket), n())) %>%
+          ungroup()
+      }
+      res[[idx]] <- df
+      idx <- idx + 1
+    }
+  }
+
+  bind_rows(res)
+}
 simulate_rank_paths <- function(
   w0, K_cut, K_max, T = 52, n_paths = 200,
   mu = 0, sigma = 1, entry_frac = 0.10,
@@ -1721,22 +1859,50 @@ if (isTRUE(params$run_jump_model)) {
     bucket_def = bucket_def
   )
 
+  jump_model_type_i <- ifelse(is.na(jump_model_type) || jump_model_type == "", "jump_factor", jump_model_type)
+  jump_dist_i <- ifelse(is.na(jump_dist) || jump_dist == "", "laplace", jump_dist)
+  jump_sys_loading_i <- ifelse(is.na(jump_sys_loading) || jump_sys_loading == "", "beta", jump_sys_loading)
+
+  jump_df_F_i <- ifelse(is.na(jump_df_F), 5, jump_df_F)
+  jump_phi_F_i <- ifelse(is.na(jump_phi_F), 0, jump_phi_F)
+
+  jump_df_eps_large_i <- ifelse(is.na(jump_df_eps_large), 6, jump_df_eps_large)
+  jump_df_eps_midsize_i <- ifelse(is.na(jump_df_eps_midsize), 8, jump_df_eps_midsize)
+  jump_df_eps_small_i <- ifelse(is.na(jump_df_eps_small), 10, jump_df_eps_small)
+
+  jump_p_sys_i <- ifelse(is.na(jump_p_sys), 0.02, jump_p_sys)
+  jump_p_idio_large_i <- ifelse(is.na(jump_p_idio_large), 0.01, jump_p_idio_large)
+  jump_p_idio_midsize_i <- ifelse(is.na(jump_p_idio_midsize), 0.005, jump_p_idio_midsize)
+  jump_p_idio_small_i <- ifelse(is.na(jump_p_idio_small), 0.002, jump_p_idio_small)
+
+  jump_scale_sys_i <- ifelse(is.na(jump_scale_sys), 0.35, jump_scale_sys)
+  jump_scale_idio_i <- ifelse(is.na(jump_scale_idio), 0.20, jump_scale_idio)
+  jump_scale_i <- ifelse(is.na(jump_scale), 0.10, jump_scale)
+  jump_df_i <- ifelse(is.na(jump_df), 5, jump_df)
+
+  jump_kappa_large_i <- ifelse(is.na(jump_kappa_large), 0.04, jump_kappa_large)
+  jump_kappa_midsize_i <- ifelse(is.na(jump_kappa_midsize), 0.03, jump_kappa_midsize)
+  jump_kappa_small_i <- ifelse(is.na(jump_kappa_small), 0.02, jump_kappa_small)
+
   jump_model <- list(
-    type = "jump_factor",
+    type = jump_model_type_i,
     mu = sim_mu,
     sigma = sim_sigma,
-    df_F = 5,
-    phi_F = 0,
-    df_eps = c(large = 6, midsize = 8, small = 10),
-    p_sys = 0.02,
-    p_idio = c(large = 0.01, midsize = 0.005, small = 0.002),
-    jump_dist = "laplace",
-    jump_scale_sys = 0.35,
-    jump_scale_idio = 0.20,
-    sys_loading = "beta",
-    mean_reversion = TRUE,
-    kappa = c(large = 0.04, midsize = 0.03, small = 0.02)
+    df_F = jump_df_F_i,
+    phi_F = jump_phi_F_i,
+    df_eps = c(large = jump_df_eps_large_i, midsize = jump_df_eps_midsize_i, small = jump_df_eps_small_i),
+    p_sys = jump_p_sys_i,
+    p_idio = c(large = jump_p_idio_large_i, midsize = jump_p_idio_midsize_i, small = jump_p_idio_small_i),
+    jump_dist = jump_dist_i,
+    jump_scale_sys = jump_scale_sys_i,
+    jump_scale_idio = jump_scale_idio_i,
+    jump_scale = jump_scale_i,
+    jump_df = jump_df_i,
+    sys_loading = jump_sys_loading_i,
+    mean_reversion = jump_mean_reversion,
+    kappa = c(large = jump_kappa_large_i, midsize = jump_kappa_midsize_i, small = jump_kappa_small_i)
   )
+
 
   jump_cache <- list(
     beta_k = pca_cache$beta_k,
@@ -1775,6 +1941,41 @@ if (isTRUE(params$run_jump_model)) {
   )
 
   score_jump
+
+  # Tail-metric comparison (empirical vs jump simulation)
+  tail_sample_steps <- 200L
+  tail_sample_paths <- 30L
+  tail_sample_ranks_per_bucket <- 200L
+
+  tail_cache <- list(
+    beta_k = pca_cache$beta_k,
+    state = new.env(parent = emptyenv())
+  )
+
+  sim_inc_tail <- sample_increments_for_tail(
+    model = jump_model,
+    moment_curves = moment_curves_jump,
+    cache = tail_cache,
+    K_cut = K_cut,
+    n_steps = tail_sample_steps,
+    n_paths = tail_sample_paths,
+    ranks_per_bucket = tail_sample_ranks_per_bucket
+  )
+
+  tail_summ_jump <- tail_diagnostics(sim_inc_tail, bucket_def)
+
+  tail_comp_jump <- tail_summ %>%
+    select(bucket, p_gt_5sd, p_gt_3sd, q_0.001, q_0.999) %>%
+    pivot_longer(-bucket, names_to = "metric", values_to = "emp") %>%
+    left_join(
+      tail_summ_jump %>%
+        select(bucket, p_gt_5sd, p_gt_3sd, q_0.001, q_0.999) %>%
+        pivot_longer(-bucket, names_to = "metric", values_to = "sim"),
+      by = c("bucket", "metric")
+    ) %>%
+    arrange(bucket, metric)
+
+  tail_comp_jump
 }
 ```
 

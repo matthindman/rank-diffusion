@@ -62,10 +62,57 @@ config_from_params <- function(params) {
 
     run_grid_search <- isTRUE(params$run_grid_search)
     run_bootstrap_model <- isTRUE(params$run_bootstrap_model)
+    run_jump_model <- isTRUE(params$run_jump_model)
 
     bootstrap_B <- as.integer(coerce_numeric(params$bootstrap_B %||% 200L))
     bootstrap_k_min <- as.integer(coerce_numeric(params$bootstrap_k_min %||% 10L))
     bootstrap_period_unit <- as.character(params$bootstrap_period_unit %||% "quarter")
+    bootstrap_method <- as.character(params$bootstrap_method %||% "iid_rank")
+    bootstrap_rank_bandwidth <- params$bootstrap_rank_bandwidth %||% 25L
+    bootstrap_kernel <- as.character(params$bootstrap_kernel %||% "uniform")
+    bootstrap_block_bootstrap <- isTRUE(params$bootstrap_block_bootstrap)
+    bootstrap_block_length <- as.integer(coerce_numeric(params$bootstrap_block_length %||% 4L))
+    bootstrap_n_factors <- as.integer(coerce_numeric(params$bootstrap_n_factors %||% 1L))
+    bootstrap_K_pca <- as.integer(coerce_numeric(params$bootstrap_K_pca %||% pca_K))
+    bootstrap_tailsplice <- isTRUE(params$bootstrap_tailsplice)
+    bootstrap_tail_q <- coerce_numeric(params$bootstrap_tail_q %||% 0.99)
+    bootstrap_tail_fit_min_n <- as.integer(coerce_numeric(params$bootstrap_tail_fit_min_n %||% 30L))
+    bootstrap_diag_paths <- as.integer(coerce_numeric(params$bootstrap_diag_paths %||% 0L))
+
+    if (!is.function(bootstrap_rank_bandwidth)) {
+      bootstrap_rank_bandwidth <- coerce_numeric(bootstrap_rank_bandwidth)
+    }
+    if (is.na(bootstrap_rank_bandwidth) && !is.function(bootstrap_rank_bandwidth)) {
+      bootstrap_rank_bandwidth <- 25L
+    }
+    if (is.na(bootstrap_block_length)) bootstrap_block_length <- 4L
+    if (is.na(bootstrap_n_factors) || bootstrap_n_factors < 1L) bootstrap_n_factors <- 1L
+    if (is.na(bootstrap_K_pca) || bootstrap_K_pca < 2L) bootstrap_K_pca <- pca_K
+    if (is.na(bootstrap_tail_q)) bootstrap_tail_q <- 0.99
+    if (is.na(bootstrap_tail_fit_min_n)) bootstrap_tail_fit_min_n <- 30L
+    if (is.na(bootstrap_diag_paths) || bootstrap_diag_paths < 0L) bootstrap_diag_paths <- 0L
+    bootstrap_tailsplice <- isTRUE(bootstrap_tailsplice) || identical(bootstrap_method, "factor_local_tailsplice")
+
+    jump_model_type <- as.character(params$jump_model_type %||% "jump_factor")
+    jump_dist <- as.character(params$jump_dist %||% "laplace")
+    jump_sys_loading <- as.character(params$jump_sys_loading %||% "beta")
+    jump_df_F <- coerce_numeric(params$jump_df_F %||% 5)
+    jump_phi_F <- coerce_numeric(params$jump_phi_F %||% 0)
+    jump_df_eps_large <- coerce_numeric(params$jump_df_eps_large %||% 6)
+    jump_df_eps_midsize <- coerce_numeric(params$jump_df_eps_midsize %||% 8)
+    jump_df_eps_small <- coerce_numeric(params$jump_df_eps_small %||% 10)
+    jump_p_sys <- coerce_numeric(params$jump_p_sys %||% 0.02)
+    jump_p_idio_large <- coerce_numeric(params$jump_p_idio_large %||% 0.01)
+    jump_p_idio_midsize <- coerce_numeric(params$jump_p_idio_midsize %||% 0.005)
+    jump_p_idio_small <- coerce_numeric(params$jump_p_idio_small %||% 0.002)
+    jump_scale_sys <- coerce_numeric(params$jump_scale_sys %||% 0.35)
+    jump_scale_idio <- coerce_numeric(params$jump_scale_idio %||% 0.20)
+    jump_scale <- coerce_numeric(params$jump_scale %||% 0.10)
+    jump_df <- coerce_numeric(params$jump_df %||% 5)
+    jump_mean_reversion <- isTRUE(params$jump_mean_reversion)
+    jump_kappa_large <- coerce_numeric(params$jump_kappa_large %||% 0.04)
+    jump_kappa_midsize <- coerce_numeric(params$jump_kappa_midsize %||% 0.03)
+    jump_kappa_small <- coerce_numeric(params$jump_kappa_small %||% 0.02)
 
     bucket_def <- list(
       breaks = bucket_breaks,
@@ -87,6 +134,14 @@ config_from_params <- function(params) {
     )
   }
 
+  if (cfg$K_cut_target < 1) {
+    stop("K_cut_target must be >= 1. Got: ", params$K_cut_target)
+  }
+
+  if (cfg$K_tail_buffer < 0) {
+    stop("K_tail_buffer must be >= 0. Got: ", params$K_tail_buffer)
+  }
+
   if (cfg$smoothing_h < 0) {
     stop("smoothing_h must be >= 0. Got: ", params$smoothing_h)
   }
@@ -97,6 +152,58 @@ config_from_params <- function(params) {
 
   if (is.na(cfg$bootstrap_k_min) || cfg$bootstrap_k_min < 1) {
     stop("bootstrap_k_min must be a positive integer. Got: ", params$bootstrap_k_min)
+  }
+
+  valid_bootstrap_methods <- c(
+    "iid_rank", "local_rank", "factor_local", "week_vector", "factor_local_tailsplice"
+  )
+  if (!cfg$bootstrap_method %in% valid_bootstrap_methods) {
+    stop(
+      "bootstrap_method must be one of: ", paste(valid_bootstrap_methods, collapse = ", "),
+      ". Got: ", cfg$bootstrap_method
+    )
+  }
+
+  valid_bootstrap_kernels <- c("uniform", "triangular", "exp")
+  if (!cfg$bootstrap_kernel %in% valid_bootstrap_kernels) {
+    stop(
+      "bootstrap_kernel must be one of: ", paste(valid_bootstrap_kernels, collapse = ", "),
+      ". Got: ", cfg$bootstrap_kernel
+    )
+  }
+
+  if (!is.function(cfg$bootstrap_rank_bandwidth)) {
+    if (is.na(cfg$bootstrap_rank_bandwidth) || cfg$bootstrap_rank_bandwidth < 0) {
+      stop("bootstrap_rank_bandwidth must be >= 0. Got: ", params$bootstrap_rank_bandwidth)
+    }
+  }
+
+  if (isTRUE(cfg$bootstrap_block_bootstrap) &&
+      (is.na(cfg$bootstrap_block_length) || cfg$bootstrap_block_length < 1)) {
+    stop(
+      "bootstrap_block_length must be a positive integer when block bootstrap is on. Got: ",
+      params$bootstrap_block_length
+    )
+  }
+
+  if (is.na(cfg$bootstrap_n_factors) || cfg$bootstrap_n_factors < 1) {
+    stop("bootstrap_n_factors must be >= 1. Got: ", params$bootstrap_n_factors)
+  }
+
+  if (is.na(cfg$bootstrap_K_pca) || cfg$bootstrap_K_pca < 2) {
+    stop("bootstrap_K_pca must be >= 2. Got: ", params$bootstrap_K_pca)
+  }
+
+  if (is.na(cfg$bootstrap_tail_q) || cfg$bootstrap_tail_q <= 0.5 || cfg$bootstrap_tail_q >= 1) {
+    stop("bootstrap_tail_q must be in (0.5, 1). Got: ", params$bootstrap_tail_q)
+  }
+
+  if (is.na(cfg$bootstrap_tail_fit_min_n) || cfg$bootstrap_tail_fit_min_n < 10) {
+    stop("bootstrap_tail_fit_min_n must be >= 10. Got: ", params$bootstrap_tail_fit_min_n)
+  }
+
+  if (is.na(cfg$bootstrap_diag_paths) || cfg$bootstrap_diag_paths < 0) {
+    stop("bootstrap_diag_paths must be >= 0. Got: ", params$bootstrap_diag_paths)
   }
 
   if (is.na(cfg$sim_T_weeks) || cfg$sim_T_weeks < 1) {

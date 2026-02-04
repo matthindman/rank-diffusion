@@ -11,7 +11,10 @@ simulate_rank_paths <- function(
   mean_vec, sd_vec,
   horizons = c(4L, 8L),
   K_xi = NULL,
-  entrant_sampler = NULL
+  entrant_sampler = NULL,
+  model = NULL,
+  moment_curves = NULL,
+  cache = NULL
 ) {
   stopifnot(length(mean_vec) == K_max, length(sd_vec) == K_max)
 
@@ -23,6 +26,49 @@ simulate_rank_paths <- function(
 
   sample_increments_gaussian <- function(mu = 0, sigma = 1) {
     rnorm(K_max, mean = mu + mean_vec, sd = sigma * sd_vec)
+  }
+
+  use_model <- !is.null(model)
+  if (use_model) {
+    if (is.null(moment_curves)) {
+      moment_curves <- list(
+        mean_vec = mean_vec,
+        sd_vec = sd_vec,
+        bucket_def = if (exists("bucket_def")) bucket_def else NULL
+      )
+    } else {
+      moment_curves$mean_vec <- mean_vec
+      moment_curves$sd_vec <- sd_vec
+      if (is.null(moment_curves$bucket_def) && exists("bucket_def")) {
+        moment_curves$bucket_def <- bucket_def
+      }
+    }
+
+    if (is.null(cache)) cache <- list()
+    if (is.null(cache$state)) cache$state <- new.env(parent = emptyenv())
+
+    if (is.null(model$mu)) model$mu <- mu
+    if (is.null(model$sigma)) model$sigma <- sigma
+
+    if (isTRUE(model$mean_reversion)) {
+      if (is.null(moment_curves$log_wbar)) {
+        w_base <- if (length(w0) < K_max) {
+          w0_ext <- c(w0, entrant_sampler(K_max - length(w0)))
+          w0_ext / sum(w0_ext)
+        } else {
+          w0[1:K_max] / sum(w0[1:K_max])
+        }
+        moment_curves$log_wbar <- log(pmax(w_base, 1e-18))
+      }
+      if (is.null(moment_curves$kappa_vec)) {
+        moment_curves$kappa_vec <- resolve_bucket_param(
+          param = model$kappa %||% 0,
+          K_max = K_max,
+          bucket_def = moment_curves$bucket_def,
+          default = 0
+        )
+      }
+    }
   }
 
   horizons <- as.integer(horizons)
@@ -38,6 +84,9 @@ simulate_rank_paths <- function(
   xi_collect <- vector("list", n_paths)
 
   for (p in seq_len(n_paths)) {
+    if (use_model && !is.null(cache$state)) {
+      cache$state$F_prev <- 0
+    }
     if (length(w0) < K_max) {
       w <- c(w0, entrant_sampler(K_max - length(w0)))
       w <- w / sum(w)
@@ -53,17 +102,40 @@ simulate_rank_paths <- function(
     xi_p <- vector("list", T)
 
     for (t in seq_len(T)) {
-      dlogw <- sample_increments_gaussian(mu = mu, sigma = sigma)
-      w <- w * exp(dlogw)
+      if (use_model) {
+        dlogw <- draw_increments(t = t, w_t = w, moment_curves = moment_curves, model = model, cache = cache)
+        if (isTRUE(model$mean_reversion)) {
+          log_wbar <- moment_curves$log_wbar
+          kappa_vec <- moment_curves$kappa_vec %||% rep(0, K_max)
+          y <- log(pmax(w, 1e-18)) - log_wbar
+          y_new <- (1 - kappa_vec) * y + dlogw
+          w <- exp(log_wbar + y_new)
+        } else {
+          w <- w * exp(dlogw)
+        }
+      } else {
+        dlogw <- sample_increments_gaussian(mu = mu, sigma = sigma)
+        w <- w * exp(dlogw)
+      }
       w <- pmax(w, 1e-18)
       w <- w / sum(w)
 
-      w_top <- top_n_sorted(w, K_cut)
+      w_sorted <- w[order(w, decreasing = TRUE)]
+      w_top <- w_sorted[seq_len(K_cut)]
       n_tail <- K_max - K_cut
 
       if (n_tail > 0) {
-        n_add <- max(1L, floor(n_tail * entry_frac))
-        w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
+        w_tail <- w_sorted[(K_cut + 1L):K_max]
+        n_add <- as.integer(floor(n_tail * entry_frac))
+        if (is.na(n_add) || !is.finite(n_add)) n_add <- 0L
+        n_add <- max(0L, min(n_tail, n_add))
+        if (n_add <= 0L) {
+          w <- c(w_top, w_tail)
+        } else if (n_add >= n_tail) {
+          w <- c(w_top, entrant_sampler(n_tail))
+        } else {
+          w <- c(w_top, entrant_sampler(n_add), w_tail[seq_len(n_tail - n_add)])
+        }
       } else {
         w <- w_top
       }
@@ -176,12 +248,22 @@ simulate_rank_paths_bootstrap <- function(
       w <- pmax(w, 1e-18)
       w <- w / sum(w)
 
-      w_top <- top_n_sorted(w, K_cut)
+      w_sorted <- w[order(w, decreasing = TRUE)]
+      w_top <- w_sorted[seq_len(K_cut)]
       n_tail <- K_max - K_cut
 
       if (n_tail > 0) {
-        n_add <- max(1L, floor(n_tail * entry_frac))
-        w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
+        w_tail <- w_sorted[(K_cut + 1L):K_max]
+        n_add <- as.integer(floor(n_tail * entry_frac))
+        if (is.na(n_add) || !is.finite(n_add)) n_add <- 0L
+        n_add <- max(0L, min(n_tail, n_add))
+        if (n_add <= 0L) {
+          w <- c(w_top, w_tail)
+        } else if (n_add >= n_tail) {
+          w <- c(w_top, entrant_sampler(n_tail))
+        } else {
+          w <- c(w_top, entrant_sampler(n_add), w_tail[seq_len(n_tail - n_add)])
+        }
       } else {
         w <- w_top
       }

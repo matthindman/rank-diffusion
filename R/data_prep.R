@@ -16,11 +16,18 @@ build_endpoint_weekly <- function(raw_path, K_cut_target, K_tail_buffer, sim_K_x
     ) %>%
     dplyr::ungroup()
 
+  if (nrow(endpoint_weekly) == 0) {
+    stop("Weekly parquet has no rows after loading; cannot build panel.")
+  }
+
   max_rank_by_week <- endpoint_weekly %>%
     dplyr::group_by(week) %>%
     dplyr::summarise(max_rank = max(rank), .groups = "drop")
 
   max_rank_seen <- max(max_rank_by_week$max_rank, na.rm = TRUE)
+  if (!is.finite(max_rank_seen)) {
+    stop("Weekly parquet produced no finite ranks; cannot compute K_cut.")
+  }
 
   K_cut <- min(as.integer(K_cut_target), as.integer(max_rank_seen))
   K_max <- min(as.integer(K_cut + K_tail_buffer), as.integer(max_rank_seen))
