@@ -227,12 +227,20 @@ sample_increments_for_tail <- function(
       dlogw <- dlogw[ranks]
 
       df <- tibble(rank = ranks, dlogw = dlogw, bucket = buckets)
-      if (!is.null(ranks_per_bucket) && is.finite(ranks_per_bucket)) {
-        df <- df %>%
-          group_by(bucket) %>%
-          slice_sample(n = min(as.integer(ranks_per_bucket), n())) %>%
-          ungroup()
-      }
+  if (!is.null(ranks_per_bucket) && is.finite(ranks_per_bucket)) {
+    n_take <- as.integer(ranks_per_bucket)
+    if (!is.na(n_take) && n_take > 0L) {
+      df <- df %>%
+        group_by(bucket) %>%
+        group_modify(~{
+          n_avail <- nrow(.x)
+          if (n_avail == 0L) return(.x)
+          n_keep <- min(n_take, n_avail)
+          .x[sample.int(n_avail, n_keep), , drop = FALSE]
+        }) %>%
+        ungroup()
+    }
+  }
       res[[idx]] <- df
       idx <- idx + 1
     }
