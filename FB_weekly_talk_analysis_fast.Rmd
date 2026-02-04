@@ -1,0 +1,709 @@
+---
+title: "FB weekly: fast analysis for SPT-style talk"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+params:
+  fb_weekly_parquet: "Facebook/fb_ranked_weekly.parquet"
+  out_dir: "../assets"   # should match the TeX deck's assets/ directory
+  seed: 1823
+
+  # Universe settings
+  K_cut_target: 12000
+  K_tail_buffer: 2000
+  K_xi_est: 2000
+
+  # Rank smoothing (half-width)
+  smoothing_h: 5
+
+  # Buckets used repeatedly in the exploration PDFs
+  bucket_breaks: !r c(0, 25, 250, Inf)
+  bucket_labels: ["large", "midsize", "small"]
+
+  # Micro horizons and representative ranks
+  horizons_micro: [1, 4, 12]
+  k_focus: 12
+  k_grid: [1, 5, 12, 25, 100, 500, 1000]
+
+  # Fast simulation settings (tuned for <= ~20 minutes on an M1 MacBook Pro)
+  sim_T_weeks: 52
+  sim_n_paths: 60
+  sim_sigma: 0.16
+  sim_mu: 0.0
+  sim_entry_frac: 0.10
+
+  # Bootstrap settings for the quarterly CI in v11
+  bootstrap_period_unit: "quarter"
+  bootstrap_B_fast: 75
+  bootstrap_k_min: 10
+
+  # Optional expensive steps
+  run_sigma_calibration: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(arrow)
+  library(lubridate)
+  library(scales)
+  library(here)
+})
+
+set.seed(params$seed)
+
+out_dir <- params$out_dir
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+if (!dir.exists(out_dir)) {
+  fallback_dir <- "assets"
+  dir.create(fallback_dir, recursive = TRUE, showWarnings = FALSE)
+  if (dir.exists(fallback_dir)) {
+    out_dir <- fallback_dir
+  }
+}
+
+`%||%` <- function(x, y) if (is.null(x)) y else x
+```
+
+# 1. Load data (weekly snapshots) and compute shares
+
+```{r load-data}
+fb_weekly_parquet_path <- params$fb_weekly_parquet
+if (!file.exists(fb_weekly_parquet_path)) {
+  candidates <- c(
+    here::here("fb_ranked_weekly.parquet"),
+    here::here("Facebook", "fb_ranked_weekly.parquet")
+  )
+  fb_weekly_parquet_path <- candidates[file.exists(candidates)][1]
+}
+
+if (is.na(fb_weekly_parquet_path) || !file.exists(fb_weekly_parquet_path)) {
+  stop(
+    "Weekly parquet not found. Tried: ",
+    paste(c(params$fb_weekly_parquet,
+            here::here("fb_ranked_weekly.parquet"),
+            here::here("Facebook", "fb_ranked_weekly.parquet")),
+          collapse = ", ")
+  )
+}
+
+raw <- read_parquet(fb_weekly_parquet_path)
+
+endpoint_weekly <- raw %>%
+  transmute(
+    week = as.Date(date),
+    endpoint_id,
+    metric_value,
+    rank = rank
+  ) %>%
+  group_by(week) %>%
+  arrange(desc(metric_value), .by_group = TRUE) %>%
+  mutate(
+    rank = row_number(),
+    share_global = metric_value / sum(metric_value, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+max_rank_seen <- endpoint_weekly %>%
+  summarise(max_rank = max(rank, na.rm = TRUE)) %>%
+  pull(max_rank)
+
+K_cut <- min(as.integer(params$K_cut_target), as.integer(max_rank_seen))
+K_max <- min(as.integer(K_cut + params$K_tail_buffer), as.integer(max_rank_seen))
+
+endpoint_weekly <- endpoint_weekly %>%
+  group_by(week) %>%
+  mutate(
+    share_topK = if_else(
+      rank <= K_cut,
+      share_global / sum(share_global[rank <= K_cut], na.rm = TRUE),
+      NA_real_
+    )
+  ) %>%
+  ungroup()
+
+endpoint_weekly %>%
+  summarise(
+    min_week = min(week),
+    max_week = max(week),
+    n_weeks = n_distinct(week),
+    n_endpoints = n_distinct(endpoint_id),
+    K_cut = K_cut,
+    K_max = K_max
+  )
+```
+
+# 2. Core empirical objects for the talk
+
+## 2.1 Capital distribution curve (CDC)
+
+```{r emp-cdc}
+emp_cdc <- endpoint_weekly %>%
+  filter(rank <= K_cut) %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share_topK, na.rm = TRUE), .groups = "drop") %>%
+  arrange(rank)
+```
+
+## 2.2 Weekly rank increments (drift/volatility by rank)
+
+```{r rank-increments}
+rank_panel <- endpoint_weekly %>%
+  filter(rank <= K_max) %>%
+  group_by(rank) %>%
+  arrange(week, .by_group = TRUE) %>%
+  mutate(
+    share = pmax(share_topK, 1e-12),
+    log_w = log(share),
+    dlogw = log_w - lag(log_w)
+  ) %>%
+  ungroup() %>%
+  filter(is.finite(dlogw))
+
+gauss_params_raw <- rank_panel %>%
+  group_by(rank) %>%
+  summarise(
+    mean_dlogw = mean(dlogw, na.rm = TRUE),
+    sd_dlogw = sd(dlogw, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  right_join(tibble(rank = 1:K_max), by = "rank") %>%
+  arrange(rank) %>%
+  mutate(
+    mean_dlogw = replace_na(mean_dlogw, 0),
+    sd_dlogw = replace_na(sd_dlogw, 0),
+    sd_dlogw = if_else(sd_dlogw <= 0 | !is.finite(sd_dlogw), 1e-6, sd_dlogw)
+  )
+
+moving_average_rank <- function(x, h) {
+  stopifnot(h >= 0L)
+  n <- length(x)
+  if (h == 0L) return(x)
+  cs <- c(0, cumsum(replace_na(x, 0)))
+  out <- numeric(n)
+  for (r in seq_len(n)) {
+    lo <- max(1L, r - h)
+    hi <- min(n, r + h)
+    out[r] <- (cs[hi + 1L] - cs[lo]) / (hi - lo + 1L)
+  }
+  out
+}
+
+build_gaussian_params_smoothed <- function(h) {
+  tibble(
+    rank = 1:K_max,
+    mean_dlogw_s = moving_average_rank(gauss_params_raw$mean_dlogw, h = h),
+    sd_dlogw_s = pmax(moving_average_rank(gauss_params_raw$sd_dlogw, h = h), 1e-6)
+  )
+}
+
+sm <- build_gaussian_params_smoothed(h = as.integer(params$smoothing_h))
+```
+
+## 2.3 Gap process: \(\Xi_k(t)=\log(\mu_{(k)}(t)/\mu_{(k+1)}(t))\)
+
+```{r xi-weekly}
+# Note: Xi ratios are invariant to renormalization by a constant, but we compute
+# them from share_global to stay close to v11.
+xi_weekly <- endpoint_weekly %>%
+  group_by(week) %>%
+  arrange(rank, .by_group = TRUE) %>%
+  mutate(
+    share = pmax(share_global, 1e-18),
+    share_next = lead(share),
+    xi = log(share / share_next),
+    k = rank
+  ) %>%
+  ungroup() %>%
+  filter(!is.na(share_next), is.finite(xi), xi > 0)
+
+xi_summary_by_k <- xi_weekly %>%
+  group_by(k) %>%
+  summarise(
+    xi_med = median(xi, na.rm = TRUE),
+    xi_p10 = quantile(xi, 0.10, na.rm = TRUE),
+    xi_p90 = quantile(xi, 0.90, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+p_xi <- ggplot(filter(xi_summary_by_k, k <= K_cut - 1L), aes(x = k, y = xi_med)) +
+  geom_line(linewidth = 0.8) +
+  geom_ribbon(aes(ymin = xi_p10, ymax = xi_p90), alpha = 0.2) +
+  scale_x_continuous(trans = "log10") +
+  ylim(0, 1) +
+  labs(
+    title = "Empirical log-gaps by rank (median + 10-90% band)",
+    x = "Rank (log)",
+    y = "Xi_k"
+  ) +
+  theme_bw()
+
+ggsave(file.path(out_dir, "xi_median_band.png"), p_xi,
+       width = 7.2, height = 5.6, dpi = 200)
+```
+
+```{r xi-bucket-time}
+assign_bucket <- function(rank, breaks, labels) {
+  cut(
+    rank,
+    breaks = breaks,
+    labels = labels,
+    include.lowest = TRUE,
+    right = TRUE
+  )
+}
+
+xi_bucket_week <- xi_weekly %>%
+  mutate(bucket = assign_bucket(k, params$bucket_breaks, params$bucket_labels)) %>%
+  group_by(week, bucket) %>%
+  summarise(xi_med = median(xi, na.rm = TRUE), .groups = "drop")
+
+p_bucket <- ggplot(xi_bucket_week, aes(x = week, y = xi_med, color = bucket)) +
+  geom_line(alpha = 0.8) +
+  geom_smooth(se = TRUE) +
+  labs(
+    title = "Weekly median Xi by rank bucket",
+    subtitle = "Loess smoother highlights temporal trends",
+    x = NULL,
+    y = "Median Xi"
+  ) +
+  theme_bw()
+
+ggsave(file.path(out_dir, "xi_bucket_time.png"), p_bucket,
+       width = 7.2, height = 5.6, dpi = 200)
+```
+
+# 3. The v11 ``implied volatility'' diagnostic: \(\widehat{\sigma}(k)\)
+
+```{r sigma-hat}
+# rho_k: median Xi by rank
+rho_by_k_med <- xi_weekly %>%
+  filter(k <= (as.integer(params$K_xi_est) - 1L)) %>%
+  group_by(k) %>%
+  summarise(rho_k = median(xi, na.rm = TRUE), .groups = "drop")
+
+# g_k from smoothed drift estimates, then S_k = cumulative drift
+K_xi_est <- as.integer(params$K_xi_est)
+
+g_by_k <- sm %>%
+  transmute(k = rank, g_k = mean_dlogw_s) %>%
+  filter(k <= (K_xi_est + 1L)) %>%
+  arrange(k)
+
+S_by_k <- g_by_k %>%
+  mutate(S_k = cumsum(g_k))
+
+sigma_hat_by_k <- rho_by_k_med %>%
+  inner_join(S_by_k %>% select(k, S_k), by = "k") %>%
+  mutate(
+    sigma2_hat = -2 * S_k * rho_k,
+    sigma_hat = if_else(sigma2_hat > 0, sqrt(sigma2_hat), NA_real_)
+  )
+
+p_sigk <- ggplot(
+  filter(sigma_hat_by_k, k >= params$bootstrap_k_min, !is.na(sigma_hat)),
+  aes(x = k, y = sigma_hat)
+) +
+  geom_line(linewidth = 0.9) +
+  scale_x_continuous(trans = "log10") +
+  labs(x = "k", y = "sigma_hat") +
+  theme_bw()
+
+ggsave(file.path(out_dir, "sigma_hat_k.png"), p_sigk,
+       width = 7.2, height = 5.6, dpi = 200)
+```
+
+```{r sigma-hat-ci}
+bootstrap_sigma_period <- function(xi_df_period, S_by_k, B, k_min, K_xi_est) {
+  weeks <- unique(xi_df_period$week)
+  boot_stats <- numeric(B)
+
+  for (b in seq_len(B)) {
+    w_samp <- sample(weeks, size = length(weeks), replace = TRUE)
+
+    rho_b <- xi_df_period %>%
+      filter(week %in% w_samp, k <= (K_xi_est - 1L)) %>%
+      group_by(k) %>%
+      summarise(rho_k = median(xi, na.rm = TRUE), .groups = "drop")
+
+    sig_b <- rho_b %>%
+      inner_join(S_by_k %>% select(k, S_k), by = "k") %>%
+      mutate(
+        sigma2_hat = -2 * S_k * rho_k,
+        sigma_hat = if_else(sigma2_hat > 0, sqrt(sigma2_hat), NA_real_)
+      ) %>%
+      filter(k >= k_min, k <= (K_xi_est - 1L))
+
+    boot_stats[b] <- median(sig_b$sigma_hat, na.rm = TRUE)
+  }
+
+  tibble(
+    sigma_hat_med = median(boot_stats, na.rm = TRUE),
+    ci_lo = quantile(boot_stats, 0.025, na.rm = TRUE),
+    ci_hi = quantile(boot_stats, 0.975, na.rm = TRUE)
+  )
+}
+
+B <- if (isTRUE(getOption("knitr.in.progress"))) as.integer(params$bootstrap_B_fast) else as.integer(params$bootstrap_B_fast)
+
+xi_weekly_q <- xi_weekly %>%
+  mutate(period = floor_date(week, params$bootstrap_period_unit))
+
+sigma_ci_by_period <- xi_weekly_q %>%
+  group_by(period) %>%
+  group_modify(~ bootstrap_sigma_period(
+    .x,
+    S_by_k,
+    B = B,
+    k_min = as.integer(params$bootstrap_k_min),
+    K_xi_est = K_xi_est
+  )) %>%
+  ungroup()
+
+p_ci <- ggplot(sigma_ci_by_period, aes(x = period, y = sigma_hat_med)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ci_lo, ymax = ci_hi), alpha = 0.2) +
+  labs(
+    title = "Bootstrap CI for sigma_hat over time (quarterly)",
+    x = NULL,
+    y = "sigma_hat (median across k)"
+  ) +
+  theme_bw()
+
+ggsave(file.path(out_dir, "sigma_hat_ci_time.png"), p_ci,
+       width = 7.2, height = 5.6, dpi = 200)
+```
+
+# 4. Fast simulation outputs needed for the talk
+
+This section produces the two simulated objects we show on slides:
+
+1. Simulated CDC (compared to empirical)
+2. Simulated micro movement for rank slots (used as a complement to the empirical cohort-tracking object)
+
+```{r sim-minimal}
+# Seed curve w0 up to K_max
+w0_raw <- emp_cdc$w_bar[seq_len(min(K_max, nrow(emp_cdc)))]
+w0_raw <- w0_raw / sum(w0_raw)
+
+entrant_pool <- endpoint_weekly %>%
+  filter(rank > K_cut, rank <= K_max) %>%
+  transmute(share = share_global) %>%
+  filter(is.finite(share), share > 0)
+
+entrant_sampler <- function(n) {
+  if (n <= 0L) return(numeric(0))
+  sample(entrant_pool$share, size = n, replace = TRUE)
+}
+
+# Minimal simulation: accumulate CDC + store rank-slot series for a few k's
+simulate_rank_paths_minimal <- function(
+    w0, K_cut, K_max,
+    T, n_paths,
+    mean_vec, sd_vec,
+    mu = 0, sigma = 1,
+    entry_frac = 0.10,
+    k_track = c(12L, 1L),
+    horizons = c(1L, 4L, 12L)
+) {
+  stopifnot(length(mean_vec) == K_max, length(sd_vec) == K_max)
+  k_track <- sort(unique(as.integer(k_track)))
+  horizons <- sort(unique(as.integer(horizons)))
+
+  cdc_sum <- numeric(K_cut)
+  n_cdc <- 0L
+
+  # rank-slot shares for tracked k
+  slot <- array(NA_real_, dim = c(n_paths, T, length(k_track)))
+
+  for (p in seq_len(n_paths)) {
+    if (length(w0) < K_max) {
+      w <- c(w0, entrant_sampler(K_max - length(w0)))
+    } else {
+      w <- w0[seq_len(K_max)]
+    }
+    w <- pmax(w, 1e-18)
+    w <- w / sum(w)
+
+    for (t in seq_len(T)) {
+      dlogw <- rnorm(K_max, mean = mu + mean_vec, sd = sigma * sd_vec)
+      w <- w * exp(dlogw)
+      w <- pmax(w, 1e-18)
+      w <- w / sum(w)
+
+      # exit/entry: keep top K_cut, refill to K_max
+      w_sorted <- sort(w, decreasing = TRUE)
+      w_top <- w_sorted[seq_len(K_cut)]
+      n_tail <- K_max - K_cut
+
+      if (n_tail > 0) {
+        n_add <- max(1L, floor(n_tail * entry_frac))
+        w <- c(w_top, entrant_sampler(n_add), entrant_sampler(n_tail - n_add))
+      } else {
+        w <- w_top
+      }
+      w <- pmax(w, 1e-18)
+      w <- w / sum(w)
+
+      # top-K renormalized for CDC and micro slot tracking
+      wK <- w[seq_len(K_cut)]
+      wK <- wK / sum(wK)
+
+      cdc_sum <- cdc_sum + wK
+      n_cdc <- n_cdc + 1L
+
+      for (j in seq_along(k_track)) {
+        kk <- k_track[j]
+        if (kk <= K_cut) slot[p, t, j] <- wK[kk]
+      }
+    }
+  }
+
+  # CDC mean
+  cdc_mean <- cdc_sum / n_cdc
+
+  # micro: slot-based future shares at t+h
+  micro <- purrr::map_dfr(seq_along(k_track), function(j) {
+    kk <- k_track[j]
+    purrr::map_dfr(horizons, function(h) {
+      vals <- as.vector(slot[, (1:(T - h)) + h, j])
+      tibble(k = kk, horizon = h, share_tp = vals)
+    })
+  })
+
+  list(cdc_mean = cdc_mean, micro = micro)
+}
+
+k_track <- sort(unique(c(params$k_focus, params$k_grid)))
+
+sim_min <- simulate_rank_paths_minimal(
+  w0 = w0_raw,
+  K_cut = K_cut,
+  K_max = K_max,
+  T = as.integer(params$sim_T_weeks),
+  n_paths = as.integer(params$sim_n_paths),
+  mean_vec = sm$mean_dlogw_s,
+  sd_vec = sm$sd_dlogw_s,
+  mu = params$sim_mu,
+  sigma = params$sim_sigma,
+  entry_frac = params$sim_entry_frac,
+  k_track = k_track,
+  horizons = as.integer(params$horizons_micro)
+)
+```
+
+```{r cdc-plot}
+sim_cdc <- tibble(rank = 1:K_cut, w_bar = sim_min$cdc_mean)
+
+cdc_plot_df <- bind_rows(
+  emp_cdc %>% transmute(rank, w_bar, source = "Empirical"),
+  sim_cdc %>% transmute(rank, w_bar, source = "Simulated")
+)
+
+p_cdc <- ggplot(cdc_plot_df, aes(x = rank, y = w_bar, linetype = source)) +
+  geom_line(linewidth = 0.9) +
+  scale_x_continuous(trans = "log10") +
+  scale_y_continuous(trans = "log10") +
+  labs(
+    title = paste0("CDC: Empirical vs Simulated (sigma = ", params$sim_sigma, ")"),
+    x = "Rank (log)",
+    y = "Mean share (log)"
+  ) +
+  theme_bw() +
+  theme(legend.position = "top")
+
+ggsave(file.path(out_dir, "cdc_emp_vs_sim.png"), p_cdc,
+       width = 7.2, height = 5.6, dpi = 200)
+```
+
+# 5. Micro validation objects (empirical cohort tracking vs simulated rank-slot)
+
+```{r emp-micro}
+emp_micro_for_k <- function(endpoint_weekly, k, horizons = c(1L, 4L, 12L)) {
+  base <- endpoint_weekly %>%
+    filter(rank == k) %>%
+    transmute(
+      week_t = week,
+      endpoint_id,
+      share_t = share_topK
+    )
+
+  out <- purrr::map_dfr(horizons, function(h) {
+    fut <- endpoint_weekly %>%
+      transmute(
+        week_tp = week,
+        endpoint_id,
+        share_tp = share_topK
+      )
+
+    base %>%
+      mutate(week_tp = week_t + weeks(h), horizon = h) %>%
+      left_join(fut, by = c("week_tp", "endpoint_id")) %>%
+      mutate(present_tp = !is.na(share_tp))
+  })
+
+  out
+}
+
+k_focus <- as.integer(params$k_focus)
+horizons <- as.integer(params$horizons_micro)
+
+emp_micro_k <- emp_micro_for_k(endpoint_weekly, k = k_focus, horizons = horizons)
+```
+
+```{r micro-plot}
+# Empirical cohort summary (condition on still being present)
+emp_summary_k <- emp_micro_k %>%
+  group_by(horizon) %>%
+  summarise(
+    n_total = n(),
+    retention = mean(present_tp),
+    n_present = sum(present_tp),
+    med = median(share_tp[present_tp], na.rm = TRUE),
+    p10 = quantile(share_tp[present_tp], 0.10, na.rm = TRUE),
+    p90 = quantile(share_tp[present_tp], 0.90, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(source = "empirical")
+
+# Simulation rank-slot summary (always present by construction)
+sim_micro_k <- sim_min$micro %>%
+  filter(k == k_focus) %>%
+  group_by(horizon) %>%
+  summarise(
+    n_total = n(),
+    retention = 1.0,
+    n_present = n(),
+    med = median(share_tp, na.rm = TRUE),
+    p10 = quantile(share_tp, 0.10, na.rm = TRUE),
+    p90 = quantile(share_tp, 0.90, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(source = "simulation")
+
+micro_summary_k <- bind_rows(emp_summary_k, sim_summary_k <- sim_micro_k)
+
+p_micro <- ggplot(micro_summary_k, aes(x = horizon, y = med,
+                                      group = source, linetype = source)) +
+  geom_ribbon(aes(ymin = p10, ymax = p90, fill = source), alpha = 0.50, color = NA) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
+  scale_x_continuous(breaks = horizons) +
+  labs(
+    title = paste0("Micro movement for rank k = ", k_focus),
+    subtitle = "Median share at t+h with 10-90% band",
+    x = "Horizon h (weeks ahead)",
+    y = "Share at t+h"
+  ) +
+  theme_bw()
+
+ggsave(file.path(out_dir, "micro_k12.png"), p_micro,
+       width = 7.2, height = 5.6, dpi = 200)
+```
+
+```{r micro-rmse-by-rank}
+# Repeat micro summaries across k_grid and compute RMSE over horizons
+k_grid <- as.integer(params$k_grid)
+
+micro_fit_for_k <- function(k_val) {
+  emp <- emp_micro_for_k(endpoint_weekly, k = k_val, horizons = horizons) %>%
+    group_by(horizon) %>%
+    summarise(
+      emp_retention = mean(present_tp),
+      emp_med = median(share_tp[present_tp], na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  sim <- sim_min$micro %>%
+    filter(k == k_val) %>%
+    group_by(horizon) %>%
+    summarise(sim_med = median(share_tp, na.rm = TRUE), .groups = "drop")
+
+  joined <- emp %>%
+    inner_join(sim, by = "horizon")
+
+  rmse <- sqrt(mean((joined$emp_med - joined$sim_med)^2, na.rm = TRUE))
+  tibble(k = k_val, rmse_med = rmse)
+}
+
+fit_rmse <- map_dfr(k_grid, micro_fit_for_k)
+
+p_rmse <- ggplot(fit_rmse, aes(x = k, y = rmse_med)) +
+  geom_line() +
+  geom_point(size = 2) +
+  scale_x_continuous(trans = "log10") +
+  labs(
+    title = "RMSE of median shares across horizons",
+    subtitle = "Computed from empirical vs simulated medians over h = {1,4,12}",
+    x = "Rank k (log scale)",
+    y = "RMSE (median share)"
+  ) +
+  theme_bw()
+
+ggsave(file.path(out_dir, "micro_rmse_by_rank.png"), p_rmse,
+       width = 7.2, height = 5.6, dpi = 200)
+```
+
+# 6. Optional: sigma calibration curve (expensive)
+
+This reproduces the spirit of v10 but is 
+**intentionally disabled by default** because it can be expensive.
+
+```{r sigma-calibration, eval=params$run_sigma_calibration}
+# Placeholder: if enabled, implement a coarse grid scan using a reduced K_cut
+# and reduced paths (or reuse cached results). Keep the output file name
+# fixed to match the TeX deck.
+
+stop("Sigma calibration scan is disabled by default. Set run_sigma_calibration: true and implement your preferred scan here.")
+```
+
+# 7. Outputs
+
+The analysis writes the figures used by the beamer deck into:
+
+- `r out_dir`
+
+Expected filenames:
+
+- `cdc_emp_vs_sim.png`
+- `sigma_calibration.png` (from v10; regenerate only if desired)
+- `xi_median_band.png`
+- `xi_bucket_time.png`
+- `sigma_hat_k.png`
+- `sigma_hat_ci_time.png`
+- `micro_k12.png`
+- `micro_rmse_by_rank.png`
+
+
+```{r ensure-sigma-calibration-figure}
+# Ensure the TeX deck always has a sigma_calibration.png to include.
+# If you want the true v10-style scan, set run_sigma_calibration: true above
+# and replace the placeholder implementation in that chunk.
+
+sigma_path <- file.path(out_dir, "sigma_calibration.png")
+
+if (!file.exists(sigma_path)) {
+  p_placeholder <- ggplot(tibble(x = 0, y = 0), aes(x, y)) +
+    geom_blank() +
+    geom_vline(xintercept = params$sim_sigma, linetype = "dashed", color = "red") +
+    scale_x_continuous(limits = c(0.14, 0.42)) +
+    labs(
+      title = "Sigma calibration overall (placeholder)",
+      subtitle = paste0("Using fixed sigma = ", params$sim_sigma,
+                        "; set run_sigma_calibration: true to scan"),
+      x = "sigma",
+      y = "score"
+    ) +
+    theme_bw()
+
+  ggsave(sigma_path, p_placeholder, width = 8, height = 5, dpi = 200)
+}
+```
