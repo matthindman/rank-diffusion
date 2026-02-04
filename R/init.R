@@ -20,5 +20,8 @@ source(here("R", "metrics.R"))
 source(here("R", "simulation.R"))
 source(here("R", "plotting.R"))
 
-if (!exists("params")) params <- list()
+if (!exists("params", inherits = FALSE)) {
+  params <- tryCatch(knitr::opts_knit$get("params"), error = function(e) NULL)
+}
+if (is.null(params)) params <- list()
 CFG <- config_from_params(params)

@@ -5,7 +5,10 @@ rstd_t <- function(n, df) {
   rt(n, df) * sqrt((df - 2) / df)
 }
 
-rstd_t_vec <- function(df_vec) {
+rstd_t_vec <- function(df_vec, df_default = 6) {
+  df_vec <- as.numeric(df_vec)
+  df_vec[!is.finite(df_vec)] <- df_default
+  df_vec <- pmax(df_vec, 2.01)
   out <- numeric(length(df_vec))
   for (d in unique(df_vec)) {
     idx <- which(df_vec == d)

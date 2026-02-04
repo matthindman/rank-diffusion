@@ -425,7 +425,7 @@ if (is.na(K_pca) || K_pca < 2) {
     beta_vec <- rep(0, K_max)
     beta_vec[seq_len(K_pca)] <- beta_raw
     beta_vec <- moving_average_rank(beta_vec, h = as.integer(Smoothing_h))
-    beta_scale <- sqrt(mean(beta_vec^2, na.rm = TRUE))
+    beta_scale <- sqrt(mean(beta_vec[seq_len(K_pca)]^2, na.rm = TRUE))
     if (is.finite(beta_scale) && beta_scale > 0) {
       beta_vec <- beta_vec / beta_scale
     }

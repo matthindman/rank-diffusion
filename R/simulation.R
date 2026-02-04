@@ -1,5 +1,8 @@
-make_entrant_sampler <- function(entrant_pool) {
-  stopifnot(nrow(entrant_pool) > 0)
+make_entrant_sampler <- function(entrant_pool, fallback_share = 1e-12) {
+  if (nrow(entrant_pool) == 0) {
+    warning("entrant_pool is empty; using fallback entrant shares.")
+    return(function(n) rep(fallback_share, n))
+  }
   function(n) {
     sample(entrant_pool$share, size = n, replace = TRUE)
   }
@@ -14,12 +17,13 @@ simulate_rank_paths <- function(
   entrant_sampler = NULL,
   model = NULL,
   moment_curves = NULL,
-  cache = NULL
+  cache = NULL,
+  bucket_def = NULL
 ) {
   stopifnot(length(mean_vec) == K_max, length(sd_vec) == K_max)
 
   if (is.null(entrant_sampler)) {
-    entrant_sampler <- get("entrant_sampler", inherits = TRUE)
+    stop("entrant_sampler must be provided to simulate_rank_paths().")
   }
 
   top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
@@ -34,12 +38,12 @@ simulate_rank_paths <- function(
       moment_curves <- list(
         mean_vec = mean_vec,
         sd_vec = sd_vec,
-        bucket_def = if (exists("bucket_def")) bucket_def else NULL
+        bucket_def = bucket_def
       )
     } else {
       moment_curves$mean_vec <- mean_vec
       moment_curves$sd_vec <- sd_vec
-      if (is.null(moment_curves$bucket_def) && exists("bucket_def")) {
+      if (is.null(moment_curves$bucket_def) && !is.null(bucket_def)) {
         moment_curves$bucket_def <- bucket_def
       }
     }
@@ -212,7 +216,7 @@ simulate_rank_paths_bootstrap <- function(
   entrant_sampler = NULL
 ) {
   if (is.null(entrant_sampler)) {
-    entrant_sampler <- get("entrant_sampler", inherits = TRUE)
+    stop("entrant_sampler must be provided to simulate_rank_paths_bootstrap().")
   }
 
   top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
@@ -338,7 +342,7 @@ simulate_rank_paths_generic <- function(
   }
 
   if (is.null(entrant_sampler)) {
-    entrant_sampler <- get("entrant_sampler", inherits = TRUE)
+    stop("entrant_sampler must be provided to simulate_rank_paths_generic().")
   }
 
   top_n_sorted <- function(w, n) w[order(w, decreasing = TRUE)][seq_len(n)]
@@ -500,8 +504,12 @@ calibrate_sigma <- function(
   horizons_durable = horizons_durable,
   emp_targets = emp_targets,
   emp_cdc = emp_cdc,
-  bucket_def = bucket_def
+  bucket_def = bucket_def,
+  entrant_sampler = NULL
 ) {
+  if (is.null(entrant_sampler)) {
+    stop("entrant_sampler must be provided to calibrate_sigma().")
+  }
   sim_res <- simulate_rank_paths(
     w0 = w0_ext,
     K_cut = K_cut,
@@ -514,7 +522,9 @@ calibrate_sigma <- function(
     mean_vec = mean_vec_s,
     sd_vec = sd_vec_s,
     horizons = horizons_durable,
-    K_xi = NULL
+    K_xi = NULL,
+    entrant_sampler = entrant_sampler,
+    bucket_def = bucket_def
   )
 
   sim_cdc_i <- sim_res$snapshots %>%
@@ -545,8 +555,12 @@ sigma_by_horizon <- function(
   sim_entry_frac = sim_entry_frac,
   horizons_durable = horizons_durable,
   emp_targets = emp_targets,
-  bucket_def = bucket_def
+  bucket_def = bucket_def,
+  entrant_sampler = NULL
 ) {
+  if (is.null(entrant_sampler)) {
+    stop("entrant_sampler must be provided to sigma_by_horizon().")
+  }
   sim_res <- simulate_rank_paths(
     w0 = w0_ext,
     K_cut = K_cut,
@@ -559,7 +573,9 @@ sigma_by_horizon <- function(
     mean_vec = mean_vec_s,
     sd_vec = sd_vec_s,
     horizons = horizons_durable,
-    K_xi = NULL
+    K_xi = NULL,
+    entrant_sampler = entrant_sampler,
+    bucket_def = bucket_def
   )
 
   sim_targets <- sim_res$growth %>%
@@ -590,7 +606,7 @@ load_sim_baseline <- function(
   entrant_sampler = NULL
 ) {
   if (is.null(entrant_sampler)) {
-    entrant_sampler <- get("entrant_sampler", inherits = TRUE)
+    stop("entrant_sampler must be provided to load_sim_baseline().")
   }
 
   deps <- list(

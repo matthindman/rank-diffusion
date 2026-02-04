@@ -47,7 +47,8 @@ sigma_results <- purrr::map_dfr(
   calibrate_sigma,
   w0_ext = w0_ext,
   mean_vec_s = mean_vec_s,
-  sd_vec_s = sd_vec_s
+  sd_vec_s = sd_vec_s,
+  entrant_sampler = entrant_sampler
 ) %>%
   arrange(score)
 
@@ -77,7 +78,8 @@ if (isTRUE(CFG$run_grid_search)) {
     sigma_by_horizon,
     w0_ext = w0_ext,
     mean_vec_s = mean_vec_s,
-    sd_vec_s = sd_vec_s
+    sd_vec_s = sd_vec_s,
+    entrant_sampler = entrant_sampler
   )
 
   best_sigma_by_horizon <- sigma_h_tbl %>%

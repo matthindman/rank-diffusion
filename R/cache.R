@@ -26,6 +26,11 @@ cache_or_compute <- function(name, compute_fn, deps, force = FALSE, cfg = CFG) {
   rds <- cache_path(name, cfg)
   meta <- meta_path(name, cfg)
 
+  if (!isTRUE(cfg$use_cache)) {
+    message("[compute] ", name, " (cache disabled)")
+    return(compute_fn())
+  }
+
   if (cfg$use_cache && file.exists(rds) && file.exists(meta) && !force) {
     m <- jsonlite::read_json(meta, simplifyVector = TRUE)
     if (!is.null(m$fingerprint) && identical(m$fingerprint, fp)) {

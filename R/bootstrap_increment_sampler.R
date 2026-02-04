@@ -212,7 +212,13 @@ build_sampler_week_vector <- function(rank_panel, cfg) {
     dplyr::group_by(week) %>%
     dplyr::summarise(max_rank = max(rank), .groups = "drop")
 
-  K_use <- min(cfg$K_max, min(max_rank_by_week$max_rank, na.rm = TRUE))
+  K_use <- min(cfg$K_max, max(max_rank_by_week$max_rank, na.rm = TRUE))
+  if (K_use < cfg$K_max) {
+    stop(
+      "week_vector bootstrap requires cfg$K_max <= max observed rank. ",
+      "Got K_max=", cfg$K_max, " but max observed rank is ", K_use, "."
+    )
+  }
 
   rank_wide <- rank_panel %>%
     dplyr::filter(rank <= K_use) %>%
@@ -236,10 +242,6 @@ build_sampler_week_vector <- function(rank_panel, cfg) {
     }
 
     mat <- X_complete[idx, , drop = FALSE]
-    if (K_use < cfg$K_max) {
-      mat <- cbind(mat, matrix(0, nrow = T_sim, ncol = cfg$K_max - K_use))
-    }
-
     mu + sigma * mat
   }
 
@@ -412,4 +414,3 @@ build_increment_sampler <- function(rank_panel, cfg, bucket_assigner = NULL) {
 
   stop("Unknown bootstrap method: ", method)
 }
-
