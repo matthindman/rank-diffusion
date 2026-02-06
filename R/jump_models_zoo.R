@@ -60,6 +60,9 @@ standardize_increments <- function(increments_df, mu_curve, sd_curve, rank_col =
   }
 
   df <- increments_df %>% dplyr::mutate(rank__ = .data[[rank_col]])
+  if ("rank" %in% names(df)) {
+    df <- df %>% dplyr::select(-rank)
+  }
   max_rank <- max(df$rank__, na.rm = TRUE)
   if (length(mu_vec) < max_rank) {
     mu_vec <- c(mu_vec, rep(0, max_rank - length(mu_vec)))
