@@ -1181,33 +1181,35 @@ loglik_for_model <- function(fit, z_df, bucket_def = NULL) {
 calc_tail_mismatch <- function(emp_tail, sim_tail) {
   if (is.null(emp_tail) || is.null(sim_tail)) return(NA_real_)
   key_cols <- intersect(names(emp_tail), names(sim_tail))
+  grp_cols <- intersect(c("bucket", "rank_bin"), key_cols)
   metrics <- setdiff(key_cols, c("bucket", "rank_bin", "n"))
   if (length(metrics) == 0) return(NA_real_)
   emp_long <- emp_tail %>%
-    dplyr::select(dplyr::any_of(c("bucket", "rank_bin")), dplyr::all_of(metrics)) %>%
-    tidyr::pivot_longer(-dplyr::any_of(c("bucket", "rank_bin")), names_to = "metric", values_to = "emp")
+    dplyr::select(dplyr::any_of(grp_cols), dplyr::all_of(metrics)) %>%
+    tidyr::pivot_longer(-dplyr::any_of(grp_cols), names_to = "metric", values_to = "emp")
   sim_long <- sim_tail %>%
-    dplyr::select(dplyr::any_of(c("bucket", "rank_bin")), dplyr::all_of(metrics)) %>%
-    tidyr::pivot_longer(-dplyr::any_of(c("bucket", "rank_bin")), names_to = "metric", values_to = "sim")
+    dplyr::select(dplyr::any_of(grp_cols), dplyr::all_of(metrics)) %>%
+    tidyr::pivot_longer(-dplyr::any_of(grp_cols), names_to = "metric", values_to = "sim")
   cmp <- emp_long %>%
-    dplyr::left_join(sim_long, by = c("bucket", "rank_bin", "metric"))
+    dplyr::left_join(sim_long, by = c(grp_cols, "metric"))
   mean((cmp$emp - cmp$sim)^2, na.rm = TRUE)
 }
 
 calc_skew_mismatch <- function(emp_tail, sim_tail) {
   if (is.null(emp_tail) || is.null(sim_tail)) return(NA_real_)
   key_cols <- intersect(names(emp_tail), names(sim_tail))
+  grp_cols <- intersect(c("bucket", "rank_bin"), key_cols)
   metrics <- setdiff(key_cols, c("bucket", "rank_bin", "n"))
   skew_metrics <- metrics[grepl("skew|Delta_tail|R_999_001", metrics)]
   if (length(skew_metrics) == 0) return(NA_real_)
   emp_long <- emp_tail %>%
-    dplyr::select(dplyr::any_of(c("bucket", "rank_bin")), dplyr::all_of(skew_metrics)) %>%
-    tidyr::pivot_longer(-dplyr::any_of(c("bucket", "rank_bin")), names_to = "metric", values_to = "emp")
+    dplyr::select(dplyr::any_of(grp_cols), dplyr::all_of(skew_metrics)) %>%
+    tidyr::pivot_longer(-dplyr::any_of(grp_cols), names_to = "metric", values_to = "emp")
   sim_long <- sim_tail %>%
-    dplyr::select(dplyr::any_of(c("bucket", "rank_bin")), dplyr::all_of(skew_metrics)) %>%
-    tidyr::pivot_longer(-dplyr::any_of(c("bucket", "rank_bin")), names_to = "metric", values_to = "sim")
+    dplyr::select(dplyr::any_of(grp_cols), dplyr::all_of(skew_metrics)) %>%
+    tidyr::pivot_longer(-dplyr::any_of(grp_cols), names_to = "metric", values_to = "sim")
   cmp <- emp_long %>%
-    dplyr::left_join(sim_long, by = c("bucket", "rank_bin", "metric"))
+    dplyr::left_join(sim_long, by = c(grp_cols, "metric"))
   mean((cmp$emp - cmp$sim)^2, na.rm = TRUE)
 }
 

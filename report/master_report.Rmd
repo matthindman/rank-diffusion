@@ -4,7 +4,7 @@ output:
   pdf_document:
     toc: true
     toc_depth: 3
-bibliography: report/references.bib
+bibliography: references.bib
 params:
   mode: "dev"
   output_type: "full"

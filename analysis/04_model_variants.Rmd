@@ -520,7 +520,6 @@ qq_t_rank <- rank_inc_std %>%
     df_hat <- df_hat[1]
     if (!is.finite(df_hat) || length(df_hat) == 0) df_hat <- max(6, CFG$model_zoo_df_min + 1)
     qq_df <- qqplot_data(.x$z, dist = "t", params = list(df = df_hat))
-    qq_df$bucket <- b
     qq_df
   }) %>%
   ungroup()
