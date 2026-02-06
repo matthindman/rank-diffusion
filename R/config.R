@@ -38,6 +38,7 @@ config_from_params <- function(params) {
 
     K_cut_target <- as.integer(coerce_numeric(params$K_cut_target %||% 12000L))
     K_tail_buffer <- as.integer(coerce_numeric(params$K_tail_buffer %||% 2000L))
+    min_week_ranks_keep <- as.integer(coerce_numeric(params$min_week_ranks_keep %||% 12000L))
 
     horizons_growth <- as.integer(coerce_numeric_vec(params$horizons_growth %||% c(1L, 7L, 28L)))
     horizons_durable <- as.integer(coerce_numeric_vec(params$horizons_durable %||% c(4L, 8L)))
@@ -134,6 +135,12 @@ config_from_params <- function(params) {
     enable_jump_clustering_models <- isTRUE(params$enable_jump_clustering_models)
     model_zoo_bootstrap_B <- as.integer(coerce_numeric(params$model_zoo_bootstrap_B %||% 100L))
     model_zoo_bootstrap_block_length <- as.integer(coerce_numeric(params$model_zoo_bootstrap_block_length %||% 4L))
+    c2_smooth_enabled <- if (is.null(params$c2_smooth_enabled)) TRUE else isTRUE(params$c2_smooth_enabled)
+    c2_smooth_x_mode <- as.character(params$c2_smooth_x_mode %||% "log_rank")
+    c2_smooth_quadratic <- isTRUE(params$c2_smooth_quadratic)
+    c2_smooth_max_iter <- as.integer(coerce_numeric(params$c2_smooth_max_iter %||% 500L))
+    c2_smooth_subsample_frac <- coerce_numeric(params$c2_smooth_subsample_frac %||% 1.0)
+    c2_smooth_ridge_lambda <- coerce_numeric(params$c2_smooth_ridge_lambda %||% 0.0)
 
     bucket_def <- list(
       breaks = bucket_breaks,
@@ -146,11 +153,12 @@ config_from_params <- function(params) {
     dir.create(meta_dir, showWarnings = FALSE, recursive = TRUE)
   })
 
-  if (is.na(cfg$K_cut_target) || is.na(cfg$K_tail_buffer) || is.na(cfg$smoothing_h)) {
+  if (is.na(cfg$K_cut_target) || is.na(cfg$K_tail_buffer) || is.na(cfg$min_week_ranks_keep) || is.na(cfg$smoothing_h)) {
     stop(
-      "K_cut_target, K_tail_buffer, and smoothing_h must be numeric. Got: ",
+      "K_cut_target, K_tail_buffer, min_week_ranks_keep, and smoothing_h must be numeric. Got: ",
       "K_cut_target=", params$K_cut_target, ", ",
       "K_tail_buffer=", params$K_tail_buffer, ", ",
+      "min_week_ranks_keep=", params$min_week_ranks_keep, ", ",
       "smoothing_h=", params$smoothing_h
     )
   }
@@ -161,6 +169,10 @@ config_from_params <- function(params) {
 
   if (cfg$K_tail_buffer < 0) {
     stop("K_tail_buffer must be >= 0. Got: ", params$K_tail_buffer)
+  }
+
+  if (cfg$min_week_ranks_keep < 0) {
+    stop("min_week_ranks_keep must be >= 0. Got: ", params$min_week_ranks_keep)
   }
 
   if (cfg$smoothing_h < 0) {
@@ -299,6 +311,24 @@ config_from_params <- function(params) {
   }
   if (is.na(cfg$model_zoo_bootstrap_block_length) || cfg$model_zoo_bootstrap_block_length < 1) {
     stop("model_zoo_bootstrap_block_length must be >= 1. Got: ", params$model_zoo_bootstrap_block_length)
+  }
+
+  valid_c2_x_mode <- c("log_rank", "log_sigma_hat")
+  if (!cfg$c2_smooth_x_mode %in% valid_c2_x_mode) {
+    stop(
+      "c2_smooth_x_mode must be one of: ",
+      paste(valid_c2_x_mode, collapse = ", "),
+      ". Got: ", cfg$c2_smooth_x_mode
+    )
+  }
+  if (is.na(cfg$c2_smooth_max_iter) || cfg$c2_smooth_max_iter < 1) {
+    stop("c2_smooth_max_iter must be >= 1. Got: ", params$c2_smooth_max_iter)
+  }
+  if (is.na(cfg$c2_smooth_subsample_frac) || cfg$c2_smooth_subsample_frac <= 0 || cfg$c2_smooth_subsample_frac > 1) {
+    stop("c2_smooth_subsample_frac must be in (0,1]. Got: ", params$c2_smooth_subsample_frac)
+  }
+  if (is.na(cfg$c2_smooth_ridge_lambda) || cfg$c2_smooth_ridge_lambda < 0) {
+    stop("c2_smooth_ridge_lambda must be >= 0. Got: ", params$c2_smooth_ridge_lambda)
   }
 
   cfg$horizons_growth <- cfg$horizons_growth[!is.na(cfg$horizons_growth) & cfg$horizons_growth >= 1L]

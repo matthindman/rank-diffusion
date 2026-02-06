@@ -585,6 +585,8 @@ fit_jump_kou_bucket <- function(z, p_max = 0.25, max_iter = 500, tol = 1e-6) {
 
   mplus <- mean(z[z > u] - u, na.rm = TRUE)
   mminus <- mean((-z[z < -u]) - u, na.rm = TRUE)
+  if (!is.finite(mplus) || mplus <= 0) mplus <- 1
+  if (!is.finite(mminus) || mminus <= 0) mminus <- 1
   eta_pos <- 1 / max(mplus, 1e-3)
   eta_neg <- 1 / max(mminus, 1e-3)
 
@@ -596,24 +598,38 @@ fit_jump_kou_bucket <- function(z, p_max = 0.25, max_iter = 500, tol = 1e-6) {
       pi_pos * eta_pos * exp(-eta_pos * z),
       (1 - pi_pos) * eta_neg * exp(-eta_neg * (-z))
     )
+    dens_jump[!is.finite(dens_jump) | dens_jump < 0] <- 0
     dens_diff <- stats::dnorm(z, mean = 0, sd = 1)
     denom <- (1 - p) * dens_diff + p * dens_jump
     r <- p * dens_jump / pmax(denom, 1e-12)
+    r[!is.finite(r)] <- 0
 
-    p <- clamp_range(mean(r, na.rm = TRUE), 1e-6, p_max)
+    p_new <- mean(r, na.rm = TRUE)
+    if (is.finite(p_new)) p <- clamp_range(p_new, 1e-6, p_max)
     w_pos <- r * (z > 0)
     w_neg <- r * (z < 0)
-    w_pos_sum <- sum(w_pos)
-    w_neg_sum <- sum(w_neg)
+    w_pos_sum <- sum(w_pos, na.rm = TRUE)
+    w_neg_sum <- sum(w_neg, na.rm = TRUE)
     w_sum <- w_pos_sum + w_neg_sum
-    pi_pos <- ifelse(w_sum > 0, w_pos_sum / w_sum, pi_pos)
+    if (is.finite(w_sum) && w_sum > 0) {
+      pi_new <- w_pos_sum / w_sum
+      if (is.finite(pi_new)) pi_pos <- clamp_range(pi_new, 1e-6, 1 - 1e-6)
+    }
 
-    if (w_pos_sum > 0) {
-      eta_pos <- w_pos_sum / sum(w_pos * z)
+    if (is.finite(w_pos_sum) && w_pos_sum > 0) {
+      denom_pos <- sum(w_pos * z, na.rm = TRUE)
+      if (is.finite(denom_pos) && denom_pos > 1e-12) {
+        eta_pos <- w_pos_sum / denom_pos
+      }
     }
-    if (w_neg_sum > 0) {
-      eta_neg <- w_neg_sum / sum(w_neg * (-z))
+    if (is.finite(w_neg_sum) && w_neg_sum > 0) {
+      denom_neg <- sum(w_neg * (-z), na.rm = TRUE)
+      if (is.finite(denom_neg) && denom_neg > 1e-12) {
+        eta_neg <- w_neg_sum / denom_neg
+      }
     }
+    if (!is.finite(eta_pos)) eta_pos <- 1
+    if (!is.finite(eta_neg)) eta_neg <- 1
     eta_pos <- max(eta_pos, 1e-6)
     eta_neg <- max(eta_neg, 1e-6)
 
@@ -773,13 +789,25 @@ fit_factor_t <- function(z_df, K_pca, K_max, smoothing_h = 0L, df_min = 2.2, buc
   if (!is.null(bucket_def)) {
     df <- df %>% dplyr::mutate(bucket = assign_bucket(rank, bucket_def))
   }
+  if (!"bucket" %in% names(df)) {
+    df <- df %>% dplyr::mutate(bucket = factor("all"))
+  }
 
-  eps_fit <- fit_student_t(df, mode = "bucket", df_min = df_min)
+  beta_active <- pca$beta_k[seq_len(min(K_pca, length(pca$beta_k)))]
+  max_eps_delta <- max(abs(df$eps - df$z), na.rm = TRUE)
+  if (any(abs(beta_active) > 1e-8, na.rm = TRUE) && is.finite(max_eps_delta) && max_eps_delta < 1e-10) {
+    stop("fit_factor_t: residuals are identical to raw z despite nonzero factor loadings.")
+  }
+
+  eps_fit <- fit_student_t(df %>% dplyr::mutate(z = eps), mode = "bucket", df_min = df_min)
+  raw_fit <- fit_student_t(df %>% dplyr::select(week, rank, bucket, z), mode = "bucket", df_min = df_min)
 
   nF <- length(F_df$F_t)
   llF <- F_fit$loglik %||% NA_real_
   aicF <- ifelse(is.finite(llF), 2 * 2 - 2 * llF, NA_real_)
   bicF <- ifelse(is.finite(llF), log(max(1, nF)) * 2 - 2 * llF, NA_real_)
+  raw_ll <- raw_fit$loglik %||% NA_real_
+  eps_ll <- eps_fit$loglik %||% NA_real_
 
   list(
     type = "factor_t",
@@ -789,7 +817,378 @@ fit_factor_t <- function(z_df, K_pca, K_max, smoothing_h = 0L, df_min = 2.2, buc
     idio_fit = eps_fit,
     loglik = (F_fit$loglik %||% 0) + (eps_fit$loglik %||% 0),
     aic = aicF + (eps_fit$aic %||% 0),
-    bic = bicF + (eps_fit$bic %||% 0)
+    bic = bicF + (eps_fit$bic %||% 0),
+    idio_on_raw_loglik = raw_ll,
+    idio_on_eps_loglik = eps_ll,
+    residual_gain = eps_ll - raw_ll
+  )
+}
+
+stage1_extract_factor_t <- function(z_df, K_pca, K_max, smoothing_h = 0L, df_min = 2.2) {
+  pca <- compute_pca_factor(z_df, K_pca, K_max, smoothing_h)
+  if (is.null(pca)) return(NULL)
+
+  F_hat <- pca$F %>% dplyr::rename(F_hat = F_t)
+  factor_fit <- fit_student_t_bucket(F_hat$F_hat, df_min = df_min)
+  F_proj <- project_factor_scores(z_df, pca$beta_k)
+  proj_cor <- NA_real_
+  if (!is.null(F_proj)) {
+    proj_join <- F_hat %>%
+      dplyr::inner_join(F_proj, by = "week")
+    if (nrow(proj_join) >= 3) {
+      proj_cor <- suppressWarnings(stats::cor(proj_join$F_hat, proj_join$F_t, use = "complete.obs"))
+    }
+  }
+
+  n_weeks_total <- dplyr::n_distinct(z_df$week)
+  n_weeks_used <- nrow(F_hat)
+  n_weeks_dropped <- max(0L, n_weeks_total - n_weeks_used)
+  beta_sq <- sum((pca$beta_k[seq_len(min(K_pca, length(pca$beta_k)))])^2, na.rm = TRUE)
+
+  list(
+    F_hat = F_hat,
+    factor_fit = factor_fit,
+    beta_k = pca$beta_k,
+    diagnostics = list(
+      n_weeks_total = n_weeks_total,
+      n_weeks_used = n_weeks_used,
+      n_weeks_dropped = n_weeks_dropped,
+      beta_norm_sq = beta_sq,
+      var_explained_pc1 = pca$var_explained[1] %||% NA_real_,
+      F_hat_mean = mean(F_hat$F_hat, na.rm = TRUE),
+      F_hat_sd = stats::sd(F_hat$F_hat, na.rm = TRUE),
+      F_hat_skew = skewness_basic(F_hat$F_hat),
+      F_hat_kurt = kurtosis_basic(F_hat$F_hat),
+      cor_with_projection = proj_cor
+    )
+  )
+}
+
+stage2_compute_residuals <- function(z_df, F_hat, beta_k, rank_grid = c(1, 5, 10, 25, 50, 100, 250, 500, 1000, 2000, 5000)) {
+  if (is.null(F_hat) || nrow(F_hat) == 0L) return(NULL)
+  df <- z_df %>%
+    dplyr::inner_join(F_hat, by = "week") %>%
+    dplyr::mutate(
+      beta = beta_k[pmin(rank, length(beta_k))],
+      eps = z - beta * F_hat
+    )
+
+  ranks_present <- sort(unique(df$rank))
+  grid <- intersect(rank_grid, ranks_present)
+  if (length(grid) == 0L && length(ranks_present) > 0L) {
+    grid <- unique(c(head(ranks_present, 5), tail(ranks_present, 5)))
+  }
+
+  cor_by_rank <- df %>%
+    dplyr::filter(rank %in% grid) %>%
+    dplyr::group_by(rank) %>%
+    dplyr::summarise(
+      beta = mean(beta, na.rm = TRUE),
+      cor_F_eps = suppressWarnings(stats::cor(F_hat, eps, use = "complete.obs")),
+      var_ratio = stats::var(eps, na.rm = TRUE) / pmax(stats::var(z, na.rm = TRUE), 1e-12),
+      .groups = "drop"
+    ) %>%
+    dplyr::arrange(rank)
+
+  var_ratio_by_rank <- df %>%
+    dplyr::group_by(rank) %>%
+    dplyr::summarise(
+      beta = mean(beta, na.rm = TRUE),
+      var_ratio = stats::var(eps, na.rm = TRUE) / pmax(stats::var(z, na.rm = TRUE), 1e-12),
+      .groups = "drop"
+    )
+
+  list(
+    residuals = df,
+    diagnostics = list(
+      cor_by_rank = cor_by_rank,
+      var_ratio_summary = var_ratio_by_rank %>%
+        dplyr::summarise(
+          q05 = stats::quantile(var_ratio, 0.05, na.rm = TRUE),
+          q50 = stats::quantile(var_ratio, 0.50, na.rm = TRUE),
+          q95 = stats::quantile(var_ratio, 0.95, na.rm = TRUE)
+        ),
+      mean_var_ratio = mean(var_ratio_by_rank$var_ratio, na.rm = TRUE)
+    )
+  )
+}
+
+smooth_kou_basis <- function(ranks, x_mode = "log_rank", sigma_hat_vec = NULL, quadratic = FALSE) {
+  ranks <- as.integer(ranks)
+  if (length(ranks) == 0L) {
+    return(tibble::tibble(rank = integer(0), x = numeric(0), x2 = numeric(0)))
+  }
+  if (x_mode == "log_rank") {
+    x <- log(pmax(ranks, 1))
+  } else if (x_mode == "log_sigma_hat") {
+    if (is.null(sigma_hat_vec) || length(sigma_hat_vec) < max(ranks, na.rm = TRUE)) {
+      stop("smooth_kou_basis: sigma_hat_vec must be supplied and cover all ranks for x_mode='log_sigma_hat'.")
+    }
+    x <- log(pmax(sigma_hat_vec[ranks], 1e-8))
+  } else {
+    stop("smooth_kou_basis: unknown x_mode '", x_mode, "'.")
+  }
+  x2 <- if (isTRUE(quadratic)) x^2 else rep(0, length(x))
+  tibble::tibble(rank = ranks, x = x, x2 = x2)
+}
+
+default_smooth_kou_theta <- function(eps_vec, quadratic = FALSE) {
+  p_hat <- clamp_range(mean(abs(eps_vec) > 3, na.rm = TRUE), 1e-4, 0.20)
+  sigma_hat <- pmax(stats::sd(eps_vec, na.rm = TRUE), 0.1)
+  if (!is.finite(p_hat)) p_hat <- 0.02
+  if (!is.finite(sigma_hat)) sigma_hat <- 1.0
+  theta <- c(
+    a0 = stats::qlogis(p_hat), a1 = 0,
+    b0 = log(sigma_hat), b1 = 0,
+    c0 = 0, c1 = 0,
+    d0 = 0, d1 = 0,
+    e0 = 0, e1 = 0
+  )
+  if (isTRUE(quadratic)) {
+    theta <- c(theta, a2 = 0, b2 = 0, c2 = 0, d2 = 0, e2 = 0)
+  }
+  theta
+}
+
+smooth_kou_params <- function(theta, basis) {
+  theta <- unlist(theta)
+  get_theta <- function(name, default = 0) {
+    if (name %in% names(theta)) return(theta[[name]])
+    default
+  }
+
+  eval_curve <- function(prefix) {
+    t0 <- get_theta(paste0(prefix, "0"), 0)
+    t1 <- get_theta(paste0(prefix, "1"), 0)
+    t2 <- get_theta(paste0(prefix, "2"), 0)
+    t0 + t1 * basis$x + t2 * basis$x2
+  }
+
+  p <- clamp_range(stats::plogis(eval_curve("a")), 1e-5, 1 - 1e-5)
+  sigma_eps <- clamp_range(exp(eval_curve("b")), 1e-3, 1e3)
+  pi_pos <- clamp_range(stats::plogis(eval_curve("c")), 1e-5, 1 - 1e-5)
+  eta_pos <- clamp_range(exp(eval_curve("d")), 1e-3, 1e3)
+  eta_neg <- clamp_range(exp(eval_curve("e")), 1e-3, 1e3)
+
+  tibble::tibble(
+    rank = basis$rank,
+    p = p,
+    sigma_eps = sigma_eps,
+    pi_pos = pi_pos,
+    eta_pos = eta_pos,
+    eta_neg = eta_neg
+  )
+}
+
+logsumexp2 <- function(a, b) {
+  m <- pmax(a, b)
+  m + log(exp(a - m) + exp(b - m))
+}
+
+log_f_pos_conv <- function(eps, sigma, eta) {
+  sigma <- pmax(sigma, 1e-8)
+  eta <- pmax(eta, 1e-8)
+  log(eta) + 0.5 * eta * sigma^2 - eta * eps +
+    stats::pnorm(eps / sigma - eta * sigma, log.p = TRUE)
+}
+
+log_f_neg_conv <- function(eps, sigma, eta) {
+  sigma <- pmax(sigma, 1e-8)
+  eta <- pmax(eta, 1e-8)
+  log(eta) + 0.5 * eta * sigma^2 + eta * eps +
+    stats::pnorm(-eps / sigma - eta * sigma, log.p = TRUE)
+}
+
+log_kou_density_conv <- function(eps, p, sigma_eps, pi_pos, eta_pos, eta_neg) {
+  p <- clamp_range(p, 1e-5, 1 - 1e-5)
+  pi_pos <- clamp_range(pi_pos, 1e-5, 1 - 1e-5)
+  sigma_eps <- pmax(sigma_eps, 1e-3)
+  eta_pos <- pmax(eta_pos, 1e-3)
+  eta_neg <- pmax(eta_neg, 1e-3)
+
+  log_gauss <- stats::dnorm(eps, mean = 0, sd = sigma_eps, log = TRUE)
+  log_jump_pos <- log(pi_pos) + log_f_pos_conv(eps, sigma_eps, eta_pos)
+  log_jump_neg <- log(1 - pi_pos) + log_f_neg_conv(eps, sigma_eps, eta_neg)
+  log_jump <- logsumexp2(log_jump_pos, log_jump_neg)
+  logsumexp2(log(1 - p) + log_gauss, log(p) + log_jump)
+}
+
+fit_smooth_kou_residuals <- function(eps_df, x_mode = "log_rank", sigma_hat_vec = NULL, quadratic = FALSE,
+                                     init_theta = NULL, max_iter = 500L, subsample_frac = 1.0,
+                                     ridge_lambda = 0.0) {
+  if (!"eps" %in% names(eps_df)) stop("fit_smooth_kou_residuals: eps_df must contain column 'eps'.")
+  if (!"week" %in% names(eps_df)) eps_df <- eps_df %>% dplyr::mutate(week = 1L)
+
+  df_full <- eps_df %>%
+    dplyr::filter(is.finite(eps), is.finite(rank), is.finite(week))
+  if (nrow(df_full) < 100) return(NULL)
+
+  df_opt <- df_full
+  frac <- as.numeric(subsample_frac %||% 1.0)
+  if (is.finite(frac) && frac > 0 && frac < 1) {
+    weeks <- sort(unique(df_full$week))
+    n_keep <- max(2L, floor(length(weeks) * frac))
+    keep <- sort(sample(weeks, n_keep, replace = FALSE))
+    df_opt <- df_full %>% dplyr::filter(week %in% keep)
+  }
+
+  ranks_u <- sort(unique(df_full$rank))
+  basis_u <- smooth_kou_basis(ranks_u, x_mode = x_mode, sigma_hat_vec = sigma_hat_vec, quadratic = quadratic)
+  rank_to_idx <- setNames(seq_along(ranks_u), ranks_u)
+
+  obs_build <- function(df) {
+    idx <- unname(rank_to_idx[as.character(df$rank)])
+    list(eps = df$eps, idx = idx)
+  }
+  obs_full <- obs_build(df_full)
+  obs_opt <- obs_build(df_opt)
+
+  if (is.null(init_theta)) init_theta <- default_smooth_kou_theta(df_opt$eps, quadratic = quadratic)
+  theta_names <- names(init_theta)
+  slope_names <- grep("1$|2$", theta_names, value = TRUE)
+
+  eval_nll <- function(theta, obs, penalize = TRUE) {
+    names(theta) <- theta_names
+    par_u <- smooth_kou_params(theta, basis_u)
+    ll <- log_kou_density_conv(
+      obs$eps,
+      p = par_u$p[obs$idx],
+      sigma_eps = par_u$sigma_eps[obs$idx],
+      pi_pos = par_u$pi_pos[obs$idx],
+      eta_pos = par_u$eta_pos[obs$idx],
+      eta_neg = par_u$eta_neg[obs$idx]
+    )
+    nll <- -sum(ll, na.rm = TRUE)
+    if (isTRUE(penalize) && is.finite(ridge_lambda) && ridge_lambda > 0 && length(slope_names) > 0) {
+      vals <- theta[slope_names]
+      nll <- nll + ridge_lambda * sum(vals^2, na.rm = TRUE)
+    }
+    nll
+  }
+
+  lower <- rep(-20, length(init_theta))
+  upper <- rep(20, length(init_theta))
+
+  opt <- tryCatch(
+    stats::optim(
+      par = init_theta,
+      fn = function(th) eval_nll(th, obs_opt, penalize = TRUE),
+      method = "L-BFGS-B",
+      lower = lower,
+      upper = upper,
+      control = list(maxit = as.integer(max_iter))
+    ),
+    error = function(e) NULL
+  )
+
+  converged <- !is.null(opt) && identical(opt$convergence, 0L)
+  method_used <- "optim"
+  theta_opt <- if (!is.null(opt)) opt$par else init_theta
+  nll_opt <- if (!is.null(opt)) opt$value else Inf
+
+  if (!converged) {
+    opt2 <- tryCatch(
+      stats::nlminb(
+        start = init_theta,
+        objective = function(th) eval_nll(th, obs_opt, penalize = TRUE),
+        lower = lower,
+        upper = upper,
+        control = list(iter.max = as.integer(max_iter), eval.max = as.integer(max_iter) * 2L)
+      ),
+      error = function(e) NULL
+    )
+    if (!is.null(opt2) && is.finite(opt2$objective) && (is.infinite(nll_opt) || opt2$objective < nll_opt)) {
+      theta_opt <- opt2$par
+      nll_opt <- opt2$objective
+      converged <- isTRUE(opt2$convergence == 0L)
+      method_used <- "nlminb"
+    }
+  }
+
+  names(theta_opt) <- theta_names
+  nll_full <- eval_nll(theta_opt, obs_full, penalize = FALSE)
+  loglik <- -nll_full
+  n_params <- length(theta_opt)
+  n_obs <- nrow(df_full)
+  aic <- ifelse(is.finite(loglik), 2 * n_params - 2 * loglik, NA_real_)
+  bic <- ifelse(is.finite(loglik), log(max(1, n_obs)) * n_params - 2 * loglik, NA_real_)
+
+  basis_all <- smooth_kou_basis(seq_len(max(ranks_u)), x_mode = x_mode, sigma_hat_vec = sigma_hat_vec, quadratic = quadratic)
+  param_curves <- smooth_kou_params(theta_opt, basis_all)
+
+  list(
+    theta = theta_opt,
+    converged = converged,
+    method = method_used,
+    loglik = loglik,
+    aic = aic,
+    bic = bic,
+    n_params = n_params,
+    n_obs = n_obs,
+    param_curves = param_curves,
+    diagnostics = list(
+      opt_n_obs = nrow(df_opt),
+      full_n_obs = n_obs,
+      subsample_frac = frac,
+      ridge_lambda = ridge_lambda,
+      nll_opt = nll_opt
+    )
+  )
+}
+
+fit_factor_kou_smooth_twostage <- function(z_df, K_pca, K_max, smoothing_h = 0L, df_min = 2.2,
+                                           bucket_def = NULL, sigma_hat_vec = NULL,
+                                           x_mode = "log_rank", quadratic = FALSE,
+                                           max_iter = 500L, subsample_frac = 1.0, ridge_lambda = 0.0) {
+  s1 <- stage1_extract_factor_t(z_df, K_pca = K_pca, K_max = K_max, smoothing_h = smoothing_h, df_min = df_min)
+  if (is.null(s1)) return(NULL)
+
+  s2 <- stage2_compute_residuals(z_df, F_hat = s1$F_hat, beta_k = s1$beta_k)
+  if (is.null(s2)) return(NULL)
+  eps_df <- s2$residuals
+  if (!is.null(bucket_def) && !"bucket" %in% names(eps_df)) {
+    eps_df <- eps_df %>% dplyr::mutate(bucket = assign_bucket(rank, bucket_def))
+  }
+
+  s3 <- fit_smooth_kou_residuals(
+    eps_df = eps_df,
+    x_mode = x_mode,
+    sigma_hat_vec = sigma_hat_vec,
+    quadratic = quadratic,
+    max_iter = max_iter,
+    subsample_frac = subsample_frac,
+    ridge_lambda = ridge_lambda
+  )
+  if (is.null(s3)) return(NULL)
+
+  ll_factor <- s1$factor_fit$loglik %||% NA_real_
+  ll_idio <- s3$loglik %||% NA_real_
+  loglik <- ll_factor + ll_idio
+  n_params_total <- 2L + s3$n_params
+  n_obs_total <- (s3$n_obs %||% 0) + (s1$factor_fit$n %||% nrow(s1$F_hat))
+  aic <- ifelse(is.finite(loglik), 2 * n_params_total - 2 * loglik, NA_real_)
+  bic <- ifelse(is.finite(loglik), log(max(1, n_obs_total)) * n_params_total - 2 * loglik, NA_real_)
+
+  list(
+    type = "factor_kou_smooth_twostage",
+    estimation_method = "two_stage",
+    converged = isTRUE(s1$factor_fit$converged) && isTRUE(s3$converged),
+    beta_k = s1$beta_k,
+    factor_fit = s1$factor_fit,
+    idio_fit = list(
+      theta = s3$theta,
+      param_curves = s3$param_curves
+    ),
+    x_mode = x_mode,
+    quadratic = isTRUE(quadratic),
+    stage1 = s1$diagnostics,
+    stage2 = s2$diagnostics,
+    stage3 = s3$diagnostics,
+    param_curves = s3$param_curves,
+    loglik = loglik,
+    aic = aic,
+    bic = bic,
+    n_params = n_params_total
   )
 }
 
@@ -807,7 +1206,7 @@ fit_factor_kou <- function(z_df, K_pca, K_max, smoothing_h = 0L, p_max = 0.25, b
     df <- df %>% dplyr::mutate(bucket = assign_bucket(rank, bucket_def))
   }
 
-  eps_fit <- fit_jump_kou_asym(df %>% dplyr::rename(z = eps), mode = "bucket", p_max = p_max)
+  eps_fit <- fit_jump_kou_asym(df %>% dplyr::mutate(z = eps), mode = "bucket", p_max = p_max)
 
   nF <- length(F_df$F_t)
   llF <- F_fit$loglik %||% NA_real_
@@ -859,7 +1258,7 @@ fit_factor_kou_tv <- function(z_df, K_pca, K_max, smoothing_h = 0L, p_max = 0.25
     df <- df %>% dplyr::mutate(bucket = assign_bucket(rank, bucket_def))
   }
 
-  eps_fit <- fit_jump_kou_asym(df %>% dplyr::rename(z = eps), mode = "bucket", p_max = p_max)
+  eps_fit <- fit_jump_kou_asym(df %>% dplyr::mutate(z = eps), mode = "bucket", p_max = p_max)
 
   list(
     type = "factor_kou_tv",
@@ -948,7 +1347,7 @@ fit_factor_regime <- function(z_df, K_pca, K_max, smoothing_h = 0L, bucket_def =
   if (!is.null(bucket_def)) {
     df_eps <- df_eps %>% dplyr::mutate(bucket = assign_bucket(rank, bucket_def))
   }
-  eps_fit <- fit_student_t(df_eps %>% dplyr::rename(z = eps), mode = "bucket", df_min = df_min)
+  eps_fit <- fit_student_t(df_eps %>% dplyr::mutate(z = eps), mode = "bucket", df_min = df_min)
 
   list(
     type = "factor_regime",
@@ -961,6 +1360,96 @@ fit_factor_regime <- function(z_df, K_pca, K_max, smoothing_h = 0L, bucket_def =
 }
 
 # --- model scoring and comparison ---
+
+compute_rank_slot_increments_from_snapshots <- function(sim_out) {
+  if (is.null(sim_out) || is.null(sim_out$snapshots)) return(NULL)
+  snaps <- sim_out$snapshots
+  required_cols <- c("path", "t", "rank", "share")
+  if (!all(required_cols %in% names(snaps))) return(NULL)
+  snaps %>%
+    dplyr::arrange(path, rank, t) %>%
+    dplyr::group_by(path, rank) %>%
+    dplyr::mutate(dlogw = dplyr::lead(log(pmax(share, 1e-18))) - log(pmax(share, 1e-18))) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(is.finite(dlogw)) %>%
+    dplyr::transmute(week = t, rank = rank, dlogw = dlogw)
+}
+
+compute_tail_from_sim_snapshots <- function(sim_out, sm_params, bucket_def,
+                                            thresholds = c(3, 5), probs = c(0.001, 0.01, 0.99, 0.999)) {
+  sim_rank_inc <- compute_rank_slot_increments_from_snapshots(sim_out)
+  if (is.null(sim_rank_inc) || nrow(sim_rank_inc) == 0L) return(NULL)
+  sim_rank_z <- standardize_increments(
+    sim_rank_inc,
+    sm_params$mean_dlogw_s,
+    sm_params$sd_dlogw_s,
+    bucket_def = bucket_def
+  ) %>%
+    dplyr::mutate(z = dlogw_std)
+  tail_skew_diagnostics(sim_rank_z, thresholds = thresholds, probs = probs)
+}
+
+diagnose_tail_suppression <- function(model_sim, fit, moment_curves, sm_params, bucket_def, K_cut, cfg, sim_out,
+                                      sim_inc_tail = NULL, tail_innov = NULL) {
+  rep_rank <- if ("rank" %in% names(sm_params)) {
+    large_rows <- sm_params %>% dplyr::filter(rank <= 25)
+    if (nrow(large_rows) > 0) as.integer(large_rows$rank[1]) else 5L
+  } else {
+    5L
+  }
+  rep_rank <- max(1L, min(rep_rank, length(moment_curves$mean_vec)))
+  z_ref <- stats::rnorm(10000L, mean = moment_curves$mean_vec[rep_rank], sd = pmax(moment_curves$sd_vec[rep_rank], 1e-8))
+  z_ref_std <- (z_ref - moment_curves$mean_vec[rep_rank]) / pmax(moment_curves$sd_vec[rep_rank], 1e-8)
+  test_a <- tibble::tibble(
+    representative_rank = rep_rank,
+    p_abs_gt_3 = mean(abs(z_ref_std) > 3, na.rm = TRUE)
+  )
+
+  if (is.null(sim_inc_tail)) {
+    sim_inc_tail <- sample_increments_for_tail(
+      model = model_sim,
+      moment_curves = moment_curves,
+      cache = list(beta_k = fit$beta_k, state = new.env(parent = emptyenv())),
+      K_cut = K_cut,
+      n_steps = cfg$model_zoo_tail_steps,
+      n_paths = cfg$model_zoo_tail_paths,
+      ranks_per_bucket = cfg$model_zoo_tail_ranks_per_bucket
+    )
+  }
+  if (is.null(tail_innov)) {
+    sim_inc_z <- standardize_increments(sim_inc_tail, sm_params$mean_dlogw_s, sm_params$sd_dlogw_s, bucket_def = bucket_def) %>%
+      dplyr::mutate(z = dlogw_std)
+    tail_innov <- tail_skew_diagnostics(sim_inc_z, thresholds = cfg$model_zoo_tail_thresholds, probs = cfg$model_zoo_tail_probs)
+  }
+  tail_rank <- compute_tail_from_sim_snapshots(
+    sim_out = sim_out,
+    sm_params = sm_params,
+    bucket_def = bucket_def,
+    thresholds = cfg$model_zoo_tail_thresholds,
+    probs = cfg$model_zoo_tail_probs
+  )
+  gap <- NULL
+  if (!is.null(tail_rank)) {
+    gap <- tail_innov %>%
+      dplyr::select(bucket, dplyr::starts_with("p_abs_gt_")) %>%
+      tidyr::pivot_longer(-bucket, names_to = "metric", values_to = "innov") %>%
+      dplyr::left_join(
+        tail_rank %>%
+          dplyr::select(bucket, dplyr::starts_with("p_abs_gt_")) %>%
+          tidyr::pivot_longer(-bucket, names_to = "metric", values_to = "rank_slot"),
+        by = c("bucket", "metric")
+      ) %>%
+      dplyr::mutate(ratio_rank_to_innov = rank_slot / pmax(innov, 1e-8))
+  }
+
+  list(
+    test_a_gaussian_reference = test_a,
+    tail_innov = tail_innov,
+    tail_rank_slot = tail_rank,
+    tail_gap = gap,
+    test_c_entry_exit_note = "Entry/exit censoring cannot be isolated from snapshots-only output."
+  )
+}
 
 build_emp_targets <- function(endpoint_weekly, rank_panel, sm_params, K_cut, horizons_durable, bucket_def, K_xi,
                               tail_thresholds = c(3, 5), tail_probs = c(0.001, 0.01, 0.99, 0.999)) {
@@ -1087,6 +1576,15 @@ prepare_model_for_sim <- function(fit, cfg, moment_curves) {
     model$factor_params <- fit$factor_params
     model$idio_params <- fit$idio_fit
   }
+  if (fit$type == "factor_kou_smooth_twostage") {
+    model$beta_k <- fit$beta_k
+    model$factor_df <- fit$factor_fit$df
+    model$factor_scale <- fit$factor_fit$scale
+    model$smooth_theta <- fit$idio_fit$theta
+    model$smooth_param_curves <- fit$param_curves %||% fit$idio_fit$param_curves
+    model$x_mode <- fit$x_mode %||% "log_rank"
+    model$quadratic <- isTRUE(fit$quadratic)
+  }
   model
 }
 
@@ -1171,7 +1669,7 @@ loglik_for_model <- function(fit, z_df, bucket_def = NULL) {
     }), na.rm = TRUE))
   }
 
-  if (fit$type %in% c("factor_t", "factor_kou", "factor_kou_tv", "factor_regime")) {
+  if (fit$type %in% c("factor_t", "factor_kou", "factor_kou_tv", "factor_regime", "factor_kou_smooth_twostage")) {
     return(fit$loglik %||% NA_real_)
   }
 
@@ -1248,7 +1746,7 @@ eval_from_sim <- function(sim_out, targets_emp, bucket_def) {
   )
 }
 
-build_model_registry <- function(cfg, bucket_def, pca_K, K_max) {
+build_model_registry <- function(cfg, bucket_def, pca_K, K_max, sigma_hat_vec = NULL) {
   registry <- list(
     A1_student_t = list(
       name = "A1 Student-t",
@@ -1293,6 +1791,31 @@ build_model_registry <- function(cfg, bucket_def, pca_K, K_max) {
       eval_fn = eval_from_sim
     )
   )
+
+  if (isTRUE(cfg$c2_smooth_enabled)) {
+    registry$C2_factor_kou_smooth <- list(
+      name = "C2 Factor + Kou (Smooth 2-stage)",
+      family = "C",
+      fit_fn = function(z) {
+        fit_factor_kou_smooth_twostage(
+          z_df = z,
+          K_pca = pca_K,
+          K_max = K_max,
+          smoothing_h = cfg$smoothing_h,
+          df_min = cfg$model_zoo_df_min,
+          bucket_def = bucket_def,
+          sigma_hat_vec = sigma_hat_vec,
+          x_mode = cfg$c2_smooth_x_mode,
+          quadratic = cfg$c2_smooth_quadratic,
+          max_iter = cfg$c2_smooth_max_iter,
+          subsample_frac = cfg$c2_smooth_subsample_frac,
+          ridge_lambda = cfg$c2_smooth_ridge_lambda
+        )
+      },
+      simulate_fn = simulate_from_fit,
+      eval_fn = eval_from_sim
+    )
+  }
 
   if (has_pkg("sn")) {
     registry$A2_skew_t <- list(
@@ -1387,7 +1910,7 @@ run_model_comparison <- function(
     tail_probs = cfg$model_zoo_tail_probs
   )
 
-  models <- build_model_registry(cfg, bucket_def, pca_K, K_max)
+  models <- build_model_registry(cfg, bucket_def, pca_K, K_max, sigma_hat_vec = sm_params$sd_dlogw_s)
 
   results <- list()
 
@@ -1447,7 +1970,7 @@ run_model_comparison <- function(
     rmse_durable_test <- if (nrow(targets_emp_test$durable) > 0) durable_rmse(targets_emp_test$durable, sim_out$growth, bucket_def) else NA_real_
     rmse_xi_test <- if (nrow(targets_emp_test$xi) > 0) xi_rmse(targets_emp_test$xi, sim_out$xi) else NA_real_
 
-    # tail diagnostics from simulated increments
+    # tail diagnostics: rank-slot tails from snapshots (for score) + innovation tails (diagnostic only)
     sim_inc_tail <- sample_increments_for_tail(
       model = model_sim,
       moment_curves = moment_curves,
@@ -1460,10 +1983,30 @@ run_model_comparison <- function(
 
     sim_inc_z <- standardize_increments(sim_inc_tail, sm_params$mean_dlogw_s, sm_params$sd_dlogw_s, bucket_def = bucket_def)
     sim_inc_z <- sim_inc_z %>% dplyr::mutate(z = dlogw_std)
-    tail_sim <- tail_skew_diagnostics(sim_inc_z, thresholds = cfg$model_zoo_tail_thresholds, probs = cfg$model_zoo_tail_probs)
+    tail_sim_innov <- tail_skew_diagnostics(sim_inc_z, thresholds = cfg$model_zoo_tail_thresholds, probs = cfg$model_zoo_tail_probs)
+    tail_sim_rank_slot <- compute_tail_from_sim_snapshots(
+      sim_out = sim_out,
+      sm_params = sm_params,
+      bucket_def = bucket_def,
+      thresholds = cfg$model_zoo_tail_thresholds,
+      probs = cfg$model_zoo_tail_probs
+    )
+    tail_sim_score <- tail_sim_rank_slot %||% tail_sim_innov
+    tail_diagnostics <- diagnose_tail_suppression(
+      model_sim = model_sim,
+      fit = fit,
+      moment_curves = moment_curves,
+      sm_params = sm_params,
+      bucket_def = bucket_def,
+      K_cut = K_cut,
+      cfg = cfg,
+      sim_out = sim_out,
+      sim_inc_tail = sim_inc_tail,
+      tail_innov = tail_sim_innov
+    )
 
-    tail_mismatch <- calc_tail_mismatch(targets_emp$tail, tail_sim)
-    skew_mismatch <- calc_skew_mismatch(targets_emp$tail, tail_sim)
+    tail_mismatch <- calc_tail_mismatch(targets_emp$tail, tail_sim_score)
+    skew_mismatch <- calc_skew_mismatch(targets_emp$tail, tail_sim_score)
 
     ll_train <- loglik_for_model(fit, z_train, bucket_def)
     ll_test <- if (nrow(z_test) > 0) loglik_for_model(fit, z_test, bucket_def) else NA_real_
@@ -1497,7 +2040,10 @@ run_model_comparison <- function(
       score = score,
       fit_fn = model_meta$fit_fn,
       fit = fit,
-      tail_sim = tail_sim
+      tail_sim = tail_sim_score,
+      tail_sim_rank_slot = tail_sim_rank_slot,
+      tail_sim_innov = tail_sim_innov,
+      tail_diagnostics = tail_diagnostics
     )
   }
 
@@ -1614,6 +2160,16 @@ flatten_fit_params <- function(fit) {
     if (!is.null(fit$factor_tv)) {
       out["factor_p0"] <- fit$factor_tv$p0
       out["factor_alpha"] <- fit$factor_tv$alpha
+    }
+  }
+  if (fit$type == "factor_kou_smooth_twostage") {
+    out["factor_df"] <- fit$factor_fit$df
+    out["factor_scale"] <- fit$factor_fit$scale
+    theta <- fit$idio_fit$theta
+    if (!is.null(theta) && length(theta) > 0) {
+      for (nm in names(theta)) {
+        out[paste0("theta_", nm)] <- theta[[nm]]
+      }
     }
   }
   if (length(out) == 0) return(NULL)

@@ -15,6 +15,7 @@ params:
   seed: 1823
   K_cut_target: 12000L
   K_tail_buffer: 2000L
+  min_week_ranks_keep: 12000L
   horizons_growth: !r c(1L, 7L, 28L)
   horizons_durable: !r c(4L, 8L)
   horizons_micro: !r c(1L, 4L, 12L)
@@ -73,6 +74,12 @@ params:
   enable_jump_clustering_models: false
   model_zoo_bootstrap_B: 100L
   model_zoo_bootstrap_block_length: 4L
+  c2_smooth_enabled: true
+  c2_smooth_x_mode: "log_rank"
+  c2_smooth_quadratic: false
+  c2_smooth_max_iter: 500L
+  c2_smooth_subsample_frac: 1.0
+  c2_smooth_ridge_lambda: 0.0
   bootstrap_B: 200L
   bootstrap_k_min: 10L
   bootstrap_period_unit: "quarter"

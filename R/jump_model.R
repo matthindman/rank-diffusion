@@ -100,6 +100,61 @@ draw_jump_sizes <- function(n, spec) {
   stop("Unknown jump dist: ", dist)
 }
 
+resolve_smooth_curve <- function(theta, prefix, x, x2) {
+  get_theta <- function(name, default = 0) {
+    if (name %in% names(theta)) return(theta[[name]])
+    default
+  }
+  t0 <- get_theta(paste0(prefix, "0"), 0)
+  t1 <- get_theta(paste0(prefix, "1"), 0)
+  t2 <- get_theta(paste0(prefix, "2"), 0)
+  t0 + t1 * x + t2 * x2
+}
+
+eval_smooth_kou_params_for_sim <- function(model, moment_curves, K_max) {
+  if (!is.null(model$smooth_param_curves)) {
+    curves <- model$smooth_param_curves
+    req <- c("p", "sigma_eps", "pi_pos", "eta_pos", "eta_neg")
+    if (is.data.frame(curves) && all(req %in% names(curves)) && nrow(curves) >= K_max) {
+      out <- curves[seq_len(K_max), req, drop = FALSE]
+      return(list(
+        p = clamp01(as.numeric(out$p)),
+        sigma_eps = pmin(pmax(as.numeric(out$sigma_eps), 1e-3), 1e3),
+        pi_pos = clamp01(as.numeric(out$pi_pos)),
+        eta_pos = pmin(pmax(as.numeric(out$eta_pos), 1e-3), 1e3),
+        eta_neg = pmin(pmax(as.numeric(out$eta_neg), 1e-3), 1e3)
+      ))
+    }
+  }
+
+  theta <- model$smooth_theta %||% model$theta
+  if (is.null(theta)) stop("factor_kou_smooth_twostage requires smooth_theta or smooth_param_curves.")
+  theta <- unlist(theta)
+
+  ranks <- seq_len(K_max)
+  x_mode <- model$x_mode %||% "log_rank"
+  x <- if (x_mode == "log_sigma_hat") {
+    log(pmax(moment_curves$sd_vec[ranks], 1e-8))
+  } else {
+    log(pmax(ranks, 1))
+  }
+  x2 <- if (isTRUE(model$quadratic)) x^2 else rep(0, K_max)
+
+  p <- stats::plogis(resolve_smooth_curve(theta, "a", x, x2))
+  sigma_eps <- exp(resolve_smooth_curve(theta, "b", x, x2))
+  pi_pos <- stats::plogis(resolve_smooth_curve(theta, "c", x, x2))
+  eta_pos <- exp(resolve_smooth_curve(theta, "d", x, x2))
+  eta_neg <- exp(resolve_smooth_curve(theta, "e", x, x2))
+
+  list(
+    p = clamp01(pmin(pmax(p, 1e-5), 1 - 1e-5)),
+    sigma_eps = pmin(pmax(sigma_eps, 1e-3), 1e3),
+    pi_pos = clamp01(pmin(pmax(pi_pos, 1e-5), 1 - 1e-5)),
+    eta_pos = pmin(pmax(eta_pos, 1e-3), 1e3),
+    eta_neg = pmin(pmax(eta_neg, 1e-3), 1e3)
+  )
+}
+
 draw_increments <- function(t, w_t, moment_curves, model, cache) {
   type <- model$type %||% "gaussian"
   mean_vec <- moment_curves$mean_vec
@@ -285,6 +340,37 @@ draw_increments <- function(t, w_t, moment_curves, model, cache) {
       idx <- which(I == 1)
       eps[idx] <- r_double_exp_asym(length(idx), pi_idio[idx], eta_pos[idx], eta_neg[idx])
     }
+    z <- beta_k * F_t + eps
+    return(mu + mean_vec + sigma * sd_vec * z)
+  }
+
+  if (type == "factor_kou_smooth_twostage") {
+    beta_k <- resolve_beta_k(model, cache, K_max)
+    state <- cache$state
+    if (is.null(state$F_prev)) state$F_prev <- 0
+
+    df_F <- model$factor_df %||% 6
+    scale_F <- model$factor_scale %||% 1
+    F_t <- rstd_t(1, df = df_F) * scale_F
+
+    if (is.null(state$smooth_params) || length(state$smooth_params$p) != K_max) {
+      state$smooth_params <- eval_smooth_kou_params_for_sim(model, moment_curves, K_max)
+    }
+    par <- state$smooth_params
+
+    eps <- rnorm(K_max, mean = 0, sd = par$sigma_eps)
+    has_jump <- rbinom(K_max, 1, par$p)
+    if (any(has_jump == 1L)) {
+      idx <- which(has_jump == 1L)
+      jump_sign <- rbinom(length(idx), 1, par$pi_pos[idx])
+      jumps <- ifelse(
+        jump_sign == 1L,
+        rexp(length(idx), rate = par$eta_pos[idx]),
+        -rexp(length(idx), rate = par$eta_neg[idx])
+      )
+      eps[idx] <- eps[idx] + jumps
+    }
+
     z <- beta_k * F_t + eps
     return(mu + mean_vec + sigma * sd_vec * z)
   }

@@ -1,0 +1,86 @@
+---
+title: "Model Zoo Report"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 2
+params:
+  mode: "dev"
+  output_type: "model_zoo"
+  use_cache: true
+  run_heavy: false
+  cache_version: "v1"
+  fb_weekly_parquet: !r here::here("data", "raw", "fb_ranked_weekly.parquet")
+  seed: 1823
+  K_cut_target: 12000L
+  K_tail_buffer: 2000L
+  min_week_ranks_keep: 12000L
+  horizons_durable: !r c(4L, 8L)
+  bucket_breaks: !r c(0, 25, 250, Inf)
+  bucket_labels: !r c("large", "midsize", "small")
+  smoothing_h: 5L
+  sim_T_weeks: 52L
+  sim_mu: 0
+  sim_sigma: 0.16
+  sim_entry_frac: 0.1
+  sim_K_xi: 500L
+  pca_K: 500L
+  run_jump_model_zoo: true
+  model_zoo_param_mode: "bucket"
+  model_zoo_train_frac: 0.7
+  model_zoo_df_min: 2.2
+  model_zoo_jump_p_max: 0.25
+  model_zoo_sim_paths: 120L
+  model_zoo_tail_steps: 200L
+  model_zoo_tail_paths: 30L
+  model_zoo_tail_ranks_per_bucket: 200L
+  model_zoo_tail_thresholds: !r c(3, 5)
+  model_zoo_tail_probs: !r c(0.001, 0.01, 0.99, 0.999)
+  model_zoo_weight_cdc: 2.0
+  model_zoo_weight_durable: 1.0
+  model_zoo_weight_xi: 2.0
+  model_zoo_weight_tail: 1.5
+  model_zoo_weight_skew: 1.0
+  model_zoo_weight_micro: 0.5
+  enable_jump_clustering_models: false
+  model_zoo_bootstrap_B: 100L
+  model_zoo_bootstrap_block_length: 4L
+  c2_smooth_enabled: true
+  c2_smooth_x_mode: "log_rank"
+  c2_smooth_quadratic: false
+  c2_smooth_max_iter: 500L
+  c2_smooth_subsample_frac: 1.0
+  c2_smooth_ridge_lambda: 0.0
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 9,
+  fig.height = 5
+)
+source(here::here("R", "init.R"))
+```
+
+# Model Zoo
+
+```{r child = here::here("analysis", "04_model_zoo_deps.Rmd")}
+```
+
+```{r child = here::here("analysis", "04_model_zoo_results.Rmd")}
+```
+
+# Provenance
+
+```{r provenance, echo=FALSE}
+cat("Rendered at:", as.character(Sys.time()), "\n\n")
+
+git_hash <- tryCatch(system("git rev-parse HEAD", intern = TRUE), error = function(e) NA_character_)
+if (!is.na(git_hash)) {
+  cat("Git commit:", git_hash, "\n\n")
+}
+
+sessionInfo()
+```
