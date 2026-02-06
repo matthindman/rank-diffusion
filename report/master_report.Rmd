@@ -4,6 +4,7 @@ output:
   pdf_document:
     toc: true
     toc_depth: 3
+bibliography: report/references.bib
 params:
   mode: "dev"
   output_type: "full"
@@ -52,6 +53,26 @@ params:
   jump_kappa_large: 0.04
   jump_kappa_midsize: 0.03
   jump_kappa_small: 0.02
+  run_jump_model_zoo: true
+  model_zoo_param_mode: "bucket"
+  model_zoo_train_frac: 0.7
+  model_zoo_df_min: 2.2
+  model_zoo_jump_p_max: 0.25
+  model_zoo_sim_paths: 120L
+  model_zoo_tail_steps: 200L
+  model_zoo_tail_paths: 30L
+  model_zoo_tail_ranks_per_bucket: 200L
+  model_zoo_tail_thresholds: !r c(3, 5)
+  model_zoo_tail_probs: !r c(0.001, 0.01, 0.99, 0.999)
+  model_zoo_weight_cdc: 2.0
+  model_zoo_weight_durable: 1.0
+  model_zoo_weight_xi: 2.0
+  model_zoo_weight_tail: 1.5
+  model_zoo_weight_skew: 1.0
+  model_zoo_weight_micro: 0.5
+  enable_jump_clustering_models: false
+  model_zoo_bootstrap_B: 100L
+  model_zoo_bootstrap_block_length: 4L
   bootstrap_B: 200L
   bootstrap_k_min: 10L
   bootstrap_period_unit: "quarter"

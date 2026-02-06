@@ -457,58 +457,72 @@ if (is.na(K_pca) || K_pca < 2) {
 }
 ```
 
-## Heavy-tail / jump diagnostics for increments (new)
+## Tail & skew diagnostics for increments (empirical)
 
-This section checks whether rank-slot increments have tails that are substantially heavier than Gaussian.
+This section checks whether rank-slot and identity-based increments have heavy tails and directional skew, including robust skew/kurtosis and a Hill tail-index estimate.
 
-```{r tail-diagnostics}
-build_bucket_z <- function(increments_df, bucket_def) {
-  increments_df %>%
-    mutate(bucket = assign_bucket(rank, bucket_def)) %>%
-    filter(!is.na(bucket)) %>%
-    group_by(bucket) %>%
-    mutate(
-      z = (dlogw - mean(dlogw, na.rm = TRUE)) / sd(dlogw, na.rm = TRUE)
-    ) %>%
-    ungroup()
-}
+```{r tail-skew-setup}
+rank_inc <- build_rank_slot_increments(rank_panel %>% filter(rank <= K_cut), K_cut)
+rank_inc_std <- standardize_increments(rank_inc, sm_params$mean_dlogw_s, sm_params$sd_dlogw_s, bucket_def = bucket_def) %>%
+  mutate(z = dlogw_std)
 
-tail_diagnostics <- function(increments_df, bucket_def) {
-  inc_by_bucket <- build_bucket_z(increments_df, bucket_def)
-  inc_by_bucket %>%
-    group_by(bucket) %>%
-    summarise(
-      n = n(),
-      p_gt_5sd = mean(abs(z) >= 5, na.rm = TRUE),
-      p_gt_3sd = mean(abs(z) >= 3, na.rm = TRUE),
-      q_0.001 = quantile(z, 0.001, na.rm = TRUE),
-      q_0.999 = quantile(z, 0.999, na.rm = TRUE),
-      .groups = "drop"
-    )
-}
+identity_inc <- build_identity_increments(endpoint_weekly, horizon = 1L)
+identity_inc_std <- standardize_increments(identity_inc, sm_params$mean_dlogw_s, sm_params$sd_dlogw_s, bucket_def = bucket_def) %>%
+  mutate(z = dlogw_std)
 
-# Build standardized increments by bucket
-inc_by_bucket <- build_bucket_z(
-  rank_panel %>% filter(rank <= K_cut) %>% select(rank, dlogw),
-  bucket_def
+inc_long <- bind_rows(
+  rank_inc_std %>% mutate(type = "rank_slot") %>% select(week, rank, bucket, dlogw, dlogw_std, type),
+  identity_inc_std %>% mutate(type = "identity") %>% select(week, endpoint_id, rank, bucket, dlogw, dlogw_std, type)
 )
 
-tail_summ <- tail_diagnostics(
-  rank_panel %>% filter(rank <= K_cut) %>% select(rank, dlogw),
-  bucket_def
-)
+tail_rank <- tail_skew_diagnostics(rank_inc_std, thresholds = CFG$model_zoo_tail_thresholds, probs = CFG$model_zoo_tail_probs)
+tail_identity <- tail_skew_diagnostics(identity_inc_std, thresholds = CFG$model_zoo_tail_thresholds, probs = CFG$model_zoo_tail_probs)
 
-tail_summ
+tail_rank
+tail_identity
 ```
 
-```{r qq-plot}
-ggplot(inc_by_bucket, aes(sample = z)) +
+```{r jump-clustering}
+cluster_rank <- jump_clustering_diagnostics(rank_inc_std, thresholds = c(3, 4, 5))
+cluster_rank
+```
+
+If clustering is material (positive autocorrelation in extreme indicators), set `CFG$enable_jump_clustering_models = TRUE` to include self-exciting / regime-switching variants in the model zoo.
+
+```{r qq-plot-normal}
+ggplot(rank_inc_std, aes(sample = z)) +
   stat_qq() +
   stat_qq_line() +
   facet_wrap(~ bucket, scales = "free") +
   labs(
     title = "QQ plot of standardized increments by bucket",
-    subtitle = "Visual check for heavy tails vs Gaussian"
+    subtitle = "Normal reference",
+    x = "Theoretical quantiles",
+    y = "Sample quantiles"
+  ) +
+  theme_bw()
+```
+
+```{r qq-plot-t}
+fit_t_rank <- fit_student_t(rank_inc_std, mode = "bucket", df_min = CFG$model_zoo_df_min)
+qq_t_rank <- rank_inc_std %>%
+  group_by(bucket) %>%
+  group_modify(~{
+    df_hat <- fit_t_rank$params %>% filter(bucket == unique(.x$bucket)) %>% pull(df) %>% .[1]
+    qq_df <- qqplot_data(.x$z, dist = "t", params = list(df = df_hat))
+    qq_df$bucket <- unique(.x$bucket)
+    qq_df
+  }) %>%
+  ungroup()
+
+ggplot(qq_t_rank, aes(x = theo_q, y = sample_q)) +
+  geom_point(size = 0.7, alpha = 0.6) +
+  geom_abline(linetype = "dashed", color = "gray40") +
+  facet_wrap(~ bucket, scales = "free") +
+  labs(
+    title = "QQ plot vs Student-t (fitted df)",
+    x = "Theoretical quantiles",
+    y = "Sample quantiles"
   ) +
   theme_bw()
 ```
@@ -709,14 +723,15 @@ if (isTRUE(CFG$run_jump_model)) {
       ranks_per_bucket = tail_sample_ranks_per_bucket
     )
 
-    tail_summ_jump <- tail_diagnostics(sim_inc_tail, bucket_def)
+    sim_inc_z <- standardize_increments(sim_inc_tail, sm_params$mean_dlogw_s, sm_params$sd_dlogw_s, bucket_def = bucket_def) %>%
+      mutate(z = dlogw_std)
 
-    tail_comp_jump <- tail_summ %>%
-      select(bucket, p_gt_5sd, p_gt_3sd, q_0.001, q_0.999) %>%
+    tail_summ_jump <- tail_skew_diagnostics(sim_inc_z, thresholds = CFG$model_zoo_tail_thresholds, probs = CFG$model_zoo_tail_probs)
+
+    tail_comp_jump <- tail_rank %>%
       pivot_longer(-bucket, names_to = "metric", values_to = "emp") %>%
       left_join(
         tail_summ_jump %>%
-          select(bucket, p_gt_5sd, p_gt_3sd, q_0.001, q_0.999) %>%
           pivot_longer(-bucket, names_to = "metric", values_to = "sim"),
         by = c("bucket", "metric")
       ) %>%
@@ -734,3 +749,98 @@ if (isTRUE(CFG$run_jump_model)) {
   }
 }
 ```
+
+
+## Candidate model families (model zoo)
+
+We test heavy-tailed innovations (Student-t, skew-t, GH), explicit jump mixtures (Merton, Kou), and factor + idiosyncratic structures with asymmetric jumps to capture directional tail behavior and common shocks [@merton1976option; @kou2002jump; @eberlein1995hyperbolic; @azzalini2003skewt]. Optional clustering extensions (self-exciting intensity or regime switching) are gated by diagnostics [@hawkes1971spectra; @hamilton1989new]. Skew-t and GH fits run only when the `sn`/`ghyp` packages are available.
+
+## Estimation protocol
+
+We estimate one-step standardized rank-slot increments first (bucketed by default, with optional smooth-by-rank for jump intensities), then evaluate simulation fit to CDC/durable/Xi and tail/skew targets. Jump-mixture parameters are estimated by EM with explicit constraints and convergence checks; out-of-sample validation uses a time split.
+
+Model selection follows three layers: (i) distributional fit (AIC/BIC + tail/skew diagnostics), (ii) out-of-sample log-likelihood and target fit, and (iii) simulation-based predictive envelopes for core targets.
+
+Key constraints enforced in estimation: jump probabilities bounded by `p_max`, Student-t `df > 2`, and mixture ordering (low-variance vs high-variance components).
+
+## Model zoo comparison
+
+```{r model-zoo-compare}
+model_comp <- NULL
+if (isTRUE(CFG$run_jump_model_zoo)) {
+  model_comp <- run_model_comparison(
+    cfg = CFG,
+    endpoint_weekly = endpoint_weekly,
+    rank_panel = rank_panel,
+    sm_params = sm_params,
+    w0_ext = w0_ext,
+    entrant_sampler = entrant_sampler,
+    bucket_def = bucket_def,
+    K_cut = K_cut,
+    K_max = K_max,
+    K_xi = sim_K_xi,
+    pca_K = pca_K
+  )
+  model_comp$model_table
+}
+```
+
+```{r model-zoo-params}
+if (!is.null(model_comp)) {
+  param_tables <- purrr::imap(model_comp$results, function(res, name) {
+    fit <- res$fit
+    if (is.null(fit)) return(NULL)
+    if (fit$type %in% c("factor_kou", "factor_kou_tv", "factor_t", "factor_regime")) {
+      return(list(factor = fit$factor_fit %||% fit$factor_params, idio = fit$idio_fit$params))
+    }
+    fit$params
+  })
+  param_tables
+}
+```
+
+## Preferred model and interpretation
+
+The default lead specification is the factor + asymmetric Kou jump model (C2), unless the comparison table clearly favors a simpler alternative on both distributional and simulation targets.
+
+```{r model-zoo-best}
+if (!is.null(model_comp)) {
+  best_id <- model_comp$model_table$model[1]
+  best_fit <- model_comp$results[[best_id]]$fit
+  list(best_model = best_id, type = best_fit$type)
+}
+```
+
+```{r model-zoo-tail-compare}
+if (!is.null(model_comp)) {
+  best_id <- model_comp$model_table$model[1]
+  tail_best <- model_comp$results[[best_id]]$tail_sim
+  tail_rank %>%
+    pivot_longer(-bucket, names_to = "metric", values_to = "emp") %>%
+    left_join(
+      tail_best %>% pivot_longer(-bucket, names_to = "metric", values_to = "sim"),
+      by = c("bucket", "metric")
+    ) %>%
+    arrange(bucket, metric)
+}
+```
+
+## Robustness: block bootstrap + sensitivity
+
+```{r model-zoo-bootstrap}
+if (!is.null(model_comp) && CFG$model_zoo_bootstrap_B > 0) {
+  best_id <- model_comp$model_table$model[1]
+  fit_fn <- model_comp$results[[best_id]]$fit_fn
+  boot_params <- bootstrap_model_params(
+    fit_fn,
+    model_comp$z_rank,
+    B = CFG$model_zoo_bootstrap_B,
+    block_length = CFG$model_zoo_bootstrap_block_length
+  )
+  boot_params
+}
+```
+
+Sensitivity checks for alternative bucket cutoffs and smoothing windows can be run by re-rendering the report with different `CFG$bucket_breaks` and `CFG$smoothing_h` values (not shown by default).
+
+Bootstrap resamples are block-based with length `CFG$model_zoo_bootstrap_block_length` to preserve temporal dependence.

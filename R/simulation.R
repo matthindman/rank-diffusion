@@ -90,6 +90,8 @@ simulate_rank_paths <- function(
   for (p in seq_len(n_paths)) {
     if (use_model && !is.null(cache$state)) {
       cache$state$F_prev <- 0
+      cache$state$regime_state <- 1L
+      cache$state$F_jump_prev <- 0
     }
     if (length(w0) < K_max) {
       w <- c(w0, entrant_sampler(K_max - length(w0)))

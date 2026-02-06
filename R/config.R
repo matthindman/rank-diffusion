@@ -63,6 +63,7 @@ config_from_params <- function(params) {
     run_grid_search <- isTRUE(params$run_grid_search)
     run_bootstrap_model <- isTRUE(params$run_bootstrap_model)
     run_jump_model <- isTRUE(params$run_jump_model)
+    run_jump_model_zoo <- isTRUE(params$run_jump_model_zoo)
 
     bootstrap_B <- as.integer(coerce_numeric(params$bootstrap_B %||% 200L))
     bootstrap_k_min <- as.integer(coerce_numeric(params$bootstrap_k_min %||% 10L))
@@ -113,6 +114,26 @@ config_from_params <- function(params) {
     jump_kappa_large <- coerce_numeric(params$jump_kappa_large %||% 0.04)
     jump_kappa_midsize <- coerce_numeric(params$jump_kappa_midsize %||% 0.03)
     jump_kappa_small <- coerce_numeric(params$jump_kappa_small %||% 0.02)
+
+    model_zoo_param_mode <- as.character(params$model_zoo_param_mode %||% "bucket")
+    model_zoo_train_frac <- coerce_numeric(params$model_zoo_train_frac %||% 0.7)
+    model_zoo_df_min <- coerce_numeric(params$model_zoo_df_min %||% 2.2)
+    model_zoo_jump_p_max <- coerce_numeric(params$model_zoo_jump_p_max %||% 0.25)
+    model_zoo_sim_paths <- as.integer(coerce_numeric(params$model_zoo_sim_paths %||% 120L))
+    model_zoo_tail_steps <- as.integer(coerce_numeric(params$model_zoo_tail_steps %||% 200L))
+    model_zoo_tail_paths <- as.integer(coerce_numeric(params$model_zoo_tail_paths %||% 30L))
+    model_zoo_tail_ranks_per_bucket <- as.integer(coerce_numeric(params$model_zoo_tail_ranks_per_bucket %||% 200L))
+    model_zoo_tail_thresholds <- coerce_numeric_vec(params$model_zoo_tail_thresholds %||% c(3, 5))
+    model_zoo_tail_probs <- coerce_numeric_vec(params$model_zoo_tail_probs %||% c(0.001, 0.01, 0.99, 0.999))
+    model_zoo_weight_cdc <- coerce_numeric(params$model_zoo_weight_cdc %||% 2.0)
+    model_zoo_weight_durable <- coerce_numeric(params$model_zoo_weight_durable %||% 1.0)
+    model_zoo_weight_xi <- coerce_numeric(params$model_zoo_weight_xi %||% 2.0)
+    model_zoo_weight_tail <- coerce_numeric(params$model_zoo_weight_tail %||% 1.5)
+    model_zoo_weight_skew <- coerce_numeric(params$model_zoo_weight_skew %||% 1.0)
+    model_zoo_weight_micro <- coerce_numeric(params$model_zoo_weight_micro %||% 0.5)
+    enable_jump_clustering_models <- isTRUE(params$enable_jump_clustering_models)
+    model_zoo_bootstrap_B <- as.integer(coerce_numeric(params$model_zoo_bootstrap_B %||% 100L))
+    model_zoo_bootstrap_block_length <- as.integer(coerce_numeric(params$model_zoo_bootstrap_block_length %||% 4L))
 
     bucket_def <- list(
       breaks = bucket_breaks,
@@ -229,6 +250,55 @@ config_from_params <- function(params) {
 
   if (is.na(cfg$sim_K_xi) || cfg$sim_K_xi < 2) {
     stop("sim_K_xi must be an integer >= 2. Got: ", params$sim_K_xi)
+  }
+
+  valid_param_modes <- c("bucket", "smooth")
+  if (!cfg$model_zoo_param_mode %in% valid_param_modes) {
+    stop(
+      "model_zoo_param_mode must be one of: ",
+      paste(valid_param_modes, collapse = ", "),
+      ". Got: ", cfg$model_zoo_param_mode
+    )
+  }
+
+  if (is.na(cfg$model_zoo_train_frac) || cfg$model_zoo_train_frac <= 0.5 || cfg$model_zoo_train_frac >= 0.95) {
+    stop("model_zoo_train_frac must be in (0.5, 0.95). Got: ", params$model_zoo_train_frac)
+  }
+
+  if (is.na(cfg$model_zoo_df_min) || cfg$model_zoo_df_min <= 2) {
+    stop("model_zoo_df_min must be > 2 for finite variance. Got: ", params$model_zoo_df_min)
+  }
+
+  if (is.na(cfg$model_zoo_jump_p_max) || cfg$model_zoo_jump_p_max <= 0 || cfg$model_zoo_jump_p_max >= 1) {
+    stop("model_zoo_jump_p_max must be in (0,1). Got: ", params$model_zoo_jump_p_max)
+  }
+
+  if (is.na(cfg$model_zoo_sim_paths) || cfg$model_zoo_sim_paths < 1) {
+    stop("model_zoo_sim_paths must be >= 1. Got: ", params$model_zoo_sim_paths)
+  }
+  if (is.na(cfg$model_zoo_tail_steps) || cfg$model_zoo_tail_steps < 1) {
+    stop("model_zoo_tail_steps must be >= 1. Got: ", params$model_zoo_tail_steps)
+  }
+  if (is.na(cfg$model_zoo_tail_paths) || cfg$model_zoo_tail_paths < 1) {
+    stop("model_zoo_tail_paths must be >= 1. Got: ", params$model_zoo_tail_paths)
+  }
+  if (is.na(cfg$model_zoo_tail_ranks_per_bucket) || cfg$model_zoo_tail_ranks_per_bucket < 1) {
+    stop("model_zoo_tail_ranks_per_bucket must be >= 1. Got: ", params$model_zoo_tail_ranks_per_bucket)
+  }
+
+  if (length(cfg$model_zoo_tail_thresholds) == 0 || any(cfg$model_zoo_tail_thresholds <= 0)) {
+    stop("model_zoo_tail_thresholds must be positive.")
+  }
+
+  if (length(cfg$model_zoo_tail_probs) == 0 || any(cfg$model_zoo_tail_probs <= 0) || any(cfg$model_zoo_tail_probs >= 1)) {
+    stop("model_zoo_tail_probs must be in (0,1).")
+  }
+
+  if (is.na(cfg$model_zoo_bootstrap_B) || cfg$model_zoo_bootstrap_B < 0) {
+    stop("model_zoo_bootstrap_B must be >= 0. Got: ", params$model_zoo_bootstrap_B)
+  }
+  if (is.na(cfg$model_zoo_bootstrap_block_length) || cfg$model_zoo_bootstrap_block_length < 1) {
+    stop("model_zoo_bootstrap_block_length must be >= 1. Got: ", params$model_zoo_bootstrap_block_length)
   }
 
   cfg$horizons_growth <- cfg$horizons_growth[!is.na(cfg$horizons_growth) & cfg$horizons_growth >= 1L]
