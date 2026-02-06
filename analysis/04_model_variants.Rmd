@@ -798,6 +798,137 @@ if (isTRUE(CFG$run_jump_model_zoo)) {
 }
 ```
 
+## Model zoo visual comparison (side-by-side)
+
+```{r model-zoo-qq-empirical, echo=FALSE, out.width="100%"}
+if (!is.null(model_comp)) {
+  plot_dir <- here::here("output", "plots")
+  dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
+
+  model_meta <- model_comp$model_table %>%
+    dplyr::mutate(label = ifelse(is.na(name) | name == "", model, name))
+  model_ids <- model_meta$model
+  model_labels <- model_meta$label
+
+  moment_curves_zoo <- list(
+    mean_vec = sm_params$mean_dlogw_s,
+    sd_vec = sm_params$sd_dlogw_s,
+    bucket_def = bucket_def
+  )
+
+  sim_samples <- purrr::map_dfr(seq_along(model_ids), function(i) {
+    mid <- model_ids[i]
+    label <- model_labels[i]
+    res <- model_comp$results[[mid]]
+    fit <- res$fit
+    if (is.null(fit)) return(NULL)
+    model_sim <- prepare_model_for_sim(fit, CFG, moment_curves_zoo)
+    sim_inc <- tryCatch({
+      sample_increments_for_tail(
+        model = model_sim,
+        moment_curves = moment_curves_zoo,
+        cache = list(beta_k = fit$beta_k %||% pca_cache$beta_k, state = new.env(parent = emptyenv())),
+        K_cut = K_cut,
+        n_steps = 80L,
+        n_paths = 15L,
+        ranks_per_bucket = 120L
+      )
+    }, error = function(e) NULL)
+    if (is.null(sim_inc)) return(NULL)
+    standardize_increments(sim_inc, sm_params$mean_dlogw_s, sm_params$sd_dlogw_s, bucket_def = bucket_def) %>%
+      dplyr::mutate(z = dlogw_std, model = label)
+  })
+
+  if (nrow(sim_samples) > 0) {
+    qq_probs <- seq(0.01, 0.99, by = 0.01)
+    emp_q <- rank_inc_std %>%
+      dplyr::group_by(bucket) %>%
+      dplyr::summarise(q = list(stats::quantile(z, probs = qq_probs, na.rm = TRUE)), .groups = "drop") %>%
+      tidyr::unnest_longer(q, indices_to = "p_idx") %>%
+      dplyr::mutate(p = qq_probs[p_idx], emp_q = q) %>%
+      dplyr::select(bucket, p, emp_q)
+
+    model_q <- sim_samples %>%
+      dplyr::group_by(model, bucket) %>%
+      dplyr::summarise(q = list(stats::quantile(z, probs = qq_probs, na.rm = TRUE)), .groups = "drop") %>%
+      tidyr::unnest_longer(q, indices_to = "p_idx") %>%
+      dplyr::mutate(p = qq_probs[p_idx], model_q = q) %>%
+      dplyr::select(model, bucket, p, model_q)
+
+    qq_df <- model_q %>%
+      dplyr::left_join(emp_q, by = c("bucket", "p")) %>%
+      dplyr::mutate(model = factor(model, levels = model_labels))
+
+    qq_plot <- ggplot(qq_df, aes(x = emp_q, y = model_q)) +
+      geom_point(size = 0.6, alpha = 0.6) +
+      geom_abline(linetype = "dashed", color = "gray40") +
+      facet_grid(model ~ bucket, scales = "free") +
+      labs(
+        title = "Model vs empirical QQ (standardized increments)",
+        subtitle = "Each panel compares model-simulated quantiles to empirical quantiles",
+        x = "Empirical quantiles",
+        y = "Model quantiles"
+      ) +
+      theme_bw()
+
+    height_in <- max(4, 1.1 * length(model_labels) + 1)
+    qq_path <- file.path(plot_dir, "qq_model_vs_empirical.png")
+    ggsave(qq_path, qq_plot, dpi = 300, width = 10, height = height_in, units = "in")
+    knitr::include_graphics(qq_path)
+  }
+}
+```
+
+```{r model-zoo-tail-metrics-plot, echo=FALSE, out.width="100%"}
+if (!is.null(model_comp)) {
+  plot_dir <- here::here("output", "plots")
+  dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
+
+  model_meta <- model_comp$model_table %>%
+    dplyr::mutate(label = ifelse(is.na(name) | name == "", model, name))
+  model_ids <- model_meta$model
+  model_labels <- model_meta$label
+
+  emp_long <- tail_rank %>%
+    tidyr::pivot_longer(-bucket, names_to = "metric", values_to = "emp")
+
+  sim_long <- purrr::map_dfr(seq_along(model_ids), function(i) {
+    mid <- model_ids[i]
+    label <- model_labels[i]
+    res <- model_comp$results[[mid]]
+    tail_sim <- res$tail_sim
+    if (is.null(tail_sim)) return(NULL)
+    tail_sim %>%
+      tidyr::pivot_longer(-bucket, names_to = "metric", values_to = "sim") %>%
+      dplyr::mutate(model = label)
+  })
+
+  if (nrow(sim_long) > 0) {
+    tail_plot_df <- sim_long %>%
+      dplyr::left_join(emp_long, by = c("bucket", "metric")) %>%
+      dplyr::mutate(model = factor(model, levels = model_labels))
+
+    tail_plot <- ggplot(tail_plot_df, aes(x = emp, y = sim, color = model)) +
+      geom_abline(linetype = "dashed", color = "gray40") +
+      geom_point(size = 1.1, alpha = 0.7) +
+      facet_grid(metric ~ bucket, scales = "free") +
+      labs(
+        title = "Tail and skew metrics: simulated vs empirical",
+        x = "Empirical",
+        y = "Simulated"
+      ) +
+      theme_bw() +
+      guides(color = guide_legend(ncol = 2))
+
+    metric_count <- length(unique(emp_long$metric))
+    height_in <- max(4, 0.7 * metric_count + 2)
+    tail_path <- file.path(plot_dir, "tail_metrics_model_compare.png")
+    ggsave(tail_path, tail_plot, dpi = 300, width = 10, height = height_in, units = "in")
+    knitr::include_graphics(tail_path)
+  }
+}
+```
+
 ```{r model-zoo-params}
 if (!is.null(model_comp)) {
   param_tables <- purrr::imap(model_comp$results, function(res, name) {
