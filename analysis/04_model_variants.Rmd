@@ -515,9 +515,12 @@ fit_t_rank <- fit_student_t(rank_inc_std, mode = "bucket", df_min = CFG$model_zo
 qq_t_rank <- rank_inc_std %>%
   group_by(bucket) %>%
   group_modify(~{
-    df_hat <- fit_t_rank$params %>% filter(bucket == unique(.x$bucket)) %>% pull(df) %>% .[1]
+    b <- .y$bucket
+    df_hat <- fit_t_rank$params %>% filter(bucket == b) %>% pull(df)
+    df_hat <- df_hat[1]
+    if (!is.finite(df_hat) || length(df_hat) == 0) df_hat <- max(6, CFG$model_zoo_df_min + 1)
     qq_df <- qqplot_data(.x$z, dist = "t", params = list(df = df_hat))
-    qq_df$bucket <- unique(.x$bucket)
+    qq_df$bucket <- b
     qq_df
   }) %>%
   ungroup()
