@@ -1015,7 +1015,7 @@ log_kou_density_conv <- function(eps, p, sigma_eps, pi_pos, eta_pos, eta_neg) {
 
 fit_smooth_kou_residuals <- function(eps_df, x_mode = "log_rank", sigma_hat_vec = NULL, quadratic = FALSE,
                                      init_theta = NULL, max_iter = 500L, subsample_frac = 1.0,
-                                     ridge_lambda = 0.0) {
+                                     ridge_lambda = 0.0, refine_max_iter = 20L) {
   if (!"eps" %in% names(eps_df)) stop("fit_smooth_kou_residuals: eps_df must contain column 'eps'.")
   if (!"week" %in% names(eps_df)) eps_df <- eps_df %>% dplyr::mutate(week = 1L)
 
@@ -1069,43 +1069,75 @@ fit_smooth_kou_residuals <- function(eps_df, x_mode = "log_rank", sigma_hat_vec 
   lower <- rep(-20, length(init_theta))
   upper <- rep(20, length(init_theta))
 
-  opt <- tryCatch(
-    stats::optim(
-      par = init_theta,
-      fn = function(th) eval_nll(th, obs_opt, penalize = TRUE),
-      method = "L-BFGS-B",
-      lower = lower,
-      upper = upper,
-      control = list(maxit = as.integer(max_iter))
-    ),
-    error = function(e) NULL
-  )
-
-  converged <- !is.null(opt) && identical(opt$convergence, 0L)
-  method_used <- "optim"
-  theta_opt <- if (!is.null(opt)) opt$par else init_theta
-  nll_opt <- if (!is.null(opt)) opt$value else Inf
-
-  if (!converged) {
-    opt2 <- tryCatch(
-      stats::nlminb(
-        start = init_theta,
-        objective = function(th) eval_nll(th, obs_opt, penalize = TRUE),
+  optimize_once <- function(start_theta, obs, max_iter_local) {
+    iter_local <- as.integer(pmax(1L, max_iter_local %||% 1L))
+    opt <- tryCatch(
+      stats::optim(
+        par = start_theta,
+        fn = function(th) eval_nll(th, obs, penalize = TRUE),
+        method = "L-BFGS-B",
         lower = lower,
         upper = upper,
-        control = list(iter.max = as.integer(max_iter), eval.max = as.integer(max_iter) * 2L)
+        control = list(maxit = iter_local)
       ),
       error = function(e) NULL
     )
-    if (!is.null(opt2) && is.finite(opt2$objective) && (is.infinite(nll_opt) || opt2$objective < nll_opt)) {
-      theta_opt <- opt2$par
-      nll_opt <- opt2$objective
-      converged <- isTRUE(opt2$convergence == 0L)
-      method_used <- "nlminb"
+
+    converged_local <- !is.null(opt) && identical(opt$convergence, 0L)
+    method_local <- "optim"
+    theta_local <- if (!is.null(opt)) opt$par else start_theta
+    nll_local <- if (!is.null(opt)) opt$value else Inf
+
+    if (!converged_local) {
+      opt2 <- tryCatch(
+        stats::nlminb(
+          start = start_theta,
+          objective = function(th) eval_nll(th, obs, penalize = TRUE),
+          lower = lower,
+          upper = upper,
+          control = list(iter.max = iter_local, eval.max = iter_local * 2L)
+        ),
+        error = function(e) NULL
+      )
+      if (!is.null(opt2) && is.finite(opt2$objective) && (is.infinite(nll_local) || opt2$objective < nll_local)) {
+        theta_local <- opt2$par
+        nll_local <- opt2$objective
+        converged_local <- isTRUE(opt2$convergence == 0L)
+        method_local <- "nlminb"
+      }
+    }
+
+    names(theta_local) <- theta_names
+    list(
+      theta = theta_local,
+      nll = nll_local,
+      converged = converged_local,
+      method = method_local,
+      max_iter = iter_local
+    )
+  }
+
+  phase1 <- optimize_once(init_theta, obs_opt, max_iter)
+  theta_opt <- phase1$theta
+  nll_opt <- phase1$nll
+  converged <- phase1$converged
+  method_used <- phase1$method
+
+  phase2 <- NULL
+  refine_iter <- as.integer(refine_max_iter %||% 0L)
+  run_refine <- is.finite(refine_iter) && refine_iter > 0L && nrow(df_opt) < nrow(df_full)
+  if (run_refine) {
+    phase2 <- optimize_once(theta_opt, obs_full, refine_iter)
+    if (is.finite(phase2$nll)) {
+      theta_opt <- phase2$theta
+      nll_opt <- phase2$nll
+      converged <- phase2$converged
+      method_used <- paste0(phase1$method, "->", phase2$method)
+    } else {
+      method_used <- paste0(phase1$method, "->refine_failed")
     }
   }
 
-  names(theta_opt) <- theta_names
   nll_full <- eval_nll(theta_opt, obs_full, penalize = FALSE)
   loglik <- -nll_full
   n_params <- length(theta_opt)
@@ -1130,8 +1162,26 @@ fit_smooth_kou_residuals <- function(eps_df, x_mode = "log_rank", sigma_hat_vec 
       opt_n_obs = nrow(df_opt),
       full_n_obs = n_obs,
       subsample_frac = frac,
+      max_iter = as.integer(max_iter),
+      refine_max_iter = if (run_refine) refine_iter else 0L,
       ridge_lambda = ridge_lambda,
-      nll_opt = nll_opt
+      nll_opt = nll_opt,
+      phase1 = list(
+        method = phase1$method,
+        converged = phase1$converged,
+        nll_opt = phase1$nll,
+        max_iter = phase1$max_iter
+      ),
+      phase2 = if (run_refine) {
+        list(
+          method = phase2$method,
+          converged = phase2$converged,
+          nll_opt = phase2$nll,
+          max_iter = phase2$max_iter
+        )
+      } else {
+        NULL
+      }
     )
   )
 }
@@ -1139,7 +1189,8 @@ fit_smooth_kou_residuals <- function(eps_df, x_mode = "log_rank", sigma_hat_vec 
 fit_factor_kou_smooth_twostage <- function(z_df, K_pca, K_max, smoothing_h = 0L, df_min = 2.2,
                                            bucket_def = NULL, sigma_hat_vec = NULL,
                                            x_mode = "log_rank", quadratic = FALSE,
-                                           max_iter = 500L, subsample_frac = 1.0, ridge_lambda = 0.0) {
+                                           max_iter = 500L, subsample_frac = 1.0, ridge_lambda = 0.0,
+                                           refine_max_iter = 20L) {
   s1 <- stage1_extract_factor_t(z_df, K_pca = K_pca, K_max = K_max, smoothing_h = smoothing_h, df_min = df_min)
   if (is.null(s1)) return(NULL)
 
@@ -1157,7 +1208,8 @@ fit_factor_kou_smooth_twostage <- function(z_df, K_pca, K_max, smoothing_h = 0L,
     quadratic = quadratic,
     max_iter = max_iter,
     subsample_frac = subsample_frac,
-    ridge_lambda = ridge_lambda
+    ridge_lambda = ridge_lambda,
+    refine_max_iter = refine_max_iter
   )
   if (is.null(s3)) return(NULL)
 
@@ -1809,7 +1861,8 @@ build_model_registry <- function(cfg, bucket_def, pca_K, K_max, sigma_hat_vec = 
           quadratic = cfg$c2_smooth_quadratic,
           max_iter = cfg$c2_smooth_max_iter,
           subsample_frac = cfg$c2_smooth_subsample_frac,
-          ridge_lambda = cfg$c2_smooth_ridge_lambda
+          ridge_lambda = cfg$c2_smooth_ridge_lambda,
+          refine_max_iter = cfg$c2_smooth_refine_max_iter
         )
       },
       simulate_fn = simulate_from_fit,
@@ -1879,28 +1932,45 @@ run_model_comparison <- function(
     bucket_def = bucket_def
   )
 
+  fit_end_week <- cfg$model_zoo_fit_end_week %||% as.Date("2022-07-01")
+  endpoint_weekly_fit <- endpoint_weekly %>% dplyr::filter(as.Date(week) < fit_end_week)
+  rank_panel_fit <- rank_panel %>% dplyr::filter(as.Date(week) < fit_end_week)
+  if (nrow(endpoint_weekly_fit) == 0L || nrow(rank_panel_fit) == 0L) {
+    stop(
+      "run_model_comparison: no data available before model_zoo_fit_end_week=",
+      as.character(fit_end_week)
+    )
+  }
+
   # Build standardized increments (rank-slot)
-  rank_inc <- build_rank_slot_increments(rank_panel, K_cut)
+  rank_inc <- build_rank_slot_increments(rank_panel_fit, K_cut)
   z_rank <- standardize_increments(rank_inc, sm_params$mean_dlogw_s, sm_params$sd_dlogw_s, bucket_def = bucket_def)
   z_rank <- z_rank %>% dplyr::mutate(z = dlogw_std)
 
   # Train/test split by week
   weeks <- sort(unique(z_rank$week))
-  n_train <- max(2, floor(length(weeks) * cfg$model_zoo_train_frac))
+  if (length(weeks) < 3L) {
+    stop(
+      "run_model_comparison: need at least 3 weeks before model_zoo_fit_end_week for train/test split. Found ",
+      length(weeks), "."
+    )
+  }
+  n_train <- max(2L, floor(length(weeks) * cfg$model_zoo_train_frac))
+  if (n_train >= length(weeks)) n_train <- length(weeks) - 1L
   train_weeks <- weeks[seq_len(n_train)]
-  test_weeks <- weeks[(n_train + 1):length(weeks)]
+  test_weeks <- weeks[(n_train + 1L):length(weeks)]
   z_train <- z_rank %>% dplyr::filter(week %in% train_weeks)
   z_test <- z_rank %>% dplyr::filter(week %in% test_weeks)
 
   # Empirical targets (full + test)
   targets_emp <- build_emp_targets(
-    endpoint_weekly, rank_panel, sm_params, K_cut, cfg$horizons_durable, bucket_def, K_xi,
+    endpoint_weekly_fit, rank_panel_fit, sm_params, K_cut, cfg$horizons_durable, bucket_def, K_xi,
     tail_thresholds = cfg$model_zoo_tail_thresholds,
     tail_probs = cfg$model_zoo_tail_probs
   )
   targets_emp_test <- build_emp_targets(
-    endpoint_weekly %>% dplyr::filter(week %in% test_weeks),
-    rank_panel %>% dplyr::filter(week %in% test_weeks),
+    endpoint_weekly_fit %>% dplyr::filter(week %in% test_weeks),
+    rank_panel_fit %>% dplyr::filter(week %in% test_weeks),
     sm_params,
     K_cut,
     cfg$horizons_durable,

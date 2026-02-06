@@ -23,6 +23,13 @@ coerce_character_vec <- function(x) {
   as.character(x)
 }
 
+coerce_date <- function(x) {
+  if (is.null(x)) return(as.Date(NA))
+  if (inherits(x, "Date")) return(x)
+  if (inherits(x, c("POSIXct", "POSIXt"))) return(as.Date(x))
+  suppressWarnings(as.Date(x))
+}
+
 config_from_params <- function(params) {
   cfg <- within(list(), {
     mode <- params$mode %||% "dev"
@@ -117,6 +124,7 @@ config_from_params <- function(params) {
     jump_kappa_small <- coerce_numeric(params$jump_kappa_small %||% 0.02)
 
     model_zoo_param_mode <- as.character(params$model_zoo_param_mode %||% "bucket")
+    model_zoo_fit_end_week <- coerce_date(params$model_zoo_fit_end_week %||% "2022-07-01")
     model_zoo_train_frac <- coerce_numeric(params$model_zoo_train_frac %||% 0.7)
     model_zoo_df_min <- coerce_numeric(params$model_zoo_df_min %||% 2.2)
     model_zoo_jump_p_max <- coerce_numeric(params$model_zoo_jump_p_max %||% 0.25)
@@ -138,9 +146,10 @@ config_from_params <- function(params) {
     c2_smooth_enabled <- if (is.null(params$c2_smooth_enabled)) TRUE else isTRUE(params$c2_smooth_enabled)
     c2_smooth_x_mode <- as.character(params$c2_smooth_x_mode %||% "log_rank")
     c2_smooth_quadratic <- isTRUE(params$c2_smooth_quadratic)
-    c2_smooth_max_iter <- as.integer(coerce_numeric(params$c2_smooth_max_iter %||% 500L))
-    c2_smooth_subsample_frac <- coerce_numeric(params$c2_smooth_subsample_frac %||% 1.0)
-    c2_smooth_ridge_lambda <- coerce_numeric(params$c2_smooth_ridge_lambda %||% 0.0)
+    c2_smooth_max_iter <- as.integer(coerce_numeric(params$c2_smooth_max_iter %||% 60L))
+    c2_smooth_subsample_frac <- coerce_numeric(params$c2_smooth_subsample_frac %||% 0.2)
+    c2_smooth_refine_max_iter <- as.integer(coerce_numeric(params$c2_smooth_refine_max_iter %||% 20L))
+    c2_smooth_ridge_lambda <- coerce_numeric(params$c2_smooth_ridge_lambda %||% 1e-3)
 
     bucket_def <- list(
       breaks = bucket_breaks,
@@ -276,6 +285,9 @@ config_from_params <- function(params) {
   if (is.na(cfg$model_zoo_train_frac) || cfg$model_zoo_train_frac <= 0.5 || cfg$model_zoo_train_frac >= 0.95) {
     stop("model_zoo_train_frac must be in (0.5, 0.95). Got: ", params$model_zoo_train_frac)
   }
+  if (is.na(cfg$model_zoo_fit_end_week)) {
+    stop("model_zoo_fit_end_week must be a valid date (YYYY-MM-DD). Got: ", params$model_zoo_fit_end_week)
+  }
 
   if (is.na(cfg$model_zoo_df_min) || cfg$model_zoo_df_min <= 2) {
     stop("model_zoo_df_min must be > 2 for finite variance. Got: ", params$model_zoo_df_min)
@@ -326,6 +338,9 @@ config_from_params <- function(params) {
   }
   if (is.na(cfg$c2_smooth_subsample_frac) || cfg$c2_smooth_subsample_frac <= 0 || cfg$c2_smooth_subsample_frac > 1) {
     stop("c2_smooth_subsample_frac must be in (0,1]. Got: ", params$c2_smooth_subsample_frac)
+  }
+  if (is.na(cfg$c2_smooth_refine_max_iter) || cfg$c2_smooth_refine_max_iter < 0) {
+    stop("c2_smooth_refine_max_iter must be >= 0. Got: ", params$c2_smooth_refine_max_iter)
   }
   if (is.na(cfg$c2_smooth_ridge_lambda) || cfg$c2_smooth_ridge_lambda < 0) {
     stop("c2_smooth_ridge_lambda must be >= 0. Got: ", params$c2_smooth_ridge_lambda)

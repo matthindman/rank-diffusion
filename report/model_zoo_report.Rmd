@@ -27,6 +27,7 @@ params:
   pca_K: 500L
   run_jump_model_zoo: true
   model_zoo_param_mode: "bucket"
+  model_zoo_fit_end_week: "2022-07-01"
   model_zoo_train_frac: 0.7
   model_zoo_df_min: 2.2
   model_zoo_jump_p_max: 0.25
@@ -48,9 +49,10 @@ params:
   c2_smooth_enabled: true
   c2_smooth_x_mode: "log_rank"
   c2_smooth_quadratic: false
-  c2_smooth_max_iter: 500L
-  c2_smooth_subsample_frac: 1.0
-  c2_smooth_ridge_lambda: 0.0
+  c2_smooth_max_iter: 60L
+  c2_smooth_subsample_frac: 0.2
+  c2_smooth_refine_max_iter: 20L
+  c2_smooth_ridge_lambda: 0.001
 ---
 
 ```{r setup, include=FALSE}
