@@ -489,8 +489,11 @@ cluster_rank
 
 If clustering is material (positive autocorrelation in extreme indicators), set `CFG$enable_jump_clustering_models = TRUE` to include self-exciting / regime-switching variants in the model zoo.
 
-```{r qq-plot-normal}
-ggplot(rank_inc_std, aes(sample = z)) +
+```{r qq-plot-normal, echo=FALSE, out.width="85%"}
+plot_dir <- here::here("output", "plots")
+dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
+
+qq_normal_plot <- ggplot(rank_inc_std, aes(sample = z)) +
   stat_qq() +
   stat_qq_line() +
   facet_wrap(~ bucket, scales = "free") +
@@ -501,9 +504,13 @@ ggplot(rank_inc_std, aes(sample = z)) +
     y = "Sample quantiles"
   ) +
   theme_bw()
+
+qq_normal_path <- file.path(plot_dir, "qq_normal_rank.png")
+ggsave(qq_normal_path, qq_normal_plot, dpi = 300, width = 8, height = 5, units = "in")
+knitr::include_graphics(qq_normal_path)
 ```
 
-```{r qq-plot-t}
+```{r qq-plot-t, echo=FALSE, out.width="85%"}
 fit_t_rank <- fit_student_t(rank_inc_std, mode = "bucket", df_min = CFG$model_zoo_df_min)
 qq_t_rank <- rank_inc_std %>%
   group_by(bucket) %>%
@@ -515,7 +522,7 @@ qq_t_rank <- rank_inc_std %>%
   }) %>%
   ungroup()
 
-ggplot(qq_t_rank, aes(x = theo_q, y = sample_q)) +
+qq_t_plot <- ggplot(qq_t_rank, aes(x = theo_q, y = sample_q)) +
   geom_point(size = 0.7, alpha = 0.6) +
   geom_abline(linetype = "dashed", color = "gray40") +
   facet_wrap(~ bucket, scales = "free") +
@@ -525,6 +532,10 @@ ggplot(qq_t_rank, aes(x = theo_q, y = sample_q)) +
     y = "Sample quantiles"
   ) +
   theme_bw()
+
+qq_t_path <- file.path(plot_dir, "qq_t_rank.png")
+ggsave(qq_t_path, qq_t_plot, dpi = 300, width = 8, height = 5, units = "in")
+knitr::include_graphics(qq_t_path)
 ```
 
 ## Simulation framework (v8–v11) + unified fit metrics
