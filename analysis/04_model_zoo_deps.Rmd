@@ -1,0 +1,237 @@
+```{r model-zoo-setup, include=FALSE}
+if (!exists("endpoint_bundle")) {
+  endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
+}
+
+fit_end_week <- CFG$model_zoo_fit_end_week %||% as.Date("2022-07-01")
+endpoint_weekly <- endpoint_bundle$endpoint_weekly %>%
+  filter(as.Date(week) < fit_end_week)
+if (nrow(endpoint_weekly) == 0L) {
+  stop("No model-zoo data before fit_end_week=", as.character(fit_end_week))
+}
+
+max_rank_seen <- endpoint_weekly %>%
+  summarise(max_rank = max(rank, na.rm = TRUE)) %>%
+  pull(max_rank) %>%
+  as.integer()
+K_cut <- min(endpoint_bundle$K_cut, max_rank_seen)
+K_max <- min(endpoint_bundle$K_max, max_rank_seen)
+sim_K_xi <- min(endpoint_bundle$sim_K_xi, K_cut)
+
+bucket_def <- CFG$bucket_def
+Smoothing_h <- CFG$smoothing_h
+pca_K <- CFG$pca_K
+
+rank_panel <- build_rank_panel(endpoint_weekly)
+gauss_params_raw <- compute_gauss_params_raw(rank_panel, K_max)
+sm_params <- build_gaussian_params_smoothed(gauss_params_raw, K_max, h = Smoothing_h)
+
+message(
+  "[model-zoo-window] week < ", as.character(fit_end_week),
+  " | endpoint rows=", nrow(endpoint_weekly),
+  " | rank_panel rows=", nrow(rank_panel),
+  " | max endpoint week=", as.character(max(endpoint_weekly$week, na.rm = TRUE)),
+  " | max rank_panel week=", as.character(max(rank_panel$week, na.rm = TRUE))
+)
+```
+
+## Stylized fact E: Common shocks vs idiosyncratic movement (new)
+
+A pragmatic diagnostic: PCA on rank-slot increments for the top `pca_K` ranks.
+
+```{r common-shocks-pca}
+K_pca <- min(pca_K, K_cut)
+
+pca_cache <- list(
+  beta_k = rep(0, K_max),
+  pc1_var_explained = NA_real_,
+  pc1 = NULL
+)
+
+if (is.na(K_pca) || K_pca < 2) {
+  message("Skipping PCA: K_pca < 2 (K_pca=", K_pca, ").")
+} else {
+  rank_slot_wide <- rank_panel %>%
+    filter(rank <= K_pca) %>%
+    select(week, rank, dlogw) %>%
+    pivot_wider(names_from = rank, values_from = dlogw)
+
+  rank_slot_mat <- rank_slot_wide %>%
+    drop_na() %>%
+    arrange(week)
+
+  X <- rank_slot_mat %>%
+    select(-week) %>%
+    as.matrix()
+
+  if (nrow(X) < 2 || ncol(X) < 2) {
+    message(
+      "Skipping PCA: need at least 2 complete weeks and 2 rank columns; got ",
+      nrow(X), "x", ncol(X), "."
+    )
+  } else {
+    pca_fit <- prcomp(X, center = TRUE, scale. = TRUE)
+
+    var_explained <- (pca_fit$sdev^2) / sum(pca_fit$sdev^2)
+
+    tibble(
+      component = seq_along(var_explained),
+      var_explained = var_explained
+    ) %>%
+      slice(1:10)
+
+    ggplot(
+      tibble(component = seq_along(var_explained), var_explained = var_explained) %>% slice(1:20),
+      aes(component, var_explained)
+    ) +
+      geom_line() +
+      geom_point(size = 1.5) +
+      scale_y_continuous(labels = percent_format(accuracy = 0.1)) +
+      labs(
+        title = "PCA on rank-slot increments: variance explained",
+        subtitle = paste0("Top ", K_pca, " ranks; complete weeks only"),
+        x = "Principal component",
+        y = "Share of variance explained"
+      ) +
+      theme_bw()
+
+    pc1 <- pca_fit$x[, 1]
+    pc1_df <- tibble(week = rank_slot_mat$week, pc1 = pc1)
+
+    ggplot(pc1_df, aes(week, pc1)) +
+      geom_line() +
+      labs(
+        title = "First principal component over time (common shock proxy)",
+        x = "Week",
+        y = "PC1 score"
+      ) +
+      theme_bw()
+
+    # cache loadings for jump-factor model (smoothed, padded to K_max)
+    beta_raw <- pca_fit$rotation[, 1]
+    beta_vec <- rep(0, K_max)
+    beta_vec[seq_len(K_pca)] <- beta_raw
+    beta_vec <- moving_average_rank(beta_vec, h = as.integer(Smoothing_h))
+    beta_scale <- sqrt(mean(beta_vec[seq_len(K_pca)]^2, na.rm = TRUE))
+    if (is.finite(beta_scale) && beta_scale > 0) {
+      beta_vec <- beta_vec / beta_scale
+    }
+
+    pca_cache$beta_k <- beta_vec
+    pca_cache$pc1_var_explained <- var_explained[1]
+    pca_cache$pc1 <- pc1_df
+  }
+}
+```
+
+## Tail & skew diagnostics for increments (empirical)
+
+This section checks whether rank-slot and identity-based increments have heavy tails and directional skew, including robust skew/kurtosis and a Hill tail-index estimate.
+
+```{r tail-skew-setup}
+rank_inc <- build_rank_slot_increments(rank_panel %>% filter(rank <= K_cut), K_cut)
+rank_inc_std <- standardize_increments(rank_inc, sm_params$mean_dlogw_s, sm_params$sd_dlogw_s, bucket_def = bucket_def) %>%
+  mutate(z = dlogw_std)
+
+identity_inc <- build_identity_increments(endpoint_weekly, horizon = 1L)
+identity_inc_std <- standardize_increments(identity_inc, sm_params$mean_dlogw_s, sm_params$sd_dlogw_s, bucket_def = bucket_def) %>%
+  mutate(z = dlogw_std)
+
+inc_long <- bind_rows(
+  rank_inc_std %>% mutate(type = "rank_slot") %>% select(week, rank, bucket, dlogw, dlogw_std, type),
+  identity_inc_std %>% mutate(type = "identity") %>% select(week, endpoint_id, rank, bucket, dlogw, dlogw_std, type)
+)
+
+tail_rank <- tail_skew_diagnostics(rank_inc_std, thresholds = CFG$model_zoo_tail_thresholds, probs = CFG$model_zoo_tail_probs)
+tail_identity <- tail_skew_diagnostics(identity_inc_std, thresholds = CFG$model_zoo_tail_thresholds, probs = CFG$model_zoo_tail_probs)
+
+tail_rank
+tail_identity
+```
+
+```{r jump-clustering}
+cluster_rank <- jump_clustering_diagnostics(rank_inc_std, thresholds = c(3, 4, 5))
+cluster_rank
+```
+
+If clustering is material (positive autocorrelation in extreme indicators), set `CFG$enable_jump_clustering_models = TRUE` to include self-exciting / regime-switching variants in the model zoo.
+
+```{r qq-plot-normal, echo=FALSE, out.width="85%"}
+plot_dir <- here::here("output", "plots")
+dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
+
+qq_normal_plot <- ggplot(rank_inc_std, aes(sample = z)) +
+  stat_qq() +
+  stat_qq_line() +
+  facet_wrap(~ bucket, scales = "free") +
+  labs(
+    title = "QQ plot of standardized increments by bucket",
+    subtitle = "Normal reference",
+    x = "Theoretical quantiles",
+    y = "Sample quantiles"
+  ) +
+  theme_bw()
+
+qq_normal_path <- file.path(plot_dir, "qq_normal_rank.png")
+ggsave(qq_normal_path, qq_normal_plot, dpi = 300, width = 8, height = 5, units = "in")
+knitr::include_graphics(qq_normal_path)
+```
+
+```{r qq-plot-t, echo=FALSE, out.width="85%"}
+fit_t_rank <- fit_student_t(rank_inc_std, mode = "bucket", df_min = CFG$model_zoo_df_min)
+qq_t_rank <- rank_inc_std %>%
+  group_by(bucket) %>%
+  group_modify(~{
+    b <- .y$bucket
+    df_hat <- fit_t_rank$params %>% filter(bucket == b) %>% pull(df)
+    df_hat <- df_hat[1]
+    if (!is.finite(df_hat) || length(df_hat) == 0) df_hat <- max(6, CFG$model_zoo_df_min + 1)
+    qq_df <- qqplot_data(.x$z, dist = "t", params = list(df = df_hat))
+    qq_df
+  }) %>%
+  ungroup()
+
+qq_t_plot <- ggplot(qq_t_rank, aes(x = theo_q, y = sample_q)) +
+  geom_point(size = 0.7, alpha = 0.6) +
+  geom_abline(linetype = "dashed", color = "gray40") +
+  facet_wrap(~ bucket, scales = "free") +
+  labs(
+    title = "QQ plot vs Student-t (fitted df)",
+    x = "Theoretical quantiles",
+    y = "Sample quantiles"
+  ) +
+  theme_bw()
+
+qq_t_path <- file.path(plot_dir, "qq_t_rank.png")
+ggsave(qq_t_path, qq_t_plot, dpi = 300, width = 8, height = 5, units = "in")
+knitr::include_graphics(qq_t_path)
+```
+
+## Simulation framework (v8–v11) + unified fit metrics
+
+### 12.1 Empirical entrant pool for entry/exit
+
+```{r entrant-pool}
+entrant_pool <- build_entrant_pool(endpoint_weekly, K_cut, CFG$K_tail_buffer, max_rank_seen)
+
+stopifnot(nrow(entrant_pool) > 100)
+
+entrant_sampler <- make_entrant_sampler(entrant_pool)
+
+w0_ext <- build_w0_ext(endpoint_weekly, K_max, entrant_sampler)
+```
+
+### 12.2 Simulator (Gaussian increments with smoothed moments; optional Xi output)
+
+This merges v9’s simulator with v11’s Xi storage.
+
+### 12.3 Fit metrics (CDC, durable change, Xi)
+
+```{r fit-metrics, include=FALSE}
+emp_cdc <- compute_emp_cdc(endpoint_weekly, K_cut)
+emp_targets <- compute_emp_endpoint_change(
+  df = endpoint_weekly %>% filter(rank <= K_cut),
+  horizons = CFG$horizons_durable,
+  bucket_def = bucket_def
+)
+```

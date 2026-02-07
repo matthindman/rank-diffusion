@@ -9,12 +9,7 @@ rstd_t_vec <- function(df_vec, df_default = 6) {
   df_vec <- as.numeric(df_vec)
   df_vec[!is.finite(df_vec)] <- df_default
   df_vec <- pmax(df_vec, 2.01)
-  out <- numeric(length(df_vec))
-  for (d in unique(df_vec)) {
-    idx <- which(df_vec == d)
-    out[idx] <- rstd_t(length(idx), d)
-  }
-  out
+  stats::rt(length(df_vec), df = df_vec) * sqrt((df_vec - 2) / df_vec)
 }
 
 rlaplace <- function(n, scale) {
@@ -155,6 +150,41 @@ eval_smooth_kou_params_for_sim <- function(model, moment_curves, K_max) {
   )
 }
 
+eval_smooth_t_params_for_sim <- function(model, moment_curves, K_max) {
+  if (!is.null(model$smooth_t_param_curves)) {
+    curves <- model$smooth_t_param_curves
+    req <- c("nu", "scale_idio")
+    if (is.data.frame(curves) && all(req %in% names(curves)) && nrow(curves) >= K_max) {
+      out <- curves[seq_len(K_max), req, drop = FALSE]
+      return(list(
+        nu = pmin(pmax(as.numeric(out$nu), 2.01), 500),
+        scale_idio = pmin(pmax(as.numeric(out$scale_idio), 1e-4), 1e3)
+      ))
+    }
+  }
+
+  theta <- model$smooth_t_theta %||% model$smooth_theta %||% model$theta
+  if (is.null(theta)) stop("factor_t_smooth_twostage requires smooth_t_theta or smooth_t_param_curves.")
+  theta <- unlist(theta)
+
+  ranks <- seq_len(K_max)
+  x_mode <- model$x_mode %||% "log_sigma_hat"
+  x <- if (x_mode == "log_sigma_hat") {
+    log(pmax(moment_curves$sd_vec[ranks], 1e-8))
+  } else {
+    log(pmax(ranks, 1))
+  }
+  x2 <- if (isTRUE(model$quadratic)) x^2 else rep(0, K_max)
+
+  nu <- exp(resolve_smooth_curve(theta, "a", x, x2)) + 2
+  scale_idio <- exp(resolve_smooth_curve(theta, "b", x, x2))
+
+  list(
+    nu = pmin(pmax(nu, 2.01), 500),
+    scale_idio = pmin(pmax(scale_idio, 1e-4), 1e3)
+  )
+}
+
 draw_increments <- function(t, w_t, moment_curves, model, cache) {
   type <- model$type %||% "gaussian"
   mean_vec <- moment_curves$mean_vec
@@ -288,7 +318,12 @@ draw_increments <- function(t, w_t, moment_curves, model, cache) {
     if (abs(phi_F) >= 1) phi_F <- sign(phi_F) * 0.99
     df_F <- model$factor_df %||% 6
     scale_F <- model$factor_scale %||% 1
-    eta <- rstd_t(1, df = df_F) * scale_F
+    factor_dist <- model$factor_dist %||% ifelse(is.finite(df_F), "student_t", "gaussian")
+    eta <- if (identical(factor_dist, "gaussian") || !is.finite(df_F) || df_F > 1e6) {
+      rnorm(1, mean = 0, sd = scale_F)
+    } else {
+      rstd_t(1, df = df_F) * scale_F
+    }
     F_t <- phi_F * state$F_prev + sqrt(1 - phi_F^2) * eta
     state$F_prev <- F_t
 
@@ -351,7 +386,12 @@ draw_increments <- function(t, w_t, moment_curves, model, cache) {
 
     df_F <- model$factor_df %||% 6
     scale_F <- model$factor_scale %||% 1
-    F_t <- rstd_t(1, df = df_F) * scale_F
+    factor_dist <- model$factor_dist %||% ifelse(is.finite(df_F), "student_t", "gaussian")
+    F_t <- if (identical(factor_dist, "gaussian") || !is.finite(df_F) || df_F > 1e6) {
+      rnorm(1, mean = 0, sd = scale_F)
+    } else {
+      rstd_t(1, df = df_F) * scale_F
+    }
 
     if (is.null(state$smooth_params) || length(state$smooth_params$p) != K_max) {
       state$smooth_params <- eval_smooth_kou_params_for_sim(model, moment_curves, K_max)
@@ -371,6 +411,30 @@ draw_increments <- function(t, w_t, moment_curves, model, cache) {
       eps[idx] <- eps[idx] + jumps
     }
 
+    z <- beta_k * F_t + eps
+    return(mu + mean_vec + sigma * sd_vec * z)
+  }
+
+  if (type == "factor_t_smooth_twostage") {
+    beta_k <- resolve_beta_k(model, cache, K_max)
+    state <- cache$state
+    if (is.null(state$F_prev)) state$F_prev <- 0
+
+    df_F <- model$factor_df %||% 6
+    scale_F <- model$factor_scale %||% 1
+    factor_dist <- model$factor_dist %||% ifelse(is.finite(df_F), "student_t", "gaussian")
+    F_t <- if (identical(factor_dist, "gaussian") || !is.finite(df_F) || df_F > 1e6) {
+      rnorm(1, mean = 0, sd = scale_F)
+    } else {
+      rstd_t(1, df = df_F) * scale_F
+    }
+
+    if (is.null(state$smooth_t_params) || length(state$smooth_t_params$nu) != K_max) {
+      state$smooth_t_params <- eval_smooth_t_params_for_sim(model, moment_curves, K_max)
+    }
+    par <- state$smooth_t_params
+
+    eps <- rstd_t_vec(par$nu) * par$scale_idio
     z <- beta_k * F_t + eps
     return(mu + mean_vec + sigma * sd_vec * z)
   }

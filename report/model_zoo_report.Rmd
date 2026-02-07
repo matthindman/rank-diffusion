@@ -28,6 +28,7 @@ params:
   run_jump_model_zoo: true
   model_zoo_param_mode: "bucket"
   model_zoo_fit_end_week: "2022-07-01"
+  model_zoo_progress: true
   model_zoo_train_frac: 0.7
   model_zoo_df_min: 2.2
   model_zoo_jump_p_max: 0.25
@@ -46,9 +47,18 @@ params:
   enable_jump_clustering_models: false
   model_zoo_bootstrap_B: 100L
   model_zoo_bootstrap_block_length: 4L
+  c15_smooth_enabled: true
+  c15_smooth_x_mode: "log_sigma_hat"
+  c15_smooth_quadratic: false
+  c15_smooth_factor_mode: "auto"
+  c15_smooth_max_iter: 80L
+  c15_smooth_subsample_frac: 0.3
+  c15_smooth_refine_max_iter: 20L
+  c15_smooth_ridge_lambda: 0.0001
   c2_smooth_enabled: true
   c2_smooth_x_mode: "log_rank"
   c2_smooth_quadratic: false
+  c2_smooth_factor_mode: "auto"
   c2_smooth_max_iter: 60L
   c2_smooth_subsample_frac: 0.2
   c2_smooth_refine_max_iter: 20L

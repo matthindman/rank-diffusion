@@ -125,6 +125,7 @@ config_from_params <- function(params) {
 
     model_zoo_param_mode <- as.character(params$model_zoo_param_mode %||% "bucket")
     model_zoo_fit_end_week <- coerce_date(params$model_zoo_fit_end_week %||% "2022-07-01")
+    model_zoo_progress <- if (is.null(params$model_zoo_progress)) TRUE else isTRUE(params$model_zoo_progress)
     model_zoo_train_frac <- coerce_numeric(params$model_zoo_train_frac %||% 0.7)
     model_zoo_df_min <- coerce_numeric(params$model_zoo_df_min %||% 2.2)
     model_zoo_jump_p_max <- coerce_numeric(params$model_zoo_jump_p_max %||% 0.25)
@@ -143,9 +144,18 @@ config_from_params <- function(params) {
     enable_jump_clustering_models <- isTRUE(params$enable_jump_clustering_models)
     model_zoo_bootstrap_B <- as.integer(coerce_numeric(params$model_zoo_bootstrap_B %||% 100L))
     model_zoo_bootstrap_block_length <- as.integer(coerce_numeric(params$model_zoo_bootstrap_block_length %||% 4L))
+    c15_smooth_enabled <- if (is.null(params$c15_smooth_enabled)) TRUE else isTRUE(params$c15_smooth_enabled)
+    c15_smooth_x_mode <- as.character(params$c15_smooth_x_mode %||% "log_sigma_hat")
+    c15_smooth_quadratic <- isTRUE(params$c15_smooth_quadratic)
+    c15_smooth_factor_mode <- as.character(params$c15_smooth_factor_mode %||% "auto")
+    c15_smooth_max_iter <- as.integer(coerce_numeric(params$c15_smooth_max_iter %||% 80L))
+    c15_smooth_subsample_frac <- coerce_numeric(params$c15_smooth_subsample_frac %||% 0.3)
+    c15_smooth_refine_max_iter <- as.integer(coerce_numeric(params$c15_smooth_refine_max_iter %||% 20L))
+    c15_smooth_ridge_lambda <- coerce_numeric(params$c15_smooth_ridge_lambda %||% 1e-4)
     c2_smooth_enabled <- if (is.null(params$c2_smooth_enabled)) TRUE else isTRUE(params$c2_smooth_enabled)
     c2_smooth_x_mode <- as.character(params$c2_smooth_x_mode %||% "log_rank")
     c2_smooth_quadratic <- isTRUE(params$c2_smooth_quadratic)
+    c2_smooth_factor_mode <- as.character(params$c2_smooth_factor_mode %||% "auto")
     c2_smooth_max_iter <- as.integer(coerce_numeric(params$c2_smooth_max_iter %||% 60L))
     c2_smooth_subsample_frac <- coerce_numeric(params$c2_smooth_subsample_frac %||% 0.2)
     c2_smooth_refine_max_iter <- as.integer(coerce_numeric(params$c2_smooth_refine_max_iter %||% 20L))
@@ -325,13 +335,47 @@ config_from_params <- function(params) {
     stop("model_zoo_bootstrap_block_length must be >= 1. Got: ", params$model_zoo_bootstrap_block_length)
   }
 
-  valid_c2_x_mode <- c("log_rank", "log_sigma_hat")
-  if (!cfg$c2_smooth_x_mode %in% valid_c2_x_mode) {
+  valid_smooth_x_mode <- c("log_rank", "log_sigma_hat")
+  if (!cfg$c15_smooth_x_mode %in% valid_smooth_x_mode) {
+    stop(
+      "c15_smooth_x_mode must be one of: ",
+      paste(valid_smooth_x_mode, collapse = ", "),
+      ". Got: ", cfg$c15_smooth_x_mode
+    )
+  }
+  if (!cfg$c2_smooth_x_mode %in% valid_smooth_x_mode) {
     stop(
       "c2_smooth_x_mode must be one of: ",
-      paste(valid_c2_x_mode, collapse = ", "),
+      paste(valid_smooth_x_mode, collapse = ", "),
       ". Got: ", cfg$c2_smooth_x_mode
     )
+  }
+  valid_factor_mode <- c("auto", "gaussian", "student_t")
+  if (!cfg$c15_smooth_factor_mode %in% valid_factor_mode) {
+    stop(
+      "c15_smooth_factor_mode must be one of: ",
+      paste(valid_factor_mode, collapse = ", "),
+      ". Got: ", cfg$c15_smooth_factor_mode
+    )
+  }
+  if (!cfg$c2_smooth_factor_mode %in% valid_factor_mode) {
+    stop(
+      "c2_smooth_factor_mode must be one of: ",
+      paste(valid_factor_mode, collapse = ", "),
+      ". Got: ", cfg$c2_smooth_factor_mode
+    )
+  }
+  if (is.na(cfg$c15_smooth_max_iter) || cfg$c15_smooth_max_iter < 1) {
+    stop("c15_smooth_max_iter must be >= 1. Got: ", params$c15_smooth_max_iter)
+  }
+  if (is.na(cfg$c15_smooth_subsample_frac) || cfg$c15_smooth_subsample_frac <= 0 || cfg$c15_smooth_subsample_frac > 1) {
+    stop("c15_smooth_subsample_frac must be in (0,1]. Got: ", params$c15_smooth_subsample_frac)
+  }
+  if (is.na(cfg$c15_smooth_refine_max_iter) || cfg$c15_smooth_refine_max_iter < 0) {
+    stop("c15_smooth_refine_max_iter must be >= 0. Got: ", params$c15_smooth_refine_max_iter)
+  }
+  if (is.na(cfg$c15_smooth_ridge_lambda) || cfg$c15_smooth_ridge_lambda < 0) {
+    stop("c15_smooth_ridge_lambda must be >= 0. Got: ", params$c15_smooth_ridge_lambda)
   }
   if (is.na(cfg$c2_smooth_max_iter) || cfg$c2_smooth_max_iter < 1) {
     stop("c2_smooth_max_iter must be >= 1. Got: ", params$c2_smooth_max_iter)

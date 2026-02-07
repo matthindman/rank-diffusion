@@ -172,6 +172,13 @@ if (!is.null(model_comp)) {
   param_tables <- purrr::imap(model_comp$results, function(res, name) {
     fit <- res$fit
     if (is.null(fit)) return(NULL)
+    if (fit$type == "factor_t_smooth_twostage") {
+      return(list(
+        factor = fit$factor_fit,
+        idio = list(theta = fit$idio_fit$theta, param_curves = fit$param_curves),
+        diagnostics = list(stage1 = fit$stage1, stage2 = fit$stage2, stage3 = fit$stage3)
+      ))
+    }
     if (fit$type == "factor_kou_smooth_twostage") {
       return(list(
         factor = fit$factor_fit,
@@ -190,7 +197,7 @@ if (!is.null(model_comp)) {
 
 ## Preferred model and interpretation
 
-The default lead specification is the factor + asymmetric Kou jump model (C2), unless the comparison table clearly favors a simpler alternative on both distributional and simulation targets.
+The default lead specification is C1.5 (factor + smooth Student-t), with C2 smooth Kou treated as an incremental check for discrete jump gains. The final selection follows the comparison table (distributional fit + simulation targets).
 
 ```{r model-zoo-best}
 if (!is.null(model_comp)) {
