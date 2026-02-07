@@ -2528,6 +2528,43 @@ run_model_comparison <- function(
 
     fit$id <- model_id
 
+    if (!isTRUE(fit$converged)) {
+      ll_train <- loglik_for_model(fit, z_train, bucket_def)
+      ll_test <- if (nrow(z_test) > 0) loglik_for_model(fit, z_test, bucket_def) else NA_real_
+      zoo_progress(
+        progress_on,
+        model_id, ": non-converged fit; skipping simulation/tail diagnostics and assigning Inf score."
+      )
+      results[[model_id]] <- list(
+        id = model_id,
+        name = model_meta$name,
+        family = model_meta$family,
+        type = fit$type,
+        converged = FALSE,
+        aic = fit$aic,
+        bic = fit$bic,
+        loglik = fit$loglik,
+        loglik_train = ll_train,
+        loglik_test = ll_test,
+        rmse_cdc = NA_real_,
+        rmse_durable = NA_real_,
+        rmse_xi = NA_real_,
+        rmse_cdc_test = NA_real_,
+        rmse_durable_test = NA_real_,
+        rmse_xi_test = NA_real_,
+        tail_mismatch = NA_real_,
+        skew_mismatch = NA_real_,
+        score = Inf,
+        fit_fn = model_meta$fit_fn,
+        fit = fit,
+        tail_sim = NULL,
+        tail_sim_rank_slot = NULL,
+        tail_sim_innov = NULL,
+        tail_diagnostics = NULL
+      )
+      next
+    }
+
     model_sim <- prepare_model_for_sim(fit, cfg, moment_curves)
 
     zoo_progress(progress_on, model_id, ": simulation started.")
