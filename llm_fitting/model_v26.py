@@ -1,0 +1,579 @@
+#!/usr/bin/env python3
+"""
+Permanent-Transitory Rank Diffusion Model v2.6
+===============================================
+Key architectural change from v2.5b:
+  Mean reversion to GLOBAL MEAN, not rank-specific equilibrium positions.
+  This stabilizes cross-sectional variance WITHOUT anchoring ranks.
+  
+Changes:
+1. tau += eta - kappa*(tau - mean(tau))  instead of  tau += eta - kappa*(tau - eq_target[rank])
+2. kappa=0.012 (stronger, since it no longer hurts RACF)
+3. perm_boost=1.3, sigma_obs=0.35
+4. Initialize from all week-0 endpoints (carried from v2.5b)
+"""
+
+import numpy as np
+import pandas as pd
+from scipy.optimize import minimize
+from scipy import stats as sp_stats
+import warnings, time
+warnings.filterwarnings('ignore')
+
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+
+t_start = time.time()
+
+# ============================================================
+# DATA LOADING
+# ============================================================
+print("=" * 70)
+print("LOADING DATA")
+print("=" * 70)
+
+df = pd.read_parquet('/Users/hindman/Documents/github/rank-diffusion/data/raw/fb_ranked_weekly_cutdown.parquet')
+df['date'] = pd.to_datetime(df['date'])
+dates = sorted(df['date'].unique())
+n_weeks = len(dates)
+
+ep_counts = df.groupby('endpoint_id')['date'].nunique()
+all_weeks_eps = sorted(ep_counts[ep_counts == n_weeks].index)
+N_balanced = len(all_weeks_eps)
+
+weekly_eps = {d: set(df[df['date'] == d]['endpoint_id']) for d in dates}
+weekly_counts = [len(weekly_eps[d]) for d in dates]
+mean_N = np.mean(weekly_counts)
+exits_list = [len(weekly_eps[dates[i-1]] - weekly_eps[dates[i]]) for i in range(1, len(dates))]
+mean_exits = np.mean(exits_list)
+print(f"  N_balanced={N_balanced}, mean_N={mean_N:.0f}, exits={mean_exits:.0f}/wk")
+
+metric_pivot = df[df['endpoint_id'].isin(all_weeks_eps)].pivot_table(
+    index='date', columns='endpoint_id', values='metric_value').sort_index()
+rank_pivot = df[df['endpoint_id'].isin(all_weeks_eps)].pivot_table(
+    index='date', columns='endpoint_id', values='rank').sort_index()
+log_metric = np.log1p(metric_pivot)
+log_changes = log_metric.diff().iloc[1:]
+
+var_1 = log_changes.var()
+vr_emp = {}
+for k in [2, 3, 4, 6, 8, 13, 17, 26, 39, 52]:
+    if k < n_weeks:
+        vr_emp[k] = (log_metric.diff(k).iloc[k:].var() / (k * var_1)).median()
+
+sample_eps = list(all_weeks_eps)[:2000]
+acf_emp, racf_emp = {}, {}
+for lag in [1, 2, 3, 4, 8]:
+    cors = [log_changes[ep].dropna().autocorr(lag) for ep in sample_eps
+            if len(log_changes[ep].dropna()) > lag + 5]
+    acf_emp[lag] = np.nanmedian(cors)
+for lag in [1, 4, 13, 26, 52]:
+    cors = [rank_pivot[ep].dropna().autocorr(lag) for ep in sample_eps
+            if len(rank_pivot[ep].dropna()) > lag + 5]
+    racf_emp[lag] = np.nanmedian(cors)
+
+pers_emp, xr2_emp = {}, {}
+for k in [1, 4, 13, 26, 52]:
+    if k < n_weeks:
+        t0 = set(df[(df['date'] == dates[0]) & (df['rank'] <= 100)]['endpoint_id'])
+        tk = set(df[(df['date'] == dates[k]) & (df['rank'] <= 100)]['endpoint_id'])
+        pers_emp[k] = len(t0 & tk)
+        t0v = log_metric.iloc[0]; tkv = log_metric.iloc[k]
+        valid = t0v.notna() & tkv.notna()
+        xr2_emp[k] = np.corrcoef(t0v[valid], tkv[valid])[0, 1] ** 2
+
+s0 = df[df['date'] == dates[0]].sort_values('rank')
+s0t = s0[(s0['rank'] >= 1) & (s0['rank'] <= 5000) & (s0['metric_value'] > 0)]
+zipf_slope = np.polyfit(np.log(s0t['rank'].values), np.log(s0t['metric_value'].values), 1)[0]
+
+all_ch_emp = log_changes.values.flatten()
+all_ch_emp = all_ch_emp[np.isfinite(all_ch_emp)]
+emp_kurt = sp_stats.kurtosis(all_ch_emp, fisher=True)
+emp_mean_var = var_1.mean()
+emp_median_var = var_1.median()
+xsec_var_emp = log_metric.var(axis=1).mean()
+
+w0_all = df[df['date'] == dates[0]]
+xsec_var_full = np.log1p(w0_all[w0_all['metric_value'] > 0]['metric_value']).var()
+
+print(f"  Change var: median={emp_median_var:.4f}, mean={emp_mean_var:.4f}, ratio={emp_mean_var/emp_median_var:.2f}")
+print(f"  Cross-sec var: bp={xsec_var_emp:.2f}, full_w0={xsec_var_full:.2f}")
+
+avg_rank = rank_pivot.mean()
+bands = [(1, 100), (101, 500), (501, 2000), (2001, 5000), (5001, 12000)]
+band_stats = {}
+for lo, hi in bands:
+    beps = avg_rank[(avg_rank >= lo) & (avg_rank <= hi)].index
+    bc = log_changes[beps]; bm = log_metric[beps]
+    total_var = bc.var().median()
+    vr4 = (bm.diff(4).iloc[4:].var() / (4 * bc.var())).median()
+    vr13 = (bm.diff(13).iloc[13:].var() / (13 * bc.var())).median()
+    acfs = [bc[ep].dropna().autocorr(1) for ep in list(beps)[:500]
+            if len(bc[ep].dropna()) > 6]
+    band_stats[(lo, hi)] = {'n': len(beps), 'var': total_var,
+                            'vr4': vr4, 'vr13': vr13, 'acf1': np.nanmedian(acfs)}
+
+print(f"\n  Targets:")
+print(f"    VR(4)={vr_emp[4]:.4f}, VR(13)={vr_emp[13]:.4f}, ACF(1)={acf_emp[1]:.4f}")
+print(f"    RACF(1)={racf_emp[1]:.4f}, R²(1)={xr2_emp[1]:.4f}, R²(13)={xr2_emp[13]:.4f}")
+print(f"    Kurt={emp_kurt:.1f}, Top-100 pers(1)={pers_emp[1]}")
+
+# ============================================================
+# PARAMETER ESTIMATION
+# ============================================================
+print("\n" + "=" * 70)
+print("PARAMETER ESTIMATION")
+print("=" * 70)
+
+sigma_obs = 0.35
+sobs2 = sigma_obs ** 2
+print(f"  σ_obs={sigma_obs} (contributes {2*sobs2:.4f} to Var(Δy))")
+
+def model_vr(k, se2, phi, sn2, sobs2=0):
+    sc2 = sn2 / (1 - phi ** 2) if abs(phi) < 0.999 else sn2 * 1000
+    vd = se2 + 2 * sc2 * (1 - phi) + 2 * sobs2
+    if vd <= 0: return 1.0
+    vk = k * se2 + 2 * sc2 * (1 - phi ** k) + 2 * sobs2
+    return vk / (k * vd)
+
+def model_acf1_fn(se2, phi, sn2, sobs2=0):
+    sc2 = sn2 / (1 - phi ** 2) if abs(phi) < 0.999 else sn2 * 1000
+    vd = se2 + 2 * sc2 * (1 - phi) + 2 * sobs2
+    if vd <= 0: return 0.0
+    return (-sc2 * (1 - phi) ** 2 - sobs2) / vd
+
+def fit_params(emp_var, emp_vr4, emp_acf1, emp_vr13=None, sobs2=0):
+    def objective(p):
+        se2, phi, sn2 = np.exp(p[0]), 0.95/(1+np.exp(-p[1])), np.exp(p[2])
+        sc2 = sn2/(1-phi**2) if abs(phi)<0.999 else sn2*1000
+        mvar = se2 + 2*sc2*(1-phi) + 2*sobs2
+        L = 10*(np.log(mvar)-np.log(emp_var))**2
+        L += 5*(model_vr(4, se2, phi, sn2, sobs2)-emp_vr4)**2
+        L += 3*(model_acf1_fn(se2, phi, sn2, sobs2)-emp_acf1)**2
+        if emp_vr13: L += 2*(model_vr(13, se2, phi, sn2, sobs2)-emp_vr13)**2
+        return L
+    best = None
+    for _ in range(200):
+        x0 = [np.random.uniform(-9,-1), np.random.uniform(-2,2), np.random.uniform(-4,1)]
+        try:
+            r = minimize(objective, x0, method='Nelder-Mead',
+                         options={'maxiter': 15000, 'xatol': 1e-10, 'fatol': 1e-12})
+            if best is None or r.fun < best.fun: best = r
+        except: pass
+    return np.exp(best.x[0]), 0.95/(1+np.exp(-best.x[1])), np.exp(best.x[2])
+
+band_params = {}
+for (lo, hi), st in band_stats.items():
+    se2, phi, sn2 = fit_params(st['var'], st['vr4'], st['acf1'], st['vr13'], sobs2)
+    sc2 = sn2/(1-phi**2)
+    mvar_s = se2 + 2*sc2*(1-phi)
+    mvar_t = mvar_s + 2*sobs2
+    band_params[(lo,hi)] = {'se':np.sqrt(se2),'phi':phi,'sn':np.sqrt(sn2),'pf':se2/mvar_t}
+    print(f"  {lo:5d}-{hi:5d}: se={np.sqrt(se2):.4f} phi={phi:.4f} "
+          f"sn={np.sqrt(sn2):.4f} perm={se2/mvar_t*100:.1f}% "
+          f"struct={mvar_s:.4f} total={mvar_t:.4f}")
+
+bc_arr = np.array([np.sqrt(lo*hi) for lo,hi in band_params.keys()])
+ses_arr = np.array([p['se'] for p in band_params.values()])
+phs_arr = np.array([p['phi'] for p in band_params.values()])
+sns_arr = np.array([p['sn'] for p in band_params.values()])
+
+def get_p(ranks):
+    lr = np.log(np.clip(ranks.astype(float), 1, bc_arr[-1]*2))
+    return (np.interp(lr, np.log(bc_arr), ses_arr),
+            np.interp(lr, np.log(bc_arr), phs_arr),
+            np.interp(lr, np.log(bc_arr), sns_arr))
+
+# ============================================================
+# SIMULATION v2.6
+# ============================================================
+print("\n" + "=" * 70)
+print("SIMULATION v2.6")
+print("=" * 70)
+
+N_FULL = int(mean_N)
+T_SIM = n_weeks
+
+# KEY CHANGE: mean revert to global mean, not rank-specific positions
+kappa = 0.012         # Can be stronger since it no longer anchors ranks
+t_df = 4.5
+jump_prob = 0.03
+jump_scale = 5.0
+sigma_het = 0.42
+perm_boost = 1.3      # Reduced from 1.6 (cross-sec fix helps R² directly)
+
+inc_alpha = 0.3
+p_exit_incumbent = 0.0040
+inc_p_base = p_exit_incumbent * (inc_alpha + 1)
+trans_p_exit = 0.07
+
+print(f"  N={N_FULL}, T={T_SIM}")
+print(f"  kappa={kappa} (global mean rev, half-life={np.log(2)/kappa:.0f}wk)")
+print(f"  t_df={t_df}, sigma_het={sigma_het}, sigma_obs={sigma_obs}")
+print(f"  perm_boost={perm_boost}, jump_prob={jump_prob}")
+
+# Initialize from ALL week-0 endpoints
+w0_data = df[df['date'] == dates[0]].sort_values('rank')
+w0_log = np.log1p(w0_data['metric_value'].values)
+w0_sorted = np.sort(w0_log)[::-1]
+N_w0 = len(w0_sorted)
+
+if N_w0 < N_FULL:
+    rf = np.arange(1, N_w0+1)
+    sl, ic = np.polyfit(np.log(rf[-2000:]), w0_sorted[-2000:], 1)
+    er = np.arange(N_w0+1, N_FULL+1)
+    w0_sorted = np.concatenate([w0_sorted, ic + sl*np.log(er)])
+    print(f"  Init: {N_w0} real + {N_FULL-N_w0} extrapolated")
+else:
+    w0_sorted = w0_sorted[:N_FULL]
+    print(f"  Init: {N_FULL} from {N_w0} real endpoints")
+
+tau = w0_sorted.copy()
+c = np.zeros(N_FULL)
+tau_global_mean = np.mean(tau)  # Track the initial global mean
+print(f"  Init cross-sec var: {np.var(tau):.4f} (emp={xsec_var_full:.4f})")
+print(f"  Init global mean: {tau_global_mean:.4f}")
+
+np.random.seed(42)
+het_multiplier = np.exp(np.random.normal(0, sigma_het, N_FULL))
+het_multiplier = np.clip(het_multiplier, 0.15, 8.0)
+print(f"  E[h²] = {np.mean(het_multiplier**2):.3f}")
+
+ep_type = np.zeros(N_FULL, dtype=int)
+endpoint_id = np.arange(N_FULL)
+next_id = N_FULL
+
+sim_ly = np.zeros((T_SIM, N_FULL))
+sim_ly_true = np.zeros((T_SIM, N_FULL))
+sim_rk = np.zeros((T_SIM, N_FULL), dtype=int)
+sim_ids = np.zeros((T_SIM, N_FULL), dtype=int)
+
+obs_noise = np.random.normal(0, sigma_obs, N_FULL)
+y0_obs = tau + c + obs_noise
+y0_true = tau + c
+
+order = np.argsort(-np.exp(y0_obs))
+ranks = np.empty(N_FULL, dtype=int); ranks[order] = np.arange(1, N_FULL+1)
+
+sim_ly[0] = y0_obs; sim_ly_true[0] = y0_true
+sim_rk[0] = ranks; sim_ids[0] = endpoint_id.copy()
+
+print(f"\nSimulating...")
+total_exits = 0
+xsec_vars = [np.var(tau)]
+
+for t in range(1, T_SIM):
+    cr = sim_rk[t-1]
+    se, phi_v, sn = get_p(cr)
+    
+    se_het = se * het_multiplier * perm_boost
+    sn_het = sn * het_multiplier
+
+    is_jump = np.random.random(N_FULL) < jump_prob
+    eta = np.where(is_jump,
+                   np.random.normal(0, se_het * jump_scale),
+                   np.random.normal(0, se_het))
+
+    t_scale = sn_het * np.sqrt((t_df-2)/t_df)
+    nu = sp_stats.t.rvs(df=t_df, size=N_FULL) * t_scale
+    c = phi_v * c + nu
+
+    # KEY CHANGE: mean revert to GLOBAL MEAN, not rank-specific positions
+    current_mean = np.mean(tau)
+    tau += eta - kappa * (tau - current_mean)
+
+    # Exit/entry
+    nr = cr / N_FULL
+    p_exit = np.where(ep_type == 0,
+                      inc_p_base * (nr ** inc_alpha),
+                      trans_p_exit)
+    exit_mask = np.random.random(N_FULL) < p_exit
+    n_ex = exit_mask.sum()
+    total_exits += n_ex
+
+    if n_ex > 0:
+        exi = np.where(exit_mask)[0]
+        n_burst = max(1, int(n_ex * 0.008))
+        n_norm = n_ex - n_burst
+        bq = np.percentile(tau[~exit_mask], 10)
+        bstd = np.std(tau[tau < np.median(tau)]) * 0.4
+        new_tau = np.random.normal(bq, bstd, n_norm)
+        if n_burst > 0:
+            buq = np.percentile(tau[~exit_mask], 90)
+            bust = np.std(tau) * 0.25
+            new_tau = np.concatenate([new_tau, np.random.normal(buq, bust, n_burst)])
+        tau[exi] = new_tau
+        c[exi] = sp_stats.t.rvs(df=t_df, size=n_ex) * 0.3
+        het_multiplier[exi] = np.clip(np.exp(np.random.normal(0, sigma_het, n_ex)), 0.15, 8.0)
+        ep_type[exi] = 1
+        endpoint_id[exi] = np.arange(next_id, next_id+n_ex)
+        next_id += n_ex
+
+    log_y_true = tau + c
+    obs_noise = np.random.normal(0, sigma_obs, N_FULL)
+    log_y_obs = log_y_true + obs_noise
+
+    order = np.argsort(-np.exp(log_y_obs))
+    ranks = np.empty(N_FULL, dtype=int); ranks[order] = np.arange(1, N_FULL+1)
+
+    sim_ly[t] = log_y_obs; sim_ly_true[t] = log_y_true
+    sim_rk[t] = ranks; sim_ids[t] = endpoint_id.copy()
+    xsec_vars.append(np.var(tau))
+
+avg_ex = total_exits / (T_SIM-1)
+print(f"  Avg exits/week: {avg_ex:.1f} (target: {mean_exits:.1f})")
+print(f"  Cross-sec var: t=0 {xsec_vars[0]:.4f}, t=87 {xsec_vars[-1]:.4f}, mean {np.mean(xsec_vars):.4f}")
+
+# Balanced panel
+init_ids = set(sim_ids[0])
+survivors = init_ids.copy()
+for t in range(1, T_SIM):
+    survivors &= set(sim_ids[t])
+N_BP = len(survivors)
+print(f"  Survivors: {N_BP}/{N_FULL} ({N_BP/N_FULL*100:.1f}%, target ~{N_balanced/mean_N*100:.0f}%)")
+
+survivor_list = sorted(survivors)
+bp_ly = np.zeros((T_SIM, N_BP))
+bp_ly_true = np.zeros((T_SIM, N_BP))
+bp_rk = np.zeros((T_SIM, N_BP), dtype=int)
+for t in range(T_SIM):
+    id_map = {eid: idx for idx, eid in enumerate(sim_ids[t])}
+    for j, sid in enumerate(survivor_list):
+        idx = id_map[sid]
+        bp_ly[t,j] = sim_ly[t,idx]
+        bp_ly_true[t,j] = sim_ly_true[t,idx]
+        bp_rk[t,j] = sim_rk[t,idx]
+
+# ============================================================
+# VALIDATION
+# ============================================================
+print("\n" + "=" * 70)
+print("VALIDATION")
+print("=" * 70)
+
+sim_df = pd.DataFrame(bp_ly)
+sim_ch = sim_df.diff().iloc[1:]
+sim_v1 = sim_ch.var()
+
+sim_mean_var = sim_v1.mean()
+sim_median_var = sim_v1.median()
+bp_xsec_var = pd.DataFrame(bp_ly).var(axis=1).mean()
+bp_xsec_var_0 = np.var(bp_ly[0])
+bp_xsec_var_end = np.var(bp_ly[-1])
+
+print(f"  Sim change var: median={sim_median_var:.4f}, mean={sim_mean_var:.4f}, ratio={sim_mean_var/sim_median_var:.2f}")
+print(f"  Emp change var: median={emp_median_var:.4f}, mean={emp_mean_var:.4f}, ratio={emp_mean_var/emp_median_var:.2f}")
+print(f"  BP cross-sec var: sim_mean={bp_xsec_var:.4f}, sim_t0={bp_xsec_var_0:.4f}, sim_end={bp_xsec_var_end:.4f}, emp={xsec_var_emp:.4f}")
+
+results = {}
+
+print("\n--- Variance Ratios ---")
+for k in [2, 4, 8, 13, 26, 52]:
+    if k in vr_emp and k < T_SIM:
+        ck = sim_df.diff(k).iloc[k:]
+        vs = (ck.var() / (k * sim_v1)).median()
+        err = abs(vs - vr_emp[k]) / vr_emp[k] * 100
+        results[f'vr{k}'] = vs
+        ok = "Y" if err < 20 else "N"
+        print(f"  VR({k:2d}): emp={vr_emp[k]:.4f} sim={vs:.4f} err={err:.1f}% [{ok}]")
+
+print("\n--- ACF of changes ---")
+for lag in [1, 2, 3, 4]:
+    if lag in acf_emp:
+        cors = [sim_ch[i].dropna().autocorr(lag) for i in range(min(1000, N_BP))
+                if len(sim_ch[i].dropna()) > lag + 5]
+        a = np.nanmedian(cors); results[f'acf{lag}'] = a
+        err = abs(a - acf_emp[lag])
+        ok = "Y" if err < 0.08 else "N"
+        print(f"  ACF({lag}): emp={acf_emp[lag]:.4f} sim={a:.4f} err={err:.4f} [{ok}]")
+
+print("\n--- Rank ACF ---")
+sim_rk_df = pd.DataFrame(bp_rk)
+for lag in [1, 4, 13, 26]:
+    if lag in racf_emp:
+        cors = [sim_rk_df[i].dropna().autocorr(lag) for i in range(min(1000, N_BP))
+                if len(sim_rk_df[i].dropna()) > lag + 5]
+        r = np.nanmedian(cors); results[f'racf{lag}'] = r
+        err = abs(r - racf_emp[lag])
+        ok = "Y" if err < 0.08 else "N"
+        print(f"  RACF({lag:2d}): emp={racf_emp[lag]:.4f} sim={r:.4f} err={err:.4f} [{ok}]")
+
+print("\n--- Top-100 Persistence ---")
+for k in [1, 4, 13, 26, 52]:
+    if k in pers_emp and k < T_SIM:
+        t0s = set(np.where(sim_rk[0] <= 100)[0])
+        tks = set(np.where(sim_rk[k] <= 100)[0])
+        p = len(t0s & tks); results[f'pers{k}'] = p
+        d = p - pers_emp[k]
+        ok = "Y" if abs(d) < 10 else "N"
+        print(f"  k={k:2d}: emp={pers_emp[k]} sim={p} diff={d:+d} [{ok}]")
+
+print("\n--- Cross-Sectional R² ---")
+for k in [1, 4, 13, 26, 52]:
+    if k in xr2_emp and k < T_SIM:
+        r2 = np.corrcoef(bp_ly[0], bp_ly[k])[0,1] ** 2
+        results[f'xr2_{k}'] = r2
+        err = abs(r2 - xr2_emp[k])
+        ok = "Y" if err < 0.08 else "N"
+        print(f"  R²({k:2d}): emp={xr2_emp[k]:.4f} sim={r2:.4f} err={err:.4f} [{ok}]")
+
+print(f"\n  [Diagnostic: R² from true levels]")
+for k in [1, 4, 13]:
+    r2t = np.corrcoef(bp_ly_true[0], bp_ly_true[k])[0,1] ** 2
+    r2o = results.get(f'xr2_{k}', 0)
+    print(f"    R²_true({k:2d})={r2t:.4f}  R²_obs({k:2d})={r2o:.4f}  emp={xr2_emp[k]:.4f}")
+
+# Additional diagnostics
+sim_y0 = np.exp(sim_ly[0]); ss = np.sort(sim_y0)[::-1]
+mask = (np.arange(1, N_FULL+1) <= 5000) & (ss > 0)
+sim_zs = np.polyfit(np.log(np.arange(1, N_FULL+1)[mask]), np.log(ss[mask]), 1)[0]
+sim_ch_flat = sim_ch.values.flatten(); sim_ch_flat = sim_ch_flat[np.isfinite(sim_ch_flat)]
+sim_kurt = sp_stats.kurtosis(sim_ch_flat, fisher=True)
+ks_stat, _ = sp_stats.ks_2samp(
+    np.random.choice(all_ch_emp, min(50000, len(all_ch_emp)), replace=False),
+    np.random.choice(sim_ch_flat, min(50000, len(sim_ch_flat)), replace=False))
+
+print(f"\n  Zipf: emp={zipf_slope:.4f} sim={sim_zs:.4f}")
+print(f"  Kurtosis: emp={emp_kurt:.1f} sim={sim_kurt:.1f}")
+print(f"  KS: {ks_stat:.4f}")
+
+# Band diagnostics
+print("\n--- Band-Level Diagnostics ---")
+bp_avg_rk_global = pd.DataFrame(bp_rk).mean()
+for (lo, hi), st in band_stats.items():
+    bm = (bp_avg_rk_global >= lo) & (bp_avg_rk_global <= hi)
+    if bm.sum() > 5:
+        bch = sim_ch[bm.index[bm]]; bdf = sim_df[bm.index[bm]]
+        bv = bch.var().median()
+        bvr4 = (bdf.diff(4).iloc[4:].var()/(4*bch.var())).median()
+        bacfs = [bch[i].dropna().autocorr(1) for i in bm.index[bm][:500] if len(bch[i].dropna())>6]
+        bacf1 = np.nanmedian(bacfs) if bacfs else 0
+        print(f"  {lo:5d}-{hi:5d}: n={bm.sum():5d}  var={bv:.4f}(emp {st['var']:.4f})  "
+              f"VR4={bvr4:.4f}(emp {st['vr4']:.4f})  ACF1={bacf1:.4f}(emp {st['acf1']:.4f})")
+
+# ============================================================
+# SUMMARY
+# ============================================================
+tests = {
+    'VR(2)': abs(results.get('vr2',0)-vr_emp[2])/vr_emp[2] < 0.20,
+    'VR(4)': abs(results.get('vr4',0)-vr_emp[4])/vr_emp[4] < 0.20,
+    'VR(8)': abs(results.get('vr8',0)-vr_emp[8])/vr_emp[8] < 0.20,
+    'VR(13)': abs(results.get('vr13',0)-vr_emp[13])/vr_emp[13] < 0.20,
+    'ACF(1)': abs(results.get('acf1',0)-acf_emp[1]) < 0.08,
+    'ACF(2)': abs(results.get('acf2',0)-acf_emp[2]) < 0.08,
+    'RACF(1)': abs(results.get('racf1',0)-racf_emp[1]) < 0.08,
+    'RACF(4)': abs(results.get('racf4',0)-racf_emp[4]) < 0.08,
+    'RACF(13)': abs(results.get('racf13',0)-racf_emp[13]) < 0.08,
+    'Pers(1)': abs(results.get('pers1',0)-pers_emp[1]) < 10,
+    'Pers(4)': abs(results.get('pers4',0)-pers_emp[4]) < 10,
+    'Pers(13)': abs(results.get('pers13',0)-pers_emp[13]) < 10,
+    'R²(1)': abs(results.get('xr2_1',0)-xr2_emp[1]) < 0.08,
+    'R²(4)': abs(results.get('xr2_4',0)-xr2_emp[4]) < 0.08,
+    'R²(13)': abs(results.get('xr2_13',0)-xr2_emp[13]) < 0.08,
+}
+n_pass = sum(tests.values())
+elapsed = time.time() - t_start
+
+print(f"\n{'='*70}")
+print(f"SUMMARY v2.6")
+print(f"{'='*70}")
+print(f"\n  Diagnostics: {n_pass}/{len(tests)}")
+for name, passed in tests.items():
+    print(f"    {name}: {'PASS' if passed else 'FAIL'}")
+print(f"\n  Key: σ_obs={sigma_obs}, σ_het={sigma_het}, κ={kappa}(global), perm_boost={perm_boost}")
+print(f"  Elapsed: {elapsed:.0f}s")
+
+# ============================================================
+# PLOTS
+# ============================================================
+print("\nGenerating plots...")
+fig = plt.figure(figsize=(22, 24))
+gs = GridSpec(4, 3, figure=fig, hspace=0.35, wspace=0.30)
+fig.suptitle(f'Rank Diffusion v2.6 | {n_pass}/{len(tests)} | σ_obs={sigma_obs} κ={kappa}(global) pb={perm_boost}',
+             fontsize=13, fontweight='bold', y=0.995)
+
+ax = fig.add_subplot(gs[0,0])
+vr_ks = sorted(vr_emp.keys())
+ax.plot(vr_ks, [vr_emp[k] for k in vr_ks], 'ko-', label='Emp', ms=5, lw=2)
+svrs = [(sim_df.diff(k).iloc[k:].var()/(k*sim_v1)).median() for k in vr_ks]
+ax.plot(vr_ks, svrs, 'rs--', label='Sim', ms=5, lw=2)
+ax.set_xlabel('Horizon'); ax.set_ylabel('VR'); ax.set_title('Variance Ratio'); ax.legend(); ax.grid(True, alpha=0.3)
+
+ax = fig.add_subplot(gs[0,1])
+lags=[1,2,3,4]; x=np.arange(len(lags))
+ax.bar(x-0.15,[acf_emp.get(l,0) for l in lags],0.3,label='Emp',color='black',alpha=0.7)
+sa=[np.nanmedian([sim_ch[i].dropna().autocorr(l) for i in range(min(500,N_BP)) if len(sim_ch[i].dropna())>l+5]) for l in lags]
+ax.bar(x+0.15,sa,0.3,label='Sim',color='red',alpha=0.7)
+ax.axhline(0,color='gray',lw=0.5); ax.set_xticks(x); ax.set_xticklabels(lags)
+ax.set_title('ACF of Changes'); ax.legend(); ax.grid(True, alpha=0.3)
+
+ax = fig.add_subplot(gs[0,2])
+rl=[1,4,13,26]; x=np.arange(len(rl))
+ax.bar(x-0.15,[racf_emp.get(l,0) for l in rl],0.3,label='Emp',color='black',alpha=0.7)
+ax.bar(x+0.15,[results.get(f'racf{l}',0) for l in rl],0.3,label='Sim',color='red',alpha=0.7)
+ax.set_xticks(x); ax.set_xticklabels(rl)
+ax.set_title('Rank ACF'); ax.legend(); ax.grid(True, alpha=0.3)
+
+ax = fig.add_subplot(gs[1,0])
+r2k=[1,4,13,26,52]
+ax.plot(r2k,[xr2_emp.get(k,0) for k in r2k],'ko-',label='Emp',ms=5,lw=2)
+ax.plot(r2k,[results.get(f'xr2_{k}',0) for k in r2k],'rs--',label='Sim',ms=5,lw=2)
+ax.set_title('Cross-Sectional R²'); ax.legend(); ax.grid(True, alpha=0.3)
+
+ax = fig.add_subplot(gs[1,1])
+pk=[1,4,13,26,52]
+ax.plot(pk,[pers_emp.get(k,0) for k in pk],'ko-',label='Emp',ms=5,lw=2)
+ax.plot(pk,[results.get(f'pers{k}',0) for k in pk],'rs--',label='Sim',ms=5,lw=2)
+ax.set_title('Top-100 Persistence'); ax.legend(); ax.grid(True, alpha=0.3)
+
+ax = fig.add_subplot(gs[1,2])
+bins=np.linspace(-3,3,120)
+ax.hist(np.clip(all_ch_emp,-3,3),bins,density=True,alpha=0.5,color='black',label='Emp')
+ax.hist(np.clip(sim_ch_flat,-3,3),bins,density=True,alpha=0.5,color='red',label='Sim')
+ax.set_title(f'Changes (KS={ks_stat:.3f}, kurt={sim_kurt:.1f}/{emp_kurt:.1f})'); ax.legend(); ax.grid(True,alpha=0.3)
+
+ax = fig.add_subplot(gs[2,0])
+ax.plot(range(T_SIM), xsec_vars, 'r-', label='Sim τ', lw=2)
+sim_bp_xsec = [np.var(bp_ly[t]) for t in range(T_SIM)]
+emp_xsec_ts = log_metric.var(axis=1).values
+ax.plot(range(T_SIM), emp_xsec_ts, 'k-', label='Emp BP', lw=2)
+ax.plot(range(T_SIM), sim_bp_xsec, 'r--', label='Sim BP', lw=2)
+ax.set_title('Cross-sec Variance Over Time'); ax.legend(); ax.grid(True, alpha=0.3)
+
+ax = fig.add_subplot(gs[2,1])
+bc_mids = [np.sqrt(lo*hi) for lo,hi in bands]
+ev = [band_stats[(lo,hi)]['var'] for lo,hi in bands]
+sv_b = []
+for lo,hi in bands:
+    bm = (bp_avg_rk_global >= lo) & (bp_avg_rk_global <= hi)
+    sv_b.append(sim_ch[bm.index[bm]].var().median() if bm.sum()>5 else 0)
+ax.plot(bc_mids, ev, 'ko-', label='Emp', ms=5)
+ax.plot(bc_mids, sv_b, 'rs--', label='Sim', ms=5)
+ax.set_xscale('log'); ax.set_title('Band Variance'); ax.legend(); ax.grid(True, alpha=0.3)
+
+ax = fig.add_subplot(gs[2,2])
+ev4 = [band_stats[(lo,hi)]['vr4'] for lo,hi in bands]
+sv4 = []
+for lo,hi in bands:
+    bm = (bp_avg_rk_global >= lo) & (bp_avg_rk_global <= hi)
+    if bm.sum()>5:
+        bch=sim_ch[bm.index[bm]]; bdf=sim_df[bm.index[bm]]
+        sv4.append((bdf.diff(4).iloc[4:].var()/(4*bch.var())).median())
+    else: sv4.append(0)
+ax.plot(bc_mids, ev4, 'ko-', label='Emp', ms=5)
+ax.plot(bc_mids, sv4, 'rs--', label='Sim', ms=5)
+ax.set_xscale('log'); ax.set_title('Band VR(4)'); ax.legend(); ax.grid(True, alpha=0.3)
+
+# Sample trajectories
+for j, (idx, lbl) in enumerate([(0,'Top'), (N_BP//2,'Mid'), (N_BP-1,'Bottom')]):
+    ax = fig.add_subplot(gs[3, j])
+    ax.plot(range(T_SIM), bp_rk[:, idx], 'r-', alpha=0.7, lw=1)
+    ax.set_xlabel('Week'); ax.set_ylabel('Rank')
+    ax.set_title(f'Rank trajectory: {lbl}'); ax.grid(True, alpha=0.3)
+    ax.invert_yaxis()
+
+plt.savefig('/Users/hindman/Documents/github/rank-diffusion/llm_fitting/v26_diagnostics.png', dpi=130, bbox_inches='tight')
+print("Saved v26_diagnostics.png")
+print("Done.")
