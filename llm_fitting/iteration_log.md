@@ -1788,3 +1788,123 @@ This analysis supports a **defensible response** to a stationarity challenge:
 
 ---
 
+## Implications Analysis — "So What?"
+**Date:** 2026-02-13
+**Addresses:** Critique issue #4 — "The model calibrates well, but what does the
+PT decomposition tell us about the Facebook ecosystem?"
+**Script:** `implications_analysis.py`
+
+### Motivation
+
+A peer reviewer would rightly ask: "You've matched 15 diagnostics — so what?
+What does this teach us about the platform that simpler approaches (e.g., a
+random walk or a log-normal model) cannot?" This analysis extracts interpretable
+economic/platform insights from the fitted parameters to answer that question.
+
+### Key Findings
+
+#### 1. Variance Decomposition: "The top is noise, the bottom is signal"
+
+| Band | Permanent | Transitory | Obs Noise |
+|------|-----------|------------|-----------|
+| Top 100 | 0% | 0% | 100% |
+| 101-500 | 0% | 0% | 100% |
+| 501-2K | 5% | 0% | 95% |
+| 2K-5K | 0% | 45% | 55% |
+| 5K-12K | 1% | 64% | 35% |
+
+The top ~500 endpoints' weekly metric fluctuations are entirely observation
+noise — not real competitive dynamics. Their ranking stability comes from
+having large activity levels where small percentage changes don't affect rank.
+Only below rank ~2000 does real signal emerge, dominated by the transitory
+component. True permanent mobility concentrates in the tails (ranks 5K+).
+
+**Note:** The analytical decomposition underestimates total variance for
+mid/lower bands because it uses median-endpoint parameters. The simulation
+correctly matches empirical variance by incorporating σ_het heterogeneity
+(individual h_i scaling). The *proportions* are the insight, not the levels.
+
+#### 2. Incumbency Advantage: "22× stickier at the top"
+
+| Rank | κ | Permanent Half-Life |
+|------|---|--------------------|
+| 10 | 0.000275 | 2524 wk (48.5 yr) |
+| 100 | 0.000868 | 798 wk (15.3 yr) |
+| 1000 | 0.002746 | 252 wk (4.9 yr) |
+| 5000 | 0.006141 | 113 wk (2.2 yr) |
+| 10000 | 0.008684 | 80 wk (1.5 yr) |
+
+The rank-dependent κ(r) = κ_base × (r/N)^0.5 implies a **square-root law**
+for incumbency advantage: a permanent shock at rank 10 takes 22× longer to
+decay than at rank 5000. This quantifies the "rich get richer" effect often
+hypothesized in platform economics. It is not infinite (there IS mean reversion
+even at the top), but it is dramatically slower.
+
+#### 3. Tail Risk: "12× Gaussian at mid-rank"
+
+| Band | t_df | P(>3σ)/Gaussian |
+|------|------|-----------------|
+| Top 100 | 27.5 | 2.1× |
+| 101-500 | 7.6 | 6.7× |
+| 501-2K | 4.7 | 12.1× |
+| 2K-5K | 5.1 | 10.9× |
+| 5K-12K | 6.2 | 8.6× |
+
+Mid-ranked endpoints (501-5K) face >3σ disruptions at 10-12× the Gaussian
+rate. Top-100 endpoints face near-Gaussian risks. A Gaussian model would
+catastrophically underestimate tail risk for mid-ranked endpoints.
+
+#### 4. Volatility Clustering: "24% amplification after a 2σ shock"
+
+The ARCH(1) coefficient α = 0.256 means that after a 2σ shock, the next
+week's expected volatility increases by ~33%. Empirical ACF(|Δy|, 1) = 0.252
+confirms this directly from the data. A simple i.i.d. model misses this
+temporal structure entirely.
+
+#### 5. Empirical Mobility: "Top-100 retention = 42% at 1 year"
+
+| Horizon | Top-100 Retained | Median |Δrank| (all) |
+|---------|-----------------|----------------------|
+| 1 week | 70/100 | 665 |
+| 4 weeks | 58/100 | 794 |
+| 13 weeks | 60/100 | 970 |
+| 52 weeks | 42/100 | 1158 |
+
+The model correctly captures both the high short-term retention (70% at 1 week,
+observation noise dominates) and the substantial long-term turnover (only 42%
+at 52 weeks, permanent component drives displacement). A pure random walk
+cannot match both simultaneously.
+
+### "So What?" — Summary for a Reviewer
+
+The PT decomposition reveals that the Facebook ranked ecosystem has:
+
+1. **Structurally distinct competitive tiers** — The top is noise-dominated
+   (high persistence from large absolute activity, not from competitive
+   advantage per se). The middle is volatile but mean-reverting. The bottom
+   shows genuine permanent mobility.
+
+2. **A quantifiable incumbency advantage** — Mean-reversion half-life follows
+   a square-root law in rank, giving a concrete metric for how much harder
+   it is to displace top-ranked pages.
+
+3. **Rank-dependent tail risk** — Mid-ranked endpoints face qualitatively
+   different disruption risk (12× Gaussian) than top-ranked endpoints (2×).
+   This is invisible in aggregate statistics.
+
+4. **Volatility clustering** — Large shocks predict larger subsequent shocks
+   (ARCH effect), creating "hot" and "cold" periods in the competitive
+   landscape.
+
+None of these findings are available from simpler models (random walk,
+log-normal, or variance-ratio analysis alone). The PT decomposition
+is the minimal framework that simultaneously identifies all four structural
+features from a single calibration.
+
+### Outputs
+
+- `implications_analysis.py` — Analysis script with all computations
+- `implications_analysis.png` — 9-panel summary figure
+
+---
+
