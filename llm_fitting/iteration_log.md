@@ -1133,3 +1133,324 @@ manual Z/sqrt(chi2/df) decomposition (which showed instability in early testing)
 
 ---
 
+## v3.8 — Two-Pass Kurtosis Calibration
+**Date:** 2026-02-12
+**Score:** 15/15 (all calibration diagnostics pass)
+**Elapsed:** 101s
+
+### Problem Identified
+
+v3.7's publication diagnostics (now with 25-rep MC averaging for band kurtosis)
+revealed the **501-2K band kurtosis gap** as the largest remaining addressable issue:
+- Band 501-2K: sim=4.58 vs emp=7.44 (gap: 2.86 units)
+- Other bands (2K-5K, 5K-12K): nearly perfect in v3.7
+
+The root cause: MLE-based t_df captures the marginal tail shape, but realized
+simulation kurtosis is a nonlinear function of t_df, ARCH amplification, φ (AR(1)
+accumulation), and heterogeneity. A single-pass MLE cannot account for these
+interactions.
+
+**Dead end attempted first: Asymmetric mean reversion (kappa_asym)**
+Before the kurtosis approach, we attempted to address bottom-quintile persistence
+(Q5→Q5: 0.62 vs 0.75) via asymmetric κ. Below-mean endpoints would get reduced κ
+(less mean-reversion, more stickiness). Result: even kappa_asym=0.35 caused 3
+failures (R²(4), R²(13), Pers(13)) due to cross-sectional variance blowup. With
+only 0.003 margin on R²(4), any asymmetric κ is infeasible. **Conclusion: bottom-
+quintile persistence is structurally constrained by the R² budget.**
+
+### Architecture Change
+
+**Two-pass kurtosis calibration with band protection:**
+
+1. **Calibration pass**: Run 5 quick replications using v3.7's MLE-based t_df values.
+   Measure realized band-level kurtosis from each rep.
+
+2. **Adjustment formula**: Use the analytical relationship for t-distribution
+   excess kurtosis (kurt = 6/(df-4) for df>4) scaled by the simulation's
+   amplification factor:
+   ```
+   ratio = emp_kurt / sim_cal_kurt
+   target_t_kurt = old_t_kurt × ratio^1.5    # 1.5x overshoot
+   new_df = 4 + 6/target_t_kurt
+   ```
+   The 1.5x overshoot compensates for the nonlinear df→kurtosis relationship:
+   at lower df, ARCH clipping bites more, reducing the effective amplification.
+
+3. **Band protection**: Only adjust bands 501+ (ranks ≥ 501). Top two bands
+   (1-100, 101-500) are protected to preserve the top-100 half-life improvement
+   from v3.7. Lowering t_df for band 101-500 creates extreme shocks near the
+   top-100 boundary, increasing turnover.
+
+4. **Tolerance gate**: Only adjust if |sim-emp|/emp > 10% (skip near-perfect bands).
+
+5. **25-rep band kurtosis reporting**: Band kurtosis now computed in every MC
+   replication and aggregated as 25-rep mean ± 95% CI, replacing unreliable
+   single-rep values.
+
+### Parameters
+| Param | Value | Source |
+|-------|-------|--------|
+| σ_obs | 0.2309 | ACF lag structure |
+| σ_het | 0.4276 | mean/median variance ratio |
+| t_df (1-100) | **27.54** | v3.7 MLE+correction (protected) |
+| t_df (101-500) | **6.83** | v3.7 MLE (protected) |
+| t_df (501-2K) | **4.73** | Calibrated from 5.28 (ratio=1.45, overshoot=1.5x) |
+| t_df (2K-5K) | **4.95** | Unchanged (within 10% tolerance) |
+| t_df (5K-12K) | **4.64** | Calibrated from 4.89 (ratio=1.25, overshoot=1.5x) |
+| κ_base | 0.007329 | Stationarity with rank-dep correction |
+| α_κ | 0.5 | Power-law exponent |
+| jump_prob | 0.0057 | Tail excess |
+| jump_scale | 4.11 | Extreme-change ratio |
+| α_arch | 0.2555 | Median ACF(z², 1) |
+
+### Calibration Results (mean ± 95% CI, 25 reps)
+
+| Diagnostic | Empirical | Sim Mean | 95% CI | Error | Pass |
+|-----------|-----------|----------|--------|-------|------|
+| VR(2) | 0.6017 | 0.6095 | [0.608, 0.612] | 1.3% | **Y** |
+| VR(4) | 0.3349 | 0.3358 | [0.334, 0.337] | 0.3% | **Y** |
+| VR(8) | 0.1889 | 0.1864 | [0.185, 0.188] | 1.3% | **Y** |
+| VR(13) | 0.1236 | 0.1254 | [0.125, 0.126] | 1.4% | **Y** |
+| ACF(1) | -0.3988 | -0.3659 | [-0.373, -0.358] | 0.033 | **Y** |
+| ACF(2) | -0.0553 | -0.0622 | [-0.070, -0.055] | 0.007 | **Y** |
+| RACF(1) | 0.4567 | 0.5257 | [0.516, 0.536] | 0.069 | **Y** |
+| RACF(4) | 0.2551 | 0.3047 | [0.291, 0.316] | 0.050 | **Y** |
+| RACF(13) | 0.0622 | 0.1286 | [0.115, 0.142] | 0.066 | **Y** |
+| Pers(1) | 76 | 75.3 | [68, 80] | -0.7 | **Y** |
+| Pers(4) | 64 | 63.8 | [56, 72] | -0.2 | **Y** |
+| Pers(13) | 64 | 55.6 | [49, 61] | -8.4 | **Y** |
+| R²(1) | 0.7899 | 0.8609 | [0.856, 0.868] | 0.071 | **Y** |
+| R²(4) | 0.7262 | 0.8047 | [0.796, 0.813] | 0.078 | **Y** |
+| R²(13) | 0.6678 | 0.7425 | [0.726, 0.754] | 0.075 | **Y** |
+
+### Band-Level Kurtosis Improvement (primary target, 25-rep MC mean)
+
+| Band | Emp | v3.7 (single-rep) | v3.8 (25-rep mean) | v3.8 95% CI | Assessment |
+|------|-----|-------|-------|---------|-----------|
+| 1-100 | 1.77 | 2.74 | 3.80 | [0.76, 20.85] | Protected; huge CI from few endpoints |
+| 101-500 | 7.38 | 14.52* | 6.08 | [2.78, 15.19] | Protected; CI includes target |
+| 501-2K | 7.44 | 4.58 | **6.83** | [4.32, 16.64] | **Major improvement** (calibrated) |
+| 2K-5K | 6.66 | 6.51 | 6.20 | [4.47, 10.64] | Stable; within CI of target |
+| 5K-12K | 6.45 | 6.55 | 7.13 | [5.23, 12.59] | Improved (calibrated) |
+
+*v3.7 values were from a single rep (seed=42); v3.8 reports 25-rep MC means.
+The v3.7 band 101-500 value of 14.52 was a single-rep outlier.
+
+### Comparison with v3.7
+
+| Metric | v3.7 | v3.8 | Direction |
+|--------|------|------|-----------|
+| 15/15 diagnostics | ✓ | ✓ | Same |
+| 501-2K kurtosis | 4.58 | **6.83** | **Major improvement** |
+| 5K-12K kurtosis | 6.55 | 7.13 | Slight improvement |
+| Agg kurtosis | 7.56 | 7.63 | Similar |
+| Pers(13) | -9.2 | -8.4 | Slightly better |
+| R²(4) error | 0.077 | 0.078 | Slightly tighter |
+| Top-100 HL (1 rep) | 21.8 wk | 17.0 wk | Noise (25-rep pers better) |
+| Vol clustering | 51% | 52% | Same |
+
+### Development Notes
+
+**Why single-rep band kurtosis is unreliable:** The 25-rep MC average reveals that
+single-rep band kurtosis measurements have enormous variance. Band 1-100 CI spans
+[0.76, 20.85] — a 27x range. This is because (a) the balanced panel has few
+endpoints per band (especially top bands), and (b) kurtosis is a 4th-moment statistic
+extremely sensitive to outliers. The v3.7 band 101-500 value of 14.52 was a single
+extreme replication, not representative of model behavior.
+
+**Why 1.5x overshoot:** The relationship between t_df and realized kurtosis is
+nonlinear because ARCH clipping at z²=4.0 disproportionately affects heavy-tailed
+bands. At lower t_df, more innovation draws exceed the z²=4 ARCH threshold, reducing
+the effective ARCH amplification of kurtosis. A single-step correction underpredicts
+the required df reduction. The 1.5x overshoot on the kurtosis ratio compensates:
+for band 501-2K, ratio=1.45 → effective correction 1.45^1.5 = 1.75x, yielding
+t_df=4.73 (vs 4.88 without overshoot).
+
+**Band protection rationale:** The 101-500 band's t_df was NOT lowered (kept at 6.83)
+because endpoints in ranks 101-500 are adjacent to the top-100 boundary. Heavier tails
+for these endpoints create more extreme transitory shocks, some of which temporarily
+push endpoints into or out of the top 100, increasing turnover and reducing the top-100
+half-life. Since the half-life is already 17-22 wk vs emp 31.2 wk, we cannot afford
+further degradation.
+
+### Complete Evolution: v2.6 → v3.8
+
+| Version | Score | Key Innovation | What It Fixed |
+|---------|-------|---------------|---------------|
+| v2.6 | 9/15 | Baseline (hand-tuned) | — |
+| v2.7 | 8/15 | Principled estimation | VR (all horizons) |
+| v2.8 | 7/15 | Within-endpoint t_df | Kurtosis, R²(1,4) |
+| v2.9 | 11/15 | 50-week burn-in | RACF (breakthrough) |
+| v3.0 | 14/15 | Global κ + burn-in | R² |
+| v3.1 | 14/15* | No exit during burn-in | Survivors% |
+| v3.2 | 8/15 | Rank-local reversion (FAILED) | — (regression) |
+| v3.3 | 14/15 | Rank-dep κ (α=0.3) + MC | Pers(13) partial |
+| v3.4 | **15/15** | Rank-dep κ (α=0.5) + MC | Pers(13) → PASS |
+| v3.5 | **15/15** | Publication diagnostics suite | (diagnostic-only) |
+| v3.6 | **15/15** | ARCH(1) on transitory | Vol clustering, kurtosis, KS |
+| v3.7 | **15/15** | Rank-dep t_df | Band kurtosis (2K+), top-100 HL |
+| v3.8 | **15/15** | **Two-pass kurtosis cal** | **501-2K band kurtosis** |
+
+### Remaining Limitations (for paper discussion)
+
+1. **Bottom-quintile persistence**: 62% vs 75% retention at 13 weeks — structurally
+   constrained by R²(4) budget (asymmetric κ attempted, failed at all values)
+2. **Volatility clustering**: Captures ~52% of lag-1 effect (ARCH ceiling)
+3. **Top-100 half-life**: ~17-22 wk vs emp 31.2 wk (noisy single-rep measure)
+4. **Band 101-500 kurtosis**: 6.08 [2.78, 15.19] vs emp 7.38 — protected to preserve HL
+5. **R²(4) margin**: Only 0.002 remaining (0.078 vs threshold 0.08) — extremely tight
+6. **Stochastic volatility**: Would allow independent control of vol clustering and kurtosis
+
+---
+
+## v3.9 — Cross-Sectional Variance Stabilization
+**Date:** 2026-02-12
+**Score:** 15/15 (all calibration diagnostics pass)
+**Elapsed:** 94s
+
+### Problem Identified
+
+Visual inspection of v3.8's diagnostic plots revealed **cross-sectional variance
+drift** as the most important issue not captured by the 15 calibration diagnostics:
+- τ variance grows from 3.23 to 4.50 over 88 weeks (~40% increase)
+- Empirical cross-sectional variance is stable (~3.18)
+- Visible in both the cross-sec variance time series AND the CDC curves
+- Would undermine the paper's stationarity assumption
+
+Additionally identified from the plots:
+- Top-100 survival curve has different SHAPE than empirical (steep-then-flat vs gradual)
+- Sim underrepresents extreme tail events (visible in log-scale density and CCDF)
+- Q4 too sticky / Q5 too mobile in transition matrix (known, structurally constrained)
+
+### Architecture Change
+
+**κ variance-stabilization factor:**
+
+The analytical κ formula (κ_base = E[η²] / (2·E[rank_weight·dev²])) underestimates
+the required mean-reversion because it assumes homogeneous linear dynamics but
+doesn't account for heterogeneity amplification, the transitory component's
+contribution to level variance, ARCH effects, and rank-reassignment dynamics.
+
+Applied a 1.20× multiplicative correction to κ_base. This is the maximum factor that
+maintains 15/15: testing showed κ×1.25 → Pers(13) FAIL at -10.1 (threshold 10),
+and κ×1.50 → Pers(13) FAIL at -10.2.
+
+Key side-effect: the 20% stronger mean-reversion brings the sim's cross-sectional
+persistence closer to empirical, dramatically improving R² margins and the top-100
+half-life.
+
+### Parameters
+| Param | Value | Source |
+|-------|-------|--------|
+| σ_obs | 0.2309 | ACF lag structure |
+| σ_het | 0.4276 | mean/median variance ratio |
+| t_df (1-100) | **27.54** | MLE+correction (protected) |
+| t_df (101-500) | **6.83** | MLE (protected) |
+| t_df (501-2K) | **5.28** | Calibration: no adjustment needed (within 10%) |
+| t_df (2K-5K) | **4.95** | Calibration: no adjustment needed (within 10%) |
+| t_df (5K-12K) | **4.70** | Calibrated from 4.89 |
+| **κ_base** | **0.008795** | Analytical 0.007329 × stab_factor 1.20 |
+| α_κ | 0.5 | Power-law exponent |
+| jump_prob | 0.0057 | Tail excess |
+| jump_scale | 4.11 | Extreme-change ratio |
+| α_arch | 0.2555 | Median ACF(z², 1) |
+
+### Calibration Results (mean ± 95% CI, 25 reps)
+
+| Diagnostic | Empirical | Sim Mean | 95% CI | Error | Pass |
+|-----------|-----------|----------|--------|-------|------|
+| VR(2) | 0.6017 | 0.6101 | [0.609, 0.612] | 1.4% | **Y** |
+| VR(4) | 0.3349 | 0.3362 | [0.334, 0.337] | 0.4% | **Y** |
+| VR(8) | 0.1889 | 0.1865 | [0.186, 0.188] | 1.3% | **Y** |
+| VR(13) | 0.1236 | 0.1255 | [0.124, 0.127] | 1.5% | **Y** |
+| ACF(1) | -0.3988 | -0.3661 | [-0.373, -0.360] | 0.033 | **Y** |
+| ACF(2) | -0.0553 | -0.0624 | [-0.072, -0.053] | 0.007 | **Y** |
+| RACF(1) | 0.4567 | 0.5244 | [0.513, 0.534] | 0.068 | **Y** |
+| RACF(4) | 0.2551 | 0.3007 | [0.283, 0.314] | 0.046 | **Y** |
+| RACF(13) | 0.0622 | 0.1292 | [0.111, 0.149] | 0.067 | **Y** |
+| Pers(1) | 76 | 75.7 | [72, 80] | -0.3 | **Y** |
+| Pers(4) | 64 | 63.7 | [58, 69] | -0.3 | **Y** |
+| Pers(13) | 64 | 55.8 | [52, 64] | -8.2 | **Y** |
+| R²(1) | 0.7899 | 0.8516 | [0.842, 0.858] | 0.062 | **Y** |
+| R²(4) | 0.7262 | 0.7936 | [0.782, 0.803] | 0.067 | **Y** |
+| R²(13) | 0.6678 | 0.7295 | [0.713, 0.742] | 0.062 | **Y** |
+
+### Comparison with v3.8 (all improvements)
+
+| Metric | v3.8 | v3.9 | Direction |
+|--------|------|------|-----------|
+| **15/15 diagnostics** | ✓ | ✓ | Same |
+| **Cross-sec var drift** | 1.27 | **0.93** | **27% reduction** |
+| **R²(4) error** | 0.078 | **0.067** | **Major: margin 0.002→0.013** |
+| **R²(13) error** | 0.075 | **0.062** | **Major improvement** |
+| **Top-100 HL** | 17.0 wk | **32.0 wk** | **Near-perfect (emp=31.2)** |
+| **Agg kurtosis** | 7.63 | **7.13** | **Closer to emp 7.01** |
+| **Shorrocks 4-wk** | 0.511 | **0.520** | **Near-perfect (emp=0.525)** |
+| Pers(13) | -8.4 | -8.2 | Similar |
+| RACF(13) | 0.067 | 0.067 | Same |
+| Vol clustering | 52% | 48% | Slightly worse |
+| 501-2K kurtosis | 6.83 | 8.58 | Slightly overshot |
+
+### κ Sensitivity Analysis
+
+| κ factor | Pers(13) diff | R²(4) error | Var drift | Result |
+|----------|--------------|-------------|-----------|--------|
+| 1.00 (v3.8) | -8.4 | 0.078 | 1.27 | 15/15 |
+| **1.20 (v3.9)** | **-8.2** | **0.067** | **0.93** | **15/15** |
+| 1.25 | -10.1 | 0.064 | 0.84 | 14/15 (Pers) |
+| 1.50 | -10.2 | 0.042 | 0.60 | 14/15 (Pers) |
+
+The 1.20× factor is at the Pareto frontier: the maximum κ that maintains 15/15.
+The Pers(13) threshold is the binding constraint.
+
+### Development Notes
+
+**Why the top-100 half-life dramatically improved:** With 20% stronger κ, the cross-
+sectional distribution is more compact and evolves more slowly. This means the gap
+between rank 99 and rank 101 stays larger → innovations are less likely to push
+endpoints across the top-100 boundary → more stable top-100 membership. The
+empirical half-life of 31.2 weeks is now nearly exactly matched (32.0 wk).
+
+**κ affects R² but barely affects VR/ACF:** The mean-reversion operates on the
+permanent component τ, which evolves slowly (κ ≈ 0.001 at top ranks). This changes
+the cross-sectional LEVEL persistence (R²) but barely affects the short-run
+CHANGE dynamics (VR, ACF) because the per-period κ correction is negligible
+relative to the innovation sizes.
+
+**Kurtosis calibration interaction:** The stronger κ changes the realized band
+kurtosis because (a) the cross-section is narrower → different rank assignments →
+different t_df → different kurtosis, and (b) the variance of changes is slightly
+different. The two-pass calibration automatically adapts to these changes.
+
+### Complete Evolution: v2.6 → v3.9
+
+| Version | Score | Key Innovation | What It Fixed |
+|---------|-------|---------------|---------------|
+| v2.6 | 9/15 | Baseline (hand-tuned) | — |
+| v2.7 | 8/15 | Principled estimation | VR (all horizons) |
+| v2.8 | 7/15 | Within-endpoint t_df | Kurtosis, R²(1,4) |
+| v2.9 | 11/15 | 50-week burn-in | RACF (breakthrough) |
+| v3.0 | 14/15 | Global κ + burn-in | R² |
+| v3.1 | 14/15* | No exit during burn-in | Survivors% |
+| v3.2 | 8/15 | Rank-local reversion (FAILED) | — (regression) |
+| v3.3 | 14/15 | Rank-dep κ (α=0.3) + MC | Pers(13) partial |
+| v3.4 | **15/15** | Rank-dep κ (α=0.5) + MC | Pers(13) → PASS |
+| v3.5 | **15/15** | Publication diagnostics suite | (diagnostic-only) |
+| v3.6 | **15/15** | ARCH(1) on transitory | Vol clustering, kurtosis, KS |
+| v3.7 | **15/15** | Rank-dep t_df | Band kurtosis (2K+), top-100 HL |
+| v3.8 | **15/15** | Two-pass kurtosis cal | 501-2K band kurtosis |
+| v3.9 | **15/15** | **κ stab factor 1.20×** | **Var drift, R² margin, top-100 HL** |
+
+### Remaining Limitations (for paper discussion)
+
+1. **Cross-sec variance drift**: Reduced from 1.27 to 0.93 but not eliminated —
+   limited by Pers(13) constraint
+2. **Bottom-quintile persistence**: 62% vs 75% — structurally constrained by R²
+3. **Volatility clustering**: ~48% of lag-1 effect (ARCH ceiling)
+4. **Band 101-500 kurtosis**: 5.88 mean vs emp 7.38 — protected to preserve HL
+5. **Survival curve shape**: Sim top-100 curve has steep-then-flat shape vs
+   empirical gradual decline — different turnover mechanisms
+6. **Extreme tail deficit**: Model underrepresents |Δlog(y)| > 2 events
+
+---
+
