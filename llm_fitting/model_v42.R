@@ -194,6 +194,18 @@ get_script_dir <- function() {
   normalizePath(getwd(), mustWork = TRUE)
 }
 
+order_endpoint_ids <- function(x) {
+  x <- as.character(x)
+  x <- unique(x)
+  x <- x[!is.na(x)]
+  x_num <- suppressWarnings(as.numeric(x))
+  if (all(is.finite(x_num))) {
+    x[order(x_num)]
+  } else {
+    sort(x)
+  }
+}
+
 # -----------------------------------------------------------------------------
 # Main pipeline
 # -----------------------------------------------------------------------------
@@ -238,7 +250,8 @@ main <- function() {
     pivot_wider(names_from = endpoint_id, values_from = metric_value) %>%
     arrange(date)
 
-  endpoint_cols <- names(metric_wide)[-1]
+  endpoint_cols <- order_endpoint_ids(intersect(as.character(all_weeks_eps), names(metric_wide)[-1]))
+  metric_wide <- metric_wide %>% select(date, all_of(endpoint_cols))
 
   rank_wide <- df %>%
     filter(endpoint_id %in% all_weeks_eps) %>%
