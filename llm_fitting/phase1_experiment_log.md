@@ -241,3 +241,80 @@ Candidates:
 3. **Alternative rank computation**: Use a smoothed/blended ranking
    (e.g., exponential moving average of metrics across periods)
    rather than fresh ranking each period
+
+---
+
+## Phase 4: Collision-Rate Calibration
+
+### Implementation
+
+Added collision-rate diagnostic to both empirical and simulated outputs:
+- For key rank positions (1, 2, 5, 10, 20, 50), compute the fraction of
+  periods where the entity holding that rank changes.
+- Added to diagnostics.py: empirical collision_emp dict, simulated coll{k}
+- Added to model_v43.py: collision rate comparison table in scorecard output
+- Extended alpha_kappa_grid to include negative values (-0.3, -0.2, -0.1)
+
+### Key Empirical Finding: Collision Rate Profile
+
+Reddit daily collision rates (entity turnover at each rank):
+
+| Rank | Empirical | Description |
+|------|-----------|-------------|
+| 1    | 0.696     | Top entity changes 70% of days |
+| 2    | 0.804     | 80% turnover |
+| 5    | 0.902     | 90% turnover |
+| 10   | 0.925     | 93% turnover |
+| 20   | 0.958     | 96% turnover |
+| 50   | 0.991     | 99% turnover |
+
+### Collision Profile: Model vs Data
+
+| alpha_kappa | Score | Coll(1) gap | Coll(10) gap | Pers(1) | R²(1) |
+|-------------|-------|-------------|-------------|---------|-------|
+| -0.2        | 6/15  | +0.24       | +0.07       | 13.2    | 0.45  |
+| -0.1        | 5/15  | +0.14       | +0.07       | 22.0    | 0.60  |
+| **0.0**     | 6/15  | **+0.05**   | +0.05       | 27.6    | 0.64  |
+| **0.3**     | 10/15 | **-0.57**   | +0.03       | 34.4    | 0.73  |
+
+### CRITICAL FINDING: Structural Incompatibility
+
+The collision data reveals a fundamental tension in the model:
+- **Matching collision rates** at the top requires alpha_kappa ≈ 0 (flat kappa)
+  → gives Coll(1) gap of only +0.05
+- **Matching Pers/R²** requires alpha_kappa > 0 (protective kappa at top)
+  → gives Pers(1) = 34 close to emp 41, but Coll(1) gap = -0.57
+
+These are structurally incompatible because the SAME kappa controls both.
+
+**The empirical data shows something the model cannot produce**: top entities
+have BOTH high collision rates (70% daily turnover) AND high persistence
+(34/50 remain after 13 days). This is only possible if many entities at the
+top are CLOSE in metric value and shuffle positions among themselves while
+all remaining in the top group.
+
+This is a "turbulent top cluster" — a group of ~50 entities that are all
+large enough to dominate, swapping positions freely but rarely falling out
+of the top group. The current PT model cannot produce this because its
+rank-dependent kappa either:
+- Protects the top (high Pers, low Coll) with positive alpha_kappa
+- Exposes the top (low Pers, high Coll) with zero/negative alpha_kappa
+
+### Implications for Model Architecture
+
+To match both Pers AND Coll, the model needs:
+1. **Clustered metric values at the top**: A mechanism that compresses the
+   metric gap between top entities (so they swap easily) while maintaining
+   a gap between the top cluster and everything else (so they persist as a
+   group).
+2. **Correlated shocks within rank clusters**: Entities near each other in
+   rank share correlated noise, preserving within-cluster ordering on
+   average while allowing frequent swaps.
+3. **Alternatively, multi-period ranking**: If rank is computed from a
+   smoothed metric (e.g., 7-day average), the top group persists while
+   day-to-day rankings within the group are volatile.
+
+### Changes to codebase
+- diagnostics.py: collision_emp and coll{k} diagnostics added
+- model_v43.py: collision rate comparison table in output
+- types.py: alpha_kappa_grid extended with negative values (-0.3, -0.2, -0.1)

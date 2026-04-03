@@ -113,6 +113,19 @@ def main(cfg: Config) -> FitResult:
         print(f"  [{mark:>4s}] {name:<10s}  sim={sim_val:.3f}" if np.isfinite(sim_val) else f"  [{mark:>4s}] {name:<10s}")
     print(f"\n  Total: {score['n_pass']}/{score['n_total']}")
 
+    # Collision rate profile
+    collision_emp = emp.get("collision_emp", {})
+    if collision_emp:
+        print("\n  Collision rates (turnover at rank k):")
+        print(f"  {'Rank':>6}  {'Emp':>6}  {'Sim':>6}  {'Diff':>7}")
+        for cr in sorted(collision_emp.keys()):
+            emp_val = collision_emp[cr]
+            sim_key = f"coll{cr}"
+            sim_vals = [s.get(sim_key, float("nan")) for s in [sim["diagnostics"] for sim in sims]]
+            sim_mean = float(np.nanmean(sim_vals)) if sim_vals else float("nan")
+            diff = sim_mean - emp_val if np.isfinite(sim_mean) else float("nan")
+            print(f"  {cr:>6}  {emp_val:>6.3f}  {sim_mean:>6.3f}  {diff:>+7.3f}")
+
     # Ablation study
     print("\n" + "=" * 70)
     print("ABLATION STUDY")

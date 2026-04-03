@@ -54,7 +54,7 @@ class Config:
     z_sq_clip: float = 4.0
     jump_prob_floor: float = 0.005
     alpha_kappa_default: float = 0.5
-    alpha_kappa_grid: tuple[float, ...] = (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8)
+    alpha_kappa_grid: tuple[float, ...] = (-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8)
     kappa_stab_grid: tuple[float, ...] = (0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 2.0)
     n_optim_restarts: int = 200
     use_obs_noise: bool = True

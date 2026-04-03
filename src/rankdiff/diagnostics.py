@@ -138,6 +138,27 @@ def compute_empirical_targets(
             valid = np.isfinite(start) & np.isfinite(end)
             xr2_emp[k] = float(np.corrcoef(start[valid], end[valid])[0, 1] ** 2) if valid.sum() > 5 else np.nan
 
+    # Collision rate diagnostic: turnover at key rank positions
+    collision_ranks = [1, 2, 5, 10, 20, 50]
+    collision_emp: dict[int, float] = {}
+    if not panel.empty:
+        rank_by_period: dict[int, dict[int, str]] = {}
+        for pidx in range(int(counts.size)):
+            pdata = panel[panel["period_index"] == pidx].sort_values("rank")
+            top_n = pdata[pdata["rank"] <= max(collision_ranks)]
+            rank_by_period[pidx] = dict(zip(top_n["rank"].values.astype(int), top_n["entity_id"].values))
+        for cr in collision_ranks:
+            n_change = 0
+            n_total = 0
+            for pidx in range(1, int(counts.size)):
+                prev = rank_by_period.get(pidx - 1, {})
+                curr = rank_by_period.get(pidx, {})
+                if cr in prev and cr in curr:
+                    n_total += 1
+                    if prev[cr] != curr[cr]:
+                        n_change += 1
+            collision_emp[cr] = n_change / max(n_total, 1)
+
     period0 = panel[panel["period_index"] == 0].sort_values("rank")
     zipf_n = max(10, int(round(cfg.zipf_fit_fraction * len(period0))))
     zipf_subset = period0.iloc[:zipf_n]
@@ -228,6 +249,7 @@ def compute_empirical_targets(
         "cf_sigma": cf_sigma_est,
         "cf_r2_median": cf_r2_median,
         "cf_loading_by_z": cf_loading_by_z,
+        "collision_emp": collision_emp,
     }
 
 
@@ -277,6 +299,21 @@ def compute_sim_diagnostics(sim: dict[str, object], cfg: Config) -> dict[str, fl
             end = values[k]
             valid = np.isfinite(start) & np.isfinite(end)
             diag[f"xr2_{k}"] = float(np.corrcoef(start[valid], end[valid])[0, 1] ** 2) if valid.sum() > 5 else np.nan
+
+    # Collision rates from simulation
+    collision_ranks = [1, 2, 5, 10, 20, 50]
+    for cr in collision_ranks:
+        if cr - 1 < top_ids.shape[1]:
+            n_change = 0
+            n_total = 0
+            for t in range(1, top_ids.shape[0]):
+                prev_id = top_ids[t - 1, cr - 1]
+                curr_id = top_ids[t, cr - 1]
+                if prev_id >= 0 and curr_id >= 0:
+                    n_total += 1
+                    if prev_id != curr_id:
+                        n_change += 1
+            diag[f"coll{cr}"] = n_change / max(n_total, 1)
 
     flat_changes = changes.ravel()
     flat_changes = flat_changes[np.isfinite(flat_changes)]
