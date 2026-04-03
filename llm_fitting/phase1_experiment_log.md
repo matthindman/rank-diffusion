@@ -150,3 +150,94 @@ which directly targets the RACF gap.
 - fit.py: estimates cf_loading_curve from empirical data, passes to EstimatedParams
 - simulator.py: F(t) AR(1) state with rank-dependent loadings added to x_true
 - model_v43.py: prints cf diagnostic info
+
+---
+
+## Phase 3: Position-Dependent Rank Noise
+
+### Experiment 1: Gap-Scaled Observation Noise
+
+**Idea**: Scale sigma_obs inversely with local metric gap. Top entities (large
+gaps) get less noise → more stable ranks. Middle entities (small gaps) get
+more noise.
+
+**Implementation**: After sorting x_true, compute gap between adjacent entities.
+Scale sigma_obs by (median_gap / local_gap), clipped to [0.2, 5.0].
+
+**Result**: Both platforms collapsed to 7/15. The scaling INCREASED noise for
+middle entities (gap_scale up to 5x), destroying VR, ACF, and all rank
+diagnostics. Middle entities got tripled observation noise → even MORE rank
+shuffling.
+
+**Verdict**: REVERTED. Gap-scaled noise amplifies the problem, not fixes it.
+
+### Experiment 2: sigma_obs Sweep (max_noise_frac)
+
+**Idea**: Reduce sigma_obs by capping the noise fraction, check RACF response.
+
+| max_noise_frac | sigma_obs | RACF(1) | Score |
+|----------------|-----------|---------|-------|
+| 0.50 (default) | 0.2495    | 0.026   | 7-10/15 |
+| 0.30           | 0.1933    | 0.066   | 9/15 |
+| 0.20           | 0.1578    | 0.076   | 9/15 |
+| 0.10           | 0.1116    | 0.098   | 10/15 |
+| 0.05           | 0.0789    | 0.091   | 10/15 |
+
+**Key finding**: Even reducing sigma_obs by 70% (from 0.25 to 0.08), RACF
+only reaches 0.09 — still far from emp 0.21. RACF is NOT sensitive to
+sigma_obs because sigma_obs is not the bottleneck.
+
+### Gap Structure Analysis
+
+Computed empirical gaps between adjacent ranked entities:
+
+| Rank | Empirical gap | sigma_obs | Ratio |
+|------|-------------|-----------|-------|
+| 1-2  | 0.265       | 0.250     | 1.1x  |
+| 5-6  | 0.043       | 0.250     | 0.2x  |
+| 10-11| 0.025       | 0.250     | 0.1x  |
+| 50-51| 0.016       | 0.250     | 0.06x |
+| 100  | 0.000       | 0.250     | ~0x   |
+
+sigma_obs dwarfs ALL gaps below rank 2. But the simulated gap structure
+(after burn-in) is comparable to empirical — median gaps within 20%.
+
+**Root cause confirmed**: The RACF failure is not about observation noise
+magnitude or gap structure. It's about the DYNAMICS: the idiosyncratic
+random walk (sigma_eta ≈ 0.11 per period) creates ~16 positions of rank
+movement per period, while sigma_obs adds ~36 positions of noise. Even
+without obs noise, the signal-driven rank changes are too volatile.
+
+### Why This Approach Failed
+
+The position-dependent noise idea from the Wright-Fisher literature
+(Iñiguez et al. 2022) assumes that rank dynamics are PRIMARILY driven
+by rank-space noise. In our model, rank dynamics are DERIVED from
+level-space dynamics. The level → rank mapping is highly nonlinear:
+- sigma_obs/gap ≈ 30x at typical rank positions
+- The rank ordering is almost entirely determined by the permanent
+  component tau, not by obs noise
+- Reducing obs noise doesn't help because the permanent shocks
+  (sigma_eta) ALSO create large rank movements
+
+The fundamental issue: our permanent-transitory model generates
+entities that evolve as INDEPENDENT random walks with mean reversion.
+In the empirical data, entities that are near each other in rank
+co-move (platform algorithm, competition, network effects), which
+preserves relative ordering. Our model misses this LOCAL correlation.
+
+### Recommendation for Next Steps
+
+The RACF gap (sim 0.03-0.09 vs emp 0.21) requires a mechanism that
+creates LOCAL rank persistence — not just common factor (which is global)
+or observation noise (which is too small to matter).
+
+Candidates:
+1. **Local interaction model**: Entities near each other in rank
+   experience correlated shocks (borrowing from the SPT collision
+   literature — Itkin & Larsson 2024)
+2. **Rank-dependent permanent volatility**: sigma_eta much lower for
+   top entities, creating a "stable core" at the top
+3. **Alternative rank computation**: Use a smoothed/blended ranking
+   (e.g., exponential moving average of metrics across periods)
+   rather than fresh ranking each period
