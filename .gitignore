@@ -25,6 +25,7 @@ website/_site/
 
 # Data & artifacts
 data/raw/*
+data/reddit/
 *.html
 *.pdf
 *.parquet
