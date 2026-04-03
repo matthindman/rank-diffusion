@@ -318,3 +318,67 @@ To match both Pers AND Coll, the model needs:
 - diagnostics.py: collision_emp and coll{k} diagnostics added
 - model_v43.py: collision rate comparison table in output
 - types.py: alpha_kappa_grid extended with negative values (-0.3, -0.2, -0.1)
+
+---
+
+## Periodicity Experiments: Weekly Aggregation and Deseasonalization
+
+### Motivation
+Day-of-week periodicity in daily Reddit data may inflate observation noise
+and distort rank dynamics diagnostics.
+
+### Approach 1: ISO Week Aggregation
+Sum daily karma per subreddit into ISO weeks (Monday-Sunday). Drop partial
+weeks at boundaries. Result: 30 full weeks of data.
+
+### Approach 2: Day-of-Week Dummy Subtraction (recommended by literature)
+For each entity, subtract the mean log(metric) for that day-of-week.
+Standard approach from French (1980), Harvey (1989). Additive in log space
+= multiplicative in original scale. Applied per-entity individually.
+
+### Approach 3: FFT Notch Filter
+Remove 1/7 frequency and harmonics from each entity's log(metric) via FFT.
+Detrend first, zero out target frequency bins ± 1 neighbor, inverse FFT.
+
+### Results
+
+| Approach           | Score  | sigma_obs | RACF(1) | Pers(1) | R²(1) |
+|--------------------|--------|-----------|---------|---------|-------|
+| Daily (raw)        | 10/15  | 0.250     | 0.031   | 34.4    | 0.731 |
+| Daily (DOW-deseas) | 11/15  | 0.236     | 0.062   | 38.4    | 0.752 |
+| Daily (FFT notch)  | 8/15   | 0.246     | 0.007   | 34.2    | 0.627 |
+| **Weekly (ISO)**   |**14/15**| **0.116** |**0.527**|**42.4** |**0.953**|
+
+### Analysis
+
+1. **Weekly aggregation is transformative** (14/15). Aggregating to weekly:
+   - Halves sigma_obs (0.25 → 0.12) — removes both DOW and intra-week noise
+   - RACF jumps from 0.03 to 0.53 (empirical weekly RACF much higher)
+   - Matches the FB/IG data cadence (weekly)
+   - Only R²(13) fails, marginal
+
+2. **DOW-deseasonalization helps modestly** (+1 point). sigma_obs only drops
+   from 0.25 to 0.24 — day-of-week effects are a small part of daily noise.
+   RACF doubles from 0.03 to 0.06 but still far from emp 0.21.
+
+3. **FFT notch filter hurts** (8/15). Spectral leakage destroys stochastic
+   content near the target frequency. The research warned this would happen —
+   FFT is fragile when T is not a multiple of 7.
+
+### Conclusion
+
+For the paper, **weekly aggregation is the correct cadence for Reddit**, matching
+the FB/IG cadence. The daily RACF failure is primarily a noise-to-signal ratio
+issue: daily observation noise (sigma_obs=0.25) overwhelms the metric gaps
+between adjacent entities, making ranks effectively random. Weekly aggregation
+averages out this noise, restoring meaningful rank dynamics.
+
+The "turbulent top cluster" finding from Phase 4 is likely a daily-specific
+artifact: at daily cadence, the top subreddits' karma totals are so close
+that observation noise shuffles them freely. At weekly cadence, the top
+subreddits separate more clearly (7 days of accumulation widens the gaps).
+
+### Files created
+- data/reddit/reddit_weekly.parquet (30 ISO weeks, 6M rows)
+- data/reddit/reddit_daily_deseason_dow.parquet (DOW-adjusted daily)
+- data/reddit/reddit_daily_deseason_fft.parquet (FFT-filtered daily)
