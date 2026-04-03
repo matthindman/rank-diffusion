@@ -41,6 +41,29 @@ def fit_parameter_curves(bundle: DataBundle, init: InitialParams, cfg: Config) -
 
     exit_p_base, exit_alpha, exit_trans, burst_frac = _estimate_exit_params(bundle, cfg)
 
+    # Common factor: estimate loading curve and scale down idiosyncratic variance
+    emp = bundle.empirical
+    cf_sigma = float(emp.get("cf_sigma", 0.0))
+    cf_phi = float(emp.get("cf_phi", 0.0))
+    cf_r2 = float(emp.get("cf_r2_median", 0.0))
+    cf_loading_by_z = emp.get("cf_loading_by_z", [])
+    cf_loading_curve = np.ones_like(z_knots)
+    if cf_loading_by_z and cf_sigma > 1e-8:
+        # Bin the (z, beta) pairs into the anchor z_knots
+        zs = np.array([p[0] for p in cf_loading_by_z])
+        bs = np.array([p[1] for p in cf_loading_by_z])
+        for i, z_k in enumerate(z_knots):
+            if i == 0:
+                mask = zs <= (z_knots[0] + z_knots[1]) / 2 if len(z_knots) > 1 else np.ones(len(zs), dtype=bool)
+            elif i == len(z_knots) - 1:
+                mask = zs > (z_knots[-2] + z_knots[-1]) / 2
+            else:
+                mask = (zs > (z_knots[i - 1] + z_knots[i]) / 2) & (zs <= (z_knots[i] + z_knots[i + 1]) / 2)
+            if mask.sum() > 0:
+                cf_loading_curve[i] = float(np.median(bs[mask]))
+
+        pass  # Loadings used as estimated — not de-meaned
+
     return EstimatedParams(
         sigma_obs=init.sigma_obs,
         sigma_het=init.sigma_het,
@@ -73,6 +96,9 @@ def fit_parameter_curves(bundle: DataBundle, init: InitialParams, cfg: Config) -
         exit_transient_rate=exit_trans,
         entry_burst_frac=burst_frac,
         t_df_curve_precal=t_df_curve.copy(),
+        cf_sigma=cf_sigma,
+        cf_phi=cf_phi,
+        cf_loading_curve=cf_loading_curve,
     )
 
 
@@ -95,6 +121,10 @@ def _calibration_cfg(bundle: DataBundle, cfg: Config) -> Config:
     ]
     min_periods = max(horizon_candidates, default=1) + 2
     auto_periods = max(min_periods, 18 if cfg.dev_mode else 26)
+    # Use at least half the production period so that exit/entry-induced
+    # variance drift is visible during kappa_stab calibration.
+    half_production = bundle.n_periods // 2
+    auto_periods = max(auto_periods, half_production)
     calibration_periods = cfg.calibration_periods or auto_periods
     simulate_cap = cfg.simulate_periods or bundle.n_periods
     resolved_periods = int(min(bundle.n_periods, simulate_cap, calibration_periods))
@@ -124,6 +154,8 @@ def _candidate_score(diag: dict[str, float], emp: dict[str, object], cfg: Config
     if "pers13" in diag and 13 in emp["pers_emp"]:
         pers_tol = max(cfg.pers_threshold_min, int(round(cfg.pers_threshold_pct * emp["top_k"])))
         score += abs(diag["pers13"] - emp["pers_emp"][13]) / max(pers_tol, 1)
+    if "racf1" in diag and 1 in emp["racf_emp"]:
+        score += abs(diag["racf1"] - emp["racf_emp"][1]) / max(cfg.racf_threshold, 1e-6)
     return score
 
 
@@ -212,7 +244,7 @@ def _compute_sim_band_kurtosis(
         band_ch = changes[:, mask].ravel()
         band_ch = band_ch[np.isfinite(band_ch)]
         if band_ch.size > 20:
-            band_kurt[i] = float(sp_stats.kurtosis(band_ch, fisher=True))
+            band_kurt[i] = float(sp_stats.kurtosis(band_ch, fisher=True, bias=False))
     return band_kurt
 
 

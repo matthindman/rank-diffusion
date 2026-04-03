@@ -51,6 +51,11 @@ def main(cfg: Config) -> FitResult:
     print(f"  sigma_eta_curve: {np.round(params.sigma_eta_curve, 4)}")
     print(f"  kappa_curve: {np.round(params.kappa_curve, 6)}")
     print(f"  exit_p_base: {params.exit_p_base:.6f}")
+    print(f"  cf_sigma: {params.cf_sigma:.4f}, cf_phi: {params.cf_phi:.3f}")
+    if params.cf_loading_curve is not None:
+        print(f"  cf_loading_curve: {np.round(params.cf_loading_curve, 3)}")
+    cf_r2 = bundle.empirical.get("cf_r2_median", 0.0)
+    print(f"  cf_r2_median (variance explained): {cf_r2:.3f}")
 
     print("\n" + "=" * 70)
     print("CALIBRATING alpha_kappa")

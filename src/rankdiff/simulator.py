@@ -81,6 +81,16 @@ def _prepare_boundary_refresh(
     return boundary_values, boundary_scale, replace_n
 
 
+def _split_entry_counts(
+    rng: np.random.Generator,
+    n_exits: int,
+    burst_frac: float,
+) -> tuple[int, int]:
+    burst_prob = float(np.clip(burst_frac, 0.0, 1.0))
+    n_burst = int(rng.binomial(n_exits, burst_prob))
+    return n_burst, int(n_exits - n_burst)
+
+
 def _resolve_effective_params(
     params: EstimatedParams,
     cfg: Config,
@@ -100,16 +110,23 @@ def _resolve_effective_params(
     burnin = p.burnin_periods if features.burn_in else 0
 
     if not features.kappa:
-        kappa_curve = np.zeros_like(p.kappa_curve)
+        kappa_base_raw = 0.0
+        kappa_stab_factor = p.kappa_stab_factor
+        alpha_kappa = p.alpha_kappa
     elif not features.rank_dep_kappa:
-        kappa_uniform = p.kappa_base_raw * np.mean(
+        kappa_base_raw = p.kappa_base_raw * p.kappa_stab_factor * np.mean(
             np.exp(p.alpha_kappa * p.z_knots)
         )
-        kappa_curve = np.full_like(p.kappa_curve, kappa_uniform)
+        kappa_stab_factor = 1.0
+        alpha_kappa = 0.0
     elif not features.kappa_stab:
-        kappa_curve = p.kappa_base_raw * np.exp(p.alpha_kappa * p.z_knots)
+        kappa_base_raw = p.kappa_base_raw
+        kappa_stab_factor = 1.0
+        alpha_kappa = p.alpha_kappa
     else:
-        kappa_curve = p.kappa_curve
+        kappa_base_raw = p.kappa_base_raw
+        kappa_stab_factor = p.kappa_stab_factor
+        alpha_kappa = p.alpha_kappa
 
     if not features.arch:
         alpha_arch = 0.0
@@ -126,7 +143,9 @@ def _resolve_effective_params(
     p = replace(
         p,
         burnin_periods=burnin,
-        kappa_curve=kappa_curve,
+        kappa_base_raw=kappa_base_raw,
+        kappa_stab_factor=kappa_stab_factor,
+        alpha_kappa=alpha_kappa,
         alpha_arch=alpha_arch,
         t_df_curve=t_df_curve,
     )
@@ -163,6 +182,13 @@ def simulate_one(
 
     ep_type = np.zeros(n_sim, dtype=np.int32)
 
+    # Common engagement factor state
+    cf_state = 0.0
+    cf_sigma = params.cf_sigma
+    cf_phi = params.cf_phi
+    cf_loading_curve = params.cf_loading_curve
+    use_cf = cf_sigma > 1e-8 and cf_loading_curve is not None
+
     tracked = _tracked_indices(n_sim, min(cfg.track_entity_count, n_sim), params.top_k, seed)
     tracked_mask = np.zeros(n_sim, dtype=bool)
     tracked_mask[tracked] = True
@@ -172,6 +198,12 @@ def simulate_one(
     observed_counts = np.zeros(t_record, dtype=np.int32)
     xsec_var = np.zeros(t_record, dtype=np.float64)
     period0_sorted_values = np.array([], dtype=np.float32)
+
+    # Track entity identity so diagnostics only measure continuous
+    # entity time series.  When exit/entry replaces the entity at a
+    # tracked position, subsequent values are set to NaN.
+    tracked_initial_ids: np.ndarray | None = None
+    tracked_alive = np.ones(tracked.size, dtype=bool)
 
     thresholds = params.threshold.threshold_by_period[:t_record]
     top_store_n = max(1000, params.top_k * 50)
@@ -192,7 +224,7 @@ def simulate_one(
         sigma_eta = _interpolate_curve(z_rank, params.z_knots, params.sigma_eta_curve) * het_multiplier
         phi = _interpolate_curve(z_rank, params.z_knots, params.phi_curve)
         sigma_nu = _interpolate_curve(z_rank, params.z_knots, params.sigma_nu_curve) * het_multiplier
-        kappa = _interpolate_curve(z_rank, params.z_knots, params.kappa_curve)
+        kappa = params.kappa_base_raw * params.kappa_stab_factor * np.exp(params.alpha_kappa * z_rank)
         df_vec = np.clip(_interpolate_curve(z_rank, params.z_knots, params.t_df_curve), 3.0, None)
 
         jump_mask = rng.random(n_sim) < params.jump_prob
@@ -216,16 +248,36 @@ def simulate_one(
         current_mean = mean_reversion_target if cfg.universe_mode == "topk_buffered" else float(np.mean(tau))
         tau = tau + eta - kappa * (tau - current_mean)
 
+        # Common engagement factor: correlated shock across all entities
+        if use_cf:
+            cf_state = cf_phi * cf_state + cf_sigma * rng.standard_normal()
+
         t_rec = t_abs - params.burnin_periods
         if t_rec < 0:
             continue
 
+        # Detect entity replacements from previous step's exit/entry.
+        if tracked_initial_ids is None:
+            tracked_initial_ids = entity_ids[tracked].copy()
+        else:
+            tracked_alive &= (entity_ids[tracked] == tracked_initial_ids)
+
         x_true = tau + c_state
+        if use_cf:
+            cf_loading = _interpolate_curve(z_rank, params.z_knots, cf_loading_curve)
+            x_true = x_true + cf_loading * cf_state
         obs = x_true + rng.normal(0.0, params.sigma_obs, n_sim) if use_obs else x_true
         threshold_log = np.log1p(float(thresholds[t_rec]))
         observed_mask = obs >= threshold_log
 
-        observed_order = order[observed_mask[order]]
+        # Rank by OBSERVED values (includes obs noise) so that simulated
+        # rank diagnostics (RACF, persistence) are comparable to empirical
+        # diagnostics computed on noisy observed data.  This matches v4.2.
+        obs_order = np.argsort(-obs)
+        obs_rank = np.empty(n_sim, dtype=np.int32)
+        obs_rank[obs_order] = np.arange(1, n_sim + 1, dtype=np.int32)
+
+        observed_order = obs_order[observed_mask[obs_order]]
         observed_count = int(observed_order.size)
         observed_counts[t_rec] = observed_count
         xsec_var[t_rec] = float(np.var(tau))
@@ -234,16 +286,18 @@ def simulate_one(
             tracked_rank = np.zeros(tracked.size, dtype=np.int32)
             tracked_observed = observed_mask[tracked]
             if tracked_observed.any():
-                observed_latent_ranks = np.flatnonzero(observed_mask[order]) + 1
+                observed_obs_ranks = np.flatnonzero(observed_mask[obs_order]) + 1
                 tracked_rank[tracked_observed] = np.searchsorted(
-                    observed_latent_ranks,
-                    latent_rank[tracked][tracked_observed],
+                    observed_obs_ranks,
+                    obs_rank[tracked][tracked_observed],
                     side="left",
                 ) + 1
-            tracked_ranks[t_rec] = tracked_rank
 
             tracked_obs = obs[tracked]
             tracked_obs[tracked_rank == 0] = np.nan
+            tracked_obs[~tracked_alive] = np.nan
+            tracked_rank[~tracked_alive] = 0
+            tracked_ranks[t_rec] = tracked_rank
             tracked_values[t_rec] = tracked_obs.astype(np.float32)
 
             top_n = min(params.top_k, observed_count)
@@ -266,16 +320,19 @@ def simulate_one(
 
             if n_ex > 0:
                 exi = np.where(exit_mask)[0]
-                n_burst = max(1, int(n_ex * burst_frac))
-                n_norm = n_ex - n_burst
+                n_burst, n_norm = _split_entry_counts(rng, n_ex, burst_frac)
 
-                surviving = ~exit_mask
-                bq = float(np.percentile(tau[surviving], 10))
+                # Variance-neutral entry: normal entries replace near the
+                # departing entities' values (preserving the cross-sectional
+                # distribution).  Burst entries still go to the top.
+                departing_vals = tau[exi].copy()
+                rng.shuffle(departing_vals)
                 bstd = float(np.std(tau[tau < np.median(tau)]) * 0.4)
                 bstd = max(bstd, 1e-6)
-                new_tau = rng.normal(bq, bstd, n_norm)
+                new_tau = departing_vals[:n_norm] + rng.normal(0, bstd, n_norm)
 
                 if n_burst > 0:
+                    surviving = ~exit_mask
                     buq = float(np.percentile(tau[surviving], 90))
                     bust = float(np.std(tau) * 0.25)
                     bust = max(bust, 1e-6)
@@ -302,7 +359,10 @@ def simulate_one(
 
         # --- Boundary refresh (topk_buffered mode) ---
         if replace_n > 0 and t_abs < t_total - 1:
-            refresh_candidates = order[::-1]
+            # Refresh the current worst-ranked latent states, not the stale
+            # ranking from the start of the period.
+            refresh_order = np.argsort(-(tau + c_state))
+            refresh_candidates = refresh_order[::-1]
             refresh_slots = refresh_candidates[~tracked_mask[refresh_candidates]][:replace_n]
             if refresh_slots.size > 0:
                 draws = boundary_values[rng.integers(0, boundary_values.size, size=refresh_slots.size)]

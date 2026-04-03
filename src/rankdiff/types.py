@@ -54,8 +54,8 @@ class Config:
     z_sq_clip: float = 4.0
     jump_prob_floor: float = 0.005
     alpha_kappa_default: float = 0.5
-    alpha_kappa_grid: tuple[float, ...] = (0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8)
-    kappa_stab_grid: tuple[float, ...] = (0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5)
+    alpha_kappa_grid: tuple[float, ...] = (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8)
+    kappa_stab_grid: tuple[float, ...] = (0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 2.0)
     n_optim_restarts: int = 200
     use_obs_noise: bool = True
     exit_enabled: bool = True
@@ -162,6 +162,9 @@ class EstimatedParams:
     exit_transient_rate: float = 0.07
     entry_burst_frac: float = 0.008
     t_df_curve_precal: np.ndarray | None = None
+    cf_sigma: float = 0.0
+    cf_phi: float = 0.0
+    cf_loading_curve: np.ndarray | None = None
 
 
 @dataclass(frozen=True)

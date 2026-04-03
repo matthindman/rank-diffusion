@@ -19,6 +19,17 @@ def _safe_autocorr(x: np.ndarray, lag: int) -> float:
     return float(np.corrcoef(a, b)[0, 1])
 
 
+def _nanvar_ddof1(x: np.ndarray) -> np.ndarray:
+    arr = np.asarray(x, dtype=float)
+    if arr.ndim != 2:
+        raise ValueError("_nanvar_ddof1 expects a 2-D array.")
+    out = np.full(arr.shape[1], np.nan, dtype=float)
+    valid = np.sum(np.isfinite(arr), axis=0) >= 2
+    if valid.any():
+        out[valid] = np.nanvar(arr[:, valid], axis=0, ddof=1)
+    return out
+
+
 def _make_wide(panel: pd.DataFrame, ids: np.ndarray, value_col: str) -> pd.DataFrame:
     if ids.size == 0:
         return pd.DataFrame()
@@ -140,7 +151,7 @@ def compute_empirical_targets(
 
     all_changes = log_changes.to_numpy(dtype=float).ravel() if not log_changes.empty else np.array([], dtype=float)
     all_changes = all_changes[np.isfinite(all_changes)]
-    emp_kurt = float(sp_stats.kurtosis(all_changes, fisher=True)) if all_changes.size > 20 else np.nan
+    emp_kurt = float(sp_stats.kurtosis(all_changes, fisher=True, bias=False)) if all_changes.size > 20 else np.nan
     emp_mean_var = float(var_1.mean()) if not var_1.empty else np.nan
     emp_median_var = float(var_1.median()) if not var_1.empty else np.nan
 
@@ -162,6 +173,27 @@ def compute_empirical_targets(
         if mean_rank.size
         else np.array([], dtype=float)
     )
+
+    # Common factor estimation: cross-sectional mean of log-changes per period
+    cf_phi_est = 0.0
+    cf_sigma_est = 0.0
+    cf_r2_median = 0.0
+    cf_loading_by_z: list[tuple[float, float]] = []
+    if not log_changes.empty and log_changes.shape[1] > 10:
+        F_t = log_changes.mean(axis=1)
+        cf_sigma_est = float(F_t.std())
+        if len(F_t) > 5:
+            cf_phi_est = float(np.clip(np.corrcoef(F_t.values[:-1], F_t.values[1:])[0, 1], -0.99, 0.99))
+        F_var = float(F_t.var())
+        if F_var > 1e-12:
+            betas = log_changes.apply(lambda col: float(col.cov(F_t)) / F_var)
+            entity_r2 = (betas ** 2 * F_var) / var_1.clip(lower=1e-12)
+            cf_r2_median = float(entity_r2.median())
+            # Loadings by rank band: bin entities by z_rank_mean
+            if z_rank_mean.size == betas.size:
+                for z_val, beta_val in zip(z_rank_mean, betas.values):
+                    if np.isfinite(z_val) and np.isfinite(beta_val):
+                        cf_loading_by_z.append((float(z_val), float(beta_val)))
 
     return {
         "counts_by_period": counts.to_numpy(dtype=int),
@@ -192,6 +224,10 @@ def compute_empirical_targets(
         "window_turnover_count": window_turnover_count,
         "mean_exit_count": mean_exit_count,
         "mean_exit_rate": mean_exit_rate,
+        "cf_phi": cf_phi_est,
+        "cf_sigma": cf_sigma_est,
+        "cf_r2_median": cf_r2_median,
+        "cf_loading_by_z": cf_loading_by_z,
     }
 
 
@@ -208,12 +244,12 @@ def compute_sim_diagnostics(sim: dict[str, object], cfg: Config) -> dict[str, fl
         ranks = tracked_ranks
 
     changes = np.diff(values, axis=0)
-    var_1 = np.nanvar(changes, axis=0, ddof=1)
+    var_1 = _nanvar_ddof1(changes)
 
     diag: dict[str, float] = {}
     for k in cfg.vr_lags:
         if k < values.shape[0]:
-            numer = np.nanvar(values[k:] - values[:-k], axis=0, ddof=1)
+            numer = _nanvar_ddof1(values[k:] - values[:-k])
             valid = np.isfinite(var_1) & (var_1 > 1e-12) & np.isfinite(numer)
             if valid.any():
                 diag[f"vr{k}"] = float(np.nanmedian(numer[valid] / (k * var_1[valid])))
@@ -244,7 +280,7 @@ def compute_sim_diagnostics(sim: dict[str, object], cfg: Config) -> dict[str, fl
 
     flat_changes = changes.ravel()
     flat_changes = flat_changes[np.isfinite(flat_changes)]
-    diag["kurtosis"] = float(sp_stats.kurtosis(flat_changes, fisher=True)) if flat_changes.size > 20 else np.nan
+    diag["kurtosis"] = float(sp_stats.kurtosis(flat_changes, fisher=True, bias=False)) if flat_changes.size > 20 else np.nan
 
     first_sorted = np.asarray(sim["period0_sorted_values"], dtype=float)
     zipf_n = max(10, int(round(cfg.zipf_fit_fraction * first_sorted.size)))
@@ -272,7 +308,7 @@ def score_diagnostics(emp: dict[str, object], sim_diags: Sequence[dict[str, floa
             continue
         mc_stats[key] = {
             "mean": float(np.mean(vals)),
-            "std": float(np.std(vals)),
+            "std": float(np.std(vals, ddof=1)) if vals.size > 1 else 0.0,
             "lo": float(np.percentile(vals, 2.5)),
             "hi": float(np.percentile(vals, 97.5)),
         }
