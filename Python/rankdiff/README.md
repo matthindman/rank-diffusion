@@ -30,7 +30,7 @@ Here's an example of the input structure:
 1. Get setup in a fresh terminal:
 
 ```bash
-cd ~/Desktop/rankdiff
+cd ~/path/to/src/rankdiff
 pip install -e .
 python
 ```
