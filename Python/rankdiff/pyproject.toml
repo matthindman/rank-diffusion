@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rankdiff"
+version = "0.1.0"
+description = "Fits a permanent-transitory rank diffusion model to ranked panel data, estimating rank-dependent parameters, running Monte Carlo simulations, validating via diagnostic tests, and supporting ablation and sensitivity analysis."
+authors = [
+  { name = "Matt Hindman" },
+  { name = "Philip Waggoner" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pandas",
+  "numpy",
+  "scipy",
+  "matplotlib"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
