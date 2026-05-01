@@ -8,18 +8,18 @@ This repository contains the full development and production implementation of a
 
 ## Overview
 
-The rank diffusion framework is designed to model how entities/endpoints/profiles/etc move through ranked online platforms over time. Examples include:
+The rank diffusion framework is designed to model how entities/endpoints/profiles/etc move through ranked online platforms over time, e.g.:
 
 - Social media engagement rankings
-- Economic or firm-level performance rankings
+- Economic or firm/org performance rankings
 - Content popularity dynamics
-- Any panel dataset where entities are repeatedly ranked over time
+- Or any panel data where entities are repeatedly ranked over time
 
 At a high level, the model:
 
-- Ingests panel data (entity × time)
+- Ingests panel data (`entity × time`)
 - Constructs rank trajectories
-- Estimates a stochastic diffusion process governing rank changes, assuming roughly Brownian movement
+- Estimates a stochastic diffusion process governing rank changes assuming roughly Brownian movement
 - Calibrates model parameters
 - Evaluates fit using diagnostic statistics
 
