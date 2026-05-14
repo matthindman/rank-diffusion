@@ -69,9 +69,7 @@ names(result$diagnostics)
 Or the latest stable relase from CRAN: 
 
 ```r
-install.packages("rankdiff")
-
-library(rankdiff)
+# coming soon...
 ```
 
 ## Saving results
