@@ -97,6 +97,7 @@ _PARAMS_ARRAY_FIELDS = {
     "kappa_curve", "t_df_curve", "t_df_curve_precal", "w0_sorted",
 }
 _THRESHOLD_ARRAY_FIELDS = {"threshold_by_period", "max_missing_value_by_period"}
+_EMPIRICAL_INT_KEY_FIELDS = {"vr_emp", "acf_emp", "racf_emp", "pers_emp", "xr2_emp"}
 
 
 def _reconstruct_arrays(d: dict, array_fields: set[str]) -> dict:
@@ -113,6 +114,16 @@ def _reconstruct_arrays(d: dict, array_fields: set[str]) -> dict:
         else:
             out[k] = v
     return out
+
+
+def _restore_empirical_keys(empirical: dict) -> dict:
+    restored = {}
+    for key, value in empirical.items():
+        if key in _EMPIRICAL_INT_KEY_FIELDS and isinstance(value, dict):
+            restored[key] = {int(k): v for k, v in value.items()}
+        else:
+            restored[key] = value
+    return restored
 
 
 def load_fit_result(path: str | Path) -> FitResult:
@@ -144,7 +155,7 @@ def load_fit_result(path: str | Path) -> FitResult:
         balanced_ids=np.array([], dtype=str),
         tracked_entity_ids=np.array([], dtype=str),
         threshold=threshold,
-        empirical=payload["data_summary"]["empirical"],
+        empirical=_restore_empirical_keys(payload["data_summary"]["empirical"]),
     )
     initial = InitialParams(**_reconstruct_arrays(payload["initial"], _INITIAL_ARRAY_FIELDS))
     params = EstimatedParams(**_reconstruct_arrays(payload["params"], _PARAMS_ARRAY_FIELDS))

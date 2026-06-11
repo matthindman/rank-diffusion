@@ -110,10 +110,11 @@ def build_data_bundle(cfg: Config) -> DataBundle:
     balanced_ids = ep_counts[ep_counts >= min_periods].index.to_numpy(dtype=str)
     if balanced_ids.size == 0:
         raise ValueError("No balanced-panel entities found in the selected fit window.")
+    track_count = min(cfg.track_entity_count, cfg.max_dense_entities)
     tracked_ids = _select_tracked_ids(
         panel=panel,
         balanced_ids=balanced_ids,
-        track_entity_count=min(cfg.track_entity_count, max(cfg.max_dense_entities, cfg.track_entity_count)),
+        track_entity_count=track_count,
         seed=cfg.random_seed,
     )
 

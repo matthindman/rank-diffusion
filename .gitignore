@@ -15,6 +15,11 @@
 # Jupyter
 .ipynb_checkpoints/
 
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
 # Caches & outputs
 cache/
 output/

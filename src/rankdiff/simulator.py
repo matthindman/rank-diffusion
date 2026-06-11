@@ -327,15 +327,17 @@ def simulate_one(
                 # distribution).  Burst entries still go to the top.
                 departing_vals = tau[exi].copy()
                 rng.shuffle(departing_vals)
-                bstd = float(np.std(tau[tau < np.median(tau)]) * 0.4)
-                bstd = max(bstd, 1e-6)
+                lower_tail = tau[tau < np.median(tau)]
+                bstd = float(np.std(lower_tail) * 0.4) if lower_tail.size > 1 else 0.0
+                bstd = max(bstd if np.isfinite(bstd) else 0.0, 1e-6)
                 new_tau = departing_vals[:n_norm] + rng.normal(0, bstd, n_norm)
 
                 if n_burst > 0:
                     surviving = ~exit_mask
-                    buq = float(np.percentile(tau[surviving], 90))
+                    burst_source = tau[surviving] if np.any(surviving) else tau
+                    buq = float(np.percentile(burst_source, 90))
                     bust = float(np.std(tau) * 0.25)
-                    bust = max(bust, 1e-6)
+                    bust = max(bust if np.isfinite(bust) else 0.0, 1e-6)
                     burst_tau = rng.normal(buq, bust, n_burst)
                     new_tau = np.concatenate([new_tau, burst_tau])
 

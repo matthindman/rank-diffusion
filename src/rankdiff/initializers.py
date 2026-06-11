@@ -18,6 +18,10 @@ def build_anchor_bins(bundle: DataBundle, cfg: Config) -> pd.DataFrame:
     mean_rank = np.asarray(emp["mean_rank"], dtype=float)
     if mean_rank.size == 0:
         raise ValueError("No balanced tracked entities available for anchor construction.")
+    # Entity IDs aligned with the sorted mean_rank array.  The mask below is
+    # computed in sorted-mean_rank order, so entities must be selected through
+    # these IDs (NOT rank_wide.columns, which are in unsorted tracked order).
+    mean_rank_ids = np.asarray(emp["mean_rank_ids"], dtype=str)
 
     n_bins = _adaptive_bin_count(bundle.mean_n, cfg)
     edges = np.exp(np.linspace(np.log(1.0), np.log(bundle.mean_n + 1.0), n_bins + 1)) - 1.0
@@ -26,7 +30,6 @@ def build_anchor_bins(bundle: DataBundle, cfg: Config) -> pd.DataFrame:
 
     log_metric = emp["log_metric"]
     log_changes = emp["log_changes"]
-    rank_wide = emp["rank_wide"]
     local_slope_mean = np.asarray(emp["local_slope_mean"], dtype=float)
 
     rows: list[dict[str, float]] = []
@@ -35,7 +38,7 @@ def build_anchor_bins(bundle: DataBundle, cfg: Config) -> pd.DataFrame:
         if mask.sum() < cfg.min_anchor_bin_size:
             continue
 
-        cols = list(rank_wide.columns[mask])
+        cols = list(mean_rank_ids[mask])
         ch = log_changes[cols]
         lv = log_metric[cols]
         total_var = float(ch.var().median())
@@ -48,7 +51,7 @@ def build_anchor_bins(bundle: DataBundle, cfg: Config) -> pd.DataFrame:
                 acf1_vals.append(np.corrcoef(arr[:-1], arr[1:])[0, 1])
         band_changes = ch.to_numpy(dtype=float).ravel()
         band_changes = band_changes[np.isfinite(band_changes)]
-        band_kurt = float(sp_stats.kurtosis(band_changes, fisher=True)) if band_changes.size > 20 else np.nan
+        band_kurt = float(sp_stats.kurtosis(band_changes, fisher=True, bias=False)) if band_changes.size > 20 else np.nan
         rows.append(
             {
                 "rank_lo": float(lo),
@@ -125,6 +128,15 @@ def _fit_band_params(emp_var: float, emp_vr4: float, emp_acf1: float, emp_vr13: 
     return float(np.exp(best.x[0])), float(0.95 / (1.0 + np.exp(-best.x[1]))), float(np.exp(best.x[2]))
 
 
+def _fit_centered_t(x: np.ndarray, bounds: tuple[float, float]) -> tuple[float, float]:
+    x = np.asarray(x, dtype=float)
+    x = x[np.isfinite(x)]
+    if x.size < 2:
+        return float(np.mean(bounds)), 1.0
+    df_fit, _, scale_fit = sp_stats.t.fit(x, floc=0.0)
+    return float(df_fit), float(scale_fit)
+
+
 def estimate_initial_params(bundle: DataBundle, cfg: Config) -> InitialParams:
     emp = bundle.empirical
     anchors = build_anchor_bins(bundle, cfg)
@@ -182,7 +194,7 @@ def estimate_initial_params(bundle: DataBundle, cfg: Config) -> InitialParams:
             if sd > 1e-8:
                 standardized.append((arr - mu) / sd)
     z_within = np.concatenate(standardized) if standardized else np.array([0.0, 0.0])
-    df_fit, _, scale_fit = sp_stats.t.fit(z_within)
+    df_fit, scale_fit = _fit_centered_t(z_within, cfg.tdf_bounds)
     t_df_global = float(np.clip(df_fit, cfg.tdf_bounds[0], cfg.tdf_bounds[1]))
 
     obs_noise_var = 2.0 * sobs2
@@ -191,11 +203,12 @@ def estimate_initial_params(bundle: DataBundle, cfg: Config) -> InitialParams:
     phi_anchor = []
     sigma_nu_anchor = []
 
-    tracked_balanced_ids = np.asarray(emp["tracked_balanced_ids"], dtype=str)
-    id_to_pos = {eid: idx for idx, eid in enumerate(tracked_balanced_ids)}
+    # Entity IDs aligned with the sorted mean_rank array (see build_anchor_bins).
+    mean_rank_vals = np.asarray(emp["mean_rank"], dtype=float)
+    mean_rank_ids = np.asarray(emp["mean_rank_ids"], dtype=str)
     for row in anchors.itertuples(index=False):
-        mask = (emp["mean_rank"] >= row.rank_lo) & (emp["mean_rank"] <= row.rank_hi)
-        cols = [tracked_balanced_ids[i] for i, keep in enumerate(mask) if keep and tracked_balanced_ids[i] in id_to_pos]
+        mask = (mean_rank_vals >= row.rank_lo) & (mean_rank_vals <= row.rank_hi)
+        cols = list(mean_rank_ids[mask])
         if not cols:
             t_df_anchor.append(t_df_global)
             sigma_eta_anchor.append(np.nan)
@@ -213,7 +226,7 @@ def estimate_initial_params(bundle: DataBundle, cfg: Config) -> InitialParams:
                     band_std.append((arr - mu) / sd)
         if band_std:
             z_band = np.concatenate(band_std)
-            df_band, _, _ = sp_stats.t.fit(z_band)
+            df_band, _ = _fit_centered_t(z_band, cfg.tdf_bounds)
             df_band = float(np.clip(df_band, cfg.tdf_bounds[0], cfg.tdf_bounds[1]))
         else:
             df_band = t_df_global

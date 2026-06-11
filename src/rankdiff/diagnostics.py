@@ -64,7 +64,9 @@ def compute_empirical_targets(
         for k in cfg.vr_lags:
             if k < log_metric.shape[0]:
                 numer = log_metric.diff(k).iloc[k:].var()
-                vr_emp[k] = float((numer / (k * var_1)).median())
+                ratios = numer / (k * var_1)
+                ratios = ratios[np.isfinite(ratios)]
+                vr_emp[k] = float(ratios.median()) if not ratios.empty else np.nan
 
     acf_emp: dict[int, float] = {}
     racf_emp: dict[int, float] = {}
@@ -184,6 +186,11 @@ def compute_empirical_targets(
     )
 
     mean_rank = rank_wide.mean(axis=0).sort_values() if not rank_wide.empty else pd.Series(dtype=float)
+    # Entity IDs aligned with the *sorted* mean_rank array.  Consumers that mask
+    # by mean_rank (anchor bins, band params, factor loadings) must select
+    # entities through this index, NOT rank_wide.columns / tracked_balanced_ids,
+    # which remain in unsorted (random) tracked order.
+    mean_rank_ids = mean_rank.index.to_numpy(dtype=str) if mean_rank.size else np.array([], dtype=str)
     z_rank_mean = np.log(np.clip((mean_rank.to_numpy(dtype=float) - 0.5) / mean_n, cfg.z_rank_clip, 1.0)) if mean_rank.size else np.array([], dtype=float)
     local_slope_mean = (
         panel[panel["entity_id"].isin(tracked_balanced)]
@@ -210,9 +217,12 @@ def compute_empirical_targets(
             betas = log_changes.apply(lambda col: float(col.cov(F_t)) / F_var)
             entity_r2 = (betas ** 2 * F_var) / var_1.clip(lower=1e-12)
             cf_r2_median = float(entity_r2.median())
-            # Loadings by rank band: bin entities by z_rank_mean
-            if z_rank_mean.size == betas.size:
-                for z_val, beta_val in zip(z_rank_mean, betas.values):
+            # Loadings by rank band: bin entities by z_rank_mean.  betas is indexed
+            # in unsorted tracked order, so realign it to the sorted mean_rank
+            # entities before pairing with z_rank_mean.
+            if z_rank_mean.size == betas.size and mean_rank.size:
+                betas_aligned = betas.reindex(mean_rank.index).to_numpy(dtype=float)
+                for z_val, beta_val in zip(z_rank_mean, betas_aligned):
                     if np.isfinite(z_val) and np.isfinite(beta_val):
                         cf_loading_by_z.append((float(z_val), float(beta_val)))
 
@@ -237,6 +247,7 @@ def compute_empirical_targets(
         "xsec_var_emp": float(xsec_var_emp),
         "w0_sorted": np.sort(np.log1p(period0["metric_value"].to_numpy(dtype=float)))[::-1],
         "mean_rank": mean_rank.to_numpy(dtype=float),
+        "mean_rank_ids": mean_rank_ids,
         "z_rank_mean": z_rank_mean,
         "local_slope_mean": local_slope_mean,
         "threshold_by_period": threshold.threshold_by_period,
@@ -354,16 +365,19 @@ def score_diagnostics(emp: dict[str, object], sim_diags: Sequence[dict[str, floa
     for lag in cfg.vr_lags:
         key = f"vr{lag}"
         if key in mc_stats and lag in emp["vr_emp"]:
-            tests[f"VR({lag})"] = abs(mc_stats[key]["mean"] - emp["vr_emp"][lag]) / emp["vr_emp"][lag] < cfg.vr_threshold
+            emp_val = float(emp["vr_emp"][lag])
+            if np.isfinite(emp_val):
+                denom = max(abs(emp_val), 1e-6)
+                tests[f"VR({lag})"] = abs(mc_stats[key]["mean"] - emp_val) / denom < cfg.vr_threshold
 
     for lag in cfg.acf_lags:
         key = f"acf{lag}"
-        if key in mc_stats:
+        if key in mc_stats and lag in emp["acf_emp"]:
             tests[f"ACF({lag})"] = abs(mc_stats[key]["mean"] - emp["acf_emp"][lag]) < cfg.acf_threshold
 
     for lag in cfg.racf_lags:
         key = f"racf{lag}"
-        if key in mc_stats:
+        if key in mc_stats and lag in emp["racf_emp"]:
             tests[f"RACF({lag})"] = abs(mc_stats[key]["mean"] - emp["racf_emp"][lag]) < cfg.racf_threshold
 
     pers_tol = max(cfg.pers_threshold_min, int(round(cfg.pers_threshold_pct * emp["top_k"])))

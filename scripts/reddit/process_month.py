@@ -215,6 +215,34 @@ def aggregates_to_dataframe(
     return df
 
 
+def process_zst_file(
+    zst_path: str | Path,
+    record_type: str | None = None,
+    progress_interval: int = 10_000_000,
+    sample_first_n: int = 0,
+) -> tuple[dict[tuple[str, str], dict], int, int]:
+    """Process a local .zst archive and return aggregate rows.
+
+    The pipeline orchestrator imports this helper directly so it can process
+    local archives without duplicating the stream setup in this CLI module.
+    """
+    path = Path(zst_path)
+    if not path.exists():
+        raise FileNotFoundError(f"file not found: {path}")
+    if record_type is not None:
+        detected = detect_type(path.name)
+        if detected != record_type:
+            raise ValueError(f"record_type={record_type!r} does not match archive name {path.name!r}")
+
+    with path.open("rb") as fh:
+        return process_zst_stream(
+            fh,
+            path.stat().st_size,
+            progress_interval=progress_interval,
+            sample_first_n=sample_first_n,
+        )
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Process a Pushshift .zst file into daily subreddit aggregates."
