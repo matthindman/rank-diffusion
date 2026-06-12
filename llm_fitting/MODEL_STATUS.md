@@ -31,21 +31,30 @@ This is one generative law. FB and Reddit differ in **parameters and measurement
 |---|---|---|
 | In-sample goal-1 (15-metric) | **15/15** (Kalman params, ρ_perm≈0.90) | 13–14/15 |
 | In-sample goal-2 churn error | **0.046** | 0.05 (obs_frac=0) / 0.10 (default) |
-| **OOS movement** (calibrated σ_obs, train-only) | **PASS** — err **0.081** ≈ persistence 0.070 | partial — err 0.45 (was 0.76); persistence 0.045 |
+| **OOS movement** (rolling-origin, distributional) | **NOT yet robust** — see below | worse (T=30) |
 | home-drift evidence (Kalman LR drift>fixed) | strong (213–594) | weak-but-consistent (6–63) |
 
-**OOS movement test is the acceptance gate** (estimate on first ~67% of weeks; predict held-out
-rank-displacement + collisions; never use test data in estimation). FB passes. Reddit is improved
-by the σ_obs calibration but still over-predicts top displacement ~1.7× — its dense ladder
-(level spread 2.54 vs FB 1.51; within/level movement 0.30 vs 0.61) amplifies any residual noise,
-and T=30 limits estimation precision. **Resolve with the longer-horizon Reddit panel.**
+**OOS movement is the acceptance gate** — now **rolling-origin + distributional** (`--oos`):
+≥5 train/test splits; per split estimate the variance partition on TRAIN, calibrate one
+`sigma_obs_scale` on the TRAIN **moment vector** (dRank1, dRank4, coll1, coll5, RACF1), then
+predict the held-out displacement **distribution** (median, p90, Wasserstein, bootstrap-CI coverage).
 
-### Calibrated observation noise (honest, transparent)
+**Honest FB verdict (5 splits):** the model does **NOT yet robustly pass**. Model rel err
+**0.29 ± 0.16** vs persistence **0.15 ± 0.02**; `sigma_obs_scale` is **unstable across windows
+(0.15–0.35, median 0.25)**; bootstrap-CI coverage only ~40% of splits; the model **under-disperses
+the displacement tail** (p90). It **improves with more training data** (Wasserstein 38→17 across
+origins; later splits land in-CI) — pointing to longer panels. A single 67/33 split gave a
+flattering 0.081 ≈ 0.070; that was the best split, not the typical one. **Do not report single-split
+numbers.**
+
+### Observation noise (the central open problem)
 `σ_obs` is the lever on observed rank movement; the pooled change-autocovariance over-states it
-~2× for clean top entities. We therefore treat σ_obs as a **calibrated measurement parameter**:
-fit a single `sigma_obs_scale` on **training** short-horizon displacement, then **validate on
-held-out** movement. Calibrated scale = **0.35** for both platforms. This is calibration, not a
-fudge: the target (train displacement) and the validation (test displacement) are different data.
+~2× for clean top entities, and **calibrating it on training displacement is not stable enough
+across windows** to call the gate passed. Status: **calibrated, NOT yet identified.** The decisive
+next step is to **identify σ_obs from an independent signal** (daily-within-week residual variance —
+noise floor only, not a daily dynamics model; later, replicate measures) and report it as a second
+specification (Spec B) alongside the train-calibrated one (Spec A); if B ≈ A's scale, the
+observation model is validated. Then re-run this rolling-origin distributional gate.
 
 ## 3. The two corrected estimation pitfalls (do not regress)
 

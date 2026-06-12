@@ -389,19 +389,50 @@ def run(platform):
     return dict(pd=pd_, pf=pf_, scores=sc, vv=vv, rm=rm)
 
 
-def _movement_from_ranks(R, horizons, cap=100):
-    """median |Δrank over h| for entities with rank<=cap at t (R: T x M, NaN=absent)."""
-    out = {}
+# Pre-specified calibration moment vector + weights (frozen before validation).
+CAL_WEIGHTS = {"dRank1": 1.0, "dRank4": 1.0, "coll1": 1.0, "coll5": 1.0, "RACF1": 1.0}
+
+
+def _rank_dist(R, horizons, cap=100):
+    """Full |Δrank over h| arrays (entities with rank<=cap at t) + lag-1 rank ACF.
+    R: T x M, NaN=absent. Returns ({h: array of |Δrank|}, RACF1)."""
+    dist = {}
     T = R.shape[0]
     for h in horizons:
         if h >= T:
-            out[f"dRank{h}"] = np.nan
+            dist[h] = np.array([])
             continue
         r0, rh = R[:-h], R[h:]
         m = np.isfinite(r0) & np.isfinite(rh) & (r0 <= cap)
-        d = np.abs(rh[m] - r0[m])
-        out[f"dRank{h}"] = float(np.median(d)) if d.size else np.nan
-    return out
+        dist[h] = np.abs(rh[m] - r0[m])
+    racf = []
+    for j in range(R.shape[1]):
+        r = R[:, j]
+        rr = r[np.isfinite(r)]
+        if rr.size > 6 and np.std(rr[:-1]) > 1e-9 and np.std(rr[1:]) > 1e-9:
+            racf.append(np.corrcoef(rr[:-1], rr[1:])[0, 1])
+    return dist, (float(np.median(racf)) if racf else np.nan)
+
+
+def _moments(dist, racf1, colls, horizons):
+    """Scalar summaries: median + 90th pct of displacement per horizon, RACF1, collisions."""
+    m = {}
+    for h in horizons:
+        d = dist.get(h, np.array([]))
+        m[f"dRank{h}"] = float(np.median(d)) if d.size else np.nan
+        m[f"p90_{h}"] = float(np.percentile(d, 90)) if d.size else np.nan
+    m["RACF1"] = racf1
+    m.update({f"coll{c}": v for c, v in colls.items()})
+    return m
+
+
+def _cal_error(emp_m, sim_m):
+    """Weighted mean relative error over the pre-specified calibration vector."""
+    e = []
+    for k, w in CAL_WEIGHTS.items():
+        if np.isfinite(emp_m.get(k, np.nan)) and np.isfinite(sim_m.get(k, np.nan)):
+            e.append(w * abs(sim_m[k] - emp_m[k]) / max(abs(emp_m[k]), 1e-6))
+    return float(np.mean(e)) if e else np.inf
 
 
 def _collisions_from_topids(top_ids, ranks):
@@ -414,15 +445,15 @@ def _collisions_from_topids(top_ids, ranks):
     return out
 
 
-def emp_movement(df, horizons, coll_ranks=(1, 5, 20), cohort_k=200):
-    """Empirical movement over a period window (df periods assumed 0-based)."""
+def emp_dist(df, horizons, coll_ranks=(1, 5, 20), cohort_k=200):
+    """Empirical displacement distribution + RACF1 + collisions over a 0-based window."""
     T = int(df["period"].max()) + 1
     cohort = df.loc[(df["period"] == 0) & (df["rank"] <= cohort_k), "entity_id"].to_numpy()
     sub = df[df["entity_id"].isin(set(cohort))]
     R = sub.pivot(index="period", columns="entity_id", values="rank").reindex(range(T)).to_numpy()
-    mv = _movement_from_ranks(R, horizons)
-    mv.update({f"coll{c}": v for c, v in empirical_churn(df, coll_ranks, lo_period=0, hi_period=T).items()})
-    return mv
+    dist, racf1 = _rank_dist(R, horizons)
+    colls = empirical_churn(df, coll_ranks, lo_period=0, hi_period=T)
+    return dist, racf1, colls
 
 
 def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
@@ -462,14 +493,49 @@ def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
     return np.array(cranks), np.array(topids)
 
 
-def sim_movement(p, T_sim, kappa, horizons, coll_ranks=(1, 5, 20), reps=3):
-    mvs = []
+def sim_dist(p, T_sim, horizons, reps=3, coll_ranks=(1, 5, 20), kappa=0.0):
+    """Pooled displacement distribution + RACF1 + collisions across MC reps."""
+    pooled = {h: [] for h in horizons}
+    racfs, colls = [], {c: [] for c in coll_ranks}
     for s in range(reps):
         cr, ti = sim_cohort(p, T_sim, kappa, seed=s)
-        mv = _movement_from_ranks(cr, horizons)
-        mv.update(_collisions_from_topids(ti, coll_ranks))
-        mvs.append(mv)
-    return {k: float(np.nanmean([m[k] for m in mvs])) for k in mvs[0]}
+        d, rf = _rank_dist(cr, horizons)
+        for h in horizons:
+            pooled[h].append(d[h])
+        racfs.append(rf)
+        cc = _collisions_from_topids(ti, coll_ranks)
+        for c in coll_ranks:
+            colls[c].append(cc.get(f"coll{c}", np.nan))
+    dist = {h: (np.concatenate(pooled[h]) if pooled[h] else np.array([])) for h in horizons}
+    return dist, float(np.nanmedian(racfs)), {c: float(np.nanmean(colls[c])) for c in coll_ranks}
+
+
+def _calibrate_scale(p, df_tr, horizons, Ltr, reps=3):
+    """Calibrate sigma_obs_scale on the TRAIN moment VECTOR (not a single moment)."""
+    ed, erf, ec = emp_dist(df_tr, horizons)
+    em = _moments(ed, erf, ec, horizons)
+    best_scale, best_err = 1.0, np.inf
+    for sc in (1.0, 0.7, 0.5, 0.35, 0.25, 0.15):
+        sd, srf, scol = sim_dist(replace_obs(p, sc), Ltr, horizons, reps=reps)
+        sm = _moments(sd, srf, scol, horizons)
+        e = _cal_error(em, sm)
+        if e < best_err:
+            best_err, best_scale = e, sc
+    return best_scale
+
+
+def replace_obs(p, scale):
+    from dataclasses import replace
+    return replace(p, sigma_obs=p.sigma_obs * scale)
+
+
+def _boot_ci(arr, stat=np.median, B=400, lo=2.5, hi=97.5, seed=0):
+    if arr.size < 5:
+        return (np.nan, np.nan)
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, arr.size, size=(B, arr.size))
+    vals = np.array([stat(arr[i]) for i in idx])
+    return float(np.percentile(vals, lo)), float(np.percentile(vals, hi))
 
 
 def _build_params_on(df_tr):
@@ -489,53 +555,76 @@ def _build_params_on(df_tr):
     return p
 
 
-def oos_movement(platform, train_frac=0.67):
-    print(f"\n{'='*72}\n{platform.upper()} — OUT-OF-SAMPLE movement prediction\n{'='*72}")
+def _estimate_fast(df_tr, obs_frac=0.5):
+    """Fast closed-form variance-partition estimator (per split, for rolling CV)."""
+    return mrd.estimate(df_tr, obs_frac=obs_frac)
+
+
+def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400):
+    """Rolling-origin OOS movement gate. For each split: estimate the variance
+    partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
+    (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
+    DISTRIBUTION (median, p90, Wasserstein, bootstrap-CI coverage). Test data is
+    never used in estimation or calibration."""
+    from scipy.stats import wasserstein_distance
+    print(f"\n{'='*72}\n{platform.upper()} — OOS movement gate (rolling-origin, distributional)\n{'='*72}")
     df = mrd.load_panel(mrd.PLATFORMS[platform])
     T = int(df["period"].max()) + 1
-    T0 = int(round(train_frac * T))
-    df_tr = df[df["period"] < T0].copy()
-    df_te = df[df["period"] >= T0].copy(); df_te["period"] -= T0
-    Ltr, Lte = T0, T - T0
-    horizons = [h for h in (1, 4, 13) if h < Lte]
-    print(f"  T={T}  train=0..{T0} ({Ltr}w)  test={T0}..{T} ({Lte}w)  horizons={horizons}")
+    test_len = max(13, T // 4)
+    origins = sorted(set(int(round(o)) for o in
+                         np.linspace(max(12, T // 4), T - test_len, n_splits)))
+    print(f"  T={T}  test_len={test_len}  train-end origins={origins}")
 
-    # estimate variance partition on TRAIN (autocovariance -> NOT churn); kappa fit to TRAIN movement only
-    p = _build_params_on(df_tr)
-    print(f"  variance partition (train): sigma_perm={p.sigma_perm[0]:.3f}..{p.sigma_perm[-1]:.3f}  "
-          f"sigma_trans={p.sigma_trans[0]:.3f}..{p.sigma_trans[-1]:.3f}  "
-          f"sigma_obs={p.sigma_obs[0]:.3f}..{p.sigma_obs[-1]:.3f}")
-    from dataclasses import replace
-    tr_mv = emp_movement(df_tr, horizons)
-    keys = list(tr_mv.keys())
-    # Calibrate ONE knob -- sigma_obs scale -- on TRAIN short-horizon displacement only
-    # (fixed home, kappa=0). sigma_obs is the lever on observed rank movement; the pooled
-    # change-nugget over-states it for clean top entities, so we scale it to the training
-    # displacement and then validate on the HELD-OUT window (never used in estimation).
-    target = tr_mv["dRank1"]
-    best_scale, best_err = 1.0, 1e9
-    for scale in (1.0, 0.7, 0.5, 0.35, 0.25):
-        sm = sim_movement(replace(p, sigma_obs=p.sigma_obs * scale), Ltr, 0.0, horizons)
-        err = abs(sm["dRank1"] - target) / max(target, 1e-6)
-        if err < best_err:
-            best_err, best_scale = err, scale
-    p = replace(p, sigma_obs=p.sigma_obs * best_scale)
-    print(f"  calibrated sigma_obs_scale on TRAIN dRank1 = {best_scale}  "
-          f"(sigma_obs now {p.sigma_obs[0]:.3f}..{p.sigma_obs[-1]:.3f})")
+    rows = []
+    for T0 in origins:
+        df_tr = df[df["period"] < T0].copy()
+        df_te = df[(df["period"] >= T0) & (df["period"] < T0 + test_len)].copy()
+        df_te["period"] -= T0
+        hor = [h for h in (1, 4, 13) if h < test_len]
+        p = _estimate_fast(df_tr, obs_frac)
+        scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
+        p = replace_obs(p, scale)
+        ed, erf, ec = emp_dist(df_te, hor)            # held-out truth
+        td, trf, tc = emp_dist(df_tr, hor)            # persistence baseline = train movement
+        sd, srf, sc = sim_dist(p, test_len, hor, reps=reps)   # model prediction
+        rows.append(dict(T0=T0, scale=scale, hor=hor,
+                         em=_moments(ed, erf, ec, hor), bm=_moments(td, trf, tc, hor),
+                         sm=_moments(sd, srf, sc, hor), ed=ed, sd=sd))
 
-    # PREDICT test movement (frozen, calibrated train params); test never used in estimation
-    te_mv = emp_movement(df_te, horizons)
-    model_mv = sim_movement(p, Lte, 0.0, horizons)
-    print(f"\n  PREDICTION vs HELD-OUT TRUTH  (persistence baseline = train movement)")
-    print(f"    metric       train(base)   test(truth)   MODEL    |model-test|  |base-test|")
-    for k in keys:
-        b, tt, m = tr_mv[k], te_mv[k], model_mv[k]
-        e_m = abs(m - tt) if np.isfinite(m) and np.isfinite(tt) else np.nan
-        e_b = abs(b - tt) if np.isfinite(b) and np.isfinite(tt) else np.nan
-        print(f"    {k:<12} {b:>9.3f}   {tt:>9.3f}   {m:>9.3f}    {e_m:>9.3f}    {e_b:>9.3f}")
-    me = np.nanmean([abs(model_mv[k] - te_mv[k]) / max(abs(te_mv[k]), 1e-6) for k in keys])
-    be = np.nanmean([abs(tr_mv[k] - te_mv[k]) / max(abs(te_mv[k]), 1e-6) for k in keys])
-    print(f"\n  mean relative error vs held-out:  MODEL={me:.3f}   persistence-baseline={be:.3f}")
+    hor = rows[0]["hor"]
+    keys = [f"dRank{h}" for h in hor] + ["RACF1"] + [f"coll{c}" for c in (1, 5, 20)]
+    print("\n  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?")
+    me_all, be_all = [], []
+    for r in rows:
+        em, sm, bm = r["em"], r["sm"], r["bm"]
+        kk = [k for k in keys if np.isfinite(em.get(k, np.nan)) and np.isfinite(sm.get(k, np.nan))]
+        me = float(np.mean([abs(sm[k] - em[k]) / max(abs(em[k]), 1e-6) for k in kk]))
+        be = float(np.mean([abs(bm[k] - em[k]) / max(abs(em[k]), 1e-6) for k in kk if np.isfinite(bm.get(k, np.nan))]))
+        me_all.append(me); be_all.append(be)
+        h0 = hor[0]
+        w1 = (wasserstein_distance(r["ed"][h0], r["sd"][h0])
+              if r["ed"][h0].size and r["sd"][h0].size else np.nan)
+        lo, hi = _boot_ci(r["ed"][h0], B=boot)
+        inci = bool(np.isfinite(lo) and lo <= sm[f"dRank{h0}"] <= hi)
+        print(f"    T0={r['T0']:>3}  {r['scale']:.2f}  | {me:>6.3f}      | {be:>6.3f}        "
+              f"| {w1:>6.1f}   | {inci}")
+
+    scales = [r["scale"] for r in rows]
+    cov = np.mean([
+        (lambda lo, hi: bool(np.isfinite(lo) and lo <= r["sm"][f"dRank{r['hor'][0]}"] <= hi))(
+            *_boot_ci(r["ed"][r["hor"][0]], B=boot)) for r in rows])
+    print(f"\n  sigma_obs_scale stability: {scales}  median={np.median(scales):.2f} "
+          f"range={min(scales):.2f}-{max(scales):.2f}")
+    print(f"  MODEL rel err = {np.mean(me_all):.3f} ± {np.std(me_all):.3f}   |   "
+          f"persistence = {np.mean(be_all):.3f} ± {np.std(be_all):.3f}")
+    print(f"  bootstrap-CI coverage (model dR{hor[0]} median inside held-out 95% CI): {cov*100:.0f}% of splits")
+    r = rows[-1]
+    print(f"\n  held-out displacement DISTRIBUTION (last split T0={r['T0']}): emp median/p90 vs model median/p90")
+    for h in hor:
+        e, s = r["ed"][h], r["sd"][h]
+        if e.size and s.size:
+            print(f"    dRank{h}: emp {np.median(e):>4.0f}/{np.percentile(e,90):>4.0f}   "
+                  f"model {np.median(s):>4.0f}/{np.percentile(s,90):>4.0f}")
 
 
 def scorecard(platform, reps=4):
