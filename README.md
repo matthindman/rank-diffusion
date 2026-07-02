@@ -37,10 +37,11 @@ bottom of a pre-registered top-coverage universe (Reddit K=5,000 ≈ 90% of week
 karma; FB K=3,500).
 
 Headline (Reddit): in-sample 14/15 with rank displacement exact at 1/4/13-week
-horizons; rolling-origin OOS movement gate at par with the persistence baseline
-with 100% bootstrap-CI coverage; σ_obs identified (Spec-A weekly covariances and
-Spec-B daily replication agree within ~25%). Facebook: OOS at par (0.158 ± 0.027
-vs 0.146 ± 0.022).
+horizons; the conditional out-of-sample forecast (real filtered initial state +
+per-entity temperament) **beats the persistence baseline** — rel err 0.118 ± 0.061
+vs 0.168 ± 0.004, winning 4 of 5 rolling splits with 100% bootstrap-CI coverage;
+σ_obs identified (Spec-A weekly covariances and Spec-B daily replication agree
+within ~25%). Facebook: OOS at par (0.152 ± 0.043 vs 0.146 ± 0.022).
 
 **Canonical status record: [`llm_fitting/MODEL_STATUS.md`](llm_fitting/MODEL_STATUS.md)**
 (model spec, locked-in results, corrected pitfalls, reproduction commands).
@@ -52,11 +53,12 @@ python -m pytest tests/ -q                        # regression suite
 python llm_fitting/minimal_rankdiff.py reddit --top-k 5000 --temperament \
     --min-knot-entities 8 --md-lags 6 --t-tails --spec-b
 
-# OOS movement gate (the acceptance criterion)
+# OOS movement gate (the acceptance criterion); --conditional state|vhat
+# forecasts from the real filtered end-of-train state (+ per-entity temperament)
 python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament \
-    --min-knot-entities 8 --md-lags 6 --t-tails --spec-b
+    --min-knot-entities 8 --md-lags 6 --t-tails --conditional state
 python llm_fitting/rankdiff_kalman.py facebook --oos --temperament \
-    --min-knot-entities 8 --md-lags 6
+    --min-knot-entities 8 --md-lags 6 --t-tails --conditional state
 
 # sigma_obs identification report (Spec-A vs Spec-B)
 python llm_fitting/spec_b_sigma_obs.py 5000

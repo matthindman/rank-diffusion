@@ -433,6 +433,87 @@ The `kappa_base` at -10% or -20% also scores well (11/15), suggesting mean rever
 
 ---
 
+## 6b. Conditional Forecasting (added 2026-07-02)
+
+### The problem with the unconditional gate
+
+The OOS movement gate compares the model against a persistence baseline (predict that the
+test window churns like the train window). That comparison was structurally handicapped:
+persistence implicitly uses entity-level information (the train window's actual displacement
+distribution reflects the actual entities and their actual gaps), while the unconditional
+model simulated a *synthetic* universe — initialized from sorted period-0 values, burned in
+for 40 steps, cohort chosen inside the simulation. The model was predicting the movement of
+a statistically similar population, not of the population at hand. Matching persistence under
+that handicap was already meaningful; beating it required conditioning.
+
+### What conditioning means here (all inputs train-only)
+
+Two nested levels, implemented in `rankdiff_kalman.py` and toggled by
+`--conditional {state,vhat}` on the `--oos` gate:
+
+**Level 1 — real initial state (`state`).** Simulate the actual member universe forward from
+each member's *filtered* level at the end of the train window:
+
+- Filter: steady-state scalar Kalman filter per entity on its observed weekly series, with
+  band-interpolated parameters — state noise Q = σ_perm²(z̄ᵢ), measurement noise
+  R = σ_obs²(z̄ᵢ) + Var(ξᵢ) (the short-lived transitory component is *folded into
+  measurement noise* for filtering purposes; its state is initialized at its stationary
+  mean of 0). Missing weeks propagate the state without an update (P grows by Q).
+  The random-walk-level approximation ignores the small OU reversion (κ ≤ ~0.05 over
+  ≤ 17-week windows) — declared, second-order.
+- No burn-in. Simulation step 0 anchors at the last train week; the tracked cohort is
+  formed at step 1 by observed rank — exactly mirroring the empirical cohort definition
+  (top-200 by observed rank at the first test week).
+- This hands the simulator the *real gap structure* of the ladder at forecast time, rather
+  than a stationary-distribution draw.
+
+**Level 2 — per-entity temperament (`vhat`).** Instead of drawing each entity's volatility
+multiplier from the mixing distribution, assign each real entity its own empirical-Bayes
+posterior mean (`minimal_rankdiff.eb_vhat`):
+
+    log v̂_i = s² / (s² + ψ'(ν_i/2)) · ê_i
+
+where ê_i is the entity's band-demeaned, bias-corrected log change-variance from the train
+window, ψ'(ν_i/2) is its χ² sampling noise (Satterthwaite effective df), and s is the
+platform temperament spread (§ MODEL_STATUS 2c). Entities with fewer than 8 observed
+changes get the prior (v̂ = 1); the v̂ are renormalized to mean 1 so band-level variance —
+and hence the Eulerian structure — is preserved. This is textbook variance moderation
+(Smyth 2004) applied as a *forecasting input* rather than an estimation device. Reborn
+entities in the simulation draw fresh multipliers from the mixing distribution.
+
+Everything is computed from train data only; the σ_obs scale calibration protocol is
+unchanged (train moment vector, as before).
+
+### Results (rolling-origin, 5 splits; persistence baselines: Reddit 0.168 ± 0.004, FB 0.146 ± 0.022)
+
+| spec | Reddit rel err | coverage | FB rel err | coverage |
+|---|---|---|---|---|
+| unconditional | 0.171 ± 0.017 | 100% | 0.158 ± 0.027 | 60% |
+| conditional: state | **0.118 ± 0.061** | 100% | 0.152 ± 0.043 | 40% |
+| conditional: state+v̂ | 0.148 ± 0.059 | 100% (Wass. 1.3–2.0, best) | 0.161 ± 0.035 | 40% |
+
+**Reddit conditional-state beats persistence on 4 of 5 splits** (0.041 vs 0.167; 0.071 vs
+0.171; 0.128 vs 0.162; 0.131 vs 0.168; the miss is the shortest train window) with 100%
+bootstrap-CI coverage — the first specification to clear the gate's full bar.
+
+### Attribution and honest caveats
+
+- **The real initial state is the main lever**, not v̂. The gap structure at forecast time
+  carries most of the conditional information. v̂ produces the tightest *distributional*
+  match recorded (Wasserstein 1.3–2.0) but is slightly behind state-only on the
+  moment-vector error.
+- Under the Spec-B specification (σ_trans = 0), temperament only scales observation noise,
+  so v̂'s conditioning power is structurally limited there (0.220 ± 0.050).
+- At the shortest train origin (11 changes), `estimate_temperament`'s min_changes = 12
+  silently disables temperament (s = 0), making the two conditional variants identical on
+  that split. Pending robustness fix for short windows.
+- FB stays at par (its persistence baseline is stronger, and its noise split remains
+  gate-calibrated rather than Spec-B-identified); CI coverage dips 60→40% even as
+  late-split held-out distributions become essentially exact (dRank1 13/64 vs emp 14/65).
+  The identified next lever for FB is the noise identification, not further conditioning.
+
+---
+
 ## 7. Key Sources
 
 ### Signal extraction & pile-up problem

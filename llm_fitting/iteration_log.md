@@ -2097,3 +2097,18 @@ Full record with numbers: MODEL_STATUS.md sections 2b–2e. One-line summary of 
 Open items: FB transitory-free re-fit (test the reddit-identified structure on FB), R2_13
 (long-horizon value predictability, likely slowly-evolving temperament), longer Reddit panel,
 YouTube frozen-protocol test with pre-registered Spec-B.
+
+## 2026-07-02 (addendum) — Conditional forecasts: model beats persistence on Reddit
+
+MODEL_STATUS 2f; methodology in research_notes.md §6b. `--conditional {state,vhat}` on the
+OOS gate: simulate the ACTUAL member universe from steady-state-Kalman-filtered end-of-train
+levels (real gap structure, no burn-in), optionally with each entity's own EB-shrunken
+temperament multiplier (mrd.eb_vhat, Smyth-style variance moderation as a forecasting input).
+
+Reddit conditional-state: **0.118 ± 0.061 vs persistence 0.168 ± 0.004** — beats the baseline
+on 4/5 splits with 100% CI coverage; first spec to clear the gate's full bar. state+v̂: 0.148,
+tightest Wasserstein recorded (1.3–2.0). FB: at par (0.152 vs 0.146), coverage 60→40%.
+Attribution: the real initial state is the main lever; v̂ wins on distributional match.
+
+New open items: temperament disabled at 11-change train windows (min_changes=12); FB noise
+identification (Spec-B analog or transitory-free re-fit) before more FB conditioning.
