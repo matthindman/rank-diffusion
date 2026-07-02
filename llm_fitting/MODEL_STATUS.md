@@ -108,9 +108,16 @@ pinned at the old 0.15 grid edge):**
 
 | platform | model rel err | persistence | scale by split | CI coverage |
 |---|---|---|---|---|
-| Reddit K=5,000 | 0.336 ± 0.055 | 0.168 ± 0.004 | 0.0 ×5 | 0% |
 | Reddit K=2,500 | 0.302 ± 0.105 | 0.171 ± 0.004 | 0.0–0.10 | 0% (1 split beats persistence) |
+| Reddit K=5,000 | 0.336 ± 0.055 | 0.168 ± 0.004 | 0.0 ×5 | 0% |
+| Reddit K=10,000 | 0.389 ± 0.033 | 0.167 ± 0.004 | 0.0–0.10 | 0% |
 | FB full (reference, new grid) | 0.276 ± 0.146 | 0.146 ± 0.022 | 0.0–0.35 | 40% |
+
+Note the in-sample/OOS scissors across K: the aggregate in-sample score IMPROVES with deeper K
+(10 → 11 → 12 of 15) while OOS movement WORSENS monotonically (0.302 → 0.336 → 0.389) — the
+in-sample card is diluted by the broader population while the OOS cohort stays pinned on the
+head, where the over-dispersion lives. This is the single-split/in-sample-overclaim pitfall in
+miniature and is why the OOS gate remains the acceptance criterion.
 
 The Reddit gate previously HUNG (full-N cohort sim); it now runs end-to-end in minutes. Reddit is
 no longer categorically worse than FB — same regime, same failure signature.
