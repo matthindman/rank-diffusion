@@ -63,9 +63,31 @@ HORIZONS = [1, 4, 13]
 Z_CLIP = 1e-6
 
 
+# Pre-registered top-coverage thresholds: K = smallest round K whose MEAN weekly
+# share of total raw activity (karma / interactions) reaches the coverage level.
+# Chosen from concentration statistics alone, BEFORE any fit comparison (never
+# adjusted because a different K scores better).  Measured 2026-07-02:
+#   reddit  (T=30, N~200k/wk): top-2500 = 80.0%, top-5000 = 89.2%, top-10000 = 95.6%
+#   facebook(T=88, N~14.4k/wk): top-1800 = 80%,  top-3500 = 90%,   top-5500 = 95%
+COVERAGE_K = {
+    "reddit": {80: 2500, 90: 5000, 95: 10000},
+    "facebook": {80: 1800, 90: 3500, 95: 5500},
+}
+
+
 # --------------------------------------------------------------------------- #
 # Data loading / canonicalization
 # --------------------------------------------------------------------------- #
+def _rank_within(df: pd.DataFrame) -> pd.DataFrame:
+    """Assign unique 1..N_t ranks per period (metric desc, entity_id tiebreak)
+    and recompute N and the rank coordinate z."""
+    df = df.sort_values(["period", "metric", "entity_id"], ascending=[True, False, True])
+    df["rank"] = df.groupby("period").cumcount() + 1
+    df["N"] = df.groupby("period")["entity_id"].transform("size")
+    df["z"] = np.log(np.clip((df["rank"] - 0.5) / df["N"], Z_CLIP, 1.0))
+    return df.reset_index(drop=True)
+
+
 def load_panel(cfg: dict) -> pd.DataFrame:
     df = pd.read_parquet(cfg["path"], columns=[cfg["id_col"], cfg["ts_col"], cfg["metric_col"]])
     df = df.rename(columns={cfg["id_col"]: "entity_id", cfg["ts_col"]: "ts", cfg["metric_col"]: "metric"})
@@ -77,16 +99,41 @@ def load_panel(cfg: dict) -> pd.DataFrame:
     # collapse duplicate (ts, entity) by max, then assign a unique 1..N rank per period
     df = df.groupby(["ts", "entity_id"], as_index=False, sort=False)["metric"].max()
     df["period"] = df["ts"].rank(method="dense").astype(int) - 1
-    df = df.sort_values(["period", "metric", "entity_id"], ascending=[True, False, True])
-    df["rank"] = df.groupby("period").cumcount() + 1
-    if cfg["max_rank"] is not None:
-        df = df[df["rank"] <= cfg["max_rank"]].copy()
-        # re-rank densely within the filtered set
-        df["rank"] = df.groupby("period").cumcount() + 1
-    df["N"] = df.groupby("period")["entity_id"].transform("size")
     df["X"] = np.log1p(df["metric"].to_numpy(dtype=float))
-    df["z"] = np.log(np.clip((df["rank"] - 0.5) / df["N"], Z_CLIP, 1.0))
-    return df.reset_index(drop=True)
+    df = _rank_within(df)
+    if cfg["max_rank"] is not None:
+        # open weekly cap (legacy; used by the IG negative control)
+        df = _rank_within(df[df["rank"] <= cfg["max_rank"]].copy())
+    return df
+
+
+def restrict_universe(df: pd.DataFrame, top_k: int, buffer_mult: int = 4,
+                      member_window: int | None = None) -> pd.DataFrame:
+    """Closed Lagrangian top-coverage universe with an observed buffer.
+
+    Restrict the panel to the B = buffer_mult * top_k entities with the best
+    PERMANENT (time-averaged, full-panel) rank.  Membership is computed on
+    periods < member_window only (pass the train end T0 in OOS settings so the
+    test window never influences membership; None = all periods, in-sample).
+
+    ALL observations of members are kept -- including weeks they dip below
+    top_k (they remain observed in the full panel; no censoring, no
+    imputation) -- and weekly ranks are recomputed WITHIN the universe.
+    Selection is by entity_id list, never positional masks (band-alignment
+    pitfall).  Diagnostics should score ranks <= top_k only; the buffer is a
+    sponge layer that absorbs boundary flux (empirically p99 of drop-landings
+    and entrant origins is ~4*K, hence buffer_mult=4).
+    """
+    B = int(buffer_mult * top_k)
+    win = df if member_window is None else df[df["period"] < member_window]
+    # stable value sort after an index sort => deterministic id tiebreak
+    perm_rank = win.groupby("entity_id")["rank"].mean().sort_index()
+    perm_rank = perm_rank.sort_values(kind="mergesort")
+    members = set(perm_rank.index[:B])
+    out = _rank_within(df[df["entity_id"].isin(members)].copy())
+    out.attrs["score_k"] = int(top_k)
+    out.attrs["universe_B"] = B
+    return out
 
 
 # --------------------------------------------------------------------------- #
