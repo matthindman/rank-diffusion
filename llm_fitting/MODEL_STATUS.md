@@ -221,6 +221,61 @@ python llm_fitting/rankdiff_kalman.py facebook --oos --temperament --min-knot-en
 python llm_fitting/temperament_vs_finebands.py reddit facebook   # H-fine rejection battery
 ```
 
+## 2d. 2026-07-02 — MD covariance estimator (OU home): Reddit passes the OOS gate criteria
+
+**Diagnosis.** The change-autocovariance function has a persistent NEGATIVE tail at lags 3–6
+(Reddit −0.006/−0.024/−0.032; FB −0.021/−0.028, head ≤ 500, normalized by γ0) that a
+random-walk home cannot produce (RW changes are white). The estimator assumed RW and forced the
+tail into the transitory/noise split while the simulator applied a hand-set κ=0.15 on top —
+an estimator/simulator inconsistency. Summed, the tail cuts ~1.1·γ0 from 13-week change
+variance: first-order at exactly the horizons (h ≥ 4) where OOS over-predicted.
+
+**Change (net parsimony GAIN).** `--md-lags 6`: minimum-distance fit of γ0..γ6 per knot
+(Chamberlain / Abowd–Card covariance-structure estimation) to OU-home + AR(1)-transitory +
+iid-noise. Estimates κ(z) from the tail (hand-set κ retired) and σ_obs from the covariance
+structure (obs_frac unused on this path). Also `--t-tails`: unit-variance Student-t transitory
+innovations, df from the median within-entity excess kurtosis (a moment temperament cannot
+produce; FB 1.23 → df 4.3, Reddit 0.17 → df 6.7). Tests: exact + simulated-panel MD recovery.
+
+**Rejected after measurement (parsimony defended):** a common time-varying volatility factor —
+Reddit's weekly cross-sectional change volatility is flat (0.94–1.09, log-SD 0.034) straight
+through the 2024 US election; train/test volatility ratios 1.00 at every OOS origin.
+
+**Results (stack = universe + temper + pool + md6 + t-tails):**
+
+| | in-sample goal-1 | churn err | OOS rel err (persistence) | CI coverage | scale |
+|---|---|---|---|---|---|
+| Reddit K=5,000 | **14/15** (only R2_13 fails) | 0.074 | **0.171 ± 0.017** (0.168 ± 0.004) | **100%** | 0.25–1.0 interior |
+| FB K=3,500 | 7/15 (see caveat) | 0.079 | **0.158 ± 0.027** (0.146 ± 0.022) | 60% | 0.25–1.0 interior |
+
+Reddit: dRank1/4 in-sample +0.2/+0.6; held-out dRank1 median EXACT (6 vs 6), p90 24 vs 27;
+Wasserstein 1.0–3.3 (was 6–10); estimated κ(z) = 0.005 (head) → 0.04 (tail); σ_obs head 0.03.
+Every split's model error sits on the persistence baseline (0.140–0.190 vs 0.162–0.172), one
+split beats it. **Reddit satisfies the distributional gate criteria for the first time — at par
+with, not yet beating, persistence.** FB OOS: 2 of 5 splits beat persistence outright (0.133 vs
+0.138; 0.138 vs 0.173); failures concentrate in nothing — all five splits ≤ 0.210.
+
+**FB in-sample caveat (weak identification, documented — do not spec-fish).** On FB the raw MD
+fast split lands on φ=0.4 / σ_obs≈0.03 at the head and over-persists every head metric (RACF1
++0.13, coll1 −0.16): as φ→0 an AR(1) transitory is observationally equivalent to iid noise
+(design columns collide), so the fast split is weakly identified from weekly covariances.
+Attempted resolutions — smallest-φ tie-break, largest-σ_e tie-break, hybrid (MD slow side +
+obs_frac fast side) — were each tried and REJECTED: each reshuffles the degenerate surface
+differently per platform without fixing FB (its κ_head estimate is also tail-noise sensitive),
+and iterating tie-breaks against scores is spec-fishing. The declared resolution is EXTERNAL
+identification: **Spec-B, σ_obs from the daily-within-week noise floor**
+(`data/reddit/reddit_daily.parquet` exists) — now unambiguously the next work item. Note the
+OOS gate already resolves the split empirically per split (train-calibrated scale, interior
+0.25–1.0 on both platforms), which is why FB OOS is strong while FB in-sample raw-MD is not.
+FB's best in-sample spec remains temper+pool (§2c: 9/15, churn 0.017, RACF1 −0.019).
+
+**Reproduction:**
+```
+python llm_fitting/minimal_rankdiff.py reddit --top-k 5000 --temperament --min-knot-entities 8 --md-lags 6 --t-tails
+python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament --min-knot-entities 8 --md-lags 6 --t-tails
+python llm_fitting/rankdiff_kalman.py facebook --oos --temperament --min-knot-entities 8 --md-lags 6 --t-tails
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
