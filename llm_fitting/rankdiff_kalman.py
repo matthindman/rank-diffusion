@@ -518,6 +518,113 @@ def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
     return np.array(cranks), np.array(topids)
 
 
+def _filtered_levels(df_tr, p):
+    """Steady-state Kalman (random-walk-level approximation) estimate of every
+    member's latent level at the END of the train window, using band-level
+    (sigma_perm, sigma_obs, transitory-folded-into-noise) parameters.  Returns
+    (levels: pd.Series indexed by entity_id, sorted by nothing in particular)."""
+    T0 = int(df_tr["period"].max()) + 1
+    X = df_tr.pivot_table(index="period", columns="entity_id", values="X").reindex(range(T0))
+    N = int(round(df_tr.groupby("period")["entity_id"].size().mean()))
+    rbar = df_tr.groupby("entity_id")["rank"].mean().reindex(X.columns)
+    zb = np.log(np.clip((rbar.to_numpy() - 0.5) / N, Z_CLIP, 1.0))
+    sp = np.interp(zb, p.z_knots, p.sigma_perm)
+    so = np.interp(zb, p.z_knots, p.sigma_obs)
+    st = np.interp(zb, p.z_knots, p.sigma_trans)
+    ph = np.interp(zb, p.z_knots, p.phi)
+    Q = sp ** 2
+    R = so ** 2 + st ** 2 / np.clip(1.0 - ph ** 2, 1e-6, None)  # transitory ~ noise
+    R = np.clip(R, 1e-8, None)
+    M = X.to_numpy()
+    h = np.full(M.shape[1], np.nan)
+    P = R.copy()
+    for t in range(M.shape[0]):
+        P = P + Q
+        obs = np.isfinite(M[t])
+        first = obs & ~np.isfinite(h)
+        h[first] = M[t][first]
+        P[first] = R[first]
+        upd = obs & ~first
+        K = P / (P + R)
+        h[upd] = h[upd] + K[upd] * (M[t][upd] - h[upd])
+        P[upd] = (1.0 - K[upd]) * P[upd]
+    return pd.Series(h, index=X.columns).dropna()
+
+
+def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=None):
+    """CONDITIONAL forecast: simulate the ACTUAL member universe forward from
+    its filtered end-of-train state (real gap structure, no burn-in), with each
+    entity's own EB-shrunken temperament multiplier when vhat is given (else
+    random draws as in the unconditional sim).  Step 0 = last train week; the
+    tracked cohort is formed at step 1 (aligned with the gate's empirical
+    cohort = top-k by observed rank at the first test week)."""
+    rng = np.random.default_rng(seed)
+    levels = _filtered_levels(df_tr, p)
+    mu = levels.to_numpy().copy()
+    home = mu.copy()
+    N = mu.size
+    xi = np.zeros(N)
+    ids = np.arange(N, dtype=np.int64); next_id = N
+    zk = p.z_knots
+    ts = getattr(p, "temper_s", 0.0)
+    if ts > 0 and vhat is not None and len(vhat):
+        sqv = np.sqrt(vhat.reindex(levels.index).fillna(1.0).to_numpy())
+    elif ts > 0:
+        sqv = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, N))
+    else:
+        sqv = np.ones(N)
+    cohort_slots = cohort_ids = None
+    cranks = []; topids = []
+    KT = 300
+    for t in range(T_sim + 1):
+        morder = np.argsort(-mu); prank = np.empty(N, np.int64); prank[morder] = np.arange(1, N + 1)
+        zp = np.log(np.clip((prank - 0.5) / N, Z_CLIP, 1.0))
+        phi = np.interp(zp, zk, p.phi); st = np.interp(zp, zk, p.sigma_trans)
+        sp = np.interp(zp, zk, p.sigma_perm); so = np.interp(zp, zk, p.sigma_obs)
+        if kappa:
+            mu = mu - kappa * (mu - home)
+        elif getattr(p, "kappa_z", None) is not None:
+            mu = mu - np.interp(zp, zk, p.kappa_z) * (mu - home)
+        mu = mu + sp * rng.standard_normal(N)
+        xi = phi * xi + st * sqv * mrd._tdraw(rng, getattr(p, "t_df", float("inf")), N)
+        ex = rng.random(N) < np.interp(zp, zk, p.exit_rate)
+        ne = int(ex.sum())
+        if ne:
+            sm = p.bottom_mu[rng.integers(0, p.bottom_mu.size, ne)]
+            mu[ex] = sm; home[ex] = sm; xi[ex] = 0.0
+            ids[ex] = np.arange(next_id, next_id + ne); next_id += ne
+            if ts > 0:
+                sqv[ex] = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, ne))
+        X = mu + xi + so * sqv * rng.standard_normal(N)
+        order = np.argsort(-X); rank = np.empty(N, np.int64); rank[order] = np.arange(1, N + 1)
+        if t == 0:
+            continue  # step 0 anchors at the last train week; record from step 1
+        if cohort_slots is None:
+            cohort_slots = order[:cohort_k].copy(); cohort_ids = ids[cohort_slots].copy()
+        alive = ids[cohort_slots] == cohort_ids
+        cr = rank[cohort_slots].astype(float); cr[~alive] = np.nan
+        cranks.append(cr); topids.append(ids[order[:KT]])
+    return np.array(cranks), np.array(topids)
+
+
+def sim_dist_cond(p, df_tr, T_sim, horizons, reps=3, coll_ranks=(1, 5, 20),
+                  kappa=0.0, vhat=None):
+    """Conditional counterpart of sim_dist."""
+    pooled = {h: [] for h in horizons}
+    racfs, colls = [], {c: [] for c in coll_ranks}
+    for s in range(reps):
+        cr, ti = sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=s, vhat=vhat)
+        d, rf = _rank_dist(cr, horizons)
+        for h in horizons:
+            pooled[h].append(d[h])
+        racfs.append(rf)
+        cc = _collisions_from_topids(ti, coll_ranks)
+        for c in coll_ranks:
+            colls[c].append(cc.get(f"coll{c}", np.nan))
+    dist = {h: (np.concatenate(pooled[h]) if pooled[h] else np.array([])) for h in horizons}
+    return dist, float(np.nanmedian(racfs)), {c: float(np.nanmean(colls[c])) for c in coll_ranks}
+
+
 def sim_dist(p, T_sim, horizons, reps=3, coll_ranks=(1, 5, 20), kappa=0.0):
     """Pooled displacement distribution + RACF1 + collisions across MC reps."""
     pooled = {h: [] for h in horizons}
@@ -591,7 +698,7 @@ def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None,
 
 def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
-                 md_lags=None, t_tails=False, spec_b=False):
+                 md_lags=None, t_tails=False, spec_b=False, conditional=None):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -609,7 +716,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
     uni = f"  universe=top-{top_k} (B={buffer_mult}x, train-only membership)" if top_k else ""
     opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
             + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
-            + (" spec-B" if spec_b else ""))
+            + (" spec-B" if spec_b else "")
+            + (f" COND:{conditional}" if conditional else ""))
     print(f"  T={T}  test_len={test_len}  train-end origins={origins}{uni}{opts}")
 
     daily = None
@@ -638,7 +746,13 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         p = replace_obs(p, scale)
         ed, erf, ec = emp_dist(df_te, hor)            # held-out truth
         td, trf, tc = emp_dist(df_tr, hor)            # persistence baseline = train movement
-        sd, srf, sc = sim_dist(p, test_len, hor, reps=reps)   # model prediction
+        if conditional:
+            # conditional forecast: real filtered end-of-train state; per-entity
+            # EB-shrunken temperament when conditional == 'vhat'
+            vh = (mrd.eb_vhat(df_tr, s=p.temper_s) if conditional == "vhat" else None)
+            sd, srf, sc = sim_dist_cond(p, df_tr, test_len, hor, reps=reps, vhat=vh)
+        else:
+            sd, srf, sc = sim_dist(p, test_len, hor, reps=reps)   # model prediction
         rows.append(dict(T0=T0, scale=scale, hor=hor, ts=p.temper_s,
                          em=_moments(ed, erf, ec, hor), bm=_moments(td, trf, tc, hor),
                          sm=_moments(sd, srf, sc, hor), ed=ed, sd=sd))
@@ -773,6 +887,10 @@ if __name__ == "__main__":
                     help="Student-t transitory innovations (df from within-entity kurtosis)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
+    ap.add_argument("--conditional", choices=("state", "vhat"), default=None,
+                    help="conditional OOS forecast: initialize from the filtered "
+                         "end-of-train state ('state'), plus per-entity EB-shrunken "
+                         "temperament multipliers ('vhat')")
     args = ap.parse_args()
     if args.selftest:
         selftest()
@@ -783,7 +901,8 @@ if __name__ == "__main__":
         for p in args.platforms:
             oos_movement(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult,
                          temper=args.temperament, min_knot_n=args.min_knot_entities,
-                         md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b)
+                         md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
+                         conditional=args.conditional)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)

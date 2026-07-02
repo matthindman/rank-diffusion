@@ -54,6 +54,27 @@ class TemperamentTests(unittest.TestCase):
         v = rng.lognormal(-0.5 * s * s, s, 200_000)
         self.assertAlmostEqual(float(v.mean()), 1.0, places=2)
 
+    def test_eb_vhat_recovers_entity_multipliers(self):
+        # entities with known v_i: shrunken estimates should correlate strongly
+        # with truth, have mean ~1, and rank quiet entities below volatile ones
+        rng = np.random.default_rng(7)
+        n_ent, T, s = 400, 60, 0.8
+        v_true = rng.lognormal(-0.5 * s * s, s, n_ent)
+        levels = rng.normal(10, 2, n_ent)
+        X = levels[None, :] + 0.3 * np.sqrt(v_true)[None, :] * rng.standard_normal((T, n_ent))
+        rows = [(f"e{i}", t, float(np.exp(X[t, i])))
+                for t in range(T) for i in range(n_ent)]
+        df = pd.DataFrame(rows, columns=["entity_id", "period", "metric"])
+        df["X"] = np.log(df["metric"])
+        df = mrd._rank_within(df)
+        vhat = mrd.eb_vhat(df)
+        v = vhat.reindex([f"e{i}" for i in range(n_ent)]).to_numpy()
+        corr = float(np.corrcoef(np.log(v), np.log(v_true))[0, 1])
+        self.assertGreater(corr, 0.6)
+        self.assertAlmostEqual(float(np.mean(v)), 1.0, places=6)
+        # shrinkage: estimates less dispersed than truth
+        self.assertLess(np.std(np.log(v)), np.std(np.log(v_true)))
+
     def test_temperament_off_is_bitwise_baseline(self):
         # temper_s=0 must not change the simulation path at all
         df = synth_panel(s=0.0, n_ent=150, T=30)

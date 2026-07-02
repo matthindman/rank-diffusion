@@ -542,7 +542,34 @@ def estimate_temperament(df: pd.DataFrame, n_bands: int = 10, min_changes: int =
         per_band.append((float(np.median(zb[m])), np.sqrt(s2_b), int(m.sum())))
     s2 = max(0.0, float(np.sum(e_hat ** 2) / (len(e_hat) - n_bands) - trig.mean()))
     return dict(s=float(np.sqrt(s2)), n_entities=int(len(n_i)), kappa=float(kappa),
-                per_band=per_band)
+                per_band=per_band,
+                entities=pd.DataFrame({"e_hat": e_hat, "trig": trig},
+                                      index=s2_i.index))
+
+
+def eb_vhat(df: pd.DataFrame, s: float | None = None, min_changes: int = 8) -> pd.Series:
+    """Empirical-Bayes SHRUNKEN per-entity temperament multipliers v_hat_i.
+
+    For each entity, its band-demeaned bias-corrected log change-variance e_hat
+    is shrunk toward 0 (the band average) by exactly its sampling noise:
+        log v_hat_i = s^2 / (s^2 + trig_i) * e_hat_i
+    (posterior mean under the lognormal mixing model).  Entities with fewer
+    than min_changes observed changes get v_hat = 1 (pure prior).  The result
+    is renormalized to mean 1 so band-level variance is preserved.
+
+    Used for CONDITIONAL forecasting: initialize the simulated cohort with the
+    real entities' own multipliers instead of random draws.  Estimated on
+    TRAIN data only in OOS settings (pass the train panel)."""
+    t = estimate_temperament(df, min_changes=min_changes)
+    ent = t.get("entities")
+    s_use = t["s"] if s is None else s
+    if ent is None or s_use <= 0:
+        return pd.Series(dtype=float)
+    s2 = s_use ** 2
+    logv = s2 / (s2 + ent["trig"].to_numpy()) * ent["e_hat"].to_numpy()
+    v = np.exp(logv)
+    v = v / v.mean()
+    return pd.Series(v, index=ent.index)
 
 
 # --------------------------------------------------------------------------- #
