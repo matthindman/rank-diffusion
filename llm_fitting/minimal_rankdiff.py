@@ -293,7 +293,8 @@ def _interp(z, p: RankParams, arr):
 
 
 def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=True,
-             factor_head_damp: float = 1.0, kappa: float | None = None, track: int = 4000) -> dict:
+             factor_head_damp: float = 1.0, kappa: float | None = None, track: int = 4000,
+             top_record: int | None = None) -> dict:
     kappa = p.kappa if kappa is None else kappa
     rng = np.random.default_rng(seed)
     N = p.N
@@ -308,7 +309,8 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
     tsel = np.sort(rng.choice(N, ntrack, replace=False))
     tvals = np.full((T, ntrack), np.nan)
     tranks = np.zeros((T, ntrack), dtype=np.int32)
-    topK = max(COLLISION_RANKS)
+    # record occupant ids down to the boundary-flux depth when a universe is active
+    topK = min(N, max(max(COLLISION_RANKS), top_record or 0))
     top_ids = np.full((T, topK), -1, dtype=np.int64)
     ranksize = np.zeros((T, min(N, 2000)))
 
@@ -381,10 +383,34 @@ def _safe_acf(x, lag):
     return float(np.corrcoef(x[:-lag], x[lag:])[0, 1])
 
 
+def _boundary_flux(top_ids: np.ndarray, K: int, ret_h: int = 4) -> tuple[float, float]:
+    """Boundary-crossing diagnostics at the top-K universe boundary:
+    (i) mean weekly out-flux -- share of the top-K set at t not in the top-K at
+    t+1; (ii) mean return rate -- share of those droppers back inside the top-K
+    at t+ret_h.  Computed identically for empirical and simulated occupant-id
+    arrays, so the truncation boundary is a tested prediction, not an assumption."""
+    T = top_ids.shape[0]
+    if top_ids.shape[1] < K or T < 2:
+        return np.nan, np.nan
+    sets = [set(top_ids[t, :K]) - {-1} for t in range(T)]
+    outr, back = [], []
+    for t in range(T - 1):
+        cur = sets[t]
+        if not cur:
+            continue
+        dropped = cur - sets[t + 1]
+        outr.append(len(dropped) / len(cur))
+        if t + ret_h < T and dropped:
+            back.append(len(dropped & sets[t + ret_h]) / len(dropped))
+    return (float(np.mean(outr)) if outr else np.nan,
+            float(np.mean(back)) if back else np.nan)
+
+
 def diagnostics(values: np.ndarray, ranks: np.ndarray, top_ids: np.ndarray,
-                ranksize: np.ndarray | None, top_k: int) -> dict:
+                ranksize: np.ndarray | None, top_k: int, score_k: int | None = None) -> dict:
     """values: (T, n) entity log-values (NaN = absent); ranks: (T, n) 1-based, 0=absent;
-    top_ids: (T, Kmax) occupant id at each rank; ranksize: (T, M) sorted values."""
+    top_ids: (T, Kmax) occupant id at each rank; ranksize: (T, M) sorted values.
+    score_k: top-coverage universe boundary; adds boundary-flux diagnostics."""
     obs_all = np.all(np.isfinite(values), axis=0)
     V = values[:, obs_all] if obs_all.sum() >= 10 else values
     R = ranks[:, obs_all] if obs_all.sum() >= 10 else ranks
@@ -436,12 +462,16 @@ def diagnostics(values: np.ndarray, ranks: np.ndarray, top_ids: np.ndarray,
                     d.append(np.abs(r[h:][ok] - r[:-h][ok]))
             out[f"dRank{h}"] = float(np.median(np.concatenate(d))) if d else np.nan
 
+    if score_k is not None:
+        out["outfluxK"], out["return4K"] = _boundary_flux(top_ids, score_k)
+
     if ranksize is not None:
         out["_ranksize"] = np.nanmean(ranksize, axis=0)
     return out
 
 
-def empirical_structures(df: pd.DataFrame, top_k: int, track: int = 4000, seed: int = 0):
+def empirical_structures(df: pd.DataFrame, top_k: int, track: int = 4000, seed: int = 0,
+                         topid_k: int | None = None):
     T = int(df["period"].max()) + 1
     # tracked sample: entities present in >=70% of periods (keeps RACF/VR estimable)
     pres = df.groupby("entity_id")["period"].nunique()
@@ -455,7 +485,7 @@ def empirical_structures(df: pd.DataFrame, top_k: int, track: int = 4000, seed: 
     values = vx.to_numpy(dtype=float)
     ranks = np.nan_to_num(vr.to_numpy(dtype=float), nan=0.0).astype(np.int64)
 
-    Kmax = max(COLLISION_RANKS)
+    Kmax = max(max(COLLISION_RANKS), topid_k or 0)
     top_ids = np.full((T, Kmax), -1, dtype=object)
     rs_M = min(2000, int(df.groupby("period").size().min()))
     ranksize = np.full((T, rs_M), np.nan)
@@ -476,24 +506,31 @@ def empirical_structures(df: pd.DataFrame, top_k: int, track: int = 4000, seed: 
 # Driver
 # --------------------------------------------------------------------------- #
 def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float = 0.15,
-                 **sim_kw) -> dict:
+                 top_k_u: int | None = None, buffer_mult: int = 4, **sim_kw) -> dict:
     cfg = PLATFORMS[name]
     df = load_panel(cfg)
+    if top_k_u:
+        df = restrict_universe(df, top_k_u, buffer_mult=buffer_mult)
+    score_k = df.attrs.get("score_k")
     T = int(df["period"].max()) + 1
     mean_n = df.groupby("period").size().mean()
     top_k = max(10, int(round(0.01 * mean_n)))
+    uni = (f" universe=top-{score_k} (buffer B={df.attrs['universe_B']})"
+           if score_k else "")
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
-          f"entities={df['entity_id'].nunique():,} top_k={top_k}\n{'='*72}")
+          f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}\n{'='*72}")
 
-    ev, er, et, ers = empirical_structures(df, top_k)
-    emp = diagnostics(ev, er, et, ers, top_k)
+    ev, er, et, ers = empirical_structures(df, top_k, topid_k=score_k)
+    emp = diagnostics(ev, er, et, ers, top_k, score_k=score_k)
 
     p = estimate(df, obs_frac=obs_frac)
-    sims = [diagnostics(*_sim_struct(simulate(p, T, seed=s, kappa=kappa, **sim_kw)), top_k)
+    sims = [diagnostics(*_sim_struct(simulate(p, T, seed=s, kappa=kappa,
+                                              top_record=score_k, **sim_kw)),
+                        top_k, score_k=score_k)
             for s in range(reps)]
     sim = {k: np.nanmean([s[k] for s in sims]) for k in emp if not k.startswith("_")}
 
-    _print_compare(emp, sim, p, top_k)
+    _print_compare(emp, sim, p, top_k, score_k=score_k)
     return dict(name=name, emp=emp, sim=sim, params=p, df_T=T, mean_n=mean_n)
 
 
@@ -519,12 +556,16 @@ def _sim_struct(sim: dict):
     return sim["tvals"], sim["tranks"], sim["top_ids"], sim["ranksize"]
 
 
-def _print_compare(emp: dict, sim: dict, p: RankParams, top_k: int):
+def _print_compare(emp: dict, sim: dict, p: RankParams, top_k: int,
+                   score_k: int | None = None):
     groups = [("RANK DYNAMICS (goal 1)", ["VR2", "VR4", "VR8", "VR13", "ACF1", "ACF2",
                                           "RACF1", "RACF4", "RACF13", "R2_1", "R2_4", "R2_13"]),
               ("CHURN @ rank (goal 2)", [f"coll{c}" for c in COLLISION_RANKS]),
               ("rank displacement", [f"dRank{h}" for h in DRANK_HORIZONS]),
               ("top-k persistence", [f"Pers{h}" for h in HORIZONS])]
+    if score_k is not None:
+        groups.append((f"boundary flux @ top-{score_k} (out-rate / 4wk return)",
+                       ["outfluxK", "return4K"]))
     for title, keys in groups:
         print(f"\n  {title}")
         print(f"    {'metric':<10}{'emp':>9}{'sim':>9}{'diff':>9}")
@@ -551,8 +592,20 @@ if __name__ == "__main__":
     ap.add_argument("--factor-head-damp", type=float, default=1.0)
     ap.add_argument("--kappa", type=float, default=0.15, help="permanent home-reversion strength")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
+    ap.add_argument("--top-k", type=int, default=None,
+                    help="top-coverage universe boundary K (applies to every platform listed)")
+    ap.add_argument("--coverage", type=int, choices=(80, 90, 95), default=None,
+                    help="resolve K per platform from the pre-registered COVERAGE_K rule")
+    ap.add_argument("--buffer-mult", type=int, default=4,
+                    help="universe buffer depth B = buffer_mult * K (sponge layer)")
     args = ap.parse_args()
     for plat in args.platforms:
+        top_k_u = args.top_k
+        if top_k_u is None and args.coverage is not None:
+            top_k_u = COVERAGE_K.get(plat, {}).get(args.coverage)
+            if top_k_u is None:
+                raise SystemExit(f"no pre-registered K for {plat} at coverage {args.coverage}%")
         run_platform(plat, reps=args.reps, obs_frac=args.obs_frac, kappa=args.kappa,
+                     top_k_u=top_k_u, buffer_mult=args.buffer_mult,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)
