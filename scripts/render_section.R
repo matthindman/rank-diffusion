@@ -15,7 +15,7 @@ if (length(args) > 1) {
 
     if (key %in% c("use_cache", "run_heavy")) {
       params[[key]] <- tolower(val) %in% c("true", "t", "1", "yes")
-    } else if (key %in% c("cache_version", "seed", "K_cut_target", "K_tail_buffer")) {
+    } else if (key %in% c("cache_version", "seed", "K_cut_target", "K_tail_buffer", "min_week_ranks_keep")) {
       params[[key]] <- val
     }
   }

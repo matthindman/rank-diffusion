@@ -1908,3 +1908,192 @@ features from a single calibration.
 
 ---
 
+## v4.1 Detection Threshold Entry/Exit (Critique Issue #5)
+**Date:** 2026-02-13
+**Score:** 12/15 diagnostics pass (RACF(1), RACF(4), RACF(13) FAIL)
+**Elapsed:** ~620s
+
+### Motivation
+
+Addresses critique issue #5: the ad hoc entry/exit mechanism in v4.0 used 4 free
+parameters (inc_alpha, p_exit_incumbent, trans_p_exit, burst%) without theoretical
+grounding. We replace this with a principled detection-probability threshold model
+informed by extensive literature review and descriptive analysis.
+
+### Descriptive Analysis (exit_descriptive.py)
+
+Before implementing the model, we computed exit probabilities by rank at horizons
+1, 4, 8, and 16 weeks. Key findings:
+
+| Band | 1wk | 4wk | 8wk | 16wk | N |
+|------|-----|-----|-----|------|---|
+| 1-100 | 0.10% | 0.04% | 0.04% | 0.03% | 8,800 |
+| 101-500 | 0.14% | 0.04% | 0.02% | 0.02% | 35,214 |
+| 501-2000 | 0.30% | 0.07% | 0.04% | 0.03% | 132,790 |
+| 2001-5000 | 0.52% | 0.10% | 0.05% | 0.04% | 277,389 |
+| 5001-10000 | 1.10% | 0.19% | 0.09% | 0.05% | 637,544 |
+| 10001-15000 | 4.95% | 1.02% | 0.52% | 0.29% | 172,250 |
+
+Critical insight: the large gap between 1-week exit and 16-week exit at high ranks
+(4.95% vs 0.29% for rank 10K-15K) proves that most "exits" are temporary threshold
+crossings, not genuine competitive exits. Pages briefly drop below the observation
+threshold and return, consistent with a detection/censoring model rather than true
+entry/exit.
+
+### Literature Review
+
+Reviewed approaches across five domains:
+1. **Finance**: Survivorship bias (Brown et al. 1992), CRSP delisting correction,
+   Russell index reconstitution with buffer zones
+2. **Ecology**: MacKenzie occupancy models separating true presence from detection
+   probability; Jolly-Seber capture-recapture
+3. **Income/wealth**: Pareto tail fitting with truncated distributions
+4. **Statistics**: Tobit models, Heckman selection correction, absorbing/reflecting
+   barriers in diffusion processes
+5. **Platform economics**: CrowdTangle data bias studies, Blumm-Ghoshal ranking dynamics
+
+### Model Changes (v4.0 → v4.1)
+
+**Removed** (4 ad hoc parameters):
+- `inc_alpha` (incumbent identification weight)
+- `p_exit_incumbent` (incumbent exit probability)
+- `trans_p_exit` (transient exit probability)
+- Burst entry percentage
+
+**Added** (2 principled parameters):
+- `DETECT_MIDPOINT = int(mean_N) + 2500 ≈ 16863`
+- `DETECT_SCALE = 1200`
+
+Detection function: `p_detect(rank) = 1 / (1 + exp((rank - MIDPOINT) / SCALE))`
+
+| Rank | p_detect | p^88 (balanced panel) |
+|------|----------|----------------------|
+| 8000 | 0.9994 | ~0.95 |
+| 10000 | 0.9967 | ~0.75 |
+| 12000 | 0.9829 | ~0.22 |
+| 14000 | 0.9157 | ~0.001 |
+
+The threshold at 8000 means data is essentially fully observed above rank 8000.
+Detection rolloff happens near the actual data boundary (~14K+), matching the
+empirical pattern of temporary disappearances at high ranks.
+
+**Structural changes to simulation**:
+1. All N_FULL endpoints evolve at every time step (no removal/replacement)
+2. Detection probability determines which endpoints are "observed" each week
+3. Balanced panel = endpoints detected in ALL 88 recording weeks
+4. **Observed ranks** computed among detected endpoints only (matching real data
+   where ranks are among observed pages)
+
+### Calibration Detail
+
+First run with naive DETECT_MIDPOINT=8000 produced BP/N_full=4% (vs empirical 71%)
+because p_detect=0.88 at rank 5000 compounds to ~0 over 88 weeks. The "threshold
+at 8000" means data is CLEAN above 8000, not that the cutoff is at 8000.
+
+Recalibrated with DETECT_MIDPOINT≈16863 (mean_N + 2500):
+- BP/N_full = 66.9% (empirical: 71.4%)
+- Mean detected/week = 14,222 (empirical: 14,363)
+
+### Results (12/15)
+
+| Diagnostic | Empirical | Simulated | Error | Pass |
+|-----------|-----------|-----------|-------|------|
+| VR(2) | 0.6017 | 0.6106 | 1.5% | Y |
+| VR(4) | 0.3349 | 0.3372 | 0.7% | Y |
+| VR(8) | 0.1889 | 0.1868 | 1.1% | Y |
+| VR(13) | 0.1236 | 0.1253 | 1.4% | Y |
+| ACF(1) | -0.3988 | -0.3671 | 0.032 | Y |
+| ACF(2) | -0.0553 | -0.0587 | 0.003 | Y |
+| RACF(1) | 0.4567 | 0.5482 | 0.092 | **N** |
+| RACF(4) | 0.2551 | 0.3378 | 0.083 | **N** |
+| RACF(13) | 0.0622 | 0.1643 | 0.102 | **N** |
+| Pers(1) | 76 | 75.4 | -0.6 | Y |
+| Pers(4) | 64 | 63.0 | -1.0 | Y |
+| Pers(13) | 64 | 54.1 | -9.9 | Y |
+| R²(1) | 0.7899 | 0.8338 | 0.044 | Y |
+| R²(4) | 0.7262 | 0.7601 | 0.034 | Y |
+| R²(13) | 0.6678 | 0.6869 | 0.019 | Y |
+
+### Interpretation of RACF Failure
+
+The RACF failures are expected and informative. The pure detection model captures
+**censoring** (temporary threshold crossings) but NOT **genuine population turnover**
+(pages being deleted, deactivated, or newly added to CrowdTangle).
+
+In v4.0, exit/entry provided rank mixing throughout the distribution: ~57 pages
+exited and ~57 entered per week, each causing rank shifts for all other pages.
+In v4.1, only ~141 pages per week are undetected (all near the bottom), causing
+negligible rank perturbation.
+
+Evidence for genuine turnover from descriptive analysis: even at rank 1-100 (where
+p_detect ≈ 1.0000), the 1-week exit rate is 0.10%. This represents real page
+removal, not censoring. Across 88 weeks, this genuine attrition creates substantial
+cumulative rank shuffling that the detection model cannot capture.
+
+The RACF diagnostic gap thus cleanly **decomposes** the entry/exit phenomenon into:
+1. **Censoring** (~4-5% of exits at high ranks) — captured by detection model
+2. **Genuine turnover** (~0.1-0.5% base rate) — source of RACF gap
+
+This decomposition is itself a finding: it quantifies how much of the apparent
+entry/exit in the data is censoring artifact vs. genuine competitive dynamics.
+
+### Ablation (unchanged structure from v4.0)
+
+| Level | Score | Key Failures |
+|-------|-------|-------------|
+| Base (PT+Gauss) | 11/15 | RACF(1), RACF(13), R²(4), R²(13) |
+| +Burn-in | 14/15 | RACF(13) |
+| +kappa(r) | 14/15 | RACF(13) |
+| +Heavy tails | 13/15 | RACF(1), RACF(13) |
+| +ARCH | 12/15 | RACF(1), RACF(4), RACF(13) |
+| Full v3.9 | 11/15 | RACF(1), RACF(4), RACF(13), Pers(13) |
+
+RACF failure is consistent across all ablation levels, confirming it's a structural
+property of the detection-only model, not a parameter tuning issue.
+
+### Sensitivity (σ_obs +10% → 14/15)
+
+The sensitivity analysis reveals that σ_obs+10% achieves 14/15 (only RACF(13) fails).
+This is consistent with the interpretation: genuine turnover acts as effective
+observation noise in the ranking process. A 10% σ_obs increase compensates for the
+missing rank-mixing effect, but this would be a parameter hack rather than a
+structural fix.
+
+### Outputs
+
+- `model_v41.py` — Detection threshold model implementation
+- `v41_diagnostics.png` — Main 15-panel diagnostic figure
+- `v41_pub_diagnostics.png` — Publication diagnostics
+- `v41_ablation.png` — Ablation study figure
+- `v41_sensitivity.png` — Parameter sensitivity figure
+- `exit_descriptive.py` — Exit probability descriptive analysis
+- `exit_by_rank.png` — Exit probability by rank figure
+
+---
+
+
+---
+
+## 2026-07-02 — Top-coverage universe, temperament, MD/OU estimator, Spec-B (consolidation checkpoint)
+
+Full record with numbers: MODEL_STATUS.md sections 2b–2e. One-line summary of each step:
+
+1. **2b Top-coverage universe** (`restrict_universe`, pre-registered COVERAGE_K): closed
+   Lagrangian membership by absence-penalized permanent rank, observed 4K buffer, boundary flux
+   as tested predictions. Made the Reddit OOS gate runnable (was hanging at N~200k); exposed the
+   in-sample/OOS scissors across K.
+2. **2c Temperament**: persistent entity-volatility heterogeneity (one scalar, s≈0.9 on BOTH
+   platforms, moment-identified limma-style). Fine-σ(rank) alternative REJECTED on a 4-test
+   battery (`temperament_vs_finebands.py`): variance dispersion is identity-attached, not
+   rank-attached.
+3. **2d MD covariance estimator**: γ0..γ6 minimum-distance fit with OU home — κ estimated (knob
+   retired), reddit OOS at par with persistence (0.171±0.017, 100% CI coverage). Known wart:
+   φ→0 fast-split weak identification (FB in-sample raw-MD over-persists).
+4. **2e Spec-B**: σ_obs identified from the daily-within-week noise floor (Toeplitz-corrected
+   for mean-reverting daily residuals). Agrees with Spec-A within ~25% → observation model
+   VALIDATED. Pinning σ_e makes σ_trans collapse to 0: reddit weekly model = OU home +
+   identified noise + temperament + rebirth. In-sample 14/15, churn 0.053, dRank1/4/13 exact.
+
+Open items: FB transitory-free re-fit (test the reddit-identified structure on FB), R2_13
+(long-horizon value predictability, likely slowly-evolving temperament), longer Reddit panel,
+YouTube frozen-protocol test with pre-registered Spec-B.

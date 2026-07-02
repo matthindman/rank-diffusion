@@ -1,0 +1,69 @@
+flowchart TB
+    INIT["Initialize State<br/>tau = w0_sorted<br/>c_state = 0<br/>het_multiplier ~ LogN<br/>last_z_sq = 1"]
+    INIT --> RANK0["Initial Ranking<br/>y0 = tau + c + noise<br/>ranks = argsort(-y0)"]
+    RANK0 --> LOOP{"t = 1 .. T_total?"}
+
+    LOOP -- "yes" --> A["A: Interpolate Parameters<br/>se,phi,sn = get_p(ranks)<br/>se_het = se * het_mult<br/>sn_het = sn * het_mult"]
+
+    A --> B{"heavy_tails?"}
+    B -- "yes" --> B1["B: Permanent Innovation<br/>is_jump ~ Bern(jump_prob)<br/>eta = N(0, se_het * jump_scale) if jump<br/>eta = N(0, se_het) otherwise"]
+    B -- "no" --> B2["B: Permanent Innovation<br/>eta = N(0, se_het)"]
+
+    B1 --> C
+    B2 --> C
+
+    C{"arch?"}
+    C -- "yes" --> C1["C: ARCH Scaling<br/>arch_var = (1-a) + a*last_z_sq<br/>arch_scale = sqrt(clip(arch_var))"]
+    C -- "no" --> C2["C: arch_scale = 1"]
+
+    C1 --> D
+    C2 --> D
+
+    D{"heavy_tails?"}
+    D -- "yes" --> D1{"rank_dep_tdf?"}
+    D1 -- "yes" --> D1a["D: Transitory Innovation<br/>df_vec = get_tdf_local(ranks)<br/>t_raw ~ t(df_vec)<br/>nu = sn_het * var_factor * arch * t_raw"]
+    D1 -- "no" --> D1b["D: Transitory Innovation<br/>t_raw ~ t(tdf_global)<br/>nu = sn_het * var_factor * arch * t_raw"]
+    D -- "no" --> D2["D: Transitory Innovation<br/>nu = sn_het * arch * N(0,1)"]
+
+    D1a --> E
+    D1b --> E
+    D2 --> E
+
+    E["E: Update Transitory<br/>c_state = phi * c_state + nu"]
+
+    E --> F{"arch?"}
+    F -- "yes" --> F1["F: Update ARCH State<br/>last_z_sq = clip(nu^2/sn_het^2, 0, 4)"]
+    F -- "no" --> G
+    F1 --> G
+
+    G{"kappa > 0?"}
+    G -- "yes" --> G1{"rank_dep_kappa?"}
+    G1 -- "yes" --> G1a["G: Mean Reversion<br/>kappa_r = kb*(r/N)^alpha<br/>tau += eta - kappa_r*(tau - mean)"]
+    G1 -- "no" --> G1b["G: Mean Reversion (uniform)<br/>tau += eta - kappa_unif*(tau - mean)"]
+    G -- "no" --> G2["G: No Mean Reversion<br/>tau += eta"]
+
+    G1a --> H
+    G1b --> H
+    G2 --> H
+
+    H["H: Track xsec_var(tau)"]
+    H --> I{"t_rec >= 0?<br/>(recording period)"}
+
+    I -- "yes" --> I1["I: Exit/Entry<br/>p_exit = inc_p_base*(r/N)^0.3 (incumbent)<br/>p_exit = 0.07 (transient)<br/>Replace exiters with entrants"]
+    I -- "no" --> J
+    I1 --> J
+
+    J["J: Observe & Rank<br/>log_y = tau + c + N(0,s_obs)<br/>ranks = argsort(-log_y)"]
+    J --> K["K: Record sim_ly, sim_rk, sim_ids"]
+    K --> LOOP
+
+    LOOP -- "no" --> POST{"return mode?"}
+    POST -- "band_kurtosis" --> BK["Build balanced panel<br/>Compute band kurtosis<br/>Return dict"]
+    POST -- "full diagnostics" --> FD["Build balanced panel<br/>Compute VR,ACF,RACF,Pers,R2<br/>kurtosis,KS,zipf<br/>Return (diag, extra)"]
+
+    style INIT fill:#e8f5e9
+    style LOOP fill:#fff9c4
+    style POST fill:#e3f2fd
+    style BK fill:#e3f2fd
+    style FD fill:#e3f2fd
+    style I1 fill:#ffccbc

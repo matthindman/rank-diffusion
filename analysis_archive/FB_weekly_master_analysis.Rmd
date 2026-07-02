@@ -13,6 +13,7 @@ params:
   seed: 1823
   K_cut_target: 12000L
   K_tail_buffer: 2000L
+  min_week_ranks_keep: 12000L
   horizons_growth: !r c(1L, 7L, 28L)
   horizons_durable: !r c(4L, 8L)
   horizons_micro: !r c(1L, 4L, 12L)
@@ -86,6 +87,7 @@ library(lubridate)
 library(scales)
 library(here)
 library(broom)
+source(here::here("R", "utils.R"))
 ```
 
 ```{r resolve-data-paths}
@@ -133,6 +135,7 @@ coerce_numeric_vec <- function(x) {
 
 K_cut_target <- coerce_numeric(params$K_cut_target)
 K_tail_buffer <- coerce_numeric(params$K_tail_buffer)
+min_week_ranks_keep <- as.integer(coerce_numeric(params$min_week_ranks_keep))
 Smoothing_h <- coerce_numeric(params$smoothing_h)
 bootstrap_B <- coerce_numeric(params$bootstrap_B)
 bootstrap_k_min <- coerce_numeric(params$bootstrap_k_min)
@@ -219,13 +222,18 @@ horizons_micro <- as.integer(coerce_numeric_vec(params$horizons_micro))
 turnover_K_list <- as.integer(coerce_numeric_vec(params$turnover_K_list))
 turnover_horizons <- as.integer(coerce_numeric_vec(params$turnover_horizons))
 
-if (is.na(K_cut_target) || is.na(K_tail_buffer) || is.na(Smoothing_h)) {
+if (is.na(K_cut_target) || is.na(K_tail_buffer) || is.na(min_week_ranks_keep) || is.na(Smoothing_h)) {
   stop(
-    "K_cut_target, K_tail_buffer, and smoothing_h must be numeric. Got: ",
+    "K_cut_target, K_tail_buffer, min_week_ranks_keep, and smoothing_h must be numeric. Got: ",
     "K_cut_target=", params$K_cut_target, ", ",
     "K_tail_buffer=", params$K_tail_buffer, ", ",
+    "min_week_ranks_keep=", params$min_week_ranks_keep, ", ",
     "smoothing_h=", params$smoothing_h
   )
+}
+
+if (min_week_ranks_keep < 0) {
+  stop("min_week_ranks_keep must be >= 0. Got: ", params$min_week_ranks_keep)
 }
 
 if (Smoothing_h < 0) {
@@ -355,7 +363,7 @@ We construct:
 ```{r load-data}
 raw <- read_parquet(fb_weekly_parquet_path)
 
-endpoint_weekly <- raw %>%
+endpoint_weekly_raw <- raw %>%
   transmute(
     week = as.Date(date),
     endpoint_id,
@@ -369,6 +377,35 @@ endpoint_weekly <- raw %>%
     share_global = metric_value / sum(metric_value, na.rm = TRUE)
   ) %>%
   ungroup()
+
+max_rank_by_week_raw <- endpoint_weekly_raw %>%
+  group_by(week) %>%
+  summarise(max_rank = max(rank), .groups = "drop")
+
+max_rank_seen_raw <- max(max_rank_by_week_raw$max_rank, na.rm = TRUE)
+
+K_cut_raw <- min(as.integer(K_cut_target), as.integer(max_rank_seen_raw))
+K_max_raw <- min(as.integer(K_cut_raw + K_tail_buffer), as.integer(max_rank_seen_raw))
+
+endpoint_weekly_raw <- endpoint_weekly_raw %>%
+  group_by(week) %>%
+  mutate(
+    share_topK = if_else(
+      rank <= K_cut_raw,
+      share_global / sum(share_global[rank <= K_cut_raw], na.rm = TRUE),
+      NA_real_
+    )
+  ) %>%
+  ungroup()
+
+filter_result <- filter_bad_weeks(
+  endpoint_weekly_raw,
+  min_week_ranks_keep = min_week_ranks_keep,
+  verbose = TRUE
+)
+endpoint_weekly <- filter_result$endpoint_weekly
+bad_weeks <- filter_result$bad_weeks
+week_counts_raw <- filter_result$week_counts
 
 max_rank_by_week <- endpoint_weekly %>%
   group_by(week) %>%
@@ -402,8 +439,16 @@ glimpse(endpoint_weekly)
 
 This reproduces the “weekly coverage & scale checks” used in v6.
 
+```{r qa-bad-weeks}
+if (!is.null(bad_weeks) && nrow(bad_weeks) > 0) {
+  bad_weeks
+} else {
+  tibble(note = "No weeks dropped by min_week_ranks_keep filter.")
+}
+```
+
 ```{r qa-summary}
-endpoint_weekly %>%
+endpoint_weekly_raw %>%
   summarise(
     min_week = min(week),
     max_week = max(week),
@@ -414,9 +459,13 @@ endpoint_weekly %>%
 ```
 
 ```{r qa-weekly-row-counts}
-weekly_totals <- endpoint_weekly %>%
-  count(week, name = "n_rows") %>%
-  arrange(week)
+weekly_totals <- if (!is.null(week_counts_raw)) {
+  week_counts_raw %>% dplyr::rename(n_rows = n_ranks)
+} else {
+  endpoint_weekly_raw %>%
+    count(week, name = "n_rows") %>%
+    arrange(week)
+}
 
 summary(weekly_totals$n_rows)
 
@@ -432,7 +481,7 @@ ggplot(weekly_totals, aes(week, n_rows)) +
 ```
 
 ```{r qa-max-rank}
-ggplot(max_rank_by_week, aes(week, max_rank)) +
+ggplot(max_rank_by_week_raw, aes(week, max_rank)) +
   geom_line() +
   scale_y_continuous(labels = comma) +
   labs(
@@ -448,19 +497,26 @@ ggplot(max_rank_by_week, aes(week, max_rank)) +
 The empirical CDC is the mean (across weeks) of `share_topK` at each rank within top-K.
 
 ```{r emp-cdc}
+emp_cdc_raw <- endpoint_weekly_raw %>%
+  filter(rank <= K_cut_raw) %>%
+  group_by(rank) %>%
+  summarise(w_bar = mean(share_topK, na.rm = TRUE), .groups = "drop") %>%
+  arrange(rank)
+
+# Filtered CDC used for modeling later in the notebook
 emp_cdc <- endpoint_weekly %>%
   filter(rank <= K_cut) %>%
   group_by(rank) %>%
   summarise(w_bar = mean(share_topK, na.rm = TRUE), .groups = "drop") %>%
   arrange(rank)
 
-ggplot(emp_cdc, aes(rank, w_bar)) +
+ggplot(emp_cdc_raw, aes(rank, w_bar)) +
   geom_line() +
   scale_x_log10() +
   scale_y_log10(labels = percent_format(accuracy = 0.01)) +
   labs(
     title = "Empirical CDC (mean share within top-K)",
-    subtitle = paste0("K_cut = ", K_cut),
+    subtitle = paste0("K_cut = ", K_cut_raw, " (raw, pre-filter)"),
     x = "Rank (log scale)",
     y = "Mean share within top-K (log scale)"
   ) +
@@ -472,13 +528,13 @@ ggplot(emp_cdc, aes(rank, w_bar)) +
 A simple stability check: compute period-level CDCs and compare to the full-sample CDC.
 
 ```{r cdc-stability}
-cdc_by_period <- endpoint_weekly %>%
-  filter(rank <= K_cut) %>%
+cdc_by_period_raw <- endpoint_weekly_raw %>%
+  filter(rank <= K_cut_raw) %>%
   mutate(period = floor_date(week, "quarter")) %>%
   group_by(period, rank) %>%
   summarise(w_bar = mean(share_topK, na.rm = TRUE), .groups = "drop")
 
-ggplot(cdc_by_period, aes(rank, w_bar, group = period)) +
+ggplot(cdc_by_period_raw, aes(rank, w_bar, group = period)) +
   geom_line(alpha = 0.25) +
   scale_x_log10() +
   scale_y_log10(labels = percent_format(accuracy = 0.01)) +
@@ -489,15 +545,15 @@ ggplot(cdc_by_period, aes(rank, w_bar, group = period)) +
   ) +
   theme_bw()
 
-cdc_rmse_vs_full <- cdc_by_period %>%
-  inner_join(emp_cdc, by = "rank", suffix = c("_period", "_full")) %>%
+cdc_rmse_vs_full_raw <- cdc_by_period_raw %>%
+  inner_join(emp_cdc_raw, by = "rank", suffix = c("_period", "_full")) %>%
   group_by(period) %>%
   summarise(
     rmse_log = sqrt(mean((log(w_bar_period) - log(w_bar_full))^2, na.rm = TRUE)),
     .groups = "drop"
   )
 
-ggplot(cdc_rmse_vs_full, aes(period, rmse_log)) +
+ggplot(cdc_rmse_vs_full_raw, aes(period, rmse_log)) +
   geom_line() +
   geom_point(size = 1.5) +
   labs(
@@ -522,7 +578,7 @@ rank_bucket_simple <- function(r) {
   )
 }
 
-endpoint_base <- endpoint_weekly %>%
+endpoint_base <- endpoint_weekly_raw %>%
   transmute(
     week,
     endpoint_id,
@@ -3152,3 +3208,15 @@ if (isTRUE(params$run_bootstrap_model)) {
 - For SPT / rank-based diffusion discussions, the rank-slot objects are the most direct analog.
 - Identity-tracking objects are essential for **turnover** and will often motivate extensions
   (birth/death, regime switching, common shocks, jumps).
+
+
+## Provenance
+
+```{r provenance, echo=FALSE}
+cat("Rendered at:", as.character(Sys.time()), "\n\n")
+
+git_hash <- tryCatch(system("git rev-parse HEAD", intern = TRUE), error = function(e) NA_character_)
+if (!is.na(git_hash) && length(git_hash) > 0) {
+  cat("Git commit:", git_hash, "\n")
+}
+```

@@ -1,7 +1,7 @@
-build_endpoint_weekly <- function(raw_path, K_cut_target, K_tail_buffer, sim_K_xi) {
+build_endpoint_weekly <- function(raw_path, K_cut_target, K_tail_buffer, sim_K_xi, min_week_ranks_keep) {
   raw <- arrow::read_parquet(raw_path)
 
-  endpoint_weekly <- raw %>%
+  endpoint_weekly_raw <- raw %>%
     dplyr::transmute(
       week = as.Date(date),
       endpoint_id,
@@ -16,8 +16,44 @@ build_endpoint_weekly <- function(raw_path, K_cut_target, K_tail_buffer, sim_K_x
     ) %>%
     dplyr::ungroup()
 
-  if (nrow(endpoint_weekly) == 0) {
+  if (nrow(endpoint_weekly_raw) == 0) {
     stop("Weekly parquet has no rows after loading; cannot build panel.")
+  }
+
+  max_rank_by_week_raw <- endpoint_weekly_raw %>%
+    dplyr::group_by(week) %>%
+    dplyr::summarise(max_rank = max(rank), .groups = "drop")
+
+  max_rank_seen_raw <- max(max_rank_by_week_raw$max_rank, na.rm = TRUE)
+  if (!is.finite(max_rank_seen_raw)) {
+    stop("Weekly parquet produced no finite ranks; cannot compute K_cut.")
+  }
+
+  K_cut_raw <- min(as.integer(K_cut_target), as.integer(max_rank_seen_raw))
+  K_max_raw <- min(as.integer(K_cut_raw + K_tail_buffer), as.integer(max_rank_seen_raw))
+
+  endpoint_weekly_raw <- endpoint_weekly_raw %>%
+    dplyr::group_by(week) %>%
+    dplyr::mutate(
+      share_topK = dplyr::if_else(
+        rank <= K_cut_raw,
+        share_global / sum(share_global[rank <= K_cut_raw], na.rm = TRUE),
+        NA_real_
+      )
+    ) %>%
+    dplyr::ungroup()
+
+  filter_result <- filter_bad_weeks(
+    endpoint_weekly_raw,
+    min_week_ranks_keep = min_week_ranks_keep,
+    verbose = TRUE
+  )
+  endpoint_weekly <- filter_result$endpoint_weekly
+  bad_weeks <- filter_result$bad_weeks
+  week_counts_raw <- filter_result$week_counts
+
+  if (nrow(endpoint_weekly) == 0) {
+    stop("Weekly parquet has no rows after filtering; cannot build panel.")
   }
 
   max_rank_by_week <- endpoint_weekly %>%
@@ -26,7 +62,7 @@ build_endpoint_weekly <- function(raw_path, K_cut_target, K_tail_buffer, sim_K_x
 
   max_rank_seen <- max(max_rank_by_week$max_rank, na.rm = TRUE)
   if (!is.finite(max_rank_seen)) {
-    stop("Weekly parquet produced no finite ranks; cannot compute K_cut.")
+    stop("Weekly parquet produced no finite ranks after filtering; cannot compute K_cut.")
   }
 
   K_cut <- min(as.integer(K_cut_target), as.integer(max_rank_seen))
@@ -50,10 +86,17 @@ build_endpoint_weekly <- function(raw_path, K_cut_target, K_tail_buffer, sim_K_x
 
   list(
     endpoint_weekly = endpoint_weekly,
+    endpoint_weekly_raw = endpoint_weekly_raw,
     max_rank_by_week = max_rank_by_week,
+    max_rank_by_week_raw = max_rank_by_week_raw,
+    bad_weeks = bad_weeks,
+    week_counts_raw = week_counts_raw,
     max_rank_seen = max_rank_seen,
+    max_rank_seen_raw = max_rank_seen_raw,
     K_cut = K_cut,
     K_max = K_max,
+    K_cut_raw = K_cut_raw,
+    K_max_raw = K_max_raw,
     sim_K_xi = sim_K_xi
   )
 }
@@ -107,13 +150,15 @@ load_endpoint_weekly <- function(cfg = CFG, force = FALSE) {
       raw_path = raw_path,
       K_cut_target = cfg$K_cut_target,
       K_tail_buffer = cfg$K_tail_buffer,
-      sim_K_xi = cfg$sim_K_xi
+      sim_K_xi = cfg$sim_K_xi,
+      min_week_ranks_keep = cfg$min_week_ranks_keep
     ),
     deps = list(
       cache_version = cfg$cache_version,
       K_cut_target = cfg$K_cut_target,
       K_tail_buffer = cfg$K_tail_buffer,
       sim_K_xi = cfg$sim_K_xi,
+      min_week_ranks_keep = cfg$min_week_ranks_keep,
       raw_mtime = deps_file_mtime(raw_path),
       code = deps_code_mtime(c(here::here("R", "data_prep.R"), here::here("R", "utils.R")))
     ),

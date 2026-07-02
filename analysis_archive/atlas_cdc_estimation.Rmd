@@ -969,3 +969,15 @@ The following hooks align with the design for robustness:
 sessionInfo()
 ```
  # (pava_increasing defined earlier in helpers)
+
+
+## Provenance
+
+```{r provenance, echo=FALSE}
+cat("Rendered at:", as.character(Sys.time()), "\n\n")
+
+git_hash <- tryCatch(system("git rev-parse HEAD", intern = TRUE), error = function(e) NA_character_)
+if (!is.na(git_hash) && length(git_hash) > 0) {
+  cat("Git commit:", git_hash, "\n")
+}
+```

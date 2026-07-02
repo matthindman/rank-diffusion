@@ -37,3 +37,15 @@ data/reddit/
 *.feather
 *.rds
 *.Rds
+
+# Local agent config & scratch
+.claude/
+llm_fitting/.claude/
+tmp_*.json
+
+# Regenerable analysis artifacts (figures, panels, run logs)
+llm_fitting/*.png
+llm_fitting/*.npz
+llm_fitting/*.log
+llm_outputs/
+/*.png

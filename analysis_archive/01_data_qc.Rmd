@@ -6,12 +6,23 @@ This reproduces the “weekly coverage & scale checks” used in v6.
 if (!exists("endpoint_bundle")) {
   endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
 }
+endpoint_weekly_raw <- endpoint_bundle$endpoint_weekly_raw %||% endpoint_bundle$endpoint_weekly
 endpoint_weekly <- endpoint_bundle$endpoint_weekly
-max_rank_by_week <- endpoint_bundle$max_rank_by_week
+max_rank_by_week <- endpoint_bundle$max_rank_by_week_raw %||% endpoint_bundle$max_rank_by_week
+week_counts_raw <- endpoint_bundle$week_counts_raw
+```
+
+```{r qa-bad-weeks}
+bad_weeks <- endpoint_bundle$bad_weeks
+if (!is.null(bad_weeks) && nrow(bad_weeks) > 0) {
+  bad_weeks
+} else {
+  tibble(note = "No weeks dropped by min_week_ranks_keep filter.")
+}
 ```
 
 ```{r qa-summary}
-endpoint_weekly %>%
+endpoint_weekly_raw %>%
   summarise(
     min_week = min(week),
     max_week = max(week),
@@ -22,9 +33,13 @@ endpoint_weekly %>%
 ```
 
 ```{r qa-weekly-row-counts}
-weekly_totals <- endpoint_weekly %>%
-  count(week, name = "n_rows") %>%
-  arrange(week)
+weekly_totals <- if (!is.null(week_counts_raw)) {
+  week_counts_raw %>% dplyr::rename(n_rows = n_ranks)
+} else {
+  endpoint_weekly_raw %>%
+    count(week, name = "n_rows") %>%
+    arrange(week)
+}
 
 summary(weekly_totals$n_rows)
 

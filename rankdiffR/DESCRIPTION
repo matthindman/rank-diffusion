@@ -1,0 +1,31 @@
+Package: rankdiffR
+Title: Permanent-Transitory Rank Diffusion Model
+Version: 0.1.0
+Authors@R: c(
+    person("Hindman", role = c("aut", "cre"), email = "hindman@example.com")
+    )
+Description: Fits a permanent-transitory rank diffusion model to panel data
+    of ranked entities. Estimates rank-dependent parameters (volatility,
+    persistence, mean reversion, heavy tails) from empirical moments, runs
+    Monte Carlo simulations, and validates via 15 diagnostic tests. Includes
+    ablation study and sensitivity analysis tools.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.0
+Depends:
+    R (>= 4.1.0)
+Imports:
+    arrow,
+    dplyr,
+    ggplot2,
+    jsonlite,
+    stats,
+    tibble,
+    utils
+Suggests:
+    gridExtra,
+    patchwork,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+LazyData: true

@@ -14,6 +14,7 @@ params:
   K_cut_target: 12000
   K_tail_buffer: 2000
   K_xi_est: 2000
+  min_week_ranks_keep: 12000
 
   # Rank smoothing (half-width)
   smoothing_h: 5
@@ -57,6 +58,8 @@ suppressPackageStartupMessages({
   library(scales)
   library(here)
 })
+
+source(here::here("R", "utils.R"))
 
 set.seed(params$seed)
 
@@ -111,6 +114,15 @@ endpoint_weekly <- raw %>%
     share_global = metric_value / sum(metric_value, na.rm = TRUE)
   ) %>%
   ungroup()
+
+filter_result <- filter_bad_weeks(
+  endpoint_weekly,
+  min_week_ranks_keep = params$min_week_ranks_keep,
+  verbose = TRUE
+)
+endpoint_weekly <- filter_result$endpoint_weekly
+bad_weeks <- filter_result$bad_weeks
+week_counts <- filter_result$week_counts
 
 max_rank_seen <- endpoint_weekly %>%
   summarise(max_rank = max(rank, na.rm = TRUE)) %>%
@@ -705,5 +717,17 @@ if (!file.exists(sigma_path)) {
     theme_bw()
 
   ggsave(sigma_path, p_placeholder, width = 8, height = 5, dpi = 200)
+}
+```
+
+
+## Provenance
+
+```{r provenance, echo=FALSE}
+cat("Rendered at:", as.character(Sys.time()), "\n\n")
+
+git_hash <- tryCatch(system("git rev-parse HEAD", intern = TRUE), error = function(e) NA_character_)
+if (!is.na(git_hash) && length(git_hash) > 0) {
+  cat("Git commit:", git_hash, "\n")
 }
 ```

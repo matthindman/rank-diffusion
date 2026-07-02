@@ -2497,3 +2497,15 @@ if (nrow(cov_paths) == 0L) {
                   plot = p_cov, width = 9, height = 5, dpi = 150)
 }
 ```
+
+
+## Provenance
+
+```{r provenance, echo=FALSE}
+cat("Rendered at:", as.character(Sys.time()), "\n\n")
+
+git_hash <- tryCatch(system("git rev-parse HEAD", intern = TRUE), error = function(e) NA_character_)
+if (!is.na(git_hash) && length(git_hash) > 0) {
+  cat("Git commit:", git_hash, "\n")
+}
+```

@@ -6,14 +6,12 @@ The empirical CDC is the mean (across weeks) of `share_topK` at each rank within
 if (!exists("endpoint_bundle")) {
   endpoint_bundle <- load_endpoint_weekly(cfg = CFG)
 }
-endpoint_weekly <- endpoint_bundle$endpoint_weekly
-K_cut <- endpoint_bundle$K_cut
+endpoint_weekly_raw <- endpoint_bundle$endpoint_weekly_raw %||% endpoint_bundle$endpoint_weekly
+K_cut <- endpoint_bundle$K_cut_raw %||% endpoint_bundle$K_cut
 
 horizons_growth <- CFG$horizons_growth
 
-if (!exists("emp_cdc")) {
-  emp_cdc <- load_emp_cdc(endpoint_weekly, K_cut, cfg = CFG)
-}
+emp_cdc <- compute_emp_cdc(endpoint_weekly_raw, K_cut)
 ```
 
 ```{r emp-cdc}
@@ -37,7 +35,7 @@ ggplot(emp_cdc, aes(rank, w_bar)) +
 A simple stability check: compute period-level CDCs and compare to the full-sample CDC.
 
 ```{r cdc-stability}
-cdc_by_period <- compute_cdc_by_period(endpoint_weekly, K_cut, period_unit = "quarter")
+cdc_by_period <- compute_cdc_by_period(endpoint_weekly_raw, K_cut, period_unit = "quarter")
 
 ggplot(cdc_by_period, aes(rank, w_bar, group = period)) +
   geom_line(alpha = 0.25) +
@@ -75,7 +73,8 @@ Compute forward-looking log growth in *global share* for individual endpoints ov
 and compare distributions across rank buckets.
 
 ```{r endpoint-growth}
-endpoint_base <- endpoint_weekly %>%
+endpoint_base <- endpoint_weekly_raw %>%
+  # diagnostics use the raw (pre-filter) weekly panel
   transmute(
     week,
     endpoint_id,

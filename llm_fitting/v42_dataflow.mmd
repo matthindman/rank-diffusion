@@ -1,0 +1,47 @@
+%%{init: {'flowchart': {'rankSpacing': 40, 'nodeSpacing': 25, 'curve': 'basis'}} }%%
+flowchart TB
+    PQ["📁 <b>Parquet File</b><br/>fb_ranked_weekly_cutdown"]
+    PQ --> BP["<b>Balanced Panel</b><br/>log_metric, log_changes<br/>(T × N_balanced)"]
+    BP --> ET["<b>Empirical Targets</b><br/>vr, acf, racf, pers, xr2<br/>emp_kurt, zipf_slope"]
+    BP --> BS["<b>Band Stats</b> (5 bands)<br/>var, vr4, vr13, acf1"]
+
+    ET --> S1["<b>Stage 1</b> — sigma_obs"]
+    ET --> S2["<b>Stage 2</b> — sigma_het, E_h2"]
+    BP --> S3["<b>Stage 3</b> — band t_df (5 bands)"]
+    S3 --> S4["<b>Stage 4</b> — jump_prob, jump_scale"]
+    BP --> S45["<b>Stage 4.5</b> — alpha_arch"]
+    BS --> S5["<b>Stage 5</b> — band se, phi, sn<br/>fit_params() × 200 restarts<br/>→ get_p(ranks)"]
+    S1 --> S5
+    S5 --> S6["<b>Stage 6</b> — kappa_base, kappa_global<br/>w0_sorted, N_FULL"]
+    S2 --> S6
+    S4 --> S6
+
+    S1 & S2 & S3 & S4 & S45 & S5 & S6 --> PARAMS["⬇ <b>All Estimated Parameters</b> ⬇<br/>sigma_obs · sigma_het · t_df · jumps<br/>alpha_arch · se,phi,sn · kappa · w0"]
+
+    PARAMS --> RS["🔄 <b>run_sim</b>(seed, config)<br/>320 lines · 8 flags · 6 overrides"]
+
+    RS --> KC["<b>Kurtosis Calibration</b><br/>5 cal reps · overshoot 1.5×<br/><i>↩ feeds back to Stage 3 t_df</i>"]
+
+    RS --> AGG["<b>Monte Carlo</b><br/>25 reps · mc_stats{mean, CI}"]
+    RS --> ABL["<b>Ablation</b> — 8 levels × 25 reps<br/>→ v42_ablation.png"]
+    RS --> SENS["<b>Sensitivity</b> — 6 params × 5 perturb<br/>→ v42_sensitivity.png"]
+
+    AGG --> TST["<b>Validation</b> — 15 Pass/Fail Tests<br/><i>sim vs empirical targets</i>"]
+    AGG --> FIG["<b>Publication Diagnostics</b><br/>v42_diagnostics.png · v42_pub_diagnostics.png"]
+    AGG --> STAT["<b>Statistical Tests</b><br/>KS, JB, Ljung-Box, Hill"]
+
+    classDef data fill:#dbeafe,stroke:#1e40af,color:#1e3a5f
+    classDef est fill:#dcfce7,stroke:#166534,color:#14532d
+    classDef collector fill:#bbf7d0,stroke:#166534,color:#14532d,stroke-width:3px
+    classDef sim fill:#ffedd5,stroke:#9a3412,color:#7c2d12
+    classDef cal fill:#fce7f3,stroke:#9d174d,color:#831843
+    classDef val fill:#ede9fe,stroke:#5b21b6,color:#4c1d95
+    classDef ext fill:#ccfbf1,stroke:#115e59,color:#134e4a
+
+    class PQ,BP,ET,BS data
+    class S1,S2,S3,S4,S45,S5,S6 est
+    class PARAMS collector
+    class RS,AGG sim
+    class KC cal
+    class TST,FIG,STAT val
+    class ABL,SENS ext

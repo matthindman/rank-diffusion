@@ -9,7 +9,6 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(purrr)
   library(tibble)
-  library(ggplot2)
 })
 
 # -----------------------------------------------------------------------------
@@ -38,11 +37,13 @@ safe_sd <- function(x) {
 
 excess_kurtosis <- function(x) {
   x <- x[is.finite(x)]
-  if (length(x) < 4L) return(NA_real_)
+  n <- length(x)
+  if (n < 4L) return(NA_real_)
   m <- mean(x)
-  s <- stats::sd(x)
-  if (!is.finite(s) || s <= 0) return(NA_real_)
-  mean(((x - m) / s)^4) - 3
+  m2 <- sum((x - m)^2) / n          # biased variance (matches scipy/numpy ÷n)
+  if (!is.finite(m2) || m2 <= 0) return(NA_real_)
+  m4 <- sum((x - m)^4) / n          # biased fourth moment
+  m4 / m2^2 - 3
 }
 
 skewness_stat <- function(x) {
@@ -168,12 +169,13 @@ compute_transition_matrix <- function(rank_matrix, n_quintiles, horizon) {
 
 mc_summary <- function(values) {
   values <- values[is.finite(values)]
-  if (length(values) == 0L) {
+  n <- length(values)
+  if (n == 0L) {
     return(list(mean = NA_real_, std = NA_real_, lo = NA_real_, hi = NA_real_, median = NA_real_))
   }
   list(
     mean = mean(values),
-    std = stats::sd(values),
+    std = sqrt(sum((values - mean(values))^2) / n),   # biased std (matches np.std, ÷n)
     lo = as.numeric(stats::quantile(values, 0.025, na.rm = TRUE)),
     hi = as.numeric(stats::quantile(values, 0.975, na.rm = TRUE)),
     median = stats::median(values)
@@ -553,7 +555,7 @@ main <- function() {
         z_ep <- (ch - mu_ep) / std_ep
         z_sq <- z_ep^2
         z_sq_dm <- z_sq - mean(z_sq)
-        var_z_sq <- stats::var(z_sq)
+        var_z_sq <- sum((z_sq - mean(z_sq))^2) / length(z_sq)   # biased variance (matches np.var, ÷n)
         if (is.finite(var_z_sq) && var_z_sq > 1e-10) {
           acf_sq1 <- sum(z_sq_dm[-length(z_sq_dm)] * z_sq_dm[-1]) / ((length(z_sq_dm) - 1) * var_z_sq)
           if (is.finite(acf_sq1)) z_sq_acfs <- c(z_sq_acfs, acf_sq1)
@@ -686,7 +688,7 @@ main <- function() {
   # ---------------------------------------------------------------------------
   print_rule("STAGE 6: RANK-DEPENDENT KAPPA CALIBRATION")
 
-  n_full <- as.integer(round(mean_n))
+  n_full <- as.integer(mean_n)                 # truncate (matches Python int())
   alpha_kappa <- 0.5
 
   total_n <- sum(band_stats$n)
@@ -1421,7 +1423,7 @@ main <- function() {
     vals <- vals[is.finite(vals)]
 
     mc_mean <- mean(vals)
-    mc_se <- stats::sd(vals) / sqrt(length(vals))
+    mc_se <- sqrt(sum((vals - mean(vals))^2) / length(vals)) / sqrt(length(vals))   # biased std (matches np.std)
 
     if (mc_diag_info$mode[i] == "rel") {
       distance <- mc_diag_info$thresh[i] * mc_diag_info$emp[i] - abs(mc_mean - mc_diag_info$emp[i])

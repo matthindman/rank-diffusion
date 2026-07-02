@@ -9,6 +9,7 @@ params:
   seed: 1823
   K_cut_target: 12000L
   K_tail_buffer: 2000L
+  min_week_ranks_keep: 12000L
   horizons_durable: [4, 8]
   run_jump_model: false
   jump_model_type: "jump_factor"
@@ -53,4 +54,16 @@ stopifnot(!is.null(params$child))
 ```
 
 ```{r child = here::here(params$child)}
+```
+
+
+## Provenance
+
+```{r provenance, echo=FALSE}
+cat("Rendered at:", as.character(Sys.time()), "\n\n")
+
+git_hash <- tryCatch(system("git rev-parse HEAD", intern = TRUE), error = function(e) NA_character_)
+if (!is.na(git_hash) && length(git_hash) > 0) {
+  cat("Git commit:", git_hash, "\n")
+}
 ```
