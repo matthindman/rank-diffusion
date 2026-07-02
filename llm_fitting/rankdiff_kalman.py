@@ -481,6 +481,9 @@ def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
     mu = mrd._extend(p.w0, N); home = mu.copy(); xi = np.zeros(N)
     ids = np.arange(N, dtype=np.int64); next_id = N
     zk = p.z_knots
+    # persistent entity volatility multiplier (temperament) -- see mrd.simulate
+    ts = getattr(p, "temper_s", 0.0)
+    sqv = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, N)) if ts > 0 else np.ones(N)
     cohort_slots = cohort_ids = None
     cranks = []; topids = []
     KT = 300
@@ -492,16 +495,18 @@ def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
         if kappa > 0:
             mu = mu - kappa * (mu - home)
         mu = mu + sp * rng.standard_normal(N)
-        xi = phi * xi + st * rng.standard_normal(N)
+        xi = phi * xi + st * sqv * rng.standard_normal(N)
         ex = rng.random(N) < np.interp(zp, zk, p.exit_rate)
         ne = int(ex.sum())
         if ne:
             sm = p.bottom_mu[rng.integers(0, p.bottom_mu.size, ne)]
             mu[ex] = sm; home[ex] = sm; xi[ex] = 0.0
             ids[ex] = np.arange(next_id, next_id + ne); next_id += ne
+            if ts > 0:
+                sqv[ex] = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, ne))
         if t < 0:
             continue
-        X = mu + xi + so * rng.standard_normal(N)
+        X = mu + xi + so * sqv * rng.standard_normal(N)
         order = np.argsort(-X); rank = np.empty(N, np.int64); rank[order] = np.arange(1, N + 1)
         if cohort_slots is None:
             cohort_slots = order[:cohort_k].copy(); cohort_ids = ids[cohort_slots].copy()
@@ -575,13 +580,13 @@ def _build_params_on(df_tr):
     return p
 
 
-def _estimate_fast(df_tr, obs_frac=0.5):
+def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None):
     """Fast closed-form variance-partition estimator (per split, for rolling CV)."""
-    return mrd.estimate(df_tr, obs_frac=obs_frac)
+    return mrd.estimate(df_tr, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n)
 
 
 def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
-                 top_k=None, buffer_mult=4):
+                 top_k=None, buffer_mult=4, temper=False, min_knot_n=None):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -597,7 +602,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
     origins = sorted(set(int(round(o)) for o in
                          np.linspace(max(12, T // 4), T - test_len, n_splits)))
     uni = f"  universe=top-{top_k} (B={buffer_mult}x, train-only membership)" if top_k else ""
-    print(f"  T={T}  test_len={test_len}  train-end origins={origins}{uni}")
+    opts = (" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
+    print(f"  T={T}  test_len={test_len}  train-end origins={origins}{uni}{opts}")
 
     rows = []
     for T0 in origins:
@@ -607,13 +613,13 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         df_te = df[(df["period"] >= T0) & (df["period"] < T0 + test_len)].copy()
         df_te["period"] -= T0
         hor = [h for h in (1, 4, 13) if h < test_len]
-        p = _estimate_fast(df_tr, obs_frac)
+        p = _estimate_fast(df_tr, obs_frac, temper=temper, min_knot_n=min_knot_n)
         scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
         p = replace_obs(p, scale)
         ed, erf, ec = emp_dist(df_te, hor)            # held-out truth
         td, trf, tc = emp_dist(df_tr, hor)            # persistence baseline = train movement
         sd, srf, sc = sim_dist(p, test_len, hor, reps=reps)   # model prediction
-        rows.append(dict(T0=T0, scale=scale, hor=hor,
+        rows.append(dict(T0=T0, scale=scale, hor=hor, ts=p.temper_s,
                          em=_moments(ed, erf, ec, hor), bm=_moments(td, trf, tc, hor),
                          sm=_moments(sd, srf, sc, hor), ed=ed, sd=sd))
 
@@ -632,8 +638,9 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
               if r["ed"][h0].size and r["sd"][h0].size else np.nan)
         lo, hi = _boot_ci(r["ed"][h0], B=boot)
         inci = bool(np.isfinite(lo) and lo <= sm[f"dRank{h0}"] <= hi)
+        tss = f"  s={r['ts']:.2f}" if r.get("ts") else ""
         print(f"    T0={r['T0']:>3}  {r['scale']:.2f}  | {me:>6.3f}      | {be:>6.3f}        "
-              f"| {w1:>6.1f}   | {inci}")
+              f"| {w1:>6.1f}   | {inci}{tss}")
 
     scales = [r["scale"] for r in rows]
     cov = np.mean([
@@ -736,6 +743,10 @@ if __name__ == "__main__":
                     help="resolve K per platform from the pre-registered COVERAGE_K rule")
     ap.add_argument("--buffer-mult", type=int, default=4,
                     help="universe buffer depth B = buffer_mult * K (sponge layer)")
+    ap.add_argument("--temperament", action="store_true",
+                    help="persistent entity-level volatility multiplier (moment-identified)")
+    ap.add_argument("--min-knot-entities", type=int, default=None,
+                    help="pool sparse knots' moments to cover >= this many entities")
     args = ap.parse_args()
     if args.selftest:
         selftest()
@@ -744,7 +755,8 @@ if __name__ == "__main__":
             scorecard(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)
     elif args.oos:
         for p in args.platforms:
-            oos_movement(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)
+            oos_movement(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult,
+                         temper=args.temperament, min_knot_n=args.min_knot_entities)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)
