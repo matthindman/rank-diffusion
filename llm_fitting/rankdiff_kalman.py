@@ -492,10 +492,12 @@ def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
         zp = np.log(np.clip((prank - 0.5) / N, Z_CLIP, 1.0))
         phi = np.interp(zp, zk, p.phi); st = np.interp(zp, zk, p.sigma_trans)
         sp = np.interp(zp, zk, p.sigma_perm); so = np.interp(zp, zk, p.sigma_obs)
-        if kappa > 0:
+        if kappa:
             mu = mu - kappa * (mu - home)
+        elif getattr(p, "kappa_z", None) is not None:
+            mu = mu - np.interp(zp, zk, p.kappa_z) * (mu - home)
         mu = mu + sp * rng.standard_normal(N)
-        xi = phi * xi + st * sqv * rng.standard_normal(N)
+        xi = phi * xi + st * sqv * mrd._tdraw(rng, getattr(p, "t_df", float("inf")), N)
         ex = rng.random(N) < np.interp(zp, zk, p.exit_rate)
         ne = int(ex.sum())
         if ne:
@@ -580,13 +582,16 @@ def _build_params_on(df_tr):
     return p
 
 
-def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None):
+def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None,
+                   md_lags=None, t_tails=False):
     """Fast closed-form variance-partition estimator (per split, for rolling CV)."""
-    return mrd.estimate(df_tr, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n)
+    return mrd.estimate(df_tr, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
+                        md_lags=md_lags, t_tails=t_tails)
 
 
 def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
-                 top_k=None, buffer_mult=4, temper=False, min_knot_n=None):
+                 top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
+                 md_lags=None, t_tails=False):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -602,7 +607,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
     origins = sorted(set(int(round(o)) for o in
                          np.linspace(max(12, T // 4), T - test_len, n_splits)))
     uni = f"  universe=top-{top_k} (B={buffer_mult}x, train-only membership)" if top_k else ""
-    opts = (" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
+    opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
+            + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else ""))
     print(f"  T={T}  test_len={test_len}  train-end origins={origins}{uni}{opts}")
 
     rows = []
@@ -613,7 +619,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         df_te = df[(df["period"] >= T0) & (df["period"] < T0 + test_len)].copy()
         df_te["period"] -= T0
         hor = [h for h in (1, 4, 13) if h < test_len]
-        p = _estimate_fast(df_tr, obs_frac, temper=temper, min_knot_n=min_knot_n)
+        p = _estimate_fast(df_tr, obs_frac, temper=temper, min_knot_n=min_knot_n,
+                           md_lags=md_lags, t_tails=t_tails)
         scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
         p = replace_obs(p, scale)
         ed, erf, ec = emp_dist(df_te, hor)            # held-out truth
@@ -747,6 +754,10 @@ if __name__ == "__main__":
                     help="persistent entity-level volatility multiplier (moment-identified)")
     ap.add_argument("--min-knot-entities", type=int, default=None,
                     help="pool sparse knots' moments to cover >= this many entities")
+    ap.add_argument("--md-lags", type=int, default=None,
+                    help="minimum-distance OU-home covariance fit (see minimal_rankdiff)")
+    ap.add_argument("--t-tails", action="store_true",
+                    help="Student-t transitory innovations (df from within-entity kurtosis)")
     args = ap.parse_args()
     if args.selftest:
         selftest()
@@ -756,7 +767,8 @@ if __name__ == "__main__":
     elif args.oos:
         for p in args.platforms:
             oos_movement(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult,
-                         temper=args.temperament, min_knot_n=args.min_knot_entities)
+                         temper=args.temperament, min_knot_n=args.min_knot_entities,
+                         md_lags=args.md_lags, t_tails=args.t_tails)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)

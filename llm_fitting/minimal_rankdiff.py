@@ -169,6 +169,9 @@ class RankParams:
     bottom_mu: np.ndarray    # low permanent levels for rebirth seeding
     temper_s: float = 0.0    # log-SD of the persistent entity volatility multiplier
     #                          v_i (E[v_i]=1); 0 = homogeneous (temperament off)
+    kappa_z: np.ndarray | None = None  # per-knot OU home-reversion rate (MD-estimated;
+    #                          None = legacy hand-set global kappa)
+    t_df: float = float("inf")  # Student-t df for transitory innovations (inf = Gaussian)
 
 
 def _knot_grid(N: int, n_knots: int = 60) -> np.ndarray:
@@ -201,6 +204,64 @@ def _lagged_cov(u: np.ndarray, same: np.ndarray, abar: np.ndarray, nk: int,
     return eprod - mean ** 2
 
 
+# Minimum-distance grids for the OU-home + AR(1)-transitory + noise partition.
+A_GRID = np.array([0.995, 0.99, 0.98, 0.96, 0.93, 0.90, 0.86, 0.80])   # a = 1 - kappa
+PHI_GRID = np.arange(0.0, 0.66, 0.05)
+
+
+def _md_partition(gk: np.ndarray) -> tuple[float, float, float, float, float]:
+    """Minimum-distance fit of the change-autocovariance function gamma_0..L
+    (Chamberlain / Abowd-Card covariance-structure estimation) to
+        X_it = h_it + xi_it + eps_it
+        h:  OU with reversion kappa = 1-a, innovation sd sigma_eta
+        xi: AR(1) phi, innovation sd sigma_nu;   eps: iid sd sigma_e
+    Change autocovariances:
+        gamma_0 = 2W(1-a) + 2V(1-phi) + 2 s_e     (W=Var h, V=Var xi, s_e=sigma_e^2)
+        gamma_1 = -A - B - s_e                     (A=W(1-a)^2, B=V(1-phi)^2)
+        gamma_k = -A a^(k-1) - B phi^(k-1), k>=2
+    A pure random-walk home (a=1) forces gamma_k = 0 for k>=2 -- the observed
+    negative tail at lags 3-6 is what identifies kappa (previously a hand-set
+    knob, and the estimator/simulator were inconsistent about it).
+    Returns (kappa, sigma_eta, phi, sigma_nu, sigma_e)."""
+    L = len(gk) - 1
+    best = (np.inf, None)
+    for a in A_GRID:
+        for phi in PHI_GRID:
+            rows = [[2.0 / (1 - a), 2.0 / (1 - phi), 2.0],
+                    [-1.0, -1.0, -1.0]]
+            rows += [[-a ** (k - 1), -phi ** (k - 1), 0.0] for k in range(2, L + 1)]
+            X = np.array(rows)
+            coef, *_ = np.linalg.lstsq(X, gk, rcond=None)
+            coef = np.clip(coef, 0.0, None)
+            sse = float(np.sum((gk - X @ coef) ** 2))
+            if sse < best[0]:
+                best = (sse, (a, phi, *coef))
+    a, phi, A, B, s_e = best[1]
+    sigma_eta = np.sqrt(max(A * (1 + a) / (1 - a), 0.0))
+    sigma_nu = np.sqrt(max(B * (1 + phi) / (1 - phi), 0.0))
+    return 1.0 - a, sigma_eta, phi, sigma_nu, np.sqrt(max(s_e, 0.0))
+
+
+def estimate_tail_df(df: pd.DataFrame, trans_share: float, min_changes: int = 12,
+                     kurt_floor: float = 0.05) -> float:
+    """Student-t df for the transitory innovations, identified from the median
+    WITHIN-entity excess kurtosis of weekly changes (a moment temperament cannot
+    produce -- v_i scales, it does not fatten, each entity's tails).  With phi
+    small, Delta xi ~ difference of two iid innovations, so
+        excess_kurt(u) ~ trans_share^2 * (6/(nu-4)) / 2   =>  nu = 4 + 3 w^2 / k_u.
+    Gaussian within-entity changes (k_u <= kurt_floor) => inf (no t needed)."""
+    eid, u, same, _ = _change_panel(df)
+    ok = same & np.isfinite(u)
+    sub = pd.DataFrame({"eid": eid[ok], "u": u[ok]})
+    g = sub.groupby("eid")["u"]
+    n_i = g.count()
+    k_i = g.apply(pd.Series.kurt)
+    k_u = float(k_i[n_i >= min_changes].median())
+    if not np.isfinite(k_u) or k_u <= kurt_floor:
+        return float("inf")
+    return float(np.clip(4.0 + 3.0 * trans_share ** 2 / k_u, 4.3, 200.0))
+
+
 def _pool_sparse(vals_list: list, weights: np.ndarray, ent_counts: np.ndarray,
                  min_n: int) -> list:
     """Adaptive symmetric-window pooling of per-knot (count-weighted mean)
@@ -228,7 +289,8 @@ def _pool_sparse(vals_list: list, weights: np.ndarray, ent_counts: np.ndarray,
 
 
 def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
-             min_knot_n: int | None = None) -> RankParams:
+             min_knot_n: int | None = None, md_lags: int | None = None,
+             t_tails: bool = False) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -240,6 +302,11 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     and store it in params (see estimate_temperament).
     min_knot_n: pool sparse knots' moment statistics until each covers >= this
     many entities (adaptive window; None = off).
+    md_lags: minimum-distance fit of gamma_0..gamma_md_lags per knot with an
+    OU home (see _md_partition) -- estimates kappa_z and sigma_obs from the
+    covariance structure, replacing BOTH the hand-set global kappa AND the
+    obs_frac reallocation knob.  None = legacy 3-moment inversion.
+    t_tails: Student-t transitory innovations, df from within-entity kurtosis.
     """
     N = int(round(df.groupby("period")["entity_id"].size().mean()))
     z_knots = _knot_grid(N)
@@ -276,29 +343,44 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     mean_u = np.divide(np.bincount(a_t, weights=ut, minlength=nk), ct, out=np.zeros(nk), where=ct > 0)
     # autocovariances of the factor-removed change, by permanent rank
     g0 = np.divide(np.bincount(a_t, weights=ut * ut, minlength=nk), ct, out=np.zeros(nk), where=ct > 0) - mean_u ** 2
-    g1 = _lagged_cov(u, same, abar, nk, lag=1, mean=mean_u)
-    g2 = _lagged_cov(u, same, abar, nk, lag=2, mean=mean_u)
+    n_lags = max(2, md_lags or 0)
+    gs = [g0] + [_lagged_cov(u, same, abar, nk, lag=l, mean=mean_u)
+                 for l in range(1, n_lags + 1)]
 
     ent_per_knot = None
     if min_knot_n is not None:
         first = np.r_[True, eid[1:] != eid[:-1]]
         ent_per_knot = np.bincount(abar[first], minlength=nk)
-        g0, g1, g2 = _pool_sparse([g0, g1, g2], ct, ent_per_knot, min_knot_n)
+        gs = _pool_sparse(gs, ct, ent_per_knot, min_knot_n)
+    g0, g1, g2 = gs[0], gs[1], gs[2]
 
-    # Stable 2-component inversion of the *change* autocovariances
-    # (permanent RW + transitory AR(1)):
-    #   gamma2/gamma1 = phi ;  gamma1 = -sigma_xi^2 (1-phi)^2 ;
-    #   gamma0 = sigma_perm^2 + 2 sigma_xi^2 (1-phi)
-    phi = np.clip(np.divide(g2, g1, out=np.zeros(nk), where=np.abs(g1) > 1e-12), 0.0, 0.97)
-    sigma_xi2 = np.where(g1 < 0, -g1 / np.clip((1.0 - phi) ** 2, 1e-6, None), 0.0)
-    sigma_perm = np.sqrt(np.clip(g0 - 2.0 * sigma_xi2 * (1.0 - phi), 1e-6, None))
-    # Reallocate a fraction obs_frac of the transitory stationary variance from
-    # persistent AR(1) to iid measurement noise.  Total short-term power is
-    # preserved; obs_frac is the single knob that trades RACF/ACF1 (more iid =>
-    # faster rank decorrelation) -- a regularized stand-in for the unstable
-    # 3-moment split.
-    sigma_obs = np.sqrt(np.clip(obs_frac * sigma_xi2, 0.0, None))
-    sigma_trans = np.sqrt(np.clip((1.0 - obs_frac) * sigma_xi2 * (1.0 - phi ** 2), 1e-10, None))
+    kappa_z = None
+    if md_lags:
+        # minimum-distance covariance-structure fit per knot (OU home)
+        kappa_z = np.zeros(nk)
+        phi = np.zeros(nk); sigma_perm = np.zeros(nk)
+        sigma_trans = np.zeros(nk); sigma_obs = np.zeros(nk)
+        gmat = np.stack(gs, axis=1)   # (nk, L+1)
+        for j in range(nk):
+            if ct[j] <= 0 and ent_per_knot is None:
+                continue
+            kap, s_eta, ph, s_nu, s_e = _md_partition(gmat[j])
+            kappa_z[j], sigma_perm[j], phi[j] = kap, s_eta, ph
+            sigma_trans[j], sigma_obs[j] = s_nu, s_e
+    else:
+        # Legacy stable 2-component inversion (permanent RW + transitory AR(1)):
+        #   gamma2/gamma1 = phi ;  gamma1 = -sigma_xi^2 (1-phi)^2 ;
+        #   gamma0 = sigma_perm^2 + 2 sigma_xi^2 (1-phi)
+        phi = np.clip(np.divide(g2, g1, out=np.zeros(nk), where=np.abs(g1) > 1e-12), 0.0, 0.97)
+        sigma_xi2 = np.where(g1 < 0, -g1 / np.clip((1.0 - phi) ** 2, 1e-6, None), 0.0)
+        sigma_perm = np.sqrt(np.clip(g0 - 2.0 * sigma_xi2 * (1.0 - phi), 1e-6, None))
+        # Reallocate a fraction obs_frac of the transitory stationary variance from
+        # persistent AR(1) to iid measurement noise.  Total short-term power is
+        # preserved; obs_frac is the single knob that trades RACF/ACF1 (more iid =>
+        # faster rank decorrelation) -- a regularized stand-in for the unstable
+        # 3-moment split (superseded by md_lags, which identifies sigma_obs).
+        sigma_obs = np.sqrt(np.clip(obs_frac * sigma_xi2, 0.0, None))
+        sigma_trans = np.sqrt(np.clip((1.0 - obs_frac) * sigma_xi2 * (1.0 - phi ** 2), 1e-10, None))
 
     Fi = F[per_t]
     num = np.bincount(a_t, weights=dX[same] * Fi, minlength=nk)
@@ -319,6 +401,8 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
 
     phi, sigma_trans, sigma_perm, sigma_obs, lam, exit_rate = (
         _fill(ct, v) for v in (phi, sigma_trans, sigma_perm, sigma_obs, lam, exit_rate))
+    if kappa_z is not None:
+        kappa_z = _fill(ct, kappa_z)
 
     # rank-size target curve T(z) = E[X | current rank] (unbiased; the centripetal
     # anchor the permanent level reverts toward to keep the distribution stationary)
@@ -331,8 +415,16 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     mu_entity = df.groupby("entity_id")["X"].mean().to_numpy(dtype=float)
     bottom_mu = np.quantile(mu_entity, np.linspace(0.0, 0.10, 200))
     temper_s = estimate_temperament(df)["s"] if temper else 0.0
+    t_df = float("inf")
+    if t_tails:
+        # variance share of the transitory CHANGE in the weekly change, for the
+        # kurtosis -> df mapping (count-weighted across knots)
+        V = sigma_trans ** 2 / np.clip(1.0 - phi ** 2, 1e-6, None)
+        share = np.clip(2.0 * V * (1.0 - phi) / np.clip(g0, 1e-12, None), 0.0, 1.0)
+        w_share = float(np.sum(ct * share) / max(ct.sum(), 1.0))
+        t_df = estimate_tail_df(df, w_share)
     return RankParams(z_knots, phi, sigma_trans, sigma_perm, sigma_obs, lam, exit_rate,
-                      T_curve, 0.0, sigma_F, N, w0, bottom_mu, temper_s)
+                      T_curve, 0.0, sigma_F, N, w0, bottom_mu, temper_s, kappa_z, t_df)
 
 
 def _fill(cnt: np.ndarray, vals: np.ndarray) -> np.ndarray:
@@ -440,10 +532,17 @@ def _interp(z, p: RankParams, arr):
     return np.interp(z, p.z_knots, arr, left=arr[0], right=arr[-1])
 
 
+def _tdraw(rng, df: float, n: int) -> np.ndarray:
+    """Unit-variance innovation draw: Gaussian, or scaled Student-t (df finite)."""
+    if not np.isfinite(df):
+        return rng.standard_normal(n)
+    return rng.standard_t(df, n) / np.sqrt(df / (df - 2.0))
+
+
 def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=True,
              factor_head_damp: float = 1.0, kappa: float | None = None, track: int = 4000,
              top_record: int | None = None) -> dict:
-    kappa = p.kappa if kappa is None else kappa
+    # kappa: None -> per-knot MD-estimated kappa_z when available, else p.kappa
     rng = np.random.default_rng(seed)
     N = p.N
     mu = _extend(p.w0, N)                       # permanent level
@@ -491,10 +590,13 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
         F = rng.normal(0.0, p.sigma_F) if use_factor else 0.0
         # OU confinement of the permanent level toward each entity's home rank
         # (finite long-run rank-band width => caps VR and rank autocorrelation).
-        if kappa > 0:
-            mu = mu - kappa * (mu - home)
+        # kappa=None -> per-knot MD-estimated kappa_z when available.
+        kap = (_interp(zp, p, p.kappa_z) if (kappa is None and p.kappa_z is not None)
+               else (p.kappa if kappa is None else kappa))
+        if np.any(np.asarray(kap) > 0):
+            mu = mu - kap * (mu - home)
         mu = mu + lam * F + sp * rng.standard_normal(N)
-        xi = phi * xi + st * sqv * rng.standard_normal(N)
+        xi = phi * xi + st * sqv * _tdraw(rng, p.t_df, N)
 
         if use_exit:
             ex = rng.random(N) < _interp(zp, p, p.exit_rate)
@@ -679,9 +781,14 @@ def empirical_structures(df: pd.DataFrame, top_k: int, track: int = 4000, seed: 
 # --------------------------------------------------------------------------- #
 # Driver
 # --------------------------------------------------------------------------- #
-def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float = 0.15,
+def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float | None = None,
                  top_k_u: int | None = None, buffer_mult: int = 4,
-                 temper: bool = False, min_knot_n: int | None = None, **sim_kw) -> dict:
+                 temper: bool = False, min_knot_n: int | None = None,
+                 md_lags: int | None = None, t_tails: bool = False, **sim_kw) -> dict:
+    # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
+    # a per-knot kappa_z (then the simulator uses that -- one less knob)
+    if kappa is None and md_lags is None:
+        kappa = 0.15
     cfg = PLATFORMS[name]
     df = load_panel(cfg)
     if top_k_u:
@@ -694,17 +801,25 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float =
     top_k = max(10, int(round(0.01 * (score_k if score_k else mean_n))))
     uni = (f" universe=top-{score_k} (buffer B={df.attrs['universe_B']})"
            if score_k else "")
-    opts = (" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
+    opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
+            + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else ""))
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
           f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}{opts}\n{'='*72}")
 
     ev, er, et, ers = empirical_structures(df, top_k, topid_k=score_k)
     emp = diagnostics(ev, er, et, ers, top_k, score_k=score_k)
 
-    p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n)
+    p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
+                 md_lags=md_lags, t_tails=t_tails)
     if temper:
         print(f"  temperament: s = {p.temper_s:.3f} "
               f"(sigma_i spread p90/p10 = {np.exp(1.2816 * p.temper_s):.2f}x)")
+    if md_lags:
+        print(f"  MD partition: kappa(z) = {p.kappa_z[0]:.3f}..{p.kappa_z[-1]:.3f} "
+              f"(top..tail, estimated -- hand-set kappa retired)")
+    if t_tails:
+        print(f"  transitory tails: t_df = {p.t_df:.1f}"
+              + ("  (Gaussian -- no excess within-entity kurtosis)" if not np.isfinite(p.t_df) else ""))
     sims = [diagnostics(*_sim_struct(simulate(p, T, seed=s, kappa=kappa,
                                               top_record=score_k, **sim_kw)),
                         top_k, score_k=score_k)
@@ -771,7 +886,14 @@ if __name__ == "__main__":
     ap.add_argument("--no-factor", action="store_true")
     ap.add_argument("--no-exit", action="store_true")
     ap.add_argument("--factor-head-damp", type=float, default=1.0)
-    ap.add_argument("--kappa", type=float, default=0.15, help="permanent home-reversion strength")
+    ap.add_argument("--kappa", type=float, default=None,
+                    help="permanent home-reversion strength (default: 0.15 legacy, "
+                         "or the MD-estimated kappa_z when --md-lags is set)")
+    ap.add_argument("--md-lags", type=int, default=None,
+                    help="minimum-distance fit of gamma_0..gamma_L (OU home; estimates "
+                         "kappa and sigma_obs, retiring the kappa/obs-frac knobs); try 6")
+    ap.add_argument("--t-tails", action="store_true",
+                    help="Student-t transitory innovations (df from within-entity kurtosis)")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
     ap.add_argument("--top-k", type=int, default=None,
                     help="top-coverage universe boundary K (applies to every platform listed)")
@@ -793,5 +915,6 @@ if __name__ == "__main__":
         run_platform(plat, reps=args.reps, obs_frac=args.obs_frac, kappa=args.kappa,
                      top_k_u=top_k_u, buffer_mult=args.buffer_mult,
                      temper=args.temperament, min_knot_n=args.min_knot_entities,
+                     md_lags=args.md_lags, t_tails=args.t_tails,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)
