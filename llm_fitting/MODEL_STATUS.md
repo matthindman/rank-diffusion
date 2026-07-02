@@ -139,6 +139,71 @@ python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000       # OOS gate
 python llm_fitting/minimal_rankdiff.py facebook --top-k 3500          # FB symmetric protocol
 ```
 
+## 2c. 2026-07-02 — Temperament: persistent entity-level volatility heterogeneity
+
+**Diagnosis.** Scored on the estimand, both platforms failed one way: the head over-dispersed
+(RACF low, top collisions/dRank high, OOS displacement over-predicted even at σ_obs scale 0).
+Direct measurement on head entities (perm rank ≤ 500): per-entity change-variance dispersion is
+**15× (Reddit) / 35× (FB)** pure χ² sampling noise; split-half log-variance Spearman ρ ≈ **0.6**
+(persistent trait, not episodic); pooled excess kurtosis (4.8 / 8.0) collapses within-entity
+(0.5 / 2.2) — the "heavy tails" are **variance mixing across entities**. The head is a quiet
+persistent core + volatile fringe (FB's flat top-35 retention 20/19/20 across h=1/4/13 is the
+fingerprint — homogeneous σ cannot produce it). Gap structure is NOT the problem (FB sim/emp
+head steepness 1.229 vs 1.254).
+
+**Model change (one parameter).** σ_i = σ(z̄_i)·√v_i, log v_i ~ N(−s²/2, s²), E[v_i]=1 — band
+variance and the Eulerian structure preserved by construction. **Estimator** (`estimate_temperament`):
+log-variance moment decomposition (Smyth-2004/limma digamma–trigamma χ² corrections) with
+Satterthwaite effective df for the MA structure of weekly changes (κ=1.34 both platforms).
+Identified from the variance-dispersion moment ONLY — never tuned to churn/displacement.
+**Estimates: Reddit s = 0.941, FB s = 0.887** — nearly identical across platforms and flat across
+all rank bands (0.84–0.99) ⇒ one global s; σ_i p90/p10 ≈ 3.3×, matching the direct measurement.
+Companion fix: adaptive sparse-knot pooling (`--min-knot-entities 8`) — the 1–2-entity head knots
+had let single volatile entities set band moments (head σ_obs 2.03 → 0.10 pooled).
+
+**In-sample (estimand-faithful, obs_frac defaults, 5 reps):**
+
+| Reddit K=5,000 | base | +pool | +temper | **+pool+temper** |
+|---|---|---|---|---|
+| goal-1 / churn err | 11/15 / 0.123 | 11/15 / 0.069 | 12/15 / 0.120 | **12/15 / 0.063** |
+| coll1 / coll2 diff | +0.269 / +0.262 | +0.062 / +0.083 | +0.228 / +0.234 | **+0.048 / +0.014** |
+| RACF1 diff | −0.119 | −0.117 | −0.057 | **−0.057** |
+| dRank1 / dRank4 diff | +4.2 / +4.0 | +2.3 / +1.6 | +3.4 / +2.8 | **+2.0 / +0.8** |
+
+Pooling fixes the head-knot means; temperament fixes the mixture; complementary, not redundant.
+FB K=3,500 +pool+temper: RACF1 −0.093→−0.019, RACF4 now passes, dRank1 +5.6→+2.8; cost: VR8/13
+inflate (composition shift; see scope note). Remaining misses: Reddit RACF4 (−0.094), RACF13
+(−0.081), R2_4/R2_13 on FB/Reddit; boundary flux stays matched everywhere.
+
+**OOS movement gate (temper+pool, movement-only scaling):**
+
+| | before | **after** |
+|---|---|---|
+| Reddit K=5,000 | 0.336 ± 0.055, cov 0%, scale 0.0×5 | **0.254 ± 0.091, cov 40%**, scale 0.0 (2 splits beat/tie persistence) |
+| FB | 0.276 ± 0.146, cov 40%, scale 0.0–0.35 | **0.243 ± 0.114, cov 60%, scale 0.25–1.0 (late splits 1.0)** |
+
+The FB scale result is the pre-registered signature: with temperament, the best-trained splits
+need **no σ_obs correction at all** (scale = 1.0) — the observation model approaches
+self-consistency. `temper_s` is stable across every train window (FB 0.91–0.98, Reddit
+0.95–0.96). Neither platform fully passes yet; Reddit still over-predicts at h=4.
+
+**Scope decision (A vs B), decided by evidence, not the scorecard.** The s(h) horizon moment —
+s measured from non-overlapping h-week changes — is **flat in h** (FB 0.86/0.86/0.86/0.90/0.88 at
+h=1..13), so heterogeneity extends to the permanent component (structure B). But naive full-process
+scaling explodes Reddit's held-out RW displacement (OOS 0.404 vs A's 0.254): a fat lognormal tail ×
+short-window σ_perm estimates. FB (more train data) shows B beating persistence on its two
+best-trained splits (0.111, 0.152). **Operational spec = A (movement-only)**, per the pre-declared
+gate criterion; B is the target structure pending an EB-shrunken/lighter-tailed mixing
+distribution and the longer Reddit panel.
+
+**Reproduction:**
+```
+python llm_fitting/minimal_rankdiff.py reddit --top-k 5000 --temperament --min-knot-entities 8
+python llm_fitting/minimal_rankdiff.py facebook --top-k 3500 --temperament --min-knot-entities 8
+python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament --min-knot-entities 8
+python llm_fitting/rankdiff_kalman.py facebook --oos --temperament --min-knot-entities 8
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
