@@ -583,15 +583,15 @@ def _build_params_on(df_tr):
 
 
 def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None,
-                   md_lags=None, t_tails=False):
+                   md_lags=None, t_tails=False, sigma_obs_fix=None):
     """Fast closed-form variance-partition estimator (per split, for rolling CV)."""
     return mrd.estimate(df_tr, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
-                        md_lags=md_lags, t_tails=t_tails)
+                        md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix)
 
 
 def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
-                 md_lags=None, t_tails=False):
+                 md_lags=None, t_tails=False, spec_b=False):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -608,8 +608,16 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                          np.linspace(max(12, T // 4), T - test_len, n_splits)))
     uni = f"  universe=top-{top_k} (B={buffer_mult}x, train-only membership)" if top_k else ""
     opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
-            + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else ""))
+            + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
+            + (" spec-B" if spec_b else ""))
     print(f"  T={T}  test_len={test_len}  train-end origins={origins}{uni}{opts}")
+
+    daily = None
+    if spec_b:
+        if platform != "reddit":
+            raise SystemExit("--spec-b requires daily data (reddit only)")
+        import spec_b_sigma_obs as sb
+        daily = sb.load_daily(set(df_full["entity_id"].unique()))
 
     rows = []
     for T0 in origins:
@@ -619,8 +627,13 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         df_te = df[(df["period"] >= T0) & (df["period"] < T0 + test_len)].copy()
         df_te["period"] -= T0
         hor = [h for h in (1, 4, 13) if h < test_len]
+        so_fix = None
+        if spec_b:
+            # Spec-B curve identified on TRAIN weeks only (no test leakage)
+            cur = sb.spec_b_curve(df, daily, max_period=T0)
+            so_fix = (cur["z"], cur["sigma_obs"])
         p = _estimate_fast(df_tr, obs_frac, temper=temper, min_knot_n=min_knot_n,
-                           md_lags=md_lags, t_tails=t_tails)
+                           md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=so_fix)
         scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
         p = replace_obs(p, scale)
         ed, erf, ec = emp_dist(df_te, hor)            # held-out truth
@@ -758,6 +771,8 @@ if __name__ == "__main__":
                     help="minimum-distance OU-home covariance fit (see minimal_rankdiff)")
     ap.add_argument("--t-tails", action="store_true",
                     help="Student-t transitory innovations (df from within-entity kurtosis)")
+    ap.add_argument("--spec-b", action="store_true",
+                    help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     args = ap.parse_args()
     if args.selftest:
         selftest()
@@ -768,7 +783,7 @@ if __name__ == "__main__":
         for p in args.platforms:
             oos_movement(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult,
                          temper=args.temperament, min_knot_n=args.min_knot_entities,
-                         md_lags=args.md_lags, t_tails=args.t_tails)
+                         md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)

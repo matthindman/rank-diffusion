@@ -209,7 +209,8 @@ A_GRID = np.array([0.995, 0.99, 0.98, 0.96, 0.93, 0.90, 0.86, 0.80])   # a = 1 -
 PHI_GRID = np.arange(0.0, 0.66, 0.05)
 
 
-def _md_partition(gk: np.ndarray) -> tuple[float, float, float, float, float]:
+def _md_partition(gk: np.ndarray,
+                  s_e_fix: float | None = None) -> tuple[float, float, float, float, float]:
     """Minimum-distance fit of the change-autocovariance function gamma_0..L
     (Chamberlain / Abowd-Card covariance-structure estimation) to
         X_it = h_it + xi_it + eps_it
@@ -222,21 +223,34 @@ def _md_partition(gk: np.ndarray) -> tuple[float, float, float, float, float]:
     A pure random-walk home (a=1) forces gamma_k = 0 for k>=2 -- the observed
     negative tail at lags 3-6 is what identifies kappa (previously a hand-set
     knob, and the estimator/simulator were inconsistent about it).
+
+    s_e_fix: PIN sigma_e externally (Spec-B daily noise floor).  This breaks
+    the phi->0 weak identification of the fast split (AR(1) transitory vs iid
+    noise are observationally equivalent in weekly covariances): the noise
+    contribution is subtracted from gamma_0/gamma_1 and only (OU, AR) are fit.
     Returns (kappa, sigma_eta, phi, sigma_nu, sigma_e)."""
     L = len(gk) - 1
+    if s_e_fix is not None:
+        gk = gk.copy()
+        gk[0] -= 2.0 * s_e_fix ** 2
+        gk[1] += s_e_fix ** 2
     best = (np.inf, None)
     for a in A_GRID:
         for phi in PHI_GRID:
-            rows = [[2.0 / (1 - a), 2.0 / (1 - phi), 2.0],
-                    [-1.0, -1.0, -1.0]]
-            rows += [[-a ** (k - 1), -phi ** (k - 1), 0.0] for k in range(2, L + 1)]
+            rows = [[2.0 / (1 - a), 2.0 / (1 - phi)],
+                    [-1.0, -1.0]]
+            rows += [[-a ** (k - 1), -phi ** (k - 1)] for k in range(2, L + 1)]
             X = np.array(rows)
+            if s_e_fix is None:
+                X = np.hstack([X, np.array([[2.0], [-1.0]] + [[0.0]] * (L - 1))])
             coef, *_ = np.linalg.lstsq(X, gk, rcond=None)
             coef = np.clip(coef, 0.0, None)
             sse = float(np.sum((gk - X @ coef) ** 2))
             if sse < best[0]:
-                best = (sse, (a, phi, *coef))
-    a, phi, A, B, s_e = best[1]
+                best = (sse, (a, phi, coef))
+    a, phi, coef = best[1]
+    A, B = coef[0], coef[1]
+    s_e = s_e_fix ** 2 if s_e_fix is not None else coef[2]
     sigma_eta = np.sqrt(max(A * (1 + a) / (1 - a), 0.0))
     sigma_nu = np.sqrt(max(B * (1 + phi) / (1 - phi), 0.0))
     return 1.0 - a, sigma_eta, phi, sigma_nu, np.sqrt(max(s_e, 0.0))
@@ -290,7 +304,8 @@ def _pool_sparse(vals_list: list, weights: np.ndarray, ent_counts: np.ndarray,
 
 def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
              min_knot_n: int | None = None, md_lags: int | None = None,
-             t_tails: bool = False) -> RankParams:
+             t_tails: bool = False,
+             sigma_obs_fix: tuple[np.ndarray, np.ndarray] | None = None) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -307,6 +322,8 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     covariance structure, replacing BOTH the hand-set global kappa AND the
     obs_frac reallocation knob.  None = legacy 3-moment inversion.
     t_tails: Student-t transitory innovations, df from within-entity kurtosis.
+    sigma_obs_fix: (z, sigma) curve pinning sigma_obs EXTERNALLY (Spec-B daily
+    noise floor) inside the MD fit -- breaks the phi->0 weak identification.
     """
     N = int(round(df.groupby("period")["entity_id"].size().mean()))
     z_knots = _knot_grid(N)
@@ -361,10 +378,13 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
         phi = np.zeros(nk); sigma_perm = np.zeros(nk)
         sigma_trans = np.zeros(nk); sigma_obs = np.zeros(nk)
         gmat = np.stack(gs, axis=1)   # (nk, L+1)
+        so_fix = (np.interp(z_knots, sigma_obs_fix[0], sigma_obs_fix[1])
+                  if sigma_obs_fix is not None else None)
         for j in range(nk):
             if ct[j] <= 0 and ent_per_knot is None:
                 continue
-            kap, s_eta, ph, s_nu, s_e = _md_partition(gmat[j])
+            kap, s_eta, ph, s_nu, s_e = _md_partition(
+                gmat[j], s_e_fix=None if so_fix is None else float(so_fix[j]))
             kappa_z[j], sigma_perm[j], phi[j] = kap, s_eta, ph
             sigma_trans[j], sigma_obs[j] = s_nu, s_e
     else:
@@ -784,7 +804,8 @@ def empirical_structures(df: pd.DataFrame, top_k: int, track: int = 4000, seed: 
 def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float | None = None,
                  top_k_u: int | None = None, buffer_mult: int = 4,
                  temper: bool = False, min_knot_n: int | None = None,
-                 md_lags: int | None = None, t_tails: bool = False, **sim_kw) -> dict:
+                 md_lags: int | None = None, t_tails: bool = False,
+                 spec_b: bool = False, **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -802,15 +823,26 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
     uni = (f" universe=top-{score_k} (buffer B={df.attrs['universe_B']})"
            if score_k else "")
     opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
-            + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else ""))
+            + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
+            + (" spec-B" if spec_b else ""))
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
           f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}{opts}\n{'='*72}")
 
     ev, er, et, ers = empirical_structures(df, top_k, topid_k=score_k)
     emp = diagnostics(ev, er, et, ers, top_k, score_k=score_k)
 
+    sigma_obs_fix = None
+    if spec_b:
+        if name != "reddit":
+            raise SystemExit("--spec-b requires daily data (reddit only)")
+        import spec_b_sigma_obs as sb
+        daily = sb.load_daily(set(df["entity_id"].unique()))
+        cur = sb.spec_b_curve(df, daily)
+        sigma_obs_fix = (cur["z"], cur["sigma_obs"])
+        print(f"  Spec-B sigma_obs (daily noise floor, Toeplitz-corrected): "
+              f"{cur['sigma_obs'][0]:.3f}..{cur['sigma_obs'][-1]:.3f} (head..tail)")
     p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
-                 md_lags=md_lags, t_tails=t_tails)
+                 md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix)
     if temper:
         print(f"  temperament: s = {p.temper_s:.3f} "
               f"(sigma_i spread p90/p10 = {np.exp(1.2816 * p.temper_s):.2f}x)")
@@ -894,6 +926,8 @@ if __name__ == "__main__":
                          "kappa and sigma_obs, retiring the kappa/obs-frac knobs); try 6")
     ap.add_argument("--t-tails", action="store_true",
                     help="Student-t transitory innovations (df from within-entity kurtosis)")
+    ap.add_argument("--spec-b", action="store_true",
+                    help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
     ap.add_argument("--top-k", type=int, default=None,
                     help="top-coverage universe boundary K (applies to every platform listed)")
@@ -915,6 +949,6 @@ if __name__ == "__main__":
         run_platform(plat, reps=args.reps, obs_frac=args.obs_frac, kappa=args.kappa,
                      top_k_u=top_k_u, buffer_mult=args.buffer_mult,
                      temper=args.temperament, min_knot_n=args.min_knot_entities,
-                     md_lags=args.md_lags, t_tails=args.t_tails,
+                     md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)
