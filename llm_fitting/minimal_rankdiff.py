@@ -167,6 +167,8 @@ class RankParams:
     N: int
     w0: np.ndarray           # sorted period-0 log-values (initial permanent levels)
     bottom_mu: np.ndarray    # low permanent levels for rebirth seeding
+    temper_s: float = 0.0    # log-SD of the persistent entity volatility multiplier
+    #                          v_i (E[v_i]=1); 0 = homogeneous (temperament off)
 
 
 def _knot_grid(N: int, n_knots: int = 60) -> np.ndarray:
@@ -199,13 +201,45 @@ def _lagged_cov(u: np.ndarray, same: np.ndarray, abar: np.ndarray, nk: int,
     return eprod - mean ** 2
 
 
-def estimate(df: pd.DataFrame, obs_frac: float = 0.5) -> RankParams:
+def _pool_sparse(vals_list: list, weights: np.ndarray, ent_counts: np.ndarray,
+                 min_n: int) -> list:
+    """Adaptive symmetric-window pooling of per-knot (count-weighted mean)
+    statistics: each knot's window expands until it covers >= min_n entities.
+    Fixes the 1-2-entity head knots whose raw moments are set by whichever
+    volatile entity happens to live there (e.g. head sigma_obs estimates
+    swinging 2.03 vs 0.46 across universes)."""
+    nk = len(ent_counts)
+    out = [v.astype(float).copy() for v in vals_list]
+    for k in range(nk):
+        w = 0
+        while True:
+            lo, hi = max(0, k - w), min(nk, k + w + 1)
+            if ent_counts[lo:hi].sum() >= min_n or (lo == 0 and hi == nk):
+                break
+            w += 1
+        if w == 0:
+            continue
+        cw = weights[lo:hi].astype(float)
+        if cw.sum() <= 0:
+            continue
+        for v, o in zip(vals_list, out):
+            o[k] = float(np.sum(cw * v[lo:hi]) / cw.sum())
+    return out
+
+
+def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
+             min_knot_n: int | None = None) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
     (its time-mean) and xi the transitory deviation.  Rank-dependence is indexed
     by the entity's PERMANENT rank z-bar (immune to the regression-to-the-mean
     selection bias that conditioning on current rank suffers).
+
+    temper: estimate the persistent entity-volatility dispersion (temperament)
+    and store it in params (see estimate_temperament).
+    min_knot_n: pool sparse knots' moment statistics until each covers >= this
+    many entities (adaptive window; None = off).
     """
     N = int(round(df.groupby("period")["entity_id"].size().mean()))
     z_knots = _knot_grid(N)
@@ -245,6 +279,12 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5) -> RankParams:
     g1 = _lagged_cov(u, same, abar, nk, lag=1, mean=mean_u)
     g2 = _lagged_cov(u, same, abar, nk, lag=2, mean=mean_u)
 
+    ent_per_knot = None
+    if min_knot_n is not None:
+        first = np.r_[True, eid[1:] != eid[:-1]]
+        ent_per_knot = np.bincount(abar[first], minlength=nk)
+        g0, g1, g2 = _pool_sparse([g0, g1, g2], ct, ent_per_knot, min_knot_n)
+
     # Stable 2-component inversion of the *change* autocovariances
     # (permanent RW + transitory AR(1)):
     #   gamma2/gamma1 = phi ;  gamma1 = -sigma_xi^2 (1-phi)^2 ;
@@ -273,6 +313,10 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5) -> RankParams:
     es = np.bincount(ae, weights=exited[exit_known].astype(float), minlength=nk)
     exit_rate = np.divide(es, ec, out=np.zeros(nk), where=ec > 0)
 
+    if ent_per_knot is not None:
+        (lam,) = _pool_sparse([lam], den, ent_per_knot, min_knot_n)
+        (exit_rate,) = _pool_sparse([exit_rate], ec, ent_per_knot, min_knot_n)
+
     phi, sigma_trans, sigma_perm, sigma_obs, lam, exit_rate = (
         _fill(ct, v) for v in (phi, sigma_trans, sigma_perm, sigma_obs, lam, exit_rate))
 
@@ -286,8 +330,9 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5) -> RankParams:
     w0 = np.sort(df.loc[df["period"] == 0, "X"].to_numpy(dtype=float))[::-1]
     mu_entity = df.groupby("entity_id")["X"].mean().to_numpy(dtype=float)
     bottom_mu = np.quantile(mu_entity, np.linspace(0.0, 0.10, 200))
+    temper_s = estimate_temperament(df)["s"] if temper else 0.0
     return RankParams(z_knots, phi, sigma_trans, sigma_perm, sigma_obs, lam, exit_rate,
-                      T_curve, 0.0, sigma_F, N, w0, bottom_mu)
+                      T_curve, 0.0, sigma_F, N, w0, bottom_mu, temper_s)
 
 
 def _fill(cnt: np.ndarray, vals: np.ndarray) -> np.ndarray:
@@ -296,6 +341,96 @@ def _fill(cnt: np.ndarray, vals: np.ndarray) -> np.ndarray:
         return vals
     idx = np.arange(len(vals))
     return np.interp(idx, idx[good], vals[good])
+
+
+def _change_panel(df: pd.DataFrame):
+    """Factor-removed same-entity weekly changes u_it, plus per-entity zbar.
+    Returns (eid, per, u, same, zbar_by_entity: pd.Series)."""
+    df = df.sort_values(["entity_id", "period"])
+    eid = df["entity_id"].to_numpy()
+    per = df["period"].to_numpy()
+    X = df["X"].to_numpy()
+    last_period = int(per.max())
+    same = np.zeros(len(df), dtype=bool)
+    same[:-1] = (eid[1:] == eid[:-1]) & (per[1:] == per[:-1] + 1)
+    dX = np.full(len(df), np.nan)
+    dX[:-1] = X[1:] - X[:-1]
+    per_t = per[same]
+    pc = np.bincount(per_t, minlength=last_period + 1).astype(float)
+    F = np.divide(np.bincount(per_t, weights=dX[same], minlength=last_period + 1), pc,
+                  out=np.zeros(last_period + 1), where=pc > 0)
+    u = np.where(same, dX - F[np.where(same, per, 0)], np.nan)
+    N = int(round(df.groupby("period")["entity_id"].size().mean()))
+    rbar = df.groupby("entity_id")["rank"].mean()
+    zbar = np.log(np.clip((rbar - 0.5) / N, Z_CLIP, 1.0))
+    return eid, u, same, zbar
+
+
+def estimate_temperament(df: pd.DataFrame, n_bands: int = 10, min_changes: int = 12) -> dict:
+    """Estimate the dispersion s of the persistent entity-level volatility
+    multiplier ("temperament"):  sigma_i = sigma(zbar_i) * sqrt(v_i),
+    log v_i ~ N(-s^2/2, s^2), E[v_i] = 1.
+
+    Method (log-variance moment decomposition, Smyth 2004 limma-style, with a
+    Satterthwaite effective-df correction for the MA autocorrelation of weekly
+    changes):
+        log s_i^2 = log sigma^2(zbar_i) + log v_i + log(chi2_nu_i / nu_i)
+        E[log chi2_nu/nu]   = psi(nu/2) - log(nu/2)      (bias, removed per entity)
+        Var[log chi2_nu/nu] = psi'(nu/2)                 (sampling noise, subtracted)
+        nu_i = (n_i - 1) / kappa,  kappa = 1 + 2*sum_k rho_k^2   (rho = pooled
+        within-entity ACF of u; sample variance of an autocorrelated series has
+        inflated variance => fewer effective df)
+    The band term log sigma^2(zbar) is removed by demeaning within zbar-quantile
+    bands, so s^2 = Var_within-band(corrected log s_i^2) - mean_i psi'(nu_i/2).
+    Identified from the variance-dispersion moment ONLY -- never tuned to churn
+    or displacement.
+    """
+    from scipy.special import digamma, polygamma
+    eid, u, same, zbar = _change_panel(df)
+    ok = same & np.isfinite(u)
+    sub = pd.DataFrame({"eid": eid[ok], "u": u[ok]})
+    g = sub.groupby("eid")["u"]
+    n_i = g.count()
+    s2_i = g.var(ddof=1)
+    keep = n_i >= min_changes
+    n_i, s2_i = n_i[keep], s2_i[keep]
+    if len(n_i) < 50:
+        return dict(s=0.0, n_entities=int(len(n_i)), kappa=np.nan, per_band=[])
+
+    # pooled within-entity ACF of u at lags 1..2 -> Satterthwaite kappa
+    rho = []
+    for lag in (1, 2):
+        idx = np.arange(len(u) - lag)
+        v = np.ones(len(u) - lag, dtype=bool)
+        for j in range(lag + 1):
+            v &= same[idx + j]
+        prod = u[idx] * u[idx + lag]
+        v &= np.isfinite(prod)
+        var0 = np.nanvar(u[ok])
+        rho.append(float(np.mean(prod[v]) / var0) if v.any() else 0.0)
+    kappa = 1.0 + 2.0 * sum(r * r for r in rho)
+    nu = (n_i.to_numpy() - 1.0) / kappa
+
+    # bias-corrected log variance
+    e = np.log(np.clip(s2_i.to_numpy(), 1e-12, None)) - (digamma(nu / 2) - np.log(nu / 2))
+    trig = polygamma(1, nu / 2)
+
+    # remove the band profile log sigma^2(zbar) by quantile-band demeaning
+    zb = zbar.reindex(s2_i.index).to_numpy()
+    edges = np.quantile(zb, np.linspace(0, 1, n_bands + 1))
+    band = np.clip(np.searchsorted(edges, zb, side="right") - 1, 0, n_bands - 1)
+    e_hat = e.copy()
+    per_band = []
+    for b in range(n_bands):
+        m = band == b
+        if m.sum() < 5:
+            continue
+        e_hat[m] = e[m] - e[m].mean()
+        s2_b = max(0.0, float(np.var(e[m], ddof=1) - trig[m].mean()))
+        per_band.append((float(np.median(zb[m])), np.sqrt(s2_b), int(m.sum())))
+    s2 = max(0.0, float(np.sum(e_hat ** 2) / (len(e_hat) - n_bands) - trig.mean()))
+    return dict(s=float(np.sqrt(s2)), n_entities=int(len(n_i)), kappa=float(kappa),
+                per_band=per_band)
 
 
 # --------------------------------------------------------------------------- #
@@ -317,6 +452,13 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
     ids = np.arange(N, dtype=np.int64)
     next_id = N
     burn = 40
+    # persistent entity volatility multiplier ("temperament"): sigma_i scales
+    # the MOVEMENT components (sigma_trans, sigma_obs) by sqrt(v_i) with
+    # log v_i ~ N(-s^2/2, s^2), E[v_i]=1 -- band-level variance (and hence the
+    # Eulerian rank structure) is preserved by construction.
+    ts = p.temper_s
+    sqv = (np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, N)) if ts > 0
+           else np.ones(N))
 
     ntrack = min(track, N)
     tsel = np.sort(rng.choice(N, ntrack, replace=False))
@@ -347,7 +489,7 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
         if kappa > 0:
             mu = mu - kappa * (mu - home)
         mu = mu + lam * F + sp * rng.standard_normal(N)
-        xi = phi * xi + st * rng.standard_normal(N)
+        xi = phi * xi + st * sqv * rng.standard_normal(N)
 
         if use_exit:
             ex = rng.random(N) < _interp(zp, p, p.exit_rate)
@@ -359,12 +501,14 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
                 xi[ex] = 0.0
                 ids[ex] = np.arange(next_id, next_id + ne)
                 next_id += ne
+                if ts > 0:  # fresh temperament for reborn entities
+                    sqv[ex] = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, ne))
 
         if t < 0:
             continue
         # observe and rank by true level + iid measurement noise (lowers RACF
         # without adding permanent variance), matching v4.3's rank-by-observed.
-        X = mu + xi + so * rng.standard_normal(N)
+        X = mu + xi + so * sqv * rng.standard_normal(N)
         order = np.argsort(-X)
         rank = np.empty(N, dtype=np.int64)
         rank[order] = np.arange(1, N + 1)
@@ -531,7 +675,8 @@ def empirical_structures(df: pd.DataFrame, top_k: int, track: int = 4000, seed: 
 # Driver
 # --------------------------------------------------------------------------- #
 def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float = 0.15,
-                 top_k_u: int | None = None, buffer_mult: int = 4, **sim_kw) -> dict:
+                 top_k_u: int | None = None, buffer_mult: int = 4,
+                 temper: bool = False, min_knot_n: int | None = None, **sim_kw) -> dict:
     cfg = PLATFORMS[name]
     df = load_panel(cfg)
     if top_k_u:
@@ -544,13 +689,17 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float =
     top_k = max(10, int(round(0.01 * (score_k if score_k else mean_n))))
     uni = (f" universe=top-{score_k} (buffer B={df.attrs['universe_B']})"
            if score_k else "")
+    opts = (" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
-          f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}\n{'='*72}")
+          f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}{opts}\n{'='*72}")
 
     ev, er, et, ers = empirical_structures(df, top_k, topid_k=score_k)
     emp = diagnostics(ev, er, et, ers, top_k, score_k=score_k)
 
-    p = estimate(df, obs_frac=obs_frac)
+    p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n)
+    if temper:
+        print(f"  temperament: s = {p.temper_s:.3f} "
+              f"(sigma_i spread p90/p10 = {np.exp(1.2816 * p.temper_s):.2f}x)")
     sims = [diagnostics(*_sim_struct(simulate(p, T, seed=s, kappa=kappa,
                                               top_record=score_k, **sim_kw)),
                         top_k, score_k=score_k)
@@ -625,6 +774,10 @@ if __name__ == "__main__":
                     help="resolve K per platform from the pre-registered COVERAGE_K rule")
     ap.add_argument("--buffer-mult", type=int, default=4,
                     help="universe buffer depth B = buffer_mult * K (sponge layer)")
+    ap.add_argument("--temperament", action="store_true",
+                    help="persistent entity-level volatility multiplier (moment-identified)")
+    ap.add_argument("--min-knot-entities", type=int, default=None,
+                    help="pool sparse knots' moments to cover >= this many entities")
     args = ap.parse_args()
     for plat in args.platforms:
         top_k_u = args.top_k
@@ -634,5 +787,6 @@ if __name__ == "__main__":
                 raise SystemExit(f"no pre-registered K for {plat} at coverage {args.coverage}%")
         run_platform(plat, reps=args.reps, obs_frac=args.obs_frac, kappa=args.kappa,
                      top_k_u=top_k_u, buffer_mult=args.buffer_mult,
+                     temper=args.temperament, min_knot_n=args.min_knot_entities,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)
