@@ -327,6 +327,55 @@ python llm_fitting/minimal_rankdiff.py reddit --top-k 5000 --temperament --min-k
 python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament --min-knot-entities 8 --md-lags 6 --t-tails --spec-b
 ```
 
+## 2f. 2026-07-02 — Conditional forecasts: the model now BEATS persistence on Reddit
+
+**Change (`--conditional {state,vhat}` on the OOS gate).** The unconditional gate simulated a
+synthetic burned-in universe; persistence implicitly uses entity-level information, so the
+comparison was handicapped. Now: `sim_cohort_conditional` simulates the ACTUAL member universe
+forward from its steady-state-Kalman-filtered end-of-train levels (real gap structure, no
+burn-in; transitory folded into measurement noise for filtering), and `--conditional vhat`
+additionally gives each real entity its own EB-shrunken temperament multiplier
+(`mrd.eb_vhat`: log v̂_i = s²/(s²+trig_i)·ê_i, mean-1 renormalized, prior for entities with <8
+changes). All inputs train-only; calibration protocol unchanged.
+
+**Results (rolling-origin, 5 splits):**
+
+| Reddit K=5,000 (md-stack) | rel err | persistence | coverage |
+|---|---|---|---|
+| unconditional (§2d) | 0.171 ± 0.017 | 0.168 ± 0.004 | 100% |
+| **conditional: state** | **0.118 ± 0.061** | 0.168 ± 0.004 | 100% |
+| conditional: state+v̂ | 0.148 ± 0.059 | 0.168 ± 0.004 | 100% (best Wasserstein: 1.3–2.0) |
+| spec-B + state+v̂ | 0.220 ± 0.050 | 0.168 ± 0.004 | 100% |
+
+**Reddit conditional-state beats the persistence baseline on 4 of 5 splits** (0.041 vs 0.167;
+0.071 vs 0.171; 0.128 vs 0.162; 0.131 vs 0.168; miss: 0.221 at the shortest train), with 100%
+CI coverage — the first spec to clear the gate's full bar. Attribution: most of the gain is the
+REAL INITIAL STATE (gap structure); per-entity v̂ yields the tightest distributional match
+(Wasserstein) but slightly worse moment-vector error. The spec-B variant gains less because with
+σ_trans = 0 temperament only scales the noise.
+
+| FB (md-stack) | rel err | persistence | coverage |
+|---|---|---|---|
+| unconditional (§2d) | 0.158 ± 0.027 | 0.146 ± 0.022 | 60% |
+| conditional: state | 0.152 ± 0.043 | 0.146 ± 0.022 | 40% (beats persistence on 2 splits) |
+| conditional: state+v̂ | 0.161 ± 0.035 | 0.146 ± 0.022 | 40% |
+
+FB stays at par (late-split held-out distributions essentially exact: dRank1 13/64 vs emp
+14/65; dRank4 21/120 vs 20/116), but conditioning does not lift it above the baseline; CI
+coverage dips 60→40%. FB's benchmark is also stronger (0.146).
+
+**Known wrinkle:** at the shortest train origin (11 changes), `estimate_temperament`'s
+min_changes=12 forces s=0, disabling temperament for that split (both conditional variants
+identical there). Lowering the threshold for short windows is a pending robustness item.
+
+**Reproduction:**
+```
+python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --conditional state    # 0.118 vs 0.168
+python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --conditional vhat
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
