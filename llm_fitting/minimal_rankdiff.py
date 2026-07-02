@@ -126,9 +126,22 @@ def restrict_universe(df: pd.DataFrame, top_k: int, buffer_mult: int = 4,
     """
     B = int(buffer_mult * top_k)
     win = df if member_window is None else df[df["period"] < member_window]
+    # ABSENCE-PENALIZED permanent rank: average over ALL window periods, with
+    # absent periods counted at the observation floor (rank N_t + 1).  Averaging
+    # over observed weeks only would re-admit Eulerian selection at the
+    # membership stage: an entity observed 2 of 30 weeks at rank ~3000 gets a
+    # "great" mean rank, enters the universe, then churns as a phantom
+    # exit/entry every week (empirically this put 1-2-week entities alone in
+    # the deepest parameter knot and blew up its exit rate to 0.60/wk vs the
+    # true 0.0007/wk disappearance rate).
+    n_periods = win["period"].nunique()
+    floors = win.drop_duplicates("period").set_index("period")["N"] + 1.0
+    g = win.groupby("entity_id")
+    sum_rank = g["rank"].sum()
+    sum_floor_present = (win["N"] + 1.0).groupby(win["entity_id"]).sum()
+    perm_rank = (sum_rank + (floors.sum() - sum_floor_present)) / n_periods
     # stable value sort after an index sort => deterministic id tiebreak
-    perm_rank = win.groupby("entity_id")["rank"].mean().sort_index()
-    perm_rank = perm_rank.sort_values(kind="mergesort")
+    perm_rank = perm_rank.sort_index().sort_values(kind="mergesort")
     members = set(perm_rank.index[:B])
     out = _rank_within(df[df["entity_id"].isin(members)].copy())
     out.attrs["score_k"] = int(top_k)

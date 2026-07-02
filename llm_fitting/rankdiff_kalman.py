@@ -327,9 +327,27 @@ def empirical_churn(df, colranks=(1, 2, 5, 20), lo_period=0, hi_period=None):
 # --------------------------------------------------------------------------- #
 # Driver
 # --------------------------------------------------------------------------- #
-def run(platform):
-    print(f"\n{'='*72}\n{platform.upper()}  — drifting-home Kalman UC\n{'='*72}")
+def _load_universe(platform, top_k=None, buffer_mult=4, member_window=None):
+    """Load the platform panel, optionally restricted to the closed Lagrangian
+    top-coverage universe (see mrd.restrict_universe).  member_window=T0
+    computes membership on the train window only (OOS-safe)."""
     df = mrd.load_panel(mrd.PLATFORMS[platform])
+    if top_k:
+        df = mrd.restrict_universe(df, top_k, buffer_mult=buffer_mult,
+                                   member_window=member_window)
+    return df
+
+
+def _universe_tag(df):
+    k = df.attrs.get("score_k")
+    return f" | universe=top-{k} (B={df.attrs['universe_B']})" if k else ""
+
+
+def run(platform, top_k=None, buffer_mult=4):
+    print(f"\n{'='*72}\n{platform.upper()}  — drifting-home Kalman UC\n{'='*72}")
+    df = _load_universe(platform, top_k, buffer_mult)
+    if top_k:
+        print(f"  {_universe_tag(df).strip(' |')}")
     X, mask, band, N, T = build_matrices(df)
     print(f"  T={T}  N~{N}  estimation entities={X.shape[1]}  bands={N_BANDS}")
     # band z-centers = midpoints of the permanent-rank quantile edges
@@ -560,23 +578,29 @@ def _estimate_fast(df_tr, obs_frac=0.5):
     return mrd.estimate(df_tr, obs_frac=obs_frac)
 
 
-def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400):
+def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
+                 top_k=None, buffer_mult=4):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
     DISTRIBUTION (median, p90, Wasserstein, bootstrap-CI coverage). Test data is
-    never used in estimation or calibration."""
+    never used in estimation or calibration.  With top_k set, the panel is
+    restricted per split to the closed top-coverage universe whose membership
+    is computed on the TRAIN window only (no membership leakage)."""
     from scipy.stats import wasserstein_distance
     print(f"\n{'='*72}\n{platform.upper()} — OOS movement gate (rolling-origin, distributional)\n{'='*72}")
-    df = mrd.load_panel(mrd.PLATFORMS[platform])
-    T = int(df["period"].max()) + 1
+    df_full = mrd.load_panel(mrd.PLATFORMS[platform])
+    T = int(df_full["period"].max()) + 1
     test_len = max(13, T // 4)
     origins = sorted(set(int(round(o)) for o in
                          np.linspace(max(12, T // 4), T - test_len, n_splits)))
-    print(f"  T={T}  test_len={test_len}  train-end origins={origins}")
+    uni = f"  universe=top-{top_k} (B={buffer_mult}x, train-only membership)" if top_k else ""
+    print(f"  T={T}  test_len={test_len}  train-end origins={origins}{uni}")
 
     rows = []
     for T0 in origins:
+        df = (mrd.restrict_universe(df_full, top_k, buffer_mult=buffer_mult,
+                                    member_window=T0) if top_k else df_full)
         df_tr = df[df["period"] < T0].copy()
         df_te = df[(df["period"] >= T0) & (df["period"] < T0 + test_len)].copy()
         df_te["period"] -= T0
@@ -627,13 +651,15 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400):
                   f"model {np.median(s):>4.0f}/{np.percentile(s,90):>4.0f}")
 
 
-def scorecard(platform, reps=4):
+def scorecard(platform, reps=4, top_k=None, buffer_mult=4):
     """Wire the drifting-home Kalman band params into the generative simulator
     (home = random walk, kappa=0, estimated sigma_obs -- NO tuned knobs) and
     re-score the full goal-1 + goal-2 card, reusing minimal_rankdiff diagnostics."""
     from dataclasses import replace
     print(f"\n{'='*72}\n{platform.upper()} — drifting-home generative scorecard (no knobs)\n{'='*72}")
-    df = mrd.load_panel(mrd.PLATFORMS[platform])
+    df = _load_universe(platform, top_k, buffer_mult)
+    if top_k:
+        print(f"  {_universe_tag(df).strip(' |')}")
     X, mask, band, N, T = build_matrices(df)
     rbarN = df.groupby("entity_id")["rank"].mean()
     qs = np.quantile(np.log(np.clip((rbarN.to_numpy() - 0.5) / N, Z_CLIP, 1.0)),
@@ -684,6 +710,17 @@ def selftest():
     print(f"  est sp={est['sigma_perm']:.3f} phi={est['phi']:.2f} st={est['sigma_trans']:.3f} so={est['sigma_obs']:.3f}")
 
 
+def _resolve_k(plat, args):
+    if args.top_k is not None:
+        return args.top_k
+    if args.coverage is not None:
+        k = mrd.COVERAGE_K.get(plat, {}).get(args.coverage)
+        if k is None:
+            raise SystemExit(f"no pre-registered K for {plat} at coverage {args.coverage}%")
+        return k
+    return None
+
+
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
@@ -691,15 +728,21 @@ if __name__ == "__main__":
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--scorecard", action="store_true")
     ap.add_argument("--oos", action="store_true")
+    ap.add_argument("--top-k", type=int, default=None,
+                    help="top-coverage universe boundary K (applies to every platform listed)")
+    ap.add_argument("--coverage", type=int, choices=(80, 90, 95), default=None,
+                    help="resolve K per platform from the pre-registered COVERAGE_K rule")
+    ap.add_argument("--buffer-mult", type=int, default=4,
+                    help="universe buffer depth B = buffer_mult * K (sponge layer)")
     args = ap.parse_args()
     if args.selftest:
         selftest()
     elif args.scorecard:
         for p in args.platforms:
-            scorecard(p)
+            scorecard(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)
     elif args.oos:
         for p in args.platforms:
-            oos_movement(p)
+            oos_movement(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)
     else:
         for p in args.platforms:
-            run(p)
+            run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)

@@ -79,6 +79,21 @@ class UniverseRestrictionTests(unittest.TestCase):
         # all 5 weeks retained
         self.assertEqual(out[out["entity_id"] == "dipper"]["period"].nunique(), 5)
 
+    def test_intermittent_spiker_excluded_by_absence_penalty(self):
+        # 'ghost' is observed in only 1 of 10 weeks, at rank 1 that week.
+        # Observed-week mean rank would make it the #1 member; the
+        # absence-penalized permanent rank (absent weeks at the floor N_t+1)
+        # must push it out of a B=4 universe in favor of always-present
+        # entities.  Regression for the phantom-exit blowup (exit ~0.60/wk
+        # estimated from 1-2-week entities pooled in the deepest knot).
+        nan = float("nan")
+        levels = {f"e{i}": [50.0 - i] * 10 for i in range(6)}
+        levels["ghost"] = [nan] * 9 + [999.0]
+        df = make_panel(levels)
+        out = mrd.restrict_universe(df, top_k=2, buffer_mult=2)
+        self.assertNotIn("ghost", set(out["entity_id"].unique()))
+        self.assertEqual(set(out["entity_id"].unique()), {"e0", "e1", "e2", "e3"})
+
     def test_load_panel_equivalence_after_refactor(self):
         # _rank_within must reproduce the original sort/cumcount idiom:
         # unique 1..N ranks, metric-descending with entity_id tiebreak.
