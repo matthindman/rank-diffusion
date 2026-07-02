@@ -276,6 +276,57 @@ python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament --
 python llm_fitting/rankdiff_kalman.py facebook --oos --temperament --min-knot-entities 8 --md-lags 6 --t-tails
 ```
 
+## 2e. 2026-07-02 — Spec-B: σ_obs IDENTIFIED from the daily noise floor (validates Spec-A)
+
+**Method (`llm_fitting/spec_b_sigma_obs.py`).** The weekly metric is the sum of daily karma
+(verified exact), so within-week daily randomness that averages out cannot carry week-to-week
+signal — its delta-method image on the weekly log-sum is a floor for σ_obs. PRIMARY estimator:
+fit σ_d²·Toeplitz(1, ρ₁..ρ₆) to the within-week residual covariance (through the week-mean
+centering projection) and map exactly via daily shares. Within-week residuals are mildly
+mean-reverting (ρ₁..₃ ≈ −0.1, as the 2026-06 handoff warned): naive iid mappings (splithalf /
+residual cross-checks, both implemented) overstate the floor ~2×. Used as a noise floor only —
+no daily dynamics model. Reddit only (FB has no sub-weekly data).
+
+**The validation result.** Spec-B (daily replication) vs Spec-A (MD weekly-covariance σ_obs):
+0.100 vs 0.117 at rank ~800; 0.147 vs 0.148 at ~3,800; 0.231 vs 0.268 at ~10,000 — agreement
+within ~25% across the universe from two fully independent identification strategies.
+**σ_obs is now identified, not calibrated.** (Top-100 floor: 0.062 — adjudicating the head
+between the degenerate MD solution 0.03 and the obs_frac curve 0.10.)
+
+**Pinning σ_e in the MD fit** (`--spec-b`; per-split TRAIN-only curves in the OOS gate) breaks
+the φ→0 weak identification externally — and the fitted **σ_trans collapses to ~0 everywhere**:
+the weekly Reddit model reduces to **OU home (κ ≈ 0.01, σ_η ≈ 0.11) + identified measurement
+noise (0.10–0.24) + temperament + rebirth** — a whole component eliminated by identification,
+not assumption (the t-tails become inert with σ_trans = 0).
+
+**Results (Reddit K=5,000, stack + spec-B):**
+- In-sample: **14/15, churn err 0.053** (best recorded); dRank1/4/13 diffs +0.4/+0.7/+1.3
+  (essentially exact at every horizon); Pers1 +0.4, Pers13 −0.6; only R2_13 fails (+0.110).
+- OOS: 0.215 ± 0.059 vs persistence 0.168 ± 0.004, **100% CI coverage**, Wasserstein 2.1–3.4,
+  two splits beat persistence, held-out dRank1 median exact (6 vs 6); scale interior
+  (0.15–1.0) trending to 1.0 with training size.
+
+**The three Reddit OOS specs side by side (all universe + temper + pool):**
+
+| spec | σ_obs | rel err | coverage |
+|---|---|---|---|
+| obs_frac (§2c) | knob | 0.254 ± 0.091 | 40% |
+| + md6 + t (Spec-A, §2d) | estimated (weekly) | **0.171 ± 0.017** | 100% |
+| + spec-B pinned | **identified (daily)** | 0.215 ± 0.059 | 100% |
+
+Spec-A remains the best point numbers; Spec-B matches distributionally, is fully identified,
+simpler (no transitory component), and independently validates Spec-A's curve — the pairing is
+the paper's identification argument. FB path forward: no daily data, so FB keeps gate-calibrated
+Spec-A; the Reddit result (fast component ≈ noise) motivates re-examining FB's raw-MD head split
+with a noise-favoring prior, and YouTube (daily views available?) can pre-register Spec-B.
+
+**Reproduction:**
+```
+python llm_fitting/spec_b_sigma_obs.py 5000       # Spec-A vs Spec-B curve comparison
+python llm_fitting/minimal_rankdiff.py reddit --top-k 5000 --temperament --min-knot-entities 8 --md-lags 6 --t-tails --spec-b
+python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament --min-knot-entities 8 --md-lags 6 --t-tails --spec-b
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
