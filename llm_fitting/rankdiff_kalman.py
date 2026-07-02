@@ -533,7 +533,9 @@ def _calibrate_scale(p, df_tr, horizons, Ltr, reps=3):
     ed, erf, ec = emp_dist(df_tr, horizons)
     em = _moments(ed, erf, ec, horizons)
     best_scale, best_err = 1.0, np.inf
-    for sc in (1.0, 0.7, 0.5, 0.35, 0.25, 0.15):
+    # grid extends to 0.0 so the calibration can find an interior optimum
+    # (reddit pinned at a 0.15 grid-edge; report when the optimum is 0.0)
+    for sc in (1.0, 0.7, 0.5, 0.35, 0.25, 0.15, 0.10, 0.05, 0.0):
         sd, srf, scol = sim_dist(replace_obs(p, sc), Ltr, horizons, reps=reps)
         sm = _moments(sd, srf, scol, horizons)
         e = _cal_error(em, sm)

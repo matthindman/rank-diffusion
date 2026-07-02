@@ -423,7 +423,19 @@ def diagnostics(values: np.ndarray, ranks: np.ndarray, top_ids: np.ndarray,
                 ranksize: np.ndarray | None, top_k: int, score_k: int | None = None) -> dict:
     """values: (T, n) entity log-values (NaN = absent); ranks: (T, n) 1-based, 0=absent;
     top_ids: (T, Kmax) occupant id at each rank; ranksize: (T, M) sorted values.
-    score_k: top-coverage universe boundary; adds boundary-flux diagnostics."""
+    score_k: top-coverage universe boundary.  When set, the goal-1 metrics are
+    computed on the ESTIMAND population only -- tracked entities whose time-mean
+    observed rank is <= score_k (applied identically to empirical and simulated
+    structures) -- so the score measures the top-K and is invariant to the
+    buffer depth B except through genuine boundary effects.  Also adds the
+    boundary-flux diagnostics."""
+    if score_k is not None:
+        with np.errstate(invalid="ignore"):
+            rf = np.where(ranks > 0, ranks.astype(float), np.nan)
+            mean_rank = np.nanmean(rf, axis=0)
+        in_k = np.isfinite(mean_rank) & (mean_rank <= score_k)
+        if in_k.sum() >= 10:
+            values, ranks = values[:, in_k], ranks[:, in_k]
     obs_all = np.all(np.isfinite(values), axis=0)
     V = values[:, obs_all] if obs_all.sum() >= 10 else values
     R = ranks[:, obs_all] if obs_all.sum() >= 10 else ranks
@@ -527,7 +539,9 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float =
     score_k = df.attrs.get("score_k")
     T = int(df["period"].max()) + 1
     mean_n = df.groupby("period").size().mean()
-    top_k = max(10, int(round(0.01 * mean_n)))
+    # persistence-set size follows the ESTIMAND (top-K universe), not the
+    # buffer depth, so scores are comparable across buffer sizes
+    top_k = max(10, int(round(0.01 * (score_k if score_k else mean_n))))
     uni = (f" universe=top-{score_k} (buffer B={df.attrs['universe_B']})"
            if score_k else "")
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
