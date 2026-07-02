@@ -196,12 +196,29 @@ best-trained splits (0.111, 0.152). **Operational spec = A (movement-only)**, pe
 gate criterion; B is the target structure pending an EB-shrunken/lighter-tailed mixing
 distribution and the longer Reddit panel.
 
+**Alternative hypothesis tested and REJECTED — "just use finer rank bands"**
+(`llm_fitting/temperament_vs_finebands.py`; both platforms, 2026-07-02). If the within-band
+dispersion were an unresolved smooth σ(rank), (A) residual spread would vanish as bands shrink —
+observed: plateaus (Reddit 0.941 @ 10 bands → 0.932 @ 2,000 bands; FB 0.888 → 0.883; a 200×
+refinement explains ~1–2% more); (B) the log-variance variogram would be ~0 at adjacent ranks —
+observed: flat at s from Δr=1 (Reddit 0.93 = 0.94 @ Δr=100; FB 0.88 = 0.89; impossible under any
+deterministic σ(rank)); (C) an entity that changes rank would adopt the new rank's σ — observed:
+movers keep their own (split-half residual ρ = 0.52 after conditioning each half on its own fine
+k-NN rank curve; H-fine predicts ≈ 0); (D) predicting an entity's future variance from its exact
+rank loses badly to its own shrunken history (MSE 1.143 vs 0.698 Reddit; 1.007 vs 0.676 FB).
+Fit-side corroboration: the top of the knot grid was already per-rank fine, and that fineness was
+the pathology (pooling it away improved in-sample AND OOS). Volatility is a property of the
+entity, not the rank. Honest refinement note: observed split-half ρ (0.63) is below the pure
+time-invariant-temperament benchmark (0.79 Reddit / 0.92 FB) ⇒ v_i evolves slowly; a
+slowly-mean-reverting temperament is a future refinement (cf. Hospido 2012), not H-fine support.
+
 **Reproduction:**
 ```
 python llm_fitting/minimal_rankdiff.py reddit --top-k 5000 --temperament --min-knot-entities 8
 python llm_fitting/minimal_rankdiff.py facebook --top-k 3500 --temperament --min-knot-entities 8
 python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament --min-knot-entities 8
 python llm_fitting/rankdiff_kalman.py facebook --oos --temperament --min-knot-entities 8
+python llm_fitting/temperament_vs_finebands.py reddit facebook   # H-fine rejection battery
 ```
 
 ## 3. The three corrected estimation pitfalls (do not regress)
