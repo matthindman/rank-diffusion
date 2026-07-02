@@ -452,10 +452,15 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
     ids = np.arange(N, dtype=np.int64)
     next_id = N
     burn = 40
-    # persistent entity volatility multiplier ("temperament"): sigma_i scales
-    # the MOVEMENT components (sigma_trans, sigma_obs) by sqrt(v_i) with
-    # log v_i ~ N(-s^2/2, s^2), E[v_i]=1 -- band-level variance (and hence the
-    # Eulerian rank structure) is preserved by construction.
+    # persistent entity volatility multiplier ("temperament"): sqrt(v_i) scales
+    # the MOVEMENT components (sigma_trans, sigma_obs), log v_i ~ N(-s^2/2, s^2),
+    # E[v_i]=1 -- band-level variance (the Eulerian structure) is preserved by
+    # construction.  NOTE: the s(h) horizon moment says heterogeneity extends
+    # to sigma_perm as well (s flat in h), but scaling sigma_perm by the raw
+    # lognormal tail explodes held-out displacement when sigma_perm comes from
+    # short train windows (reddit OOS 0.254 -> 0.404); movement-only scaling is
+    # the operational spec until the mixing tail is EB-shrunken / the panel is
+    # longer.  See MODEL_STATUS.md.
     ts = p.temper_s
     sqv = (np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, N)) if ts > 0
            else np.ones(N))
