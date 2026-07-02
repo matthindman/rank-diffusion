@@ -8,13 +8,13 @@ import numpy as np
 import pandas as pd
 from scipy import stats as sp_stats
 
-from src.rankdiff.diagnostics import compute_sim_diagnostics
-from src.rankdiff.diagnostics import score_diagnostics
-from src.rankdiff.initializers import _fit_centered_t
-from src.rankdiff.io import load_fit_result
-from src.rankdiff.preprocess import build_data_bundle
-from src.rankdiff.simulator import _split_entry_counts, simulate_one
-from src.rankdiff.types import Config, EstimatedParams, ThresholdModel
+from archive.src.rankdiff.diagnostics import compute_sim_diagnostics
+from archive.src.rankdiff.diagnostics import score_diagnostics
+from archive.src.rankdiff.initializers import _fit_centered_t
+from archive.src.rankdiff.io import load_fit_result
+from archive.src.rankdiff.preprocess import build_data_bundle
+from archive.src.rankdiff.simulator import _split_entry_counts, simulate_one
+from archive.src.rankdiff.types import Config, EstimatedParams, ThresholdModel
 
 
 class RankdiffRegressionTests(unittest.TestCase):
@@ -344,7 +344,7 @@ class RankdiffRegressionTests(unittest.TestCase):
 
     def test_process_zst_file_supports_pipeline_local_archives(self):
         import zstandard
-        from scripts.reddit.process_month import process_zst_file
+        from archive.scripts.reddit.process_month import process_zst_file
 
         records = [
             b'{"subreddit":"RankDiff","score":3,"created_utc":1704067200,"over_18":false}\n',

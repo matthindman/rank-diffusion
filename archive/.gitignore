@@ -1,0 +1,51 @@
+# OS
+.DS_Store
+
+# R / IDE
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+.Renviron
+
+# Env
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Caches & outputs
+cache/
+output/
+outputs/
+results/
+website/_site/
+*_files/
+
+# Data & artifacts
+data/raw/*
+data/reddit/
+*.html
+*.pdf
+*.parquet
+*.feather
+*.rds
+*.Rds
+
+# Local agent config & scratch
+.claude/
+llm_fitting/.claude/
+tmp_*.json
+
+# Regenerable analysis artifacts (figures, panels, run logs)
+llm_fitting/*.png
+llm_fitting/*.npz
+llm_fitting/*.log
+llm_outputs/
+/*.png
