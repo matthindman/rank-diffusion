@@ -154,13 +154,18 @@ def load_panel(cfg: dict) -> pd.DataFrame:
 
 
 def restrict_universe(df: pd.DataFrame, top_k: int, buffer_mult: int = 4,
-                      member_window: int | None = None) -> pd.DataFrame:
+                      member_window: int | None = None,
+                      member_span: tuple[int, int] | None = None) -> pd.DataFrame:
     """Closed Lagrangian top-coverage universe with an observed buffer.
 
     Restrict the panel to the B = buffer_mult * top_k entities with the best
     PERMANENT (time-averaged, full-panel) rank.  Membership is computed on
     periods < member_window only (pass the train end T0 in OOS settings so the
     test window never influences membership; None = all periods, in-sample).
+    member_span=(lo, hi) computes membership on lo <= period < hi instead
+    (P5 membership-robustness probes on long census panels, where full-window
+    absence-penalized membership drifts toward "always-existed" entities --
+    MODEL_STATUS 2g owner caveat); mutually exclusive with member_window.
 
     ALL observations of members are kept -- including weeks they dip below
     top_k (they remain observed in the full panel; no censoring, no
@@ -171,7 +176,11 @@ def restrict_universe(df: pd.DataFrame, top_k: int, buffer_mult: int = 4,
     and entrant origins is ~4*K, hence buffer_mult=4).
     """
     B = int(buffer_mult * top_k)
-    win = df if member_window is None else df[df["period"] < member_window]
+    if member_span is not None:
+        assert member_window is None, "member_span and member_window are exclusive"
+        win = df[(df["period"] >= member_span[0]) & (df["period"] < member_span[1])]
+    else:
+        win = df if member_window is None else df[df["period"] < member_window]
     # ABSENCE-PENALIZED permanent rank: average over ALL window periods, with
     # absent periods counted at the observation floor (rank N_t + 1).  Averaging
     # over observed weeks only would re-admit Eulerian selection at the
