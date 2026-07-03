@@ -475,7 +475,45 @@ activity" — within 0.3pp of the trusted panel, so old-FB K values carry over
 (comparability); reddit_comments K80/90/95 = 1000/2500/5000 (census shares), owner
 working scale K=12,500 (B=50k, 98.8%).
 
-## 3. The three corrected estimation pitfalls (do not regress)
+## 2g-X. 2026-07-03 — Era-aware fits on the recovered data (P1–P5 running record)
+
+### P1 — FB Era A, weekly (rebuilt panel, era-disciplined; K=3500 pre-registered)
+
+Panel: `facebook_a` = Era-A slice of `fb_weekly_rebuilt` (T=86, mean N=14,365/wk,
+"of tracked activity"). Legacy guard on the old cutdown panel: **14/15, churn 0.013 —
+unchanged**. All numbers below from this session's runs.
+
+**In-sample (K=3500, B=14k, 5 reps):**
+
+| spec | goal-1 | churn err | signature |
+|---|---|---|---|
+| temper+pool (old FB: 9/15 / 0.017) | **13/15** | 0.045 | dRank1/4/13 exact (+1.0/+0.8/−2.4); misses RACF13 −0.099, Pers4 +7.2; coll1 −0.19 |
+| + md6 + t-tails (old FB: 7/15) | 8/15 | 0.122 | SAME weak-identification signature as old FB: RACF1 +0.115, coll1 −0.219, head σ_obs → 0.000 |
+
+Parameter consistency with the old panel: temperament **s = 0.890** (old FB 0.887),
+t_df = 4.3 (old 4.3), κ(z) = 0.005..0.100 (old-style head→tail shape). The raw-MD
+weak identification REPLICATES on the rebuilt data — external σ_obs identification
+(P2 Spec-B) is confirmed as the binding constraint, not a data artifact.
+
+**OOS movement gate (rolling origins 21/32/43/54/65, test 21 wks, temper+pool+md6+t):**
+
+| spec | rel err | persistence | CI coverage | scale by split |
+|---|---|---|---|---|
+| **unconditional** | **0.114 ± 0.046** | 0.144 ± 0.030 | 60% | 1.0, 0.7, 1.0, 1.0, 1.0 |
+| conditional: state | 0.140 ± 0.043 | 0.144 ± 0.030 | 60% | same |
+| conditional: state+v̂ | 0.154 ± 0.049 | 0.144 ± 0.030 | 60% | same |
+
+**First FB spec to beat persistence on EVERY split** (0.131<0.144, 0.172<0.179,
+0.035<0.093, 0.131<0.136, 0.099<0.167; old-FB best was 0.158 ± 0.027 vs 0.146).
+Calibrated scale sits at 1.0 on 4/5 splits — the estimated observation model is
+self-consistent OOS (the 2c pre-registered signature, now on all splits, not just
+late ones). Not yet the full bar: CI coverage 60% (<100%); last-split held-out
+distributions near-exact (dRank1 13/65 vs emp 14/69; dRank4 18/119 vs 20/123).
+Conditioning does NOT lift FB (matches 2f on the old panel) — the gain lives in
+the σ_obs identification, not the initial state. temper_s stable across train
+windows (0.91–0.99).
+
+
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
    rank-band masks selected the wrong entities, flattening all rank curves. Fixed via `mean_rank_ids`;

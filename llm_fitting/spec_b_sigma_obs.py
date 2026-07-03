@@ -193,14 +193,21 @@ def spec_b_curve(uni: pd.DataFrame, daily: pd.DataFrame, n_bands: int = 12,
 
 
 if __name__ == "__main__":
+    # usage: spec_b_sigma_obs.py [K_TOP] [platform]   (defaults: 5000 reddit)
     K_TOP = int(sys.argv[1]) if len(sys.argv) > 1 else 5000
-    uni = mrd.restrict_universe(mrd.load_panel(mrd.PLATFORMS["reddit"]), K_TOP, buffer_mult=4)
-    daily = load_daily(set(uni["entity_id"].unique()))
+    platform = sys.argv[2] if len(sys.argv) > 2 else "reddit"
+    cfg = mrd.PLATFORMS[platform]
+    daily_path = cfg.get("daily_path", DAILY_PATH if platform == "reddit" else None)
+    if daily_path is None:
+        raise SystemExit(f"no daily data wired for {platform}")
+    uni = mrd.restrict_universe(mrd.load_panel(cfg), K_TOP, buffer_mult=4)
+    daily = load_daily(set(uni["entity_id"].unique()), path=daily_path,
+                       day_guard=cfg.get("day_guard", False))
     pA = mrd.estimate(uni, temper=True, min_knot_n=8, md_lags=6)
     for method in ("toeplitz", "splithalf", "residual"):
         cur = spec_b_curve(uni, daily, method=method)
         tag = " (PRIMARY)" if method == "toeplitz" else " (iid upper bound)"
-        print(f"\n=== Spec-B sigma_obs(z) — {method}{tag} (reddit K={K_TOP}) ===")
+        print(f"\n=== Spec-B sigma_obs(z) — {method}{tag} ({platform} K={K_TOP}) ===")
         t = cur["table"].copy()
         t["specA_md"] = np.interp(cur["z"], pA.z_knots, pA.sigma_obs)
         print(t.round(3).to_string(index=False))
