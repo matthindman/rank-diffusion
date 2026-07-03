@@ -227,6 +227,12 @@ class RankParams:
     kappa_z: np.ndarray | None = None  # per-knot OU home-reversion rate (MD-estimated;
     #                          None = legacy hand-set global kappa)
     t_df: float = float("inf")  # Student-t df for transitory innovations (inf = Gaussian)
+    factor_rho: float | None = None  # AR(1) coefficient of the STATIONARY common level
+    #                          (--stat-factor, measured from the cumulative-F path).
+    #                          None = legacy: F integrates into mu (a random-walk
+    #                          common level -- measurably wrong: the empirical
+    #                          platform level mean-reverts, e.g. comments level
+    #                          VR13 = 0.121, dLevel ~ white).
 
 
 def _knot_grid(N: int, n_knots: int = 60) -> np.ndarray:
@@ -422,7 +428,7 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
              min_knot_n: int | None = None, md_lags: int | None = None,
              t_tails: bool = False,
              sigma_obs_fix: tuple[np.ndarray, np.ndarray] | None = None,
-             md_vr: bool = False) -> RankParams:
+             md_vr: bool = False, stat_factor: bool = False) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -444,6 +450,10 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     md_vr: append multi-horizon change-variance moments D(h), h in VR_MOM_H,
     to the MD objective -- identifies the home-reversion rate kappa that the
     short-lag gamma tail cannot (see the VR_MOM_H note; requires md_lags).
+    stat_factor: measure the AR(1) coefficient of the (linearly detrended)
+    cumulative common-factor path and store it as factor_rho -- the simulator
+    then applies the common factor as a STATIONARY level at observation
+    instead of integrating it into mu (see RankParams.factor_rho).
     """
     N = int(round(df.groupby("period")["entity_id"].size().mean()))
     z_knots = _knot_grid(N)
@@ -565,6 +575,21 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     T_curve = _fill(cc, np.divide(np.bincount(acur, weights=X, minlength=nk), cc,
                                   out=np.zeros(nk), where=cc > 0))
 
+    factor_rho = None
+    if stat_factor:
+        # AR(1) coefficient of the platform-wide level: cumulative F, linearly
+        # detrended (growth trend is common and rank-neutral).  Measured, not
+        # tuned; clip to [0, 0.95] for simulator stability.
+        lev = np.cumsum(F[pc > 0])
+        if lev.size > 10:
+            t_idx = np.arange(lev.size, dtype=float)
+            lev_d = lev - np.polyval(np.polyfit(t_idx, lev, 1), t_idx)
+            factor_rho = (float(np.clip(np.corrcoef(lev_d[:-1], lev_d[1:])[0, 1],
+                                        0.0, 0.95))
+                          if np.std(lev_d) > 1e-12 else 0.0)
+        else:
+            factor_rho = 0.0
+
     w0 = np.sort(df.loc[df["period"] == 0, "X"].to_numpy(dtype=float))[::-1]
     mu_entity = df.groupby("entity_id")["X"].mean().to_numpy(dtype=float)
     bottom_mu = np.quantile(mu_entity, np.linspace(0.0, 0.10, 200))
@@ -578,7 +603,8 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
         w_share = float(np.sum(ct * share) / max(ct.sum(), 1.0))
         t_df = estimate_tail_df(df, w_share)
     return RankParams(z_knots, phi, sigma_trans, sigma_perm, sigma_obs, lam, exit_rate,
-                      T_curve, 0.0, sigma_F, N, w0, bottom_mu, temper_s, kappa_z, t_df)
+                      T_curve, 0.0, sigma_F, N, w0, bottom_mu, temper_s, kappa_z, t_df,
+                      factor_rho)
 
 
 def _fill(cnt: np.ndarray, vals: np.ndarray) -> np.ndarray:
@@ -745,6 +771,12 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
     sqv = (np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, N)) if ts > 0
            else np.ones(N))
 
+    # stationary common level (--stat-factor): F applied as an AR(1) level at
+    # OBSERVATION, innovation scaled so sd(dL) reproduces the measured sigma_F;
+    # None = legacy (F integrates into mu).  Same rng draw either way.
+    rho_L = getattr(p, "factor_rho", None)
+    L = 0.0
+
     ntrack = min(track, N)
     tsel = np.sort(rng.choice(N, ntrack, replace=False))
     tvals = np.full((T, ntrack), np.nan)
@@ -769,6 +801,9 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
 
         so = _interp(zp, p, p.sigma_obs)
         F = rng.normal(0.0, p.sigma_F) if use_factor else 0.0
+        if use_factor and rho_L is not None:
+            L = rho_L * L + F * np.sqrt((1.0 + rho_L) / 2.0)
+            F = 0.0   # nothing integrates into mu
         # OU confinement of the permanent level toward each entity's home rank
         # (finite long-run rank-band width => caps VR and rank autocorrelation).
         # kappa=None -> per-knot MD-estimated kappa_z when available.
@@ -796,7 +831,10 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
             continue
         # observe and rank by true level + iid measurement noise (lowers RACF
         # without adding permanent variance), matching v4.3's rank-by-observed.
+        # The stationary common level (if active) enters at observation only.
         X = mu + xi + so * sqv * rng.standard_normal(N)
+        if rho_L is not None and use_factor:
+            X = X + lam * L
         order = np.argsort(-X)
         rank = np.empty(N, dtype=np.int64)
         rank[order] = np.arange(1, N + 1)
@@ -966,7 +1004,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  top_k_u: int | None = None, buffer_mult: int = 4,
                  temper: bool = False, min_knot_n: int | None = None,
                  md_lags: int | None = None, t_tails: bool = False,
-                 spec_b: bool = False, md_vr: bool = False, **sim_kw) -> dict:
+                 spec_b: bool = False, md_vr: bool = False,
+                 stat_factor: bool = False, **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -985,7 +1024,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
            if score_k else "")
     opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
             + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
-            + (" spec-B" if spec_b else "") + (" vr-mom" if md_vr else ""))
+            + (" spec-B" if spec_b else "") + (" vr-mom" if md_vr else "")
+            + (" stat-factor" if stat_factor else ""))
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
           f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}{opts}\n{'='*72}")
 
@@ -1006,7 +1046,10 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
               f"{cur['sigma_obs'][0]:.3f}..{cur['sigma_obs'][-1]:.3f} (head..tail)")
     p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                  md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
-                 md_vr=md_vr)
+                 md_vr=md_vr, stat_factor=stat_factor)
+    if stat_factor:
+        print(f"  stationary common factor: rho_L = {p.factor_rho:.2f} "
+              f"(measured from the detrended cumulative-F path; legacy = integrated)")
     if temper:
         print(f"  temperament: s = {p.temper_s:.3f} "
               f"(sigma_i spread p90/p10 = {np.exp(1.2816 * p.temper_s):.2f}x)")
@@ -1093,6 +1136,10 @@ if __name__ == "__main__":
     ap.add_argument("--md-vr", action="store_true",
                     help="append multi-horizon change-variance moments D(2,4,8,13) to the "
                          "MD fit -- identifies kappa where the gamma tail is flat")
+    ap.add_argument("--stat-factor", action="store_true",
+                    help="STATIONARY common factor: apply F as a measured AR(1) level at "
+                         "observation instead of integrating it into mu (the empirical "
+                         "platform level mean-reverts; integration inflates VR at h>=4)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
@@ -1117,6 +1164,6 @@ if __name__ == "__main__":
                      top_k_u=top_k_u, buffer_mult=args.buffer_mult,
                      temper=args.temperament, min_knot_n=args.min_knot_entities,
                      md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
-                     md_vr=args.md_vr,
+                     md_vr=args.md_vr, stat_factor=args.stat_factor,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)

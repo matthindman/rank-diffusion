@@ -802,6 +802,80 @@ residual is now cleanly isolated as STRUCTURAL: the home needs two timescales (f
 slowly-mean-reverting temperament, the 2c refinement). That is the sharpest-scoped
 next modeling item, with --md-vr as the measurement tool that makes it testable.
 
+## 2j. 2026-07-03 — Stationary common factor (`--stat-factor`): the second layer of the VR block, measured and fixed
+
+**Hypothesis chain (each step measured before coding).** After 2i, three candidate
+explanations for the residual VR over-persistence were tested in order:
+1. *Missing medium timescale (two-scale home)* — analytic feasibility says a φ₂≈0.95
+   component fits the full moment vector where the current class strains, BUT the
+   pooled knot moments turned out fittable by the current class already → not the
+   dominant layer.
+2. *Permanent-mix heterogeneity (2c's structure B)* — REJECTED by measurement: on the
+   scorecard population, pooled VR13 (0.153) ≈ median per-entity VR13 (0.136); VR is
+   scale-free, so only mix heterogeneity could bite, and there isn't enough
+   (split-half ρ of per-entity VR13 = 0.34, Spearman(vol, VR13) = −0.22, mild).
+3. *The integrated common factor* — CONFIRMED with a smoking gun: the simulator
+   integrates F into every entity's permanent level (`mu += lam·F`), i.e. the
+   platform-wide level random-walks; empirically the platform level MEAN-REVERTS
+   strongly (comments: level VR13 = **0.121**, ΔLevel lag-1 autocorr = 0.02, and
+   removing the level barely moves scorecard VR, 0.136→0.141). A factor-OFF sim probe
+   drops sim VR13 0.273→0.218 — the integration manufactures ~0.05 of pure VR
+   artifact at h = 8–13. The artifact is invisible to the OOS gate because the
+   cohort simulators never had a factor term — it lives only in the in-sample
+   goal-1 block.
+
+**Fix (`--stat-factor`, opt-in; parsimony-POSITIVE — corrects a mis-specified
+existing component, no new latents).** Same per-step F draw (rng stream identical);
+when active, F feeds a stationary AR(1) common level L_t = ρ_L·L_{t−1} + F·√((1+ρ_L)/2)
+applied at OBSERVATION (X += lam·L), so sd(ΔL) reproduces the measured σ_F and
+nothing integrates into mu. ρ_L is MEASURED per platform from the detrended
+cumulative-F path (comments 0.82, FB Era A 0.48, subs 0.90) — never tuned. Legacy
+default (factor_rho=None) byte-identical; 4 new unit tests; suite 35 passed.
+
+**Validation (5 reps each; all this session):**
+
+| panel | spec | VR2/4/8/13 diffs | score | churn |
+|---|---|---|---|---|
+| comments | baseline md6 (P3) | +.137/+.205/+.226/+.219 | 8/15 | 0.037 |
+| comments | + md-vr (2i) | +.106/+.150/+.152/+.148 | 11/15 | 0.038 |
+| comments | + stat-factor only | +.117/+.168/+.160/+.152 | 10/15 | 0.024 |
+| comments | **+ md-vr + stat-factor** | **+.104/+.127/+.111/+.096** | **11/15** | **0.025** |
+| FB Era A | + md-vr + stat-factor | **+.015/+.040/+.033/+.027 — VR block PASSES** | **12/15** (was 8/15) | 0.097 |
+| FB Era A | temper+pool + stat-factor | +.020(VR13), VR passes | 13/15 (held) | 0.044 |
+| reddit subs | stack + stat-factor | +.035/+.004 (VR4/13) | **14/15 (locked score held)** | 0.064 |
+| FB legacy guard (flag off) | | | 14/15 | 0.013 ✓ |
+
+Comments extras at the combined spec: coll1 +0.003, Pers1/4/13 +2.8/+0.2/−2.2
+(near-exact), dRank13 +4.8 (from +7.0). Pre-registered predictions: sim VR13 →
+~0.22 as the factor-OFF probe forecast (landed 0.232) ✓; rank-based metrics hold or
+improve ✓; FB same-direction ✓ (stronger: full VR pass); subs non-regression ✓;
+legacy identical ✓. OOS gates untouched by construction (no factor in the cohort
+sims) — this fix is a goal-1 (aggregate structure) correction and cannot be
+credited against the movement gate.
+
+**Cumulative decomposition of the VR-block error (comments VR13 sim, emp = 0.136):**
+0.355 (P3 baseline) → 0.284 (κ identified, 2i) → **0.232 (stationary factor, 2j)**.
+Two of three layers were artifacts (unidentified κ; integrated factor), now fixed
+with net-zero new model structure. The remaining ~+0.10 at VR4 (with the RACF13
+counter-tension: pushing κ higher over-reverts rank ACF) is the true structural
+residue — the two-timescale home remains the sharpest open modeling item, now with
+a much smaller target.
+
+**Recommended usage going forward:** add `--stat-factor` to in-sample goal-1 runs on
+all platforms (it held or improved every panel including the locked subs 14/15);
+keep `--md-vr` long-panel-only (2i). Defaults unchanged to preserve committed
+baselines; the legacy guard stays flag-off.
+
+Reproduction:
+```
+python llm_fitting/minimal_rankdiff.py reddit_comments --top-k 12500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr --stat-factor
+python llm_fitting/minimal_rankdiff.py facebook_a --top-k 3500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr --stat-factor
+python llm_fitting/minimal_rankdiff.py reddit --top-k 5000 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --stat-factor
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
