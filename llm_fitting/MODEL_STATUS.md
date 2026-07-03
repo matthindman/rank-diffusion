@@ -415,6 +415,41 @@ weekly=Σdaily invariants, and loader smoke tests):
   documented future fix). Rebuilt panel has ~44.7k pages/week vs the trusted cutdown's ~14.4k —
   the old panel was itself top-truncated; expect different tail behavior.
 
+**ADDENDUM (2026-07-03, owner context + measured): CrowdTangle instrument eras — SEGMENT
+BEFORE FITTING.** The CrowdTangle collection degrades mid-series: tracked pages collapse
+(owner: bottoming ~4–5k daily; reported mechanism — pages that grew past the inclusion
+threshold were never added because FB had internally decided to kill CrowdTangle), partly
+recovers, then slowly declines into the 2024 shutdown. Measured on the rebuilt panels
+(pages/week, pages/day, new-ids/week):
+
+| era | weekly span | collection health | use |
+|---|---|---|---|
+| A | 2020-11-02..2022-06-27 (~86 wks) | ~14.4k/wk, ~12.5k/day, stable | **PRIMARY** (matches trusted panel) |
+| B collapse | ~2022-07..2022-09 | daily mean 6.6k, days down to ~600; weekly min 6.8k | **exclude** |
+| C recovery | 2022-10..2022-12 (~13 wks) | 11–13.8k, occasional bad days | replication w/ caution |
+| M 2023 mixture | 2023 | 37 days patched from full_fb (different, full-universe source) + backfill intensity swinging 2.2k–100k+/day; weekly unions reach 200k+ pages | **unusable as built** — rebuild single-source (owner decision) |
+| D terminal | 2024-01..2024-03-06 | 12.9k/wk, enrollment 0, slow decline | pre-shutdown caution; robustness only |
+
+Handling directives (instrument-health segmentation, standard practice for collection/sensor
+changes — breakpoints from collection metadata ONLY, never from model fit):
+1. Headline FB inference on Era A only; Spec-B identification on Era A dailies.
+2. Eras C and D are REPLICATION segments (do s, kappa, sigma_obs reproduce?) — never new
+   evidence for entry/boundary/coverage claims. Owner expectation: patterns should look
+   similar once issues mostly resolve; extra caution at the very end (pre-shutdown).
+3. NEVER bridge eras B or M with any window: membership windows, displacement horizons,
+   OOS splits, and filtered-state initializations must sit inside one era.
+4. On FB, ABSENCE IS NOT BEHAVIOR: in eras B/M absence mostly means the collector dropped
+   the page. Absence-penalized membership is only meaningful within-era. (Reddit is a census;
+   there absence = below-floor activity, as designed.)
+5. Enrollment was frozen from the START (new ids ~0/wk after week 1): the backfill is a fixed
+   ~14.5k-page panel by construction — same property as the old trusted panel. FB
+   entry/boundary-influx metrics are within-panel quantities; say so in any writeup.
+6. Sporadic low-count days exist even inside Era A (e.g. 2022-04-15: 94 pages) and are
+   invisible to the complete-week filter (day "complete" = file nonempty). Daily/Spec-B work
+   needs a LOW-COUNT-DAY GUARD (flag days below ~60% of trailing-median pages; exclude flagged
+   days from noise-floor estimation and flag weeks containing them). The weekly keystone was
+   unaffected because the trusted panel shares the same collection holes.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

@@ -245,6 +245,18 @@ top-coverage rule still defines a clean estimand (the head of the tracked univer
 coverage percentages must never be compared across platforms as if commensurable, and paper
 text must say "of tracked activity" for FB/IG.
 
+**CrowdTangle instrument eras (2026-07-03):** the FB collection is additionally
+NON-STATIONARY as an instrument: a fixed ~14.5k-page panel (enrollment frozen from the start
+— new ids ≈ 0/week), a mid-series collection collapse (2022-07..09, daily counts to ~600), a
+2023 stretch that mixes two collection universes (backfill + full-export patch days) with
+wildly unstable intensity, and a slow terminal decline into the 2024 shutdown (reported
+mechanism: pages crossing the inclusion threshold were no longer added once FB had decided
+to kill the product). Standard treatment for instrument/collection change applies: segment
+by collection-health metadata (pages/day, pages/week, enrollment rate) with pre-registered
+breakpoints, run primary inference on the healthy era, use later healthy segments as
+replication only, and never let any estimation or evaluation window straddle a broken era.
+Measured era table + directives: MODEL_STATUS section 2g addendum.
+
 **Design adopted (`restrict_universe`):** closed Lagrangian universe of the B=4K
 entities with the best ABSENCE-PENALIZED permanent rank (absent weeks count at
 the observation floor N_t+1 — averaging observed weeks only re-admits Eulerian
