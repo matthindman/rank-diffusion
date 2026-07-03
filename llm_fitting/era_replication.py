@@ -90,6 +90,10 @@ def scorecard(platform: str, p, reps: int = 5) -> tuple:
                             top_k, score_k=score_k)
             for s in range(reps)]
     sim = {k: np.nanmean([s[k] for s in sims]) for k in emp if not k.startswith("_")}
+    # horizon-13 metrics never get keys at T=12; _score indexes them directly
+    for k in ("VR13", "RACF13", "R2_13", "Pers13"):
+        emp.setdefault(k, np.nan)
+        sim.setdefault(k, np.nan)
     mrd._print_compare(emp, sim, p, top_k, score_k=score_k)
     return emp, sim
 

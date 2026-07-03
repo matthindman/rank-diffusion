@@ -564,6 +564,47 @@ weak-identification pathology. Interesting inversion worth carrying forward: wit
 spec-B pinned, state-conditioning HELPS FB (0.211→0.164) — with spec-A it hurt
 (0.114→0.140).
 
+### P4 — Replication on eras C and D (owner question: do patterns reproduce post-recovery?)
+
+`llm_fitting/era_replication.py` (declared adaptations: min_changes=8 and md_lags=4 on
+C — the Era-A reference is recomputed at the same settings; A's s is 0.890 at BOTH
+min_changes 8 and 12, so the adaptation itself is unbiased). NO OOS gates, no
+entry/boundary claims on segments this short.
+
+| quantity | Era A (ref) | Era C (T=12) | Era D (T=2) |
+|---|---|---|---|
+| temperament s | 0.890 (n=14,000) | **0.939** (n=12,945) | n/a |
+| Spec-B floor σ_obs,B (head→tail) | 0.207→0.370 | 0.251→0.395 | 0.275→0.327 |
+| κ(z) head/mid/tail (md4) | 0.200/0.140/0.005 | 0.200/0.005/0.005 | n/a |
+| σ_obs MD head/mid/tail (md4) | 0.014/0.224/0.620 | 0.156/0.340/0.800 | n/a |
+| σ_perm head/mid/tail | 0.162/0.190/0.294 | 0.219/0.000/0.422 | n/a |
+| t_df | 4.3 | inf (T=12 can't measure) | n/a |
+| in-sample card | 13/15 (P1, canonical) | 6/15 (max 11; h=13 undefined) | infeasible |
+
+**Verdict: the transportable quantities replicate.** Temperament within 0.05, the
+Spec-B noise-floor curve keeps its shape at a ~15–20% higher level (consistent with
+the slightly degraded post-recovery collection: 11.6k vs 12.6k pages/day), and even
+Era D's floor (the only thing estimable from 2 weeks) sits in the same band. The
+non-transportable parts are exactly the short-segment-fragile ones: Era C's empirical
+targets are themselves unstable at T=12 (coll5/10/20 = 1.000 exactly; dRank1 = 40 vs
+A's 27; σ_F = 0.359 vs A's 0.146 — the common factor absorbs the recovering
+instrument's intensity wobble, which is what it is for), so the 6/15 card reads as
+segment noise plus genuine extra churn during recovery, not parameter drift. NOTE
+(estimator sensitivity, worth carrying): A's κ head at md4 is 0.200 vs 0.005 at the
+canonical md6 — the OU reversion estimate is lag-window sensitive; only compare κ
+across segments at MATCHED md_lags.
+
+**Era M diagnostic paragraph (why it is unusable as built):** 2023 mixes two
+collection universes — 37 days are patched from `full_fb` (a full-universe export,
+100k+ pages/day) into a ~12k-page backfill panel, with patch intensity swinging
+2.2k–100k+ pages/day. A weekly sum in a patched week adds 1-day full-universe totals
+to 7-day fixed-panel totals: weekly entity unions reach 420,592 "pages" and new-ids/wk
+reach 143,915 in a panel whose true enrollment is frozen (~8/wk in Era A), while
+complete-week medians look normal (13.8k) — the mixture is invisible to any
+single-week health check and poisons ranks, absence penalties, and entry metrics
+alike. Nothing short of a single-source rebuild (owner decision, documented in 2g)
+makes 2023 usable.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
