@@ -39,9 +39,16 @@ karma; FB K=3,500).
 Headline (Reddit): in-sample 14/15 with rank displacement exact at 1/4/13-week
 horizons; the conditional out-of-sample forecast (real filtered initial state +
 per-entity temperament) **beats the persistence baseline** — rel err 0.118 ± 0.061
-vs 0.168 ± 0.004, winning 4 of 5 rolling splits with 100% bootstrap-CI coverage;
-σ_obs identified (Spec-A weekly covariances and Spec-B daily replication agree
-within ~25%). Facebook: OOS at par (0.152 ± 0.043 vs 0.146 ± 0.022).
+vs 0.168 ± 0.004, winning 4 of 5 rolling splits with 100% bootstrap-CI coverage.
+Facebook (2026-07-03, Era-A slice of the rebuilt CrowdTangle panel, instrument-era
+disciplined — MODEL_STATUS §2g/§2h): the unconditional model now **beats persistence
+on all 5 rolling splits** — 0.114 ± 0.046 vs 0.144 ± 0.030 — with calibrated
+σ_obs scale = 1.0 on 4/5 splits (self-consistent observation model), and σ_obs is
+now Spec-B-identified from FB dailies at the universe head (0.21→0.37 "of tracked
+activity"). Cross-metric check on Reddit COMMENT karma (T=136 census): parameters
+transport (κ shape, floor shape, t_df) but s = 0.69 (metric-dependent) and the
+long panel exposes a structural 4–13-week reversion deficit (VR block) that σ_obs
+identification does not fix — the sharpest open modeling item (§2h).
 
 **Canonical status record: [`llm_fitting/MODEL_STATUS.md`](llm_fitting/MODEL_STATUS.md)**
 (model spec, locked-in results, corrected pitfalls, reproduction commands).

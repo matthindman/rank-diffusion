@@ -668,6 +668,82 @@ single-week health check and poisons ranks, absence penalties, and entry metrics
 alike. Nothing short of a single-source rebuild (owner decision, documented in 2g)
 makes 2023 usable.
 
+## 2h. 2026-07-03 — SYNTHESIS: the unified law across two platforms, three metrics-eras, and 4.5× more data
+
+All FB quantities are "of tracked activity" (CrowdTangle censored fixed panel);
+Reddit quantities are platform-wide (Pushshift census). Gate = rolling-origin
+distributional OOS movement, 5 splits; never single-split.
+
+| | FB old (T=88) | FB Era A (T=86) | FB Era C (T=12) | FB Era D (T=2) | Reddit subs (T=30) | Reddit comments (T=136) |
+|---|---|---|---|---|---|---|
+| temperament s | 0.887 | 0.890 | 0.939 | n/a | 0.941 | **0.692** |
+| κ(z) top→tail | (md6) ≈ Era A | 0.005→0.100 | 0.200/0.005/0.005 (md4) | n/a | 0.005→0.04 | 0.010→0.100 |
+| σ_obs identified (Spec-B floor) | none (no dailies) | **0.207→0.370** | 0.251→0.395 | 0.275→0.327 | 0.10→0.24 | 0.101→0.28 |
+| t_df | 4.3 | 4.3 | n/a (T=12) | n/a | 6.7 | 4.6 |
+| in-sample best | 9/15 (temper+pool) | **13/15** (temper+pool) | 6/15 (max 11) | infeasible | 14/15 | 9/15 (spec-B) |
+| OOS gate verdict | at par (0.152–0.158 vs 0.146) | **BEATS 5/5** (0.114±0.046 vs 0.144±0.030, cov 60%, scale→1.0) | no gate (short) | no gate | **BEATS 4/5** (cond. 0.118 vs 0.168, cov 100%) | at par (cond. 0.170 vs 0.160, cov 60–80%) |
+
+**What held (the unified-law evidence):**
+- The SAME estimator stack transported unchanged to a rebuilt panel, two new eras,
+  and a new metric; every transportable parameter replicated: s within 0.05 across
+  FB eras (0.887/0.890/0.939), κ(z) same head→tail shape everywhere, Spec-B floor
+  same shape across eras AND platforms (head ~0.1–0.27 rising ~2–3× to the tail),
+  t_df ~4–7 both platforms.
+- σ_obs identification from the daily noise floor now works on BOTH platforms
+  (P2 unlocked FB); at the universe head, Spec-A and Spec-B agree within ~20%
+  everywhere tested.
+- Both platforms now have a spec that beats persistence out-of-sample — and they are
+  DIFFERENT specs in an instructive way: Reddit subs needed conditioning (real
+  filtered state), FB Era A needed neither conditioning nor σ_obs correction
+  (scale = 1.0; the estimated model is self-consistent). Held-out displacement
+  distributions are near-exact on every panel (Wasserstein 0.6–3.0 comments,
+  9–49 FB).
+- Instrument-era discipline: nothing bridged B or M; the P4 replication says the
+  post-recovery instrument measures the same process, just noisier (floor +15–20%).
+- Membership choice on the long census panel: real drift (half-window overlap 0.73),
+  headline-invariant (P5).
+
+**What broke (each one a lesson, none fatal):**
+1. *Spec-A ≈ Spec-B within ~25%* (2e) was a shallow-universe result: on BOTH
+   platforms the divergence GROWS WITH RANK DEPTH (Spec-A 1.5–2× above the floor in
+   the deep tail; sub-floor collapse in FB's weakly-identified mid band). σ_obs is
+   identified at the head; below it, "weekly noise" contains structure the daily
+   floor cannot see (posting intermittency / discreteness / fast dynamics).
+2. *One global s ≈ 0.9*: comments at scale gives s = 0.692 (0.822 at K=2.5k draft).
+   s is metric- and universe-scale-dependent — a property of the (metric, estimand),
+   not of the platform.
+3. *The weak-identification explanation of over-persistence*: killed on comments —
+   Spec-B pinning fixed FB's head metrics (P2 prediction 1 PASS) but NOT the comments
+   VR block (P3 prediction FAIL, +0.19..+0.21 remain). The long panel isolates a
+   STRUCTURAL deficit: the model under-produces 4–13-week mean reversion and
+   over-holds the top set (Pers +9..+11). The home process (or slowly-drifting
+   temperament) is the deficit, measurable only at T ≫ 30.
+4. *Conditional forecasting as the universal lever*: its edge does not transfer to
+   the regime-varying long panel (comments cond. 0.170 ≈ persist 0.160; and on FB it
+   has never helped). Conditioning wins where the panel is short and stable — it is
+   not a substitute for getting the noise model (FB) or the home process (comments)
+   right.
+5. *Era D as a replication sample*: only 2 complete weeks exist (P0 amendment) —
+   2024 is a daily-statistics-only segment; and 2023 (M) needs a single-source
+   rebuild before it is anything.
+
+**Sharpest next actions:**
+1. **Home-process reversion at long horizons** (the comments VR block): estimate κ
+   from longer-lag change autocovariances (md-lags ~13–26, feasible only on T=136)
+   and/or a slowly-mean-reverting temperament (2c refinement); acceptance = comments
+   VR4/8/13 in-sample + the comments OOS gate. This is the one place the model is
+   structurally wrong on clean census data.
+2. **Intermittency-aware noise floor** for the deep tail (the Spec-A/Spec-B
+   divergence): model zero/absent days explicitly in the floor mapping before
+   claiming σ_obs identification below the head; until then, spec language should be
+   "σ_obs identified at the universe head, bracketed below it".
+3. **Data reconstruction** (owner decisions, flagged not worked around): (a) resume
+   comments aggregation 2021-07..2022-12 — extends the census panel into the same
+   calendar window as FB eras B/C for a cross-platform same-period comparison and
+   doubles the post-COVID regime coverage; (b) single-source 2023 FB rebuild (fixes
+   M); (c) account.id-keyed FB rebuild (name churn currently reads as exit+entry —
+   relevant to boundary-flux precision everywhere).
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
