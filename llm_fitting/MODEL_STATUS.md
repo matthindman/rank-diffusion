@@ -744,6 +744,64 @@ distributional OOS movement, 5 splits; never single-split.
    M); (c) account.id-keyed FB rebuild (name churn currently reads as exit+entry —
    relevant to boundary-flux precision everywhere).
 
+## 2i. 2026-07-03 — The VR over-persistence: mechanism identified, κ identification fixed (`--md-vr`), residual gap isolated as structural
+
+**The error pattern (biggest continuing one across the program):** simulated 4–13-week
+variance ratios sit far above empirical on every md-stack fit — comments +0.19..+0.23
+(both noise specs), FB Era A +0.08..+0.12; first flagged as "VR8/13 inflate" in 2c.
+
+**Diagnosis (measured, not conjectured).** (i) The md6-fitted parameters ALREADY imply
+the over-persistence analytically (per-band implied VR13 0.26–0.33 vs empirical
+0.18–0.25) — it is an estimation problem before it is a simulator problem. (ii) The
+md6 objective is FLAT in the home-reversion rate: at a comments head knot, SSE(a)
+varies only 3e-6→1e-5 across the whole κ grid, because the OU tail is spread thinly
+over many lags (each γ_k ≈ 2e-4 vs γ0 ≈ 0.06) and the three free variance coefficients
+absorb any a. κ was effectively UNIDENTIFIED and landed near 0 by noise. This is the
+classic long-horizon identification problem: variance-ratio-type statistics, not
+short-lag autocovariances, carry the power against slowly-decaying components
+(Poterba–Summers 1988; Cochrane 1988 — both already in research_notes §7).
+
+**Fix (`--md-vr`, opt-in; zero new model components — parsimony preserved).** Append
+multi-horizon change variances D(h) = Var(X_{t+h}−X_t), h ∈ {2,4,8,13}, to the MD
+moment vector; closed-form rows D(h) = 2W(1−a^h) + 2V(1−φ^h) + 2σ_e² in the SAME
+three coefficients; reversion grid extended to κ ≤ 0.30 (A_GRID_VR, declared);
+composes with the Spec-B pin. With the D moments the SSE(a) profile becomes sharply
+V-shaped (interior minima, κ ≈ 0.02–0.04 head/mid on comments). Locked by two new
+unit tests (exact recovery; noisy-panel recovery where plain md6 fails); default
+paths byte-identical, legacy guard unchanged (14/15, churn 0.013), suite 31 passed.
+DECLARED: D(h) are train-window second moments of the same change series the
+estimator always used — in-sample VR is partially mechanical under --md-vr; the OOS
+gate (never fitted) remains the acceptance criterion.
+
+**Validation (all runs this session):**
+
+| run | md6 (baseline) | + md-vr | verdict |
+|---|---|---|---|
+| comments in-sample spec-A | 8/15, VR +0.14..+0.23, Pers +7..+10 | **11/15**, VR +0.11..+0.15, **Pers1/4/13 +2.0/−0.2/−1.2** | structure WIN |
+| comments in-sample spec-B | 9/15, churn 0.026 | 11/15, churn 0.036 | WIN |
+| FB Era A in-sample | 8/15, churn 0.122 | 10/15, churn 0.086 (RACF1/4 pass) | win |
+| reddit subs in-sample (T=30) | 14/15 | 13/15 (RACF13 −0.11; κ_head hits 0.30 edge) | slight LOSS |
+| comments OOS uncond | 0.209 ± 0.062, cov 80% | 0.204 ± 0.095, cov 60% | neutral |
+| comments OOS cond-state | 0.170 ± 0.063 | 0.196 ± 0.080 | slight loss |
+| FB Era A OOS | **0.114 ± 0.046, cov 60%** | 0.179 ± 0.037, cov 0% (p90 209→136) | **LOSS** |
+
+**Adoption verdict (by the pre-declared gate): defaults unchanged; --md-vr stays
+opt-in.** D(13) needs many 13-week spans per TRAIN window: on FB's 21–65-wk rolling
+train windows the noisy D moments destabilize the partition and truncate the
+displacement tail (the gate catches exactly this); on subs (T=30) same story milder.
+Scope: a LONG-panel identification tool and the program's diagnostic instrument.
+
+**What the fix proves (the real yield).** With κ finally identified (comments
+0.07→0.14 head→tail), the top-set persistence block and RACF1/4 snap into place —
+the identification failure was real and is fixed. But VR4/8/13 STILL fail together
+(+0.15) while every neighboring moment passes: a single-timescale OU home cannot
+match the empirical D(h) curvature (strong 2–4-wk reversion AND the shallow 8→13-wk
+tail) — pushing κ high enough for VR over-reverts RACF13 (−0.118) instead. The
+residual is now cleanly isolated as STRUCTURAL: the home needs two timescales (fast
++ slow reversion — hybrid-Atlas-style multi-scale drift; equivalently a
+slowly-mean-reverting temperament, the 2c refinement). That is the sharpest-scoped
+next modeling item, with --md-vr as the measurement tool that makes it testable.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

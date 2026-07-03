@@ -263,9 +263,25 @@ def _lagged_cov(u: np.ndarray, same: np.ndarray, abar: np.ndarray, nk: int,
 A_GRID = np.array([0.995, 0.99, 0.98, 0.96, 0.93, 0.90, 0.86, 0.80])   # a = 1 - kappa
 PHI_GRID = np.arange(0.0, 0.66, 0.05)
 
+# Multi-horizon change-variance moments D(h) = Var(X_{t+h} - X_t) for the
+# --md-vr identification fix (2026-07-03).  Diagnosis: the gamma_0..gamma_6
+# objective is FLAT in the home-reversion rate a -- the OU tail is spread
+# thinly over many lags (each gamma_k ~ 2e-4 vs gamma_0 ~ 0.06) and the three
+# free variance coefficients absorb any a, so kappa was effectively
+# unidentified and the simulator over-persisted every 4-13-week moment (the
+# comments VR block).  Long-horizon change variances aggregate exactly that
+# tail (Cochrane 1988; Poterba-Summers 1988: variance ratios are the powerful
+# statistic against slowly-decaying components), making SSE(a) sharply
+# V-shaped.  Same model, same parameters -- only the moment set changes.
+# A_GRID_VR extends the reversion grid (declared): md6 fits were already
+# pinned at the old kappa=0.2 edge on some knots.
+VR_MOM_H = (2, 4, 8, 13)
+A_GRID_VR = np.array([0.995, 0.99, 0.98, 0.96, 0.93, 0.90, 0.86, 0.80, 0.75, 0.70])
 
-def _md_partition(gk: np.ndarray,
-                  s_e_fix: float | None = None) -> tuple[float, float, float, float, float]:
+
+def _md_partition(gk: np.ndarray, s_e_fix: float | None = None,
+                  d_mom: np.ndarray | None = None,
+                  d_h: tuple = VR_MOM_H) -> tuple[float, float, float, float, float]:
     """Minimum-distance fit of the change-autocovariance function gamma_0..L
     (Chamberlain / Abowd-Card covariance-structure estimation) to
         X_it = h_it + xi_it + eps_it
@@ -283,24 +299,44 @@ def _md_partition(gk: np.ndarray,
     the phi->0 weak identification of the fast split (AR(1) transitory vs iid
     noise are observationally equivalent in weekly covariances): the noise
     contribution is subtracted from gamma_0/gamma_1 and only (OU, AR) are fit.
+
+    d_mom: multi-horizon change-variance moments D(h) for h in d_h, appended
+    to the objective (--md-vr).  Model rows are closed-form in the same three
+    coefficients:  D(h) = 2W(1-a^h) + 2V(1-phi^h) + 2 s_e
+    (W-coef A = W(1-a)^2, V-coef B = V(1-phi)^2, as for the gammas).  These
+    moments identify the home-reversion rate a where the gamma tail cannot
+    (see VR_MOM_H note); the reversion grid extends to A_GRID_VR.
     Returns (kappa, sigma_eta, phi, sigma_nu, sigma_e)."""
     L = len(gk) - 1
+    if d_mom is not None:
+        ok_d = np.isfinite(d_mom)
+        d_mom = d_mom[ok_d]
+        d_h = tuple(h for h, ok in zip(d_h, ok_d) if ok)
     if s_e_fix is not None:
         gk = gk.copy()
         gk[0] -= 2.0 * s_e_fix ** 2
         gk[1] += s_e_fix ** 2
+        if d_mom is not None:
+            d_mom = d_mom - 2.0 * s_e_fix ** 2
+    y = gk if d_mom is None or not len(d_mom) else np.concatenate([gk, d_mom])
     best = (np.inf, None)
-    for a in A_GRID:
+    for a in (A_GRID if d_mom is None else A_GRID_VR):
         for phi in PHI_GRID:
             rows = [[2.0 / (1 - a), 2.0 / (1 - phi)],
                     [-1.0, -1.0]]
             rows += [[-a ** (k - 1), -phi ** (k - 1)] for k in range(2, L + 1)]
+            n_g = len(rows)
+            if d_mom is not None and len(d_mom):
+                rows += [[2.0 * (1 - a ** h) / (1 - a) ** 2,
+                          2.0 * (1 - phi ** h) / (1 - phi) ** 2] for h in d_h]
             X = np.array(rows)
             if s_e_fix is None:
-                X = np.hstack([X, np.array([[2.0], [-1.0]] + [[0.0]] * (L - 1))])
-            coef, *_ = np.linalg.lstsq(X, gk, rcond=None)
+                noise = np.array([[2.0], [-1.0]] + [[0.0]] * (n_g - 2)
+                                 + [[2.0]] * (len(rows) - n_g))
+                X = np.hstack([X, noise])
+            coef, *_ = np.linalg.lstsq(X, y, rcond=None)
             coef = np.clip(coef, 0.0, None)
-            sse = float(np.sum((gk - X @ coef) ** 2))
+            sse = float(np.sum((y - X @ coef) ** 2))
             if sse < best[0]:
                 best = (sse, (a, phi, coef))
     a, phi, coef = best[1]
@@ -309,6 +345,31 @@ def _md_partition(gk: np.ndarray,
     sigma_eta = np.sqrt(max(A * (1 + a) / (1 - a), 0.0))
     sigma_nu = np.sqrt(max(B * (1 + phi) / (1 - phi), 0.0))
     return 1.0 - a, sigma_eta, phi, sigma_nu, np.sqrt(max(s_e, 0.0))
+
+
+def _hstep_var(u: np.ndarray, same: np.ndarray, abar: np.ndarray, nk: int,
+               h: int) -> np.ndarray:
+    """Per-knot variance of the h-step same-entity sum of the factor-removed
+    change u (= X_{t+h} - X_t net of the common factor), pooling only rows
+    i..i+h-1 that form a consecutive same-entity run.  This is the D(h)
+    moment for the --md-vr identification fix."""
+    n = len(u)
+    idx = np.arange(n - h)
+    valid = np.ones(n - h, dtype=bool)
+    for j in range(h):
+        valid &= same[idx + j]
+    cs = np.cumsum(np.where(np.isfinite(u), u, 0.0))
+    S = cs[idx + h - 1] - np.where(idx > 0, cs[np.maximum(idx - 1, 0)], 0.0)
+    a = abar[idx][valid]
+    Sv = S[valid]
+    cnt = np.bincount(a, minlength=nk).astype(float)
+    m1 = np.divide(np.bincount(a, weights=Sv, minlength=nk), cnt,
+                   out=np.zeros(nk), where=cnt > 0)
+    m2 = np.divide(np.bincount(a, weights=Sv * Sv, minlength=nk), cnt,
+                   out=np.zeros(nk), where=cnt > 0)
+    out = m2 - m1 ** 2
+    out[cnt <= 0] = np.nan
+    return out
 
 
 def estimate_tail_df(df: pd.DataFrame, trans_share: float, min_changes: int = 12,
@@ -360,7 +421,8 @@ def _pool_sparse(vals_list: list, weights: np.ndarray, ent_counts: np.ndarray,
 def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
              min_knot_n: int | None = None, md_lags: int | None = None,
              t_tails: bool = False,
-             sigma_obs_fix: tuple[np.ndarray, np.ndarray] | None = None) -> RankParams:
+             sigma_obs_fix: tuple[np.ndarray, np.ndarray] | None = None,
+             md_vr: bool = False) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -379,6 +441,9 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     t_tails: Student-t transitory innovations, df from within-entity kurtosis.
     sigma_obs_fix: (z, sigma) curve pinning sigma_obs EXTERNALLY (Spec-B daily
     noise floor) inside the MD fit -- breaks the phi->0 weak identification.
+    md_vr: append multi-horizon change-variance moments D(h), h in VR_MOM_H,
+    to the MD objective -- identifies the home-reversion rate kappa that the
+    short-lag gamma tail cannot (see the VR_MOM_H note; requires md_lags).
     """
     N = int(round(df.groupby("period")["entity_id"].size().mean()))
     z_knots = _knot_grid(N)
@@ -419,11 +484,23 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     gs = [g0] + [_lagged_cov(u, same, abar, nk, lag=l, mean=mean_u)
                  for l in range(1, n_lags + 1)]
 
+    d_hs: tuple = ()
+    d_list: list = []
+    if md_vr and md_lags:
+        d_hs = tuple(h for h in VR_MOM_H if h < last_period + 1)
+        for h in d_hs:
+            d = _hstep_var(u, same, abar, nk, h)
+            # interpolate the (rare) knots with no h-length runs before pooling
+            good = np.isfinite(d).astype(float)
+            d_list.append(_fill(good, np.where(np.isfinite(d), d, 0.0)))
+
     ent_per_knot = None
     if min_knot_n is not None:
         first = np.r_[True, eid[1:] != eid[:-1]]
         ent_per_knot = np.bincount(abar[first], minlength=nk)
         gs = _pool_sparse(gs, ct, ent_per_knot, min_knot_n)
+        if d_list:
+            d_list = _pool_sparse(d_list, ct, ent_per_knot, min_knot_n)
     g0, g1, g2 = gs[0], gs[1], gs[2]
 
     kappa_z = None
@@ -438,8 +515,10 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
         for j in range(nk):
             if ct[j] <= 0 and ent_per_knot is None:
                 continue
+            d_j = np.array([d[j] for d in d_list]) if d_list else None
             kap, s_eta, ph, s_nu, s_e = _md_partition(
-                gmat[j], s_e_fix=None if so_fix is None else float(so_fix[j]))
+                gmat[j], s_e_fix=None if so_fix is None else float(so_fix[j]),
+                d_mom=d_j, d_h=d_hs)
             kappa_z[j], sigma_perm[j], phi[j] = kap, s_eta, ph
             sigma_trans[j], sigma_obs[j] = s_nu, s_e
     else:
@@ -887,7 +966,7 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  top_k_u: int | None = None, buffer_mult: int = 4,
                  temper: bool = False, min_knot_n: int | None = None,
                  md_lags: int | None = None, t_tails: bool = False,
-                 spec_b: bool = False, **sim_kw) -> dict:
+                 spec_b: bool = False, md_vr: bool = False, **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -906,7 +985,7 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
            if score_k else "")
     opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
             + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
-            + (" spec-B" if spec_b else ""))
+            + (" spec-B" if spec_b else "") + (" vr-mom" if md_vr else ""))
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
           f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}{opts}\n{'='*72}")
 
@@ -926,7 +1005,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
         print(f"  Spec-B sigma_obs (daily noise floor, Toeplitz-corrected): "
               f"{cur['sigma_obs'][0]:.3f}..{cur['sigma_obs'][-1]:.3f} (head..tail)")
     p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
-                 md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix)
+                 md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
+                 md_vr=md_vr)
     if temper:
         print(f"  temperament: s = {p.temper_s:.3f} "
               f"(sigma_i spread p90/p10 = {np.exp(1.2816 * p.temper_s):.2f}x)")
@@ -1010,6 +1090,9 @@ if __name__ == "__main__":
                          "kappa and sigma_obs, retiring the kappa/obs-frac knobs); try 6")
     ap.add_argument("--t-tails", action="store_true",
                     help="Student-t transitory innovations (df from within-entity kurtosis)")
+    ap.add_argument("--md-vr", action="store_true",
+                    help="append multi-horizon change-variance moments D(2,4,8,13) to the "
+                         "MD fit -- identifies kappa where the gamma tail is flat")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
@@ -1034,5 +1117,6 @@ if __name__ == "__main__":
                      top_k_u=top_k_u, buffer_mult=args.buffer_mult,
                      temper=args.temperament, min_knot_n=args.min_knot_entities,
                      md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
+                     md_vr=args.md_vr,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)

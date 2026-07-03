@@ -62,6 +62,45 @@ class MDPartitionTests(unittest.TestCase):
         kap, *_ = mrd._md_partition(gk)
         self.assertLessEqual(kap, 0.011)
 
+    def test_vr_moments_identify_kappa_where_gamma_tail_cannot(self):
+        """The --md-vr fix: on a NOISY simulated panel with slow OU reversion,
+        the gamma_0..6 objective is flat in a (tail entries are noise-sized)
+        while appended multi-horizon change variances D(h) recover kappa."""
+        rng = np.random.default_rng(3)
+        n_ent, T = 4000, 130
+        kappa, s_eta, phi, s_nu, s_e = 0.04, 0.06, 0.10, 0.10, 0.12
+        a = 1 - kappa
+        h = rng.normal(0, s_eta / np.sqrt(1 - a**2), n_ent)
+        xi = rng.normal(0, s_nu / np.sqrt(1 - phi**2), n_ent)
+        X = np.empty((T, n_ent))
+        for t in range(T):
+            h = a * h + rng.normal(0, s_eta, n_ent)
+            xi = phi * xi + rng.normal(0, s_nu, n_ent)
+            X[t] = h + xi + rng.normal(0, s_e, n_ent)
+        dX = np.diff(X, axis=0)
+        gk = np.array([np.mean(dX[:-k or None] * dX[k:] if k else dX * dX)
+                       for k in range(7)])
+        d_mom = np.array([np.var(X[hh:] - X[:-hh]) for hh in mrd.VR_MOM_H])
+        kap_vr, s_eta_vr, _, _, s_e_vr = mrd._md_partition(gk, d_mom=d_mom)
+        self.assertLess(abs(kap_vr - kappa), 0.031)   # on-grid neighbor tolerance
+        self.assertLess(abs(s_e_vr - s_e), 0.05)
+        # and with the sigma_obs pin (spec-B path) it composes
+        kap_pin, *_ = mrd._md_partition(gk, s_e_fix=s_e, d_mom=d_mom)
+        self.assertLess(abs(kap_pin - kappa), 0.031)
+
+    def test_vr_moments_exact_recovery(self):
+        true = dict(kappa=0.04, s_eta=0.10, phi=0.10, s_nu=0.20, s_e=0.15)
+        gk = theoretical_gamma(**true)
+        a, ph = 1 - true["kappa"], true["phi"]
+        W = true["s_eta"]**2 / (1 - a**2)
+        V = true["s_nu"]**2 / (1 - ph**2)
+        d_mom = np.array([2*W*(1 - a**h) + 2*V*(1 - ph**h) + 2*true["s_e"]**2
+                          for h in mrd.VR_MOM_H])
+        kap, s_eta, phi, s_nu, s_e = mrd._md_partition(gk, d_mom=d_mom)
+        self.assertAlmostEqual(kap, true["kappa"], places=6)
+        self.assertAlmostEqual(s_eta, true["s_eta"], places=3)
+        self.assertAlmostEqual(s_e, true["s_e"], places=3)
+
 
 if __name__ == "__main__":
     unittest.main()
