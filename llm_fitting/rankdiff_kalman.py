@@ -723,10 +723,13 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
 
     daily = None
     if spec_b:
-        if platform != "reddit":
-            raise SystemExit("--spec-b requires daily data (reddit only)")
         import spec_b_sigma_obs as sb
-        daily = sb.load_daily(set(df_full["entity_id"].unique()))
+        cfg = mrd.PLATFORMS[platform]
+        daily_path = cfg.get("daily_path", sb.DAILY_PATH if platform == "reddit" else None)
+        if daily_path is None:
+            raise SystemExit(f"--spec-b requires daily data (none wired for {platform})")
+        daily = sb.load_daily(set(df_full["entity_id"].unique()), path=daily_path,
+                              day_guard=cfg.get("day_guard", False))
 
     rows = []
     for T0 in origins:

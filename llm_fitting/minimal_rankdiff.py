@@ -42,6 +42,19 @@ import pandas as pd
 # --------------------------------------------------------------------------- #
 # Platform configs
 # --------------------------------------------------------------------------- #
+# 2026-07-03 additions (data on the SSD via the local data/ssd symlink; see
+# DATA_PHASE2_REPORT.md).  The facebook_* entries are CrowdTangle INSTRUMENT-ERA
+# slices of the rebuilt weekly panel (era table + directives: instrument_eras.py
+# and MODEL_STATUS 2g): CrowdTangle is a censored fixed ~14.5k-page panel, so
+# every FB coverage/entry statement is "of tracked activity", never platform-
+# wide, and no window may straddle eras B or M.  date_min/date_max slice the
+# panel BEFORE period indexing.  daily_path enables Spec-B; day_guard applies
+# the instrument_eras low-count-day guard to the daily noise-floor estimation
+# (weekly fits keep flagged weeks -- declared in instrument_eras.py).
+# reddit_comments is a census (Pushshift) -- platform-wide language is fine,
+# no eras, guard verified unnecessary (0/943 days flagged).
+from instrument_eras import DAILY_PATHS as _ERA_DAILY, FB_ERAS as _FB_ERAS
+
 PLATFORMS = {
     "facebook": dict(path="data/raw/fb_ranked_weekly_cutdown.parquet",
                      id_col="endpoint_id", ts_col="date", metric_col="metric_value",
@@ -52,6 +65,22 @@ PLATFORMS = {
     "instagram": dict(path="llm_fitting/ig_weekly_ranked_top50k.parquet",
                       id_col="user_name", ts_col="date", metric_col="metric_value",
                       max_rank=20000),
+    "facebook_a": dict(path="data/ssd/derived/fb_weekly_rebuilt.parquet",
+                       id_col="endpoint_id", ts_col="date", metric_col="metric_value",
+                       max_rank=None, date_min=_FB_ERAS["A"][0], date_max=_FB_ERAS["A"][1],
+                       daily_path=_ERA_DAILY["facebook"], day_guard=True),
+    "facebook_c": dict(path="data/ssd/derived/fb_weekly_rebuilt.parquet",
+                       id_col="endpoint_id", ts_col="date", metric_col="metric_value",
+                       max_rank=None, date_min=_FB_ERAS["C"][0], date_max=_FB_ERAS["C"][1],
+                       daily_path=_ERA_DAILY["facebook"], day_guard=True),
+    "facebook_d": dict(path="data/ssd/derived/fb_weekly_rebuilt.parquet",
+                       id_col="endpoint_id", ts_col="date", metric_col="metric_value",
+                       max_rank=None, date_min=_FB_ERAS["D"][0], date_max=_FB_ERAS["D"][1],
+                       daily_path=_ERA_DAILY["facebook"], day_guard=True),
+    "reddit_comments": dict(
+        path="data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet",
+        id_col="endpoint_id", ts_col="date", metric_col="metric_value",
+        max_rank=None, daily_path=_ERA_DAILY["reddit_comments"], day_guard=False),
 }
 
 COLLISION_RANKS = [1, 2, 5, 10, 20, 50, 100]
@@ -72,6 +101,17 @@ Z_CLIP = 1e-6
 COVERAGE_K = {
     "reddit": {80: 2500, 90: 5000, 95: 10000},
     "facebook": {80: 1800, 90: 3500, 95: 5500},
+    # facebook_a (2026-07-03): measured on the Era-A slice of the rebuilt panel
+    # BEFORE any fit -- top-1800 = 79.7%, top-3500 = 89.7%, top-5500 = 94.8% "of
+    # tracked activity" (CrowdTangle is censored; never platform-wide).  Within
+    # 0.3pp of the trusted-panel numbers (same fixed instrument panel), so the
+    # SAME K values are pre-registered for comparability with old-FB results.
+    "facebook_a": {80: 1800, 90: 3500, 95: 5500},
+    # reddit_comments (2026-07-03): census; measured in DATA_PHASE2_REPORT.md
+    # before any fit -- top-1000 = 81.4%, top-2500 = 90.8%, top-5000 = 95.6%.
+    # Owner-mandated WORKING scale is K=12,500 (B=50k, 98.8%) -- a scale
+    # decision on top of, not a replacement for, this rule.
+    "reddit_comments": {80: 1000, 90: 2500, 95: 5000},
 }
 
 
@@ -93,6 +133,12 @@ def load_panel(cfg: dict) -> pd.DataFrame:
     df = df.rename(columns={cfg["id_col"]: "entity_id", cfg["ts_col"]: "ts", cfg["metric_col"]: "metric"})
     df["entity_id"] = df["entity_id"].astype(str)
     df["ts"] = pd.to_datetime(df["ts"])
+    # optional instrument-era slice (inclusive; applied BEFORE period indexing
+    # so periods are consecutive within the era -- see instrument_eras.py)
+    if cfg.get("date_min") is not None:
+        df = df[df["ts"] >= pd.Timestamp(cfg["date_min"])]
+    if cfg.get("date_max") is not None:
+        df = df[df["ts"] <= pd.Timestamp(cfg["date_max"])]
     df["metric"] = pd.to_numeric(df["metric"], errors="coerce")
     df = df.dropna(subset=["entity_id", "ts", "metric"])
     df = df[df["metric"] >= 0]
@@ -860,10 +906,12 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
 
     sigma_obs_fix = None
     if spec_b:
-        if name != "reddit":
-            raise SystemExit("--spec-b requires daily data (reddit only)")
         import spec_b_sigma_obs as sb
-        daily = sb.load_daily(set(df["entity_id"].unique()))
+        daily_path = cfg.get("daily_path", sb.DAILY_PATH if name == "reddit" else None)
+        if daily_path is None:
+            raise SystemExit(f"--spec-b requires daily data (none wired for {name})")
+        daily = sb.load_daily(set(df["entity_id"].unique()), path=daily_path,
+                              day_guard=cfg.get("day_guard", False))
         cur = sb.spec_b_curve(df, daily)
         sigma_obs_fix = (cur["z"], cur["sigma_obs"])
         print(f"  Spec-B sigma_obs (daily noise floor, Toeplitz-corrected): "

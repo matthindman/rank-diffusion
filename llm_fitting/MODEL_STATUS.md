@@ -450,6 +450,31 @@ changes — breakpoints from collection metadata ONLY, never from model fit):
    days from noise-floor estimation and flag weeks containing them). The weekly keystone was
    unaffected because the trusted panel shares the same collection holes.
 
+**P0 VERIFICATION (2026-07-03, committed in `llm_fitting/instrument_eras.py` — canonical
+era table + guard from here on).** Health series (pages/day, pages/week, new-ids/week)
+re-derived from the rebuilt SSD panels. Outcome: eras A/B/C/M CONFIRMED as tabled
+(A: 86 complete wks, 14,362 pages/wk median, enrollment frozen at ~8 new ids/wk;
+B: 24/82 days flagged, day median 5,712 — collapse; C: 12 complete wks, 3 flagged days;
+M: complete-week medians look normal (13.8k) but weekly unions reach 420,592 pages and
+new-ids/wk reach 143,915 — the mixture is confirmed and invisible to any single-week
+health check). **ERA D AMENDED: only 2 complete weeks exist** (2024-01-01, 2024-02-12;
+45/66 days present — the Jan–Mar 2024 daily gaps kill complete-week coverage; the
+"~6–9 complete wks" above was wrong). Weekly estimation on D is INFEASIBLE; only daily
+(noise-floor) statistics are estimable there, robustness only. Reddit comments panels:
+CENSUS CONFIRMED — 0/943 days flagged, smooth growth 31k→71k subs/day, ~13k organically
+new ids/wk; no eras. Low-count-day guard implemented as declared (trailing 28-day median,
+60% threshold): 59 flagged days panel-wide; Era A contains 15 (2022-04-15 = 94 pages
+among them), touching 10 of 86 Era-A weeks. DECLARED HANDLING: Spec-B/daily estimation
+drops every week containing a flagged day; WEEKLY fits KEEP flagged weeks (platform-wide
+undercount is mostly absorbed by the per-period common factor; the trusted-panel keystone
+already contained the same holes; dropping interior weeks would break consecutive-week
+change pairs for the MD/ACF estimators). New PLATFORMS entries: `facebook_a`, `facebook_c`,
+`facebook_d` (era slices of `fb_weekly_rebuilt`), `reddit_comments`. Pre-registered
+coverage K on Era A: top-1800 = 79.7%, top-3500 = 89.7%, top-5500 = 94.8% "of tracked
+activity" — within 0.3pp of the trusted panel, so old-FB K values carry over
+(comparability); reddit_comments K80/90/95 = 1000/2500/5000 (census shares), owner
+working scale K=12,500 (B=50k, 98.8%).
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

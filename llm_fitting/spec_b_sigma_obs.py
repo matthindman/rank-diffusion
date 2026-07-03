@@ -41,12 +41,26 @@ DAILY_PATH = "data/reddit/reddit_daily.parquet"
 HALF_A, HALF_B = [0, 2, 4, 6], [1, 3, 5]
 
 
-def load_daily(members: set, path: str = DAILY_PATH) -> pd.DataFrame:
+def load_daily(members: set, path: str = DAILY_PATH,
+               day_guard: bool = False) -> pd.DataFrame:
+    """day_guard: apply the instrument_eras LOW-COUNT-DAY GUARD -- drop every
+    week containing a collector-failure day (count < 60% of trailing-median;
+    e.g. FB 2022-04-15 = 94 pages).  Partial-day counts would inflate the
+    within-week residual variance, i.e. overstate the noise floor.  The guard
+    is computed on the FULL panel's day counts (not the member subset)."""
     d = pd.read_parquet(path, columns=["date", "endpoint_id", "metric_value"])
     d = d[d["endpoint_id"].isin(members)].copy()
     d["date"] = pd.to_datetime(d["date"])
     d["week"] = d["date"] - pd.to_timedelta(d["date"].dt.weekday, unit="D")
     d["dow"] = d["date"].dt.weekday
+    if day_guard:
+        import instrument_eras as ie
+        flagged = ie.flag_days(ie.day_count_series(path))
+        bad_weeks = ie.weeks_containing(flagged)
+        n0 = d["week"].nunique()
+        d = d[~d["week"].isin(bad_weeks)]
+        print(f"  day guard: {len(flagged)} flagged days -> dropped "
+              f"{n0 - d['week'].nunique()} of {n0} member-weeks from daily estimation")
     return d
 
 
