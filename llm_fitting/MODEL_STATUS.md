@@ -564,6 +564,69 @@ weak-identification pathology. Interesting inversion worth carrying forward: wit
 spec-B pinned, state-conditioning HELPS FB (0.211→0.164) — with spec-A it hurt
 (0.114→0.140).
 
+### P3 — Reddit comments at the owner scale (K=12,500, B=50k ≈ 98.8%; census; T=136)
+
+First fits on the comment-karma metric at scale (draft was K=2,500, reps=1). All
+runs: universe + temper + pool≥8 + md6 + t-tails, reps=5 in-sample.
+
+**Cross-metric parameter report (the unified-law evidence the run was for):**
+temperament **s = 0.692** (spread p90/p10 2.43×) — vs 0.941 submissions, 0.890 FB,
+and 0.822 in the K=2,500 comments draft: **s is metric- and scale-dependent; the
+"one global s ≈ 0.9" reading weakens** (train-window s on the OOS splits: 0.64–0.67).
+κ(z) = 0.005–0.2 (same head→tail shape as subs/FB). σ_obs: Spec-B floor
+**0.101 (rank ~1.1k) → 0.28–0.30 (deep tail)**; Spec-A within 13–20% of the floor
+through head/mid (0.120 vs 0.101; 0.178 vs 0.157) but ~2× above it in the deep tail
+(0.55–0.58 vs 0.28–0.30) — the depth-dependent Spec-A/Spec-B divergence seen on FB
+(P2) appears on a census metric too, so it is NOT a CrowdTangle-censoring artifact;
+it grows with rank depth on both platforms. t_df 4.6 (Spec-A) / 6.4 (Spec-B).
+
+**In-sample (the diagnosis target):** the draft's VR over-persistence REPLICATES at
+scale (spec-A: 8/15, churn 0.037; VR2..13 diffs +0.137/+0.205/+0.226/+0.219; head
+σ_obs → 0.000, the degenerate fast split again). **Pre-registered prediction — "Spec-B
+pinning fixes the VR block" — FAILS**: pinned run scores 9/15, churn 0.026, dRank1/4
+near-exact (−0.6/+0.6), RACF13 passes, but VR diffs move only to
++0.121/+0.187/+0.204/+0.205. The comments over-persistence is STRUCTURAL, not a
+noise-split identification artifact: the model lacks 4–13-week mean reversion that
+the long panel measures precisely, and the top set is too sticky (Pers1/4/13 +9..+11,
+outfluxK +0.075, return4K −0.125). This kills the weak-identification explanation
+for comments and points at the home process (stronger/faster reversion, or
+slow temperament drift) as the deficit.
+
+**OOS movement gate (T=136, test 34, origins 34/51/68/85/102):**
+
+| spec | rel err | persistence | coverage | scales |
+|---|---|---|---|---|
+| unconditional | 0.209 ± 0.062 | 0.160 ± 0.068 | 80% | 0.10–0.50, median 0.35 |
+| conditional: state | **0.170 ± 0.063** | 0.160 ± 0.068 | 60% | same |
+| spec-B pinned | 0.163/—/0.248/0.204/0.238 by split (see note) | 0.160 ± 0.068 | **100%** | 0.05–0.70 |
+
+Conditioning helps (0.209→0.170) but lands AT PAR with persistence, not above it as
+on submissions (0.118 vs 0.168) — the conditional edge does not transfer wholesale to
+the longer, regime-varying panel. The persistence baseline itself is non-stationary
+across origins (0.071 calm-2019 → 0.237 COVID-era): T=30 submissions never saw a
+regime change; T=136 comments does, and both model and baseline degrade inside it.
+Held-out distributions are tight everywhere (Wasserstein 0.6–3.0; last split dRank1
+6/23 vs emp 6/26). NOTE (scoring artifact, not model): the spec-B aggregate prints
+as 1154 ± 2308 because the T0=51 test window has empirical coll1 = 0 and the
+rel-err denominator floors at 1e-6 — a sim coll1 of 0.006 scores as ~5772. The
+per-split numbers above exclude nothing else; mean over the 4 clean splits = 0.213.
+Known sharp edge for future gate runs: near-zero empirical moments (deep-K rank-1
+collisions on a census head dominated by AskReddit) need a floor or exclusion rule —
+declared here, not patched mid-experiment.
+
+### P5 — Membership robustness on the long census panel (measured, not redesigned)
+
+`llm_fitting/membership_robustness.py` (comments, K=12,500, B=50k, reps=3 declared).
+Member-set overlap (share of B): full∩first-half 0.806, full∩second-half 0.920,
+first∩second 0.729, second∩trailing-60 0.979. The owner-suspected drift is REAL —
+half-window sets differ by ~27%, and full-window membership tilts toward the
+second half (0.92 vs 0.81). But the HEADLINE METRICS BARELY MOVE across all four
+membership choices: score 8–9/15, churn 0.027–0.052, s 0.669–0.697, empirical
+moments essentially invariant (RACF1 0.66–0.69, VR4 0.33, coll1 0.044, outfluxK
+0.089–0.090). Verdict: membership-window choice is a reportable robustness
+dimension, not a headline-level threat, on this panel; the estimand population is
+much more stable than the member list.
+
 ### P4 — Replication on eras C and D (owner question: do patterns reproduce post-recovery?)
 
 `llm_fitting/era_replication.py` (declared adaptations: min_changes=8 and md_lags=4 on
