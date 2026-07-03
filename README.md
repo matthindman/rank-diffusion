@@ -68,6 +68,14 @@ Data (not committed): FB `data/raw/fb_ranked_weekly_cutdown.parquet` (**always t
 cutdown file** — the full file is corrupt after ~88 weeks); Reddit
 `data/reddit/reddit_weekly.parquet` + `reddit_daily.parquet` (Spec-B); Instagram
 top-50k parquet is a **negative control only** (query-censored collection).
+New (2026-07, on the SSD via `data/ssd` symlink; see DATA_PHASE2_REPORT.md):
+`derived/fb_daily.parquet` + `fb_weekly_rebuilt.parquet` (158 clean weeks incl. 72
+beyond the old corruption point — enables Spec-B on FB) and
+`derived/reddit_comments_2018-12_2021-06_{daily,weekly}.parquet` (136 weeks,
+comment karma). **Censoring caveat**: Reddit/Pushshift is a platform census, so
+its coverage shares are platform-wide; CrowdTangle (FB/IG) tracked only large
+pages — its coverage shares describe the *tracked* universe only
+(MODEL_STATUS §2g).
 
 ## Repository Structure
 

@@ -376,6 +376,45 @@ python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament \
     --min-knot-entities 8 --md-lags 6 --t-tails --conditional vhat
 ```
 
+## 2g. 2026-07-03 — New data assets & measurement caveats (owner notes)
+
+**New panels on the SSD** (`data/ssd -> /Volumes/T9/rank-diffusion-data`; see
+DATA_PHASE2_REPORT.md and DATA_INVENTORY.md; all passed the schema contract, exact
+weekly=Σdaily invariants, and loader smoke tests):
+- `derived/fb_daily.parquet` + `derived/fb_weekly_rebuilt.parquet` — FB DAILY exists:
+  1,191 complete days 2020-10-27..2024-03-06; 158 complete Monday weeks 2020-11-02..2024-02-12;
+  **72 clean weeks beyond the old 2022-06-27 corruption point**. Keystone validation vs the
+  trusted cutdown panel: join rate 1.0, metric correlation 0.99999 — via `account.name`
+  (the trusted panel's ids ARE page names). **FB daily unlocks Spec-B for Facebook.**
+- `derived/reddit_comments_2018-12_2021-06_{daily,weekly}.parquet` — Reddit COMMENT-karma
+  panels, 136 weeks / 943 days (metric_value = comment karma; a different metric from the
+  repo's submission-karma panel). Submissions 2021-07..2022-12 pending (resume command in
+  DATA_PHASE2_REPORT.md); the 2023-01..2024-06 bridge remains an owner acquisition decision.
+
+**CENSORING ASYMMETRY (owner directive — encode in every coverage claim):**
+- **Reddit (Pushshift) is a complete census of the platform.** Top-K coverage shares computed
+  on it ARE platform-wide shares ("top-5,000 = 89% of weekly karma" is a statement about Reddit).
+- **Facebook (CrowdTangle) is a CENSORED sample**: it tracked only pages above inclusion
+  thresholds (plus manual additions). "Top-K covers X% of interactions **in the data**" is a
+  statement about the tracked universe, NOT the platform. The top-coverage rule still defines a
+  valid estimand (the head of the tracked universe), but platform-wide coverage language must
+  never be used for FB (or IG). Cross-platform comparisons of coverage percentages are
+  apples-to-oranges and must be flagged.
+
+**Further owner caveats on the current universe construction (to revisit):**
+- The modeled endpoint set should be FULLER — for Reddit comments, top-2,500 (B=10k) is too
+  small; owner suggests K≈12,500 (B=50k, ~98% of comment activity) as the working scale.
+- **Absence-penalized membership is suspect on LONG panels**: over 2.5-4 years, entities that
+  legitimately rose or died mid-panel are penalized for weeks before birth / after death, so
+  full-panel membership drifts toward "always-existed" entities. Fine at T=30; at T≥136 use
+  member_window sensitivity checks (trailing-window membership) and larger buffers, and treat
+  membership choice as a reportable robustness dimension. The data can be reconstructed/
+  re-derived later; current derived panels are better than what preceded them but not final.
+- `fb_weekly_rebuilt` ids are **page names** (validated choice, but names can change or collide
+  over 3.5 years — name churn will masquerade as exit+entry; an account.id-keyed rebuild is a
+  documented future fix). Rebuilt panel has ~44.7k pages/week vs the trusted cutdown's ~14.4k —
+  the old panel was itself top-truncated; expect different tail behavior.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

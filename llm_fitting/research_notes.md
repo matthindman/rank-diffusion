@@ -237,6 +237,14 @@ pages/week), so an uncapped Reddit panel was a hidden cross-platform asymmetry.
 - A CLOSED membership set of B = 4K entities (best permanent rank on a 20-week
   train window) covers 97–98% of the weekly top-K in the 10 held-out weeks.
 
+**Censoring asymmetry (owner note, 2026-07-03):** coverage shares are only platform-wide
+where the underlying collection is a census. Reddit/Pushshift is complete — its top-K shares
+are true platform shares. CrowdTangle (FB, IG) tracked only pages above inclusion thresholds:
+"top-K = X% of interactions in the data" overstates platform coverage, possibly badly. The
+top-coverage rule still defines a clean estimand (the head of the tracked universe), but
+coverage percentages must never be compared across platforms as if commensurable, and paper
+text must say "of tracked activity" for FB/IG.
+
 **Design adopted (`restrict_universe`):** closed Lagrangian universe of the B=4K
 entities with the best ABSENCE-PENALIZED permanent rank (absent weeks count at
 the observation floor N_t+1 — averaging observed weeks only re-admits Eulerian
