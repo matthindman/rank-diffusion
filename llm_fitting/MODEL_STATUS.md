@@ -515,6 +515,57 @@ windows (0.91–0.99).
 
 
 
+### P2 — FB Spec-B on Era A dailies (THE HEADLINE): σ_obs identified for FB for the first time
+
+Machinery: `spec_b_curve` unchanged; FB daily loader with the P0 day guard (59 flagged
+days → 33 of 176 member-weeks dropped from daily estimation). Per-band entity counts
+813–1,494 vs ~1,167/band expected — the complete-positive-week skew toward big pages is
+MILD; the floor curve covers essentially the whole universe. FB daily residual σ_d =
+0.65 (head) → 0.95 (tail) with sum p² ≈ 0.19–0.24.
+
+**Identified floor (toeplitz, primary): σ_obs,B = 0.207 (rank ~665) → 0.370 (rank ~11k)**
+(iid variants 0.32→0.62, overstate ~1.6× as on Reddit).
+
+**Pre-registered predictions, scored:**
+1. *In-sample head metrics recover from raw-MD over-persistence* — **PASS**: 8/15 →
+   **10/15**, churn 0.122 → 0.081; RACF1 +0.115 → +0.069 (passes), RACF4 +0.103 →
+   +0.020 (passes), coll1 −0.219 → −0.155. (Still below temper+pool's 13/15: the VR
+   block degrades as the freed fast power moves to σ_trans; VR4/8 fail at +0.11.)
+2. *OOS calibrated scales move toward 1.0* — **PASS**: scale = 1.00 on **5/5 splits**
+   (both spec-B runs). Caveat: 1.0 is the grid top; held-out p90s run slightly under
+   (59 vs 69), so the unconstrained optimum may sit above 1.
+3. *Fitted σ_trans collapses toward 0 (Reddit lesson)* — **PARTIAL**: collapses exactly
+   at the head (σ_trans = 0.000, φ = 0 in the top knots — the FB weekly head model
+   reduces to OU home + identified noise, as on Reddit), but the tail keeps
+   σ_trans ≈ 0.57. The Reddit "whole component eliminated" result does NOT fully
+   generalize to FB.
+4. *Spec-A vs Spec-B curves agree (~25%, Reddit precedent)* — **FAIL beyond the head**:
+   head 0.207 vs 0.176 (~18% ✓), but Spec-A collapses BELOW the floor exactly in the
+   weakly-identified band (0.130 vs 0.253 at rank ~1.7k) and sits **40–65% ABOVE the
+   floor in the mid/tail** (0.60 vs 0.36 at rank ~10k). On FB, weekly-covariance σ_obs
+   and the daily noise floor are NOT measuring the same object outside the head —
+   excess fast within-week dynamics and/or posting intermittency load onto the weekly
+   "noise" term. This is a real cross-platform asymmetry of the measurement model,
+   not an estimation bug (the same estimator agreed within 25% on Reddit).
+
+**OOS movement gate (spec-B pinned, per-split train-only curves):**
+
+| spec | rel err | persistence | CI coverage | scale |
+|---|---|---|---|---|
+| spec-B unconditional | 0.211 ± 0.030 | 0.144 ± 0.030 | 40% | 1.0 ×5 |
+| spec-B + conditional state | 0.164 ± 0.049 | 0.144 ± 0.030 | 40% | 1.0 ×5 |
+| (P1 spec-A calibrated, reference) | **0.114 ± 0.046** | 0.144 ± 0.030 | 60% | 0.7–1.0 |
+
+Same ordering as Reddit 2e (spec-B matches distributionally, loses pointwise).
+**Operational FB spec stays gate-calibrated Spec-A** — but FB σ_obs is now bracketed
+by an independent instrument: the head value (~0.2) is validated, the raw-MD mid/tail
+values are too high, and the raw-MD sub-floor collapse at ranks 1–2k is confirmed as
+weak-identification pathology. Interesting inversion worth carrying forward: with
+spec-B pinned, state-conditioning HELPS FB (0.211→0.164) — with spec-A it hurt
+(0.114→0.140).
+
+## 3. The three corrected estimation pitfalls (do not regress)
+
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
    rank-band masks selected the wrong entities, flattening all rank curves. Fixed via `mean_rank_ids`;
    locked by `tests/test_rankdiff_regressions.py`. (FB 15/15→14/15 on the v4.3 model after the fix —
