@@ -235,6 +235,16 @@ class RankParams:
     #                          VR13 = 0.121, dLevel ~ white).
     phi2: np.ndarray | None = None         # medium-timescale transitory AR(1)
     sigma_trans2: np.ndarray | None = None  # (--two-scale; None/zeros = off, nested)
+    mix_b: float = 0.0  # permanent-share MIX exponent (--mix-hetero):
+    #                     sigma_perm,i = sigma_perm(z) * v_i^(b/2) / norm, so the
+    #                     permanent component disperses with spread b*s across
+    #                     entities (E[w]=1 renormalized -- pooled moments and the
+    #                     Eulerian structure preserved).  b=0 = movement-only
+    #                     temperament (legacy); b=1 = full structure B (2c).
+    #                     IDENTIFIED from the s(h) horizon moment: b = s(h*)/s(1),
+    #                     h* = longest horizon with >=8 non-overlapping changes
+    #                     (measured 2026-07-03: comments 1.08, FB Era A 1.02 --
+    #                     s(h) is flat, replicating 2c's finding).
 
 
 def _knot_grid(N: int, n_knots: int = 60) -> np.ndarray:
@@ -496,7 +506,7 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
              t_tails: bool = False,
              sigma_obs_fix: tuple[np.ndarray, np.ndarray] | None = None,
              md_vr: bool = False, stat_factor: bool = False,
-             two_scale: bool = False) -> RankParams:
+             two_scale: bool = False, mix_hetero: bool = False) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -524,9 +534,13 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     instead of integrating it into mu (see RankParams.factor_rho).
     two_scale: second (medium-timescale) transitory component, identified from
     the D(h) moments (requires md_lags AND md_vr; see A2_GRID note).
+    mix_hetero: per-entity permanent-share heterogeneity, exponent b identified
+    from the s(h) horizon moment (requires temper; see RankParams.mix_b).
     """
     if two_scale and not (md_lags and md_vr):
         raise ValueError("two_scale requires md_lags and md_vr (the D(h) moments)")
+    if mix_hetero and not temper:
+        raise ValueError("mix_hetero requires temper (b scales the v_i multiplier)")
     N = int(round(df.groupby("period")["entity_id"].size().mean()))
     z_knots = _knot_grid(N)
     nk = len(z_knots)
@@ -676,6 +690,7 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     mu_entity = df.groupby("entity_id")["X"].mean().to_numpy(dtype=float)
     bottom_mu = np.quantile(mu_entity, np.linspace(0.0, 0.10, 200))
     temper_s = estimate_temperament(df)["s"] if temper else 0.0
+    mix_b = estimate_mix_b(df, temper_s) if (mix_hetero and temper_s > 0) else 0.0
     t_df = float("inf")
     if t_tails:
         # variance share of the transitory CHANGE in the weekly change, for the
@@ -686,7 +701,7 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
         t_df = estimate_tail_df(df, w_share)
     return RankParams(z_knots, phi, sigma_trans, sigma_perm, sigma_obs, lam, exit_rate,
                       T_curve, 0.0, sigma_F, N, w0, bottom_mu, temper_s, kappa_z, t_df,
-                      factor_rho, phi2, sigma_trans2)
+                      factor_rho, phi2, sigma_trans2, mix_b)
 
 
 def _fill(cnt: np.ndarray, vals: np.ndarray) -> np.ndarray:
@@ -789,6 +804,35 @@ def estimate_temperament(df: pd.DataFrame, n_bands: int = 10, min_changes: int =
                                       index=s2_i.index))
 
 
+def estimate_mix_b(df: pd.DataFrame, s1: float, min_changes: int = 8) -> float:
+    """Mix exponent b for --mix-hetero, identified from the s(h) HORIZON moment
+    (2c): temperament dispersion measured from NON-OVERLAPPING h-week changes.
+    At long h the permanent component dominates the change variance, so
+    s(h)/s(1) ~ the relative dispersion of the permanent multiplier, i.e. b.
+    h* = longest of (13, 8, 4) with >= min_changes non-overlapping changes.
+    Approximation declared: the mapping ignores the (small) residual fast
+    share at h*; clip to [0, 1.5].  Never tuned to any scorecard metric."""
+    if s1 <= 0:
+        return 0.0
+    T = int(df["period"].max()) + 1
+    for h in (13, 8, 4):
+        if T // h >= min_changes + 1:
+            sub = df[df["period"] % h == 0].copy()
+            sub["period"] //= h
+            sh = estimate_temperament(sub, min_changes=min_changes)["s"]
+            return float(np.clip(sh / s1, 0.0, 1.5))
+    return 0.0
+
+
+def _sqw(sqv: np.ndarray, b: float, s: float) -> np.ndarray:
+    """sqrt of the permanent multiplier w = v^b / E[v^b] from the movement
+    multiplier's sqrt (sqv = sqrt(v_i)); E[v^b] = exp(b(b-1)s^2/2) analytic for
+    the lognormal draws (E[w] = 1 preserves band-level permanent variance)."""
+    if b <= 0:
+        return np.ones_like(sqv)
+    return sqv ** b / np.exp(b * (b - 1.0) * s * s / 4.0)
+
+
 def eb_vhat(df: pd.DataFrame, s: float | None = None, min_changes: int = 8) -> pd.Series:
     """Empirical-Bayes SHRUNKEN per-entity temperament multipliers v_hat_i.
 
@@ -852,6 +896,9 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
     ts = p.temper_s
     sqv = (np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, N)) if ts > 0
            else np.ones(N))
+    # permanent-share heterogeneity (--mix-hetero): w_i = v_i^b / E[v^b]
+    mix_b = getattr(p, "mix_b", 0.0)
+    sqw = _sqw(sqv, mix_b, ts) if (ts > 0 and mix_b > 0) else 1.0
 
     # stationary common level (--stat-factor): F applied as an AR(1) level at
     # OBSERVATION, innovation scaled so sd(dL) reproduces the measured sigma_F;
@@ -898,7 +945,7 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
                else (p.kappa if kappa is None else kappa))
         if np.any(np.asarray(kap) > 0):
             mu = mu - kap * (mu - home)
-        mu = mu + lam * F + sp * rng.standard_normal(N)
+        mu = mu + lam * F + sp * sqw * rng.standard_normal(N)
         xi = phi * xi + st * sqv * _tdraw(rng, p.t_df, N)
         if two:
             ph2 = _interp(zp, p, p.phi2)
@@ -921,6 +968,8 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
                 next_id += ne
                 if ts > 0:  # fresh temperament for reborn entities
                     sqv[ex] = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, ne))
+                    if mix_b > 0:
+                        sqw[ex] = _sqw(sqv[ex], mix_b, ts)
 
         if t < 0:
             continue
@@ -1101,7 +1150,7 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  md_lags: int | None = None, t_tails: bool = False,
                  spec_b: bool = False, md_vr: bool = False,
                  stat_factor: bool = False, two_scale: bool = False,
-                 **sim_kw) -> dict:
+                 mix_hetero: bool = False, **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -1122,7 +1171,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
             + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
             + (" spec-B" if spec_b else "") + (" vr-mom" if md_vr else "")
             + (" stat-factor" if stat_factor else "")
-            + (" two-scale" if two_scale else ""))
+            + (" two-scale" if two_scale else "")
+            + (" mix-b" if mix_hetero else ""))
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
           f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}{opts}\n{'='*72}")
 
@@ -1143,7 +1193,11 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
               f"{cur['sigma_obs'][0]:.3f}..{cur['sigma_obs'][-1]:.3f} (head..tail)")
     p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                  md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
-                 md_vr=md_vr, stat_factor=stat_factor, two_scale=two_scale)
+                 md_vr=md_vr, stat_factor=stat_factor, two_scale=two_scale,
+                 mix_hetero=mix_hetero)
+    if mix_hetero:
+        print(f"  mix heterogeneity: b = {p.mix_b:.2f} "
+              f"(s(h*)/s(1) horizon moment; permanent spread = b*s = {p.mix_b * p.temper_s:.2f})")
     if two_scale:
         print(f"  two-scale: phi2 = {p.phi2[0]:.2f}..{p.phi2[-1]:.2f}  "
               f"sigma_trans2 = {p.sigma_trans2[0]:.3f}..{p.sigma_trans2[-1]:.3f} "
@@ -1244,6 +1298,9 @@ if __name__ == "__main__":
     ap.add_argument("--two-scale", action="store_true",
                     help="second (medium-timescale) transitory component, identified "
                          "from the D(h) moments (requires --md-lags and --md-vr)")
+    ap.add_argument("--mix-hetero", action="store_true",
+                    help="per-entity permanent-share heterogeneity: sigma_perm scales "
+                         "by v^(b/2), b = s(h*)/s(1) horizon moment (requires --temperament)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
@@ -1269,6 +1326,6 @@ if __name__ == "__main__":
                      temper=args.temperament, min_knot_n=args.min_knot_entities,
                      md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
                      md_vr=args.md_vr, stat_factor=args.stat_factor,
-                     two_scale=args.two_scale,
+                     two_scale=args.two_scale, mix_hetero=args.mix_hetero,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)

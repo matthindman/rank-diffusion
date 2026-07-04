@@ -938,6 +938,78 @@ python llm_fitting/minimal_rankdiff.py reddit_comments --top-k 12500 --temperame
     --min-knot-entities 8 --md-lags 6 --t-tails --md-vr --stat-factor --two-scale
 ```
 
+## 2l. 2026-07-03 — Mix heterogeneity (`--mix-hetero`): structure B measured in, FB Era A reaches 15/15, comments conditional gate at 100% coverage
+
+**The fix (one measured parameter, nested).** Per-entity permanent-share
+heterogeneity: σ_perm,i = σ_perm(z̄)·v_i^(b/2)/norm (E[w]=1 — pooled moments and
+Eulerian structure preserved; b=0 = movement-only legacy, b=1 = 2c's full structure
+B). **b is identified from the s(h) horizon moment** (2c's own instrument): temperament
+dispersion from non-overlapping h-week changes, b = s(h*)/s(1). Measured this
+session: comments s(1..13) = 0.692/0.687/0.690/0.703/0.747 → **b = 1.08**; FB Era A
+s(1..8) = 0.890/0.889/0.899/0.912 → **b = 1.02**. s(h) is FLAT on a 136-week census
+metric — structure B is the measurement, not an assumption. Rationale for why
+movement-only was wrong under the current fits: the permanent component carries ~51%
+of 1-week change variance at the head, so scaling only the fast components
+under-disperses entity variances by ~half at every horizon. Implementation: sqw
+multiplies the σ_perm innovations in `simulate` + both cohort sims (vhat path uses
+empirical-mean normalization of v̂^b — declared); rng streams gated; 3 new unit
+tests (b-recovery separates b=1 from b=0 on synthetic panels; E[w]=1; b=0
+byte-identical). Suite 41 passed; legacy guard 14/15 / 0.013 unchanged.
+
+**Pre-registered predictions, scored:**
+1. *Sim cross-sectional variance dispersion rises to the empirical level* — **PASS**:
+   sd(log 1-wk change-var) 0.612 → 0.697 vs empirical 0.745 (a distribution-goal
+   moment the movement-only spec could never produce).
+2. *Median VR13 moves partially (~0.02–0.04), not fully* — **PASS as predicted**:
+   sim median VR13 0.236 → 0.216 (emp 0.136).
+3. *No OOS displacement-tail explosion (the 2c structure-B failure mode)* — **PASS**:
+   held-out p90s 25/37/56 vs emp 26/34/50; the κ-confined home + T=136 tame the
+   lognormal tail that blew up on subs T=30.
+4. *Churn/dRank/Pers hold* — PASS (comments churn 0.034, dRank13 +2.0, Pers +3..+5).
+
+**In-sample:**
+
+| panel | spec | result |
+|---|---|---|
+| **FB Era A** | md-vr + stat-factor + two-scale + **mix (b=1.02)** | **15/15 — the first legitimate perfect goal-1 card** (the 2020-era 15/15 relied on the band-alignment bug). Whole panel essentially exact: VR −.007/+.009/+.008/+.008, RACF1 +0.005, RACF13 −0.013. Churn err 0.072 — head collisions still under-predicted (coll1 −0.167): goal-2 head churn is now FB's only open block. |
+| comments | md-vr + stat-factor + **mix (b=1.08)** | 10/15, churn 0.034; VR13 sim 0.232 → **0.218**, RACF1 +0.014 (exact), dRank13 +2.0; R2_4 crosses the 0.08 knife-edge (+0.084, was +0.078) costing a point; RACF13 −0.125 persists. |
+
+**OOS movement gates (comments; the acceptance criterion):**
+
+| spec | rel err | persistence | coverage |
+|---|---|---|---|
+| conditional state (2f-style baseline) | 0.170 ± 0.063 | 0.160 ± 0.068 | 60% |
+| **conditional state + mix** | **0.159 ± 0.070** | 0.160 ± 0.068 | **100%** |
+| unconditional + mix | 0.189 ± 0.085 | 0.160 ± 0.068 | 80% |
+
+**Best comments OOS result recorded**: at par with persistence with 100% bootstrap-CI
+coverage and the last-split held-out distribution EXACT at every horizon (dRank1
+6/23 vs 6/26; dRank4 8/33 vs 8/34; dRank13 11/50 vs 11/50) — comments now sits where
+subs sat at 2d ("satisfies the distributional gate criteria"), on a panel 4.5× longer
+with a regime change inside it.
+
+**Adoption:** recommend `--mix-hetero` in both platforms' working specs (FB Era A
+full stack → 15/15; comments 2j+mix → best gate profile). Defaults unchanged
+(committed baselines preserved). **Cumulative comments VR13 decomposition:** 0.355
+(P3) → 0.284 (κ identified, 2i) → 0.232 (stationary factor, 2j) → **0.218 (mix, 2l)**
+vs emp 0.136 — the remaining ~0.08 now points at the estimation-vs-scorecard
+POPULATION asymmetry (the 70%-presence complete-column scoring filter selects
+empirically quiet entities; sim tracked columns have no such selection) and the
+still-slightly-light dispersion tail (0.697 vs 0.745), not at model dynamics.
+Sharpest remaining items: (1) population-matched scoring or estimation-side
+presence filters; (2) FB goal-2 head collisions (coll1 −0.167 at 15/15 goal-1 —
+a churn mechanism, not a variance mechanism).
+
+Reproduction:
+```
+python llm_fitting/minimal_rankdiff.py facebook_a --top-k 3500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr --stat-factor --two-scale --mix-hetero
+python llm_fitting/minimal_rankdiff.py reddit_comments --top-k 12500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr --stat-factor --mix-hetero
+python llm_fitting/rankdiff_kalman.py reddit_comments --oos --top-k 12500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --mix-hetero --conditional state
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

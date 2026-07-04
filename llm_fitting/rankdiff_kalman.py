@@ -485,6 +485,8 @@ def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
     # persistent entity volatility multiplier (temperament) -- see mrd.simulate
     ts = getattr(p, "temper_s", 0.0)
     sqv = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, N)) if ts > 0 else np.ones(N)
+    mix_b = getattr(p, "mix_b", 0.0)
+    sqw = mrd._sqw(sqv, mix_b, ts) if (ts > 0 and mix_b > 0) else 1.0
     st2_arr = getattr(p, "sigma_trans2", None)
     two = st2_arr is not None and np.any(np.asarray(st2_arr) > 0)
     xi2 = np.zeros(N) if two else 0.0
@@ -500,7 +502,7 @@ def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
             mu = mu - kappa * (mu - home)
         elif getattr(p, "kappa_z", None) is not None:
             mu = mu - np.interp(zp, zk, p.kappa_z) * (mu - home)
-        mu = mu + sp * rng.standard_normal(N)
+        mu = mu + sp * sqw * rng.standard_normal(N)
         xi = phi * xi + st * sqv * mrd._tdraw(rng, getattr(p, "t_df", float("inf")), N)
         if two:
             xi2 = (np.interp(zp, zk, p.phi2) * xi2
@@ -515,6 +517,8 @@ def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
             ids[ex] = np.arange(next_id, next_id + ne); next_id += ne
             if ts > 0:
                 sqv[ex] = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, ne))
+                if mix_b > 0:
+                    sqw[ex] = mrd._sqw(sqv[ex], mix_b, ts)
         if t < 0:
             continue
         X = mu + xi + (xi2 if two else 0.0) + so * sqv * rng.standard_normal(N)
@@ -586,6 +590,17 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
         sqv = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, N))
     else:
         sqv = np.ones(N)
+    mix_b = getattr(p, "mix_b", 0.0)
+    # vhat path: v-hats are EB-shrunken (lighter tail than the LN prior), so
+    # normalize w = v^b empirically to mean 1 instead of analytically
+    if ts > 0 and mix_b > 0:
+        if vhat is not None and len(vhat):
+            w_raw = sqv ** (2.0 * mix_b)
+            sqw = np.sqrt(w_raw / max(w_raw.mean(), 1e-12))
+        else:
+            sqw = mrd._sqw(sqv, mix_b, ts)
+    else:
+        sqw = 1.0
     st2_arr = getattr(p, "sigma_trans2", None)
     two = st2_arr is not None and np.any(np.asarray(st2_arr) > 0)
     xi2 = np.zeros(N) if two else 0.0
@@ -601,7 +616,7 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
             mu = mu - kappa * (mu - home)
         elif getattr(p, "kappa_z", None) is not None:
             mu = mu - np.interp(zp, zk, p.kappa_z) * (mu - home)
-        mu = mu + sp * rng.standard_normal(N)
+        mu = mu + sp * sqw * rng.standard_normal(N)
         xi = phi * xi + st * sqv * mrd._tdraw(rng, getattr(p, "t_df", float("inf")), N)
         if two:
             xi2 = (np.interp(zp, zk, p.phi2) * xi2
@@ -616,6 +631,8 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
             ids[ex] = np.arange(next_id, next_id + ne); next_id += ne
             if ts > 0:
                 sqv[ex] = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, ne))
+                if mix_b > 0:
+                    sqw[ex] = mrd._sqw(sqv[ex], mix_b, ts)
         X = mu + xi + (xi2 if two else 0.0) + so * sqv * rng.standard_normal(N)
         order = np.argsort(-X); rank = np.empty(N, np.int64); rank[order] = np.arange(1, N + 1)
         if t == 0:
@@ -712,17 +729,17 @@ def _build_params_on(df_tr):
 
 def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None,
                    md_lags=None, t_tails=False, sigma_obs_fix=None, md_vr=False,
-                   two_scale=False):
+                   two_scale=False, mix_hetero=False):
     """Fast closed-form variance-partition estimator (per split, for rolling CV)."""
     return mrd.estimate(df_tr, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                         md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
-                        md_vr=md_vr, two_scale=two_scale)
+                        md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero)
 
 
 def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
-                 md_vr=False, two_scale=False):
+                 md_vr=False, two_scale=False, mix_hetero=False):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -742,6 +759,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
             + (" spec-B" if spec_b else "") + (" vr-mom" if md_vr else "")
             + (" two-scale" if two_scale else "")
+            + (" mix-b" if mix_hetero else "")
             + (f" COND:{conditional}" if conditional else ""))
     print(f"  T={T}  test_len={test_len}  train-end origins={origins}{uni}{opts}")
 
@@ -770,7 +788,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             so_fix = (cur["z"], cur["sigma_obs"])
         p = _estimate_fast(df_tr, obs_frac, temper=temper, min_knot_n=min_knot_n,
                            md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=so_fix,
-                           md_vr=md_vr, two_scale=two_scale)
+                           md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero)
         scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
         p = replace_obs(p, scale)
         ed, erf, ec = emp_dist(df_te, hor)            # held-out truth
@@ -920,6 +938,9 @@ if __name__ == "__main__":
     ap.add_argument("--two-scale", action="store_true",
                     help="second (medium-timescale) transitory component "
                          "(requires --md-lags and --md-vr; see minimal_rankdiff)")
+    ap.add_argument("--mix-hetero", action="store_true",
+                    help="per-entity permanent-share heterogeneity (b from the s(h) "
+                         "horizon moment; requires --temperament)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--conditional", choices=("state", "vhat"), default=None,
@@ -938,7 +959,7 @@ if __name__ == "__main__":
                          temper=args.temperament, min_knot_n=args.min_knot_entities,
                          md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
                          conditional=args.conditional, md_vr=args.md_vr,
-                         two_scale=args.two_scale)
+                         two_scale=args.two_scale, mix_hetero=args.mix_hetero)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)
