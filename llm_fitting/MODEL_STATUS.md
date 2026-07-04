@@ -1107,6 +1107,56 @@ FB head collisions are hypersensitive to the amplitude scaling of the top
 entities' permanent volatility. The coll1 gap may need NO new mechanism, just the
 head-amplitude interaction (near-tie gap structure × w_i of the specific head
 pages) — investigate before building any burst machinery.
+_[SUPERSEDED 2026-07-03 by §2o: the b-sensitivity was MC noise (seed SD ±0.15);
+the real mechanism is the top-2 GAP, and the root cause is election-week
+initialization — see 2o.]_
+
+## 2o. 2026-07-03 — coll1 investigated: the b-sensitivity was MC noise; the real story is head-GAP initialization, and the dynamics are exonerated
+
+Three-part investigation (30-seed MC distributions; empirical head anatomy;
+conditional-sim test) of the 2n lead. All numbers this session; FB Era A, full
+2l stack (s=0.890, b=1.024, ρ_L=0.48).
+
+**(1) The 2n "hypersensitivity to b" is RETRACTED — it was Monte Carlo noise.**
+coll1 has seed SD **±0.15** (30 seeds): b=1.02 → 0.421 ± 0.155, b=1.00 → 0.428 ±
+0.150 (statistically identical); the 5-rep values 0.351/0.478 both sit inside one
+distribution. Corollary for reading ALL past scorecards: head-collision rows at
+5 reps carry ~±0.07 SE each (coll1), injecting ~±0.03–0.04 noise into churn err —
+5-rep coll1 point-diffs at the head are not interpretable without bands.
+
+**(2) The real systematic shortfall is modest and GAP-driven, not amplitude-driven.**
+Sim means vs emp: coll1 0.425 vs 0.518 ± 0.054 (emp at ~p78 of the seed
+distribution), coll2 0.655 vs 0.765, coll5 0.822 vs 0.906 — a correlated ~1–1.7σ
+family, not the alarming −0.17 point estimate. Seed-level corr(top-2 gap, coll1)
+= **−0.71**, and the sim's stationary top-2 log-gap is **0.77 ± 0.31 vs the
+empirical 0.217** (stationary all era: quarter means 0.215/0.228/0.253/0.174).
+The 2n amplitude-occupancy story is REFUTED by measurement: empirical rank-1
+occupants are QUIETER than typical — occupancy-weighted v̂ = 0.47 vs population
+median 0.71 (19 distinct #1 pages in 86 weeks: Ben Shapiro 20 wks, Occupy
+Democrats 19, ...). The head churns because top gaps are TINY, not because
+occupants are loud. (Mix-hetero still helps head churn on average: b=0 gives
+0.376/0.581/0.796.)
+
+**(3) Root cause: ELECTION-WEEK INITIALIZATION; the model's dynamics are fine.**
+The unconditional sim seeds w0 and the OU homes from period 0 = **2020-11-02,
+election week, whose top-2 gap (0.511) is 2.4× the era norm** — the home
+anchoring then holds the head near that anomalous spacing while near-zero head κ
+lets realized gaps wander wider (hence 0.77 ± 0.31). The decisive test: the
+CONDITIONAL sim (real filtered gap structure) gives **coll1 = 0.576–0.584, coll2
+= 0.734, coll5 = 0.904** vs emp 0.518 ± 0.054 / 0.765 / 0.906 — all within bands.
+**Given the real state, the fitted dynamics produce the right head churn. No new
+churn mechanism is warranted; 2m item #2 is closed as understood.**
+
+**Recommendations (flagged, not implemented — each is a new experiment):**
+1. Read unconditional head-collision rows with MC bands (or reps ≥ 20), and prefer
+   the conditional diagnostic for head-churn claims.
+2. Candidate initialization fix: seed w0/homes from the era-median rank-size curve
+   (T_curve) or a mid-panel week instead of period 0 — would de-confound every
+   unconditional head metric on panels whose first week is anomalous (FB Era A
+   starts at a US election; comments period 0 is unremarkable, and comments coll1
+   was near-exact, consistent with this account).
+3. This likely also explains part of the FB churn-err bounce across specs
+   (0.038–0.122): it is ±0.04 MC noise on top of an initialization bias.
 
 ## 3. The three corrected estimation pitfalls (do not regress)
 
