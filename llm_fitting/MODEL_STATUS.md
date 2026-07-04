@@ -1010,6 +1010,59 @@ python llm_fitting/rankdiff_kalman.py reddit_comments --oos --top-k 12500 --temp
     --min-knot-entities 8 --md-lags 6 --t-tails --mix-hetero --conditional state
 ```
 
+## 2m. 2026-07-03 — END-OF-DAY SYNTHESIS (supersedes 2h's next-actions list; 2h's cross-panel table still stands for the pre-2i baselines)
+
+**Where the model sits.** One generative law — OU home (κ(z) D(h)-identified) +
+fast [+ medium] transitory + identified measurement noise + ONE entity amplitude
+(v_i, spread s, scaling permanent AND transitory equally: b ≈ 1, measured) +
+stationary common level (ρ_L measured) + Gabaix rebirth on a pre-registered
+top-coverage universe. Every parameter is identified from a declared moment or an
+independent instrument; nothing is tuned to a score.
+
+**Current best specs and results (all this session, era-disciplined):**
+
+| panel | in-sample spec | goal-1 | churn | OOS spec | OOS verdict |
+|---|---|---|---|---|---|
+| FB Era A | full stack: md-vr + stat-factor + two-scale + mix (b=1.02) | **15/15** (first legitimate perfect card) | 0.072 | P1 spec-A calibrated (md6, no vr/mix) | **beats persistence 5/5** (0.114 ± 0.046 vs 0.144 ± 0.030), cov 60% |
+| Reddit comments | md-vr + stat-factor + mix (b=1.08) | 10/15 (R2_4 at +0.084 knife-edge), churn 0.034 | 0.034 | md6 + mix + conditional state | **at par, 100% coverage** (0.159 ± 0.070 vs 0.160 ± 0.068); last-split held-out distribution exact at all horizons |
+| Reddit subs | 2d/2e stack (locked) | 14/15 | 0.053–0.074 | conditional state (2f) | **beats persistence 4/5** (0.118 vs 0.168), cov 100% |
+
+CAVEAT (declared): FB Era A's 15/15 stack is IN-SAMPLE; its OOS behavior is
+untested and expected fragile (md-vr regressed FB gates on short train windows —
+2i). FB's operational OOS spec remains P1's. Legacy guard 14/15 / 0.013 at every
+commit; suite 41 tests green.
+
+**Remaining problems, ranked (with the honest attribution):**
+1. *Estimation-vs-scorecard population asymmetry* (comments VR13 residual ~0.08 and
+   likely RACF13 −0.125): the scoring filter (70% presence, complete columns)
+   selects empirically quiet entities; the sim has no observation floor/missingness.
+   This is a MEASUREMENT-ALIGNMENT problem, not dynamics.
+2. *FB goal-2 head collisions* (coll1 −0.167 at 15/15 goal-1): rank-1 changes hands
+   52%/wk empirically vs 35% sim — a head churn mechanism (near-ties, within-week
+   burst aggregation), plausibly the same physics as the Spec-A/Spec-B deep-tail
+   divergence (posting intermittency).
+3. *Data reconstruction* (owner decisions): comments 2021-07..2022-12 resume;
+   single-source 2023 FB rebuild; account.id-keyed FB rebuild.
+4. *σ_obs below the universe head*: "identified at the head, bracketed below" until
+   an intermittency-aware floor exists.
+
+**Next steps and their complexity tradeoffs (recommendation: spend the budget on
+elegance + measurement alignment + breadth, NOT more dynamics):**
+- *b = 1 restriction test* — REDUCES complexity. If b=1 holds (measured 1.02/1.08),
+  the model factorizes: one rank-conditional process × one entity amplitude — the
+  paper's law, and one fewer parameter.
+- *Population-matched scoring* (apply the empirical observation floor to sim
+  diagnostics) — zero new model parameters; should close the last honest comments
+  residual; the "complexity" is in the measurement model where it belongs.
+- *Breadth* (Wikipedia pageviews / YouTube / GitHub stars / app charts through the
+  unchanged pipeline) — zero model complexity, one PLATFORMS entry each; this is
+  what the target literature rewards most.
+- *FB head-churn mechanism* — REAL new complexity (burst/near-tie machinery for one
+  scorecard row); defer until the intermittency floor work motivates it
+  independently.
+- *Slowly-drifting temperament, comments two-scale, deeper conditional machinery* —
+  diminishing returns; park.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
@@ -1055,3 +1108,16 @@ IG `llm_fitting/ig_weekly_ranked_top50k.parquet` (use top-20k; negative control 
 > displacement. We combine a rank-based diffusion with Gabaix rebirth for the ladder and a state-space
 > observation model (permanent + transitory + measurement) for the dynamics, unified across platforms
 > with parameters that differ by regime, and we validate movement out-of-sample.
+
+_Addendum 2026-07-03 (post 2i–2l; venue analysis in research_notes §6c):_ the
+sharper spine, if the b = 1 restriction holds, is a **Q-model-like law for
+attention**: every endpoint follows the same rank-conditional stochastic process up
+to one entity-specific amplitude (lognormal, spread s), with measurement noise
+identified from an independent daily-replication instrument and movement validated
+out of sample against persistence — across two platforms, three metrics, and a
+segmented collection instrument. Differentiators vs the ranking-dynamics
+literature (Iñiguez et al. 2022; Blumm et al. 2012): identification of the
+measurement model, out-of-sample distributional gates, and instrument forensics.
+Main gap to close for a PNAS-class submission: SYSTEM BREADTH (add 2–4 ranked
+systems through the unchanged pipeline) and data-collapse figures; not more
+dynamics.

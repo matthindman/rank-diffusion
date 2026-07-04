@@ -534,6 +534,96 @@ bootstrap-CI coverage — the first specification to clear the gate's full bar.
 
 ---
 
+## 6c. The VR Over-Persistence Arc (2026-07-03): layered diagnosis, measured fixes, and what it taught the model
+
+Full numbers: MODEL_STATUS §2i–§2l. This section records the METHOD — how one
+persistent error pattern (simulated 4–13-week variance ratios far above empirical,
+on every platform, surviving σ_obs identification) was decomposed into four layers,
+each measured before it was coded, two of which were artifacts and two of which
+were real structure.
+
+**The decomposition (comments VR13, empirical 0.136):**
+
+| layer | sim VR13 | nature | fix | identification moment |
+|---|---|---|---|---|
+| baseline (md6) | 0.355 | artifact: κ unidentified | `--md-vr` | D(h) = Var(h-wk change), h ∈ {2,4,8,13} — SSE(a) flat under γ₀..γ₆ alone, sharply V-shaped with D(h) |
+| + κ identified | 0.284 | artifact: integrated common factor | `--stat-factor` | measured platform-level path: level VR13 = 0.121, ΔL white → stationary AR(1) level, ρ_L per platform |
+| + stationary factor | 0.232 | structure: missing medium timescale (FB-binding) | `--two-scale` | D(h) curvature vs near-zero γ tail (B₂ = V₂(1−φ₂)² tiny) — slow-home grid for label separation |
+| + mix heterogeneity | 0.218 | structure: permanent-share heterogeneity | `--mix-hetero` | s(h) horizon moment: b = s(h*)/s(1); FLAT s(h) ⇒ b ≈ 1 |
+| residual | ~0.08 | measurement/scoring | (open) | estimation-vs-scorecard population asymmetry: the 70%-presence complete-column scoring filter selects empirically quiet entities; the sim has no missingness process |
+
+**Methodological lessons worth keeping:**
+1. *Long-horizon variance moments identify slow reversion where short-lag
+   autocovariances cannot* (Cochrane 1988; Poterba & Summers 1988; Fama & French
+   1988). The OU tail is spread thinly over many lags (each γ_k ≈ noise) while the
+   variance of long differences aggregates it. Corollary: the moment set needs
+   T ≫ h·k — md-vr degrades short-panel fits (subs 14→13, FB OOS regression), so it
+   is a LONG-PANEL tool, gated by the OOS acceptance criterion.
+2. *Pooled vs median statistics diagnose heterogeneity*: the estimator fits pooled
+   moments; the scorecard reports the median entity. When pooled fits and the median
+   misses, the gap is a mixing distribution or a population-selection asymmetry —
+   not dynamics. Both appeared here (mix b; the open scoring-filter item).
+3. *Simulator assumptions are moment claims*: integrating the common factor into μ
+   asserts a random-walk platform level; measurement said mean-reverting (level
+   VR13 = 0.121). Every "plumbing" choice in a generative model is testable.
+4. *Each fix pre-registered predictions and was validated against all three goals*
+   (aggregate structure, OOS movement, parsimony), with the OOS gate as the
+   binding acceptance criterion — it rejected md-vr for FB gates (2i) and accepted
+   mix-hetero (comments conditional 0.159 vs 0.160, 100% coverage).
+
+**The b ≈ 1 finding (structure B measured).** s(h) — temperament dispersion from
+non-overlapping h-week changes — is flat: comments 0.692→0.747 (h=1→13), FB Era A
+0.890→0.912 (h=1→8) ⇒ b = 1.08 / 1.02. With b = 1 the model FACTORIZES: every
+entity follows the same rank-conditional stochastic process up to ONE entity-specific
+amplitude v_i (lognormal, spread s). This is the attention-dynamics analogue of
+Sinatra et al.'s (2016) Q-model of scientific careers (random-impact rule × one
+person-specific multiplier) — a law-like, publishable statement, and a PARSIMONY
+opportunity: testing the b = 1 restriction would remove a parameter.
+
+### Publication positioning (2026-07-03 assessment)
+
+**Closest published relatives.** (i) Iñiguez, Pineda, Gershenson & Barabási,
+"Dynamics of ranking" (Nat. Comms 2022): ~30 ranking lists, universal
+openness/churn regularities, a 2-parameter displacement+replacement model —
+qualitative stylized-fact reproduction, no measurement-error model, no
+out-of-sample forecasting. (ii) Blumm et al. (PRL 2012) ranking dynamics;
+(iii) attention-dynamics classics: Wu & Huberman (PNAS 2007) collective attention
+decay, Lorenz-Spreen et al. (Nat. Comms 2019) accelerating attention; (iv) the
+size-distribution tradition (Gabaix 1999; Luttmer 2007; Axtell, Science 2001);
+(v) Sinatra et al. (Science 2016) Q-model — the entity-amplitude precedent.
+
+**Where we are stronger than the field standard:** (a) identification discipline —
+σ_obs from an independent daily-replication instrument, κ from long-horizon
+variances, b from the horizon-dispersion moment: nothing in the ranking-dynamics
+literature separates measurement noise from dynamics at all; (b) out-of-sample
+validation against a persistence baseline with distributional coverage — rare
+anywhere in this literature; (c) instrument forensics (CrowdTangle era
+segmentation, census-vs-censored coverage language) — reviewers who care about
+data quality will notice; (d) quantitative moment matching (FB Era A 15/15)
+rather than stylized-fact reproduction.
+
+**Where we are weaker:** (a) breadth — 2 platforms / 3 metrics vs their ~30
+systems; universality is THE currency at PNAS/Nat Comms; (b) apparent complexity —
+per-knot curves read as "a big state-space fit" to a physics referee; the counter
+is that the MECHANISM list is short (slow home + reversion, fast/medium
+transitory, measurement noise, one entity amplitude, Gabaix rebirth) and the
+curves are nonparametric rank-dependence, but the b=1 factorization is the framing
+that makes this legible; (c) no figures yet — this literature communicates through
+data collapse (displacement distributions across horizons/platforms on one curve;
+v̂_i distributions collapsing onto one lognormal across metrics; rank-size
+stationarity vs occupant churn).
+
+**Steering recommendation:** spend the next complexity budget on BREADTH and
+ELEGANCE, not dynamics: (1) test the b=1 restriction (parsimony win + the paper's
+law); (2) population-matched scoring (closes the last honest residual with zero
+new model parameters); (3) 2–4 cheap additional ranked systems through the
+unchanged pipeline (Wikipedia pageviews, YouTube, GitHub stars, app charts) — each
+is one PLATFORMS entry; (4) the figure set above. The paper's spine: *one
+rank-conditional law, one entity amplitude, identified measurement model,
+validated out of sample — across platforms, metrics, and instrument eras.*
+
+---
+
 ## 7. Key Sources
 
 ### Signal extraction & pile-up problem
@@ -565,6 +655,18 @@ bootstrap-CI coverage — the first specification to clear the gate's full bar.
 - Klosin (2024) — Dynamic Biases of Static Panel Data Estimators. [link](https://klosins.github.io/Klosin_JMP.pdf)
 - Ijiri & Simon (1977) — Skew Distributions and Business Firms. North-Holland.
 
+### Long-horizon variance / mean-reversion identification (added 2026-07-03, §6c)
+- Poterba & Summers (1988) — Mean Reversion in Stock Prices. JFE. [link](https://economics.mit.edu/sites/default/files/publications/1-s2.0-0304405X88900219-main.pdf)
+- Fama & French (1988) — Permanent and Temporary Components of Stock Prices. JPE. [link](https://www.journals.uchicago.edu/doi/10.1086/261535)
+- (Cochrane 1988 above is the variance-of-long-differences foundation.)
+
+### Ranking / attention dynamics venue landscape (added 2026-07-03, §6c)
+- Iñiguez, Pineda, Gershenson & Barabási (2022) — Dynamics of Ranking. Nature Communications. [link](https://www.nature.com/articles/s41467-022-29256-x)
+- Blumm et al. (2012) — Dynamics of Ranking Processes in Complex Systems. PRL. [link](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.109.128701)
+- Wu & Huberman (2007) — Novelty and Collective Attention. PNAS. [link](https://www.pnas.org/doi/10.1073/pnas.0704916104)
+- Lorenz-Spreen et al. (2019) — Accelerating Dynamics of Collective Attention. Nature Communications. [link](https://www.nature.com/articles/s41467-019-09311-w)
+- Sinatra et al. (2016) — Quantifying the Evolution of Individual Scientific Impact (the Q-model; entity-amplitude precedent for b=1). Science. [link](https://www.science.org/doi/10.1126/science.aaf5239)
+
 ### Other
 - Gabaix (2016) — Power Laws in Economics: An Introduction. JEP. [link](https://www.aeaweb.org/articles?id=10.1257%2Fjep.30.1.185)
 - Morley, Nelson & Zivot (2003) — Why BN and UC Decompositions Differ. REStat. [link](https://ideas.repec.org/a/tpr/restat/v85y2003i2p235-243.html)
@@ -573,4 +675,4 @@ bootstrap-CI coverage — the first specification to clear the gate's full bar.
 
 ---
 
-*Last updated: 2026-03-12. Generated during v4.3 development session.*
+*Last updated: 2026-07-03 (§6c + venue landscape). Originally generated during the v4.3 development session (2026-03-12).*

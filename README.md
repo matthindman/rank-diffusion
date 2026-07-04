@@ -36,39 +36,48 @@ moment-identified scalar, s ≈ 0.9 on both platforms), and Gabaix rebirth at th
 bottom of a pre-registered top-coverage universe (Reddit K=5,000 ≈ 90% of weekly
 karma; FB K=3,500).
 
-Headline (Reddit): in-sample 14/15 with rank displacement exact at 1/4/13-week
-horizons; the conditional out-of-sample forecast (real filtered initial state +
-per-entity temperament) **beats the persistence baseline** — rel err 0.118 ± 0.061
-vs 0.168 ± 0.004, winning 4 of 5 rolling splits with 100% bootstrap-CI coverage.
-Facebook (2026-07-03, Era-A slice of the rebuilt CrowdTangle panel, instrument-era
-disciplined — MODEL_STATUS §2g/§2h): the unconditional model now **beats persistence
-on all 5 rolling splits** — 0.114 ± 0.046 vs 0.144 ± 0.030 — with calibrated
-σ_obs scale = 1.0 on 4/5 splits (self-consistent observation model), and σ_obs is
-now Spec-B-identified from FB dailies at the universe head (0.21→0.37 "of tracked
-activity"). Cross-metric check on Reddit COMMENT karma (T=136 census): parameters
-transport (κ shape, floor shape, t_df) but s = 0.69 (metric-dependent) and the
-long panel exposes a structural 4–13-week reversion deficit (VR block) that σ_obs
-identification does not fix — the sharpest open modeling item (§2h).
+Headline (2026-07-03, MODEL_STATUS §2i–§2m): the long-standing 4–13-week
+over-persistence was decomposed into four measured layers — unidentified home
+reversion (fixed: long-horizon variance moments, `--md-vr`), an integrated common
+factor the data contradicts (fixed: measured stationary level, `--stat-factor`), a
+missing medium timescale (fixed on FB: `--two-scale`), and permanent-share
+heterogeneity (`--mix-hetero`: σ_perm scales with the SAME entity amplitude as the
+transitory — b = s(h*)/s(1) measured at 1.02–1.08, i.e. **structure B holds**).
+Results: **Facebook Era A 15/15 in-sample** (first legitimate perfect goal-1 card,
+"of tracked activity") with OOS **beating persistence on all 5 splits** (0.114 ±
+0.046 vs 0.144 ± 0.030, spec-A calibrated); **Reddit comments** (T=136 census)
+conditional gate at par with persistence with **100% bootstrap-CI coverage**
+(0.159 ± 0.070 vs 0.160 ± 0.068, last-split held-out displacement exact at all
+horizons); Reddit submissions unchanged (conditional **beats persistence 4/5**,
+0.118 vs 0.168). Every parameter is moment-identified or instrument-identified;
+none is tuned to a score. Remaining: estimation-vs-scorecard population asymmetry
+(comments), FB head collisions, and system breadth (§2m).
 
 **Canonical status record: [`llm_fitting/MODEL_STATUS.md`](llm_fitting/MODEL_STATUS.md)**
 (model spec, locked-in results, corrected pitfalls, reproduction commands).
 
 ```sh
-python -m pytest tests/ -q                        # regression suite
+python -m pytest tests/ -q                        # regression suite (41 tests)
 
-# in-sample scorecard (Reddit, full stack)
-python llm_fitting/minimal_rankdiff.py reddit --top-k 5000 --temperament \
-    --min-knot-entities 8 --md-lags 6 --t-tails --spec-b
+# FB Era A working spec — 15/15 in-sample (goal-1)
+python llm_fitting/minimal_rankdiff.py facebook_a --top-k 3500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr --stat-factor --two-scale --mix-hetero
 
-# OOS movement gate (the acceptance criterion); --conditional state|vhat
-# forecasts from the real filtered end-of-train state (+ per-entity temperament)
+# Reddit comments working spec (census, T=136)
+python llm_fitting/minimal_rankdiff.py reddit_comments --top-k 12500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr --stat-factor --mix-hetero
+
+# OOS movement gates (the acceptance criterion)
+python llm_fitting/rankdiff_kalman.py facebook_a --oos --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails                     # 0.114 vs 0.144, 5/5
+python llm_fitting/rankdiff_kalman.py reddit_comments --oos --top-k 12500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --mix-hetero --conditional state
 python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament \
-    --min-knot-entities 8 --md-lags 6 --t-tails --conditional state
-python llm_fitting/rankdiff_kalman.py facebook --oos --temperament \
-    --min-knot-entities 8 --md-lags 6 --t-tails --conditional state
+    --min-knot-entities 8 --md-lags 6 --t-tails --conditional state # 0.118 vs 0.168
 
-# sigma_obs identification report (Spec-A vs Spec-B)
+# sigma_obs identification (Spec-A vs Spec-B); platform arg optional
 python llm_fitting/spec_b_sigma_obs.py 5000
+python llm_fitting/spec_b_sigma_obs.py 3500 facebook_a
 ```
 
 Data (not committed): FB `data/raw/fb_ranked_weekly_cutdown.parquet` (**always the
