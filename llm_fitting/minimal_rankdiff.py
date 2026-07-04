@@ -233,6 +233,8 @@ class RankParams:
     #                          common level -- measurably wrong: the empirical
     #                          platform level mean-reverts, e.g. comments level
     #                          VR13 = 0.121, dLevel ~ white).
+    phi2: np.ndarray | None = None         # medium-timescale transitory AR(1)
+    sigma_trans2: np.ndarray | None = None  # (--two-scale; None/zeros = off, nested)
 
 
 def _knot_grid(N: int, n_knots: int = 60) -> np.ndarray:
@@ -283,6 +285,20 @@ PHI_GRID = np.arange(0.0, 0.66, 0.05)
 # pinned at the old kappa=0.2 edge on some knots.
 VR_MOM_H = (2, 4, 8, 13)
 A_GRID_VR = np.array([0.995, 0.99, 0.98, 0.96, 0.93, 0.90, 0.86, 0.80, 0.75, 0.70])
+
+# Two-timescale decomposition (--two-scale, 2026-07-03).  With kappa identified
+# (2i) and the common factor stationary (2j), the residual VR over-persistence
+# carries a kappa TENSION: a single OU home strong enough for the 4-13-week
+# variance ratios over-reverts the 13-week rank autocorrelation.  Resolution: a
+# SECOND transitory component at a medium timescale (half-life ~3-13 wks).  It
+# contributes almost nothing to the short-lag gamma tail (B2 = V2(1-phi2)^2 is
+# tiny for phi2 near 1) while supplying the missing mid-horizon D(h) curvature,
+# so the home can stay SLOW (grid constrained to kappa <= 0.07 -- identification
+# by construction: "home" is the slow scale) and rank ACF survives.  Identified
+# from the D(h) moments, hence requires --md-vr; sigma2 = 0 recovers the current
+# model exactly (nested).
+A2_GRID = np.array([0.995, 0.99, 0.98, 0.96, 0.93])   # slow home only
+PHI2_GRID = np.array([0.70, 0.75, 0.80, 0.85, 0.90, 0.95])
 
 
 def _md_partition(gk: np.ndarray, s_e_fix: float | None = None,
@@ -378,6 +394,57 @@ def _hstep_var(u: np.ndarray, same: np.ndarray, abar: np.ndarray, nk: int,
     return out
 
 
+def _md_partition2(gk: np.ndarray, s_e_fix: float | None = None,
+                   d_mom: np.ndarray | None = None,
+                   d_h: tuple = VR_MOM_H):
+    """Two-timescale minimum-distance fit (see A2_GRID note):
+        X = h(OU slow, a in A2_GRID) + xi1(AR fast, phi1 in PHI_GRID)
+          + xi2(AR medium, phi2 in PHI2_GRID) + eps(iid)
+    Same moment rows as _md_partition plus a third decay column; the D(h)
+    moments (required) are what identify phi2 -- the gamma tail alone cannot.
+    Returns (kappa, s_eta, phi1, s_nu1, phi2, s_nu2, s_e)."""
+    assert d_mom is not None, "--two-scale requires the D(h) moments (--md-vr)"
+    L = len(gk) - 1
+    ok_d = np.isfinite(d_mom)
+    d_mom = d_mom[ok_d]
+    d_h = tuple(h for h, ok in zip(d_h, ok_d) if ok)
+    if s_e_fix is not None:
+        gk = gk.copy()
+        gk[0] -= 2.0 * s_e_fix ** 2
+        gk[1] += s_e_fix ** 2
+        d_mom = d_mom - 2.0 * s_e_fix ** 2
+    y = np.concatenate([gk, d_mom])
+    best = (np.inf, None)
+    for a in A2_GRID:
+        for p2 in PHI2_GRID:
+            for p1 in PHI_GRID:
+                comps = (a, p1, p2)
+                rows = [[2.0 / (1 - c) for c in comps],
+                        [-1.0, -1.0, -1.0]]
+                rows += [[-c ** (k - 1) for c in comps] for k in range(2, L + 1)]
+                n_g = len(rows)
+                rows += [[2.0 * (1 - c ** h) / (1 - c) ** 2 for c in comps]
+                         for h in d_h]
+                X = np.array(rows)
+                if s_e_fix is None:
+                    noise = np.array([[2.0], [-1.0]] + [[0.0]] * (n_g - 2)
+                                     + [[2.0]] * len(d_h))
+                    X = np.hstack([X, noise])
+                coef, *_ = np.linalg.lstsq(X, y, rcond=None)
+                coef = np.clip(coef, 0.0, None)
+                sse = float(np.sum((y - X @ coef) ** 2))
+                if sse < best[0]:
+                    best = (sse, (a, p1, p2, coef))
+    a, p1, p2, coef = best[1]
+    A, B1, B2 = coef[0], coef[1], coef[2]
+    s_e = s_e_fix ** 2 if s_e_fix is not None else coef[3]
+    return (1.0 - a,
+            np.sqrt(max(A * (1 + a) / (1 - a), 0.0)), p1,
+            np.sqrt(max(B1 * (1 + p1) / (1 - p1), 0.0)), p2,
+            np.sqrt(max(B2 * (1 + p2) / (1 - p2), 0.0)),
+            np.sqrt(max(s_e, 0.0)))
+
+
 def estimate_tail_df(df: pd.DataFrame, trans_share: float, min_changes: int = 12,
                      kurt_floor: float = 0.05) -> float:
     """Student-t df for the transitory innovations, identified from the median
@@ -428,7 +495,8 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
              min_knot_n: int | None = None, md_lags: int | None = None,
              t_tails: bool = False,
              sigma_obs_fix: tuple[np.ndarray, np.ndarray] | None = None,
-             md_vr: bool = False, stat_factor: bool = False) -> RankParams:
+             md_vr: bool = False, stat_factor: bool = False,
+             two_scale: bool = False) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -454,7 +522,11 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     cumulative common-factor path and store it as factor_rho -- the simulator
     then applies the common factor as a STATIONARY level at observation
     instead of integrating it into mu (see RankParams.factor_rho).
+    two_scale: second (medium-timescale) transitory component, identified from
+    the D(h) moments (requires md_lags AND md_vr; see A2_GRID note).
     """
+    if two_scale and not (md_lags and md_vr):
+        raise ValueError("two_scale requires md_lags and md_vr (the D(h) moments)")
     N = int(round(df.groupby("period")["entity_id"].size().mean()))
     z_knots = _knot_grid(N)
     nk = len(z_knots)
@@ -514,11 +586,14 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     g0, g1, g2 = gs[0], gs[1], gs[2]
 
     kappa_z = None
+    phi2 = sigma_trans2 = None
     if md_lags:
         # minimum-distance covariance-structure fit per knot (OU home)
         kappa_z = np.zeros(nk)
         phi = np.zeros(nk); sigma_perm = np.zeros(nk)
         sigma_trans = np.zeros(nk); sigma_obs = np.zeros(nk)
+        if two_scale:
+            phi2 = np.zeros(nk); sigma_trans2 = np.zeros(nk)
         gmat = np.stack(gs, axis=1)   # (nk, L+1)
         so_fix = (np.interp(z_knots, sigma_obs_fix[0], sigma_obs_fix[1])
                   if sigma_obs_fix is not None else None)
@@ -526,9 +601,14 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
             if ct[j] <= 0 and ent_per_knot is None:
                 continue
             d_j = np.array([d[j] for d in d_list]) if d_list else None
-            kap, s_eta, ph, s_nu, s_e = _md_partition(
-                gmat[j], s_e_fix=None if so_fix is None else float(so_fix[j]),
-                d_mom=d_j, d_h=d_hs)
+            sef = None if so_fix is None else float(so_fix[j])
+            if two_scale:
+                (kap, s_eta, ph, s_nu, ph2, s_nu2, s_e) = _md_partition2(
+                    gmat[j], s_e_fix=sef, d_mom=d_j, d_h=d_hs)
+                phi2[j], sigma_trans2[j] = ph2, s_nu2
+            else:
+                kap, s_eta, ph, s_nu, s_e = _md_partition(
+                    gmat[j], s_e_fix=sef, d_mom=d_j, d_h=d_hs)
             kappa_z[j], sigma_perm[j], phi[j] = kap, s_eta, ph
             sigma_trans[j], sigma_obs[j] = s_nu, s_e
     else:
@@ -567,6 +647,8 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
         _fill(ct, v) for v in (phi, sigma_trans, sigma_perm, sigma_obs, lam, exit_rate))
     if kappa_z is not None:
         kappa_z = _fill(ct, kappa_z)
+    if phi2 is not None:
+        phi2, sigma_trans2 = _fill(ct, phi2), _fill(ct, sigma_trans2)
 
     # rank-size target curve T(z) = E[X | current rank] (unbiased; the centripetal
     # anchor the permanent level reverts toward to keep the distribution stationary)
@@ -604,7 +686,7 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
         t_df = estimate_tail_df(df, w_share)
     return RankParams(z_knots, phi, sigma_trans, sigma_perm, sigma_obs, lam, exit_rate,
                       T_curve, 0.0, sigma_F, N, w0, bottom_mu, temper_s, kappa_z, t_df,
-                      factor_rho)
+                      factor_rho, phi2, sigma_trans2)
 
 
 def _fill(cnt: np.ndarray, vals: np.ndarray) -> np.ndarray:
@@ -776,6 +858,11 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
     # None = legacy (F integrates into mu).  Same rng draw either way.
     rho_L = getattr(p, "factor_rho", None)
     L = 0.0
+    # medium-timescale transitory (--two-scale); rng draws gated so legacy
+    # streams are untouched when the component is absent/zero
+    st2_arr = getattr(p, "sigma_trans2", None)
+    two = st2_arr is not None and np.any(np.asarray(st2_arr) > 0)
+    xi2 = np.zeros(N) if two else 0.0
 
     ntrack = min(track, N)
     tsel = np.sort(rng.choice(N, ntrack, replace=False))
@@ -813,6 +900,12 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
             mu = mu - kap * (mu - home)
         mu = mu + lam * F + sp * rng.standard_normal(N)
         xi = phi * xi + st * sqv * _tdraw(rng, p.t_df, N)
+        if two:
+            ph2 = _interp(zp, p, p.phi2)
+            st2 = _interp(zp, p, st2_arr)
+            # Gaussian innovations (declared): excess kurtosis lives in the
+            # fast component; the medium one aggregates within-entity swings
+            xi2 = ph2 * xi2 + st2 * sqv * rng.standard_normal(N)
 
         if use_exit:
             ex = rng.random(N) < _interp(zp, p, p.exit_rate)
@@ -822,6 +915,8 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
                 mu[ex] = seed_mu
                 home[ex] = seed_mu
                 xi[ex] = 0.0
+                if two:
+                    xi2[ex] = 0.0
                 ids[ex] = np.arange(next_id, next_id + ne)
                 next_id += ne
                 if ts > 0:  # fresh temperament for reborn entities
@@ -832,7 +927,7 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
         # observe and rank by true level + iid measurement noise (lowers RACF
         # without adding permanent variance), matching v4.3's rank-by-observed.
         # The stationary common level (if active) enters at observation only.
-        X = mu + xi + so * sqv * rng.standard_normal(N)
+        X = mu + xi + (xi2 if two else 0.0) + so * sqv * rng.standard_normal(N)
         if rho_L is not None and use_factor:
             X = X + lam * L
         order = np.argsort(-X)
@@ -1005,7 +1100,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  temper: bool = False, min_knot_n: int | None = None,
                  md_lags: int | None = None, t_tails: bool = False,
                  spec_b: bool = False, md_vr: bool = False,
-                 stat_factor: bool = False, **sim_kw) -> dict:
+                 stat_factor: bool = False, two_scale: bool = False,
+                 **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -1025,7 +1121,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
     opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
             + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
             + (" spec-B" if spec_b else "") + (" vr-mom" if md_vr else "")
-            + (" stat-factor" if stat_factor else ""))
+            + (" stat-factor" if stat_factor else "")
+            + (" two-scale" if two_scale else ""))
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
           f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}{opts}\n{'='*72}")
 
@@ -1046,7 +1143,11 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
               f"{cur['sigma_obs'][0]:.3f}..{cur['sigma_obs'][-1]:.3f} (head..tail)")
     p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                  md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
-                 md_vr=md_vr, stat_factor=stat_factor)
+                 md_vr=md_vr, stat_factor=stat_factor, two_scale=two_scale)
+    if two_scale:
+        print(f"  two-scale: phi2 = {p.phi2[0]:.2f}..{p.phi2[-1]:.2f}  "
+              f"sigma_trans2 = {p.sigma_trans2[0]:.3f}..{p.sigma_trans2[-1]:.3f} "
+              f"(top..tail; medium timescale, D(h)-identified)")
     if stat_factor:
         print(f"  stationary common factor: rho_L = {p.factor_rho:.2f} "
               f"(measured from the detrended cumulative-F path; legacy = integrated)")
@@ -1140,6 +1241,9 @@ if __name__ == "__main__":
                     help="STATIONARY common factor: apply F as a measured AR(1) level at "
                          "observation instead of integrating it into mu (the empirical "
                          "platform level mean-reverts; integration inflates VR at h>=4)")
+    ap.add_argument("--two-scale", action="store_true",
+                    help="second (medium-timescale) transitory component, identified "
+                         "from the D(h) moments (requires --md-lags and --md-vr)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
@@ -1165,5 +1269,6 @@ if __name__ == "__main__":
                      temper=args.temperament, min_knot_n=args.min_knot_entities,
                      md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
                      md_vr=args.md_vr, stat_factor=args.stat_factor,
+                     two_scale=args.two_scale,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)

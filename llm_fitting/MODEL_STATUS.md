@@ -876,6 +876,68 @@ python llm_fitting/minimal_rankdiff.py reddit --top-k 5000 --temperament \
     --min-knot-entities 8 --md-lags 6 --t-tails --stat-factor
 ```
 
+## 2k. 2026-07-03 — Two-timescale home (`--two-scale`): closes FB Era A to 14/15; comments residual is NOT class rigidity
+
+**Change (nested, opt-in).** Second transitory component ξ₂ at a medium timescale:
+`_md_partition2` fits OU-slow (a ≥ 0.93 by construction — "home" is the slow scale) +
+AR-fast (φ₁ ≤ 0.65) + AR-medium (φ₂ ∈ 0.70–0.95) + noise, identified from the D(h)
+moments (requires `--md-vr`; the γ tail alone cannot see φ₂ because B₂ = V₂(1−φ₂)²
+is tiny). Simulated like ξ (temperament-scaled, Gaussian innovations — declared;
+reset on rebirth) in `simulate` and BOTH cohort simulators; folded into R in the
+conditional filter. σ₂ = 0 recovers the current model exactly; rng streams gated
+(legacy byte-identical). 3 new unit tests incl. noisy-panel recovery of
+(κ=0.02, φ₂=0.90) and zeros-inertness; suite 38 passed; legacy guard 14/15 /
+0.013 unchanged. Cost: +2 parameters per knot, only where the flag is on.
+
+**Validation (5 reps; baselines = 2j combined spec):**
+
+| panel | spec | VR2/4/8/13 diffs | RACF13 | score | churn |
+|---|---|---|---|---|---|
+| FB Era A | 2j (md-vr+stat-factor) | +.015/+.040/+.033/+.027 | −0.022 | 12/15 | 0.097 |
+| FB Era A | **+ two-scale** | **+.009/+.034/+.024/+.022** | **−0.010** | **14/15** | **0.045** |
+| comments | 2j | +.104/+.127/+.111/+.096 | −0.112 | 11/15 | 0.025 |
+| comments | + two-scale | +.104/+.138/+.116/+.097 | −0.120 | 11/15 | 0.030 |
+
+**FB Era A: the class WAS binding — 14/15 is the best FB in-sample result ever
+recorded** (equals the legacy v4.3 guard score, on the full unified stack with κ, σ_obs
+head, φ₂ all estimated, not tuned): φ₂ = 0.70–0.75 with σ₂ = 0.14–0.21 (a real
+component), the entire rank-dynamics panel within ±0.06, RACF13 essentially exact —
+the κ tension is RESOLVED on FB (slow home + medium ξ₂ deliver VR and RACF13
+simultaneously). Only miss: Pers4 +5.2 (tol 5); watch dRank now runs −5/−9 low.
+
+**Comments: two-scale does NOT close the residual — important negative result.** The
+fit takes φ₂ = 0.85–0.90 but with small head σ₂, and every headline metric is
+unchanged within noise. Combined with the 2j feasibility check (the pooled comments
+knot moments were already fittable by the 3-component class), this LOCALIZES the
+remaining comments VR gap (+0.10..+0.14): it is not missing timescales and not the
+noise split — it is a mismatch between the POOLED moments the estimator fits and the
+MEDIAN-ENTITY statistic the scorecard reports, i.e. residual cross-entity
+heterogeneity in the permanent/transitory MIX plus tracked-cohort composition (mild
+per-entity dispersion measured: VR13 p10–p90 = 0.09–0.26, split-half ρ = 0.34). A
+mix-heterogeneity extension (per-entity permanent share, EB-shrunken — the honest
+version of 2c's structure B) is the correctly-scoped next item for comments;
+two-scale is NOT it.
+
+**OOS movement gates (comments; acceptance criterion):** unconditional + two-scale
+0.188 ± 0.070 vs persistence 0.160 ± 0.068, coverage 60% (baseline 0.209 ± 0.062 /
+80%; beats persistence on 2 of 5 splits incl. 0.124 vs 0.185); conditional + two-scale
+clean-split mean 0.187, coverage 80% (T0=51 again hits the declared coll1=0
+denominator artifact). Net: at-par point estimates, mildly better than baseline
+unconditional, no harm — the gate neither adopts nor rejects two-scale on comments;
+on FB, two-scale + md-vr remains long-panel-scoped for OOS use (2i caveat stands).
+
+**Adoption:** `--two-scale` recommended WITH `--md-vr --stat-factor` for FB Era A
+in-sample work (14/15); not recommended for comments (no gain) or short panels
+(md-vr scope). Defaults unchanged everywhere.
+
+Reproduction:
+```
+python llm_fitting/minimal_rankdiff.py facebook_a --top-k 3500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr --stat-factor --two-scale
+python llm_fitting/minimal_rankdiff.py reddit_comments --top-k 12500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr --stat-factor --two-scale
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

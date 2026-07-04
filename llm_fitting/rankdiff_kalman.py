@@ -485,6 +485,9 @@ def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
     # persistent entity volatility multiplier (temperament) -- see mrd.simulate
     ts = getattr(p, "temper_s", 0.0)
     sqv = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, N)) if ts > 0 else np.ones(N)
+    st2_arr = getattr(p, "sigma_trans2", None)
+    two = st2_arr is not None and np.any(np.asarray(st2_arr) > 0)
+    xi2 = np.zeros(N) if two else 0.0
     cohort_slots = cohort_ids = None
     cranks = []; topids = []
     KT = 300
@@ -499,17 +502,22 @@ def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
             mu = mu - np.interp(zp, zk, p.kappa_z) * (mu - home)
         mu = mu + sp * rng.standard_normal(N)
         xi = phi * xi + st * sqv * mrd._tdraw(rng, getattr(p, "t_df", float("inf")), N)
+        if two:
+            xi2 = (np.interp(zp, zk, p.phi2) * xi2
+                   + np.interp(zp, zk, st2_arr) * sqv * rng.standard_normal(N))
         ex = rng.random(N) < np.interp(zp, zk, p.exit_rate)
         ne = int(ex.sum())
         if ne:
             sm = p.bottom_mu[rng.integers(0, p.bottom_mu.size, ne)]
             mu[ex] = sm; home[ex] = sm; xi[ex] = 0.0
+            if two:
+                xi2[ex] = 0.0
             ids[ex] = np.arange(next_id, next_id + ne); next_id += ne
             if ts > 0:
                 sqv[ex] = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, ne))
         if t < 0:
             continue
-        X = mu + xi + so * sqv * rng.standard_normal(N)
+        X = mu + xi + (xi2 if two else 0.0) + so * sqv * rng.standard_normal(N)
         order = np.argsort(-X); rank = np.empty(N, np.int64); rank[order] = np.arange(1, N + 1)
         if cohort_slots is None:
             cohort_slots = order[:cohort_k].copy(); cohort_ids = ids[cohort_slots].copy()
@@ -535,6 +543,10 @@ def _filtered_levels(df_tr, p):
     ph = np.interp(zb, p.z_knots, p.phi)
     Q = sp ** 2
     R = so ** 2 + st ** 2 / np.clip(1.0 - ph ** 2, 1e-6, None)  # transitory ~ noise
+    if getattr(p, "sigma_trans2", None) is not None:
+        st2 = np.interp(zb, p.z_knots, p.sigma_trans2)
+        ph2 = np.interp(zb, p.z_knots, p.phi2)
+        R = R + st2 ** 2 / np.clip(1.0 - ph2 ** 2, 1e-6, None)
     R = np.clip(R, 1e-8, None)
     M = X.to_numpy()
     h = np.full(M.shape[1], np.nan)
@@ -574,6 +586,9 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
         sqv = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, N))
     else:
         sqv = np.ones(N)
+    st2_arr = getattr(p, "sigma_trans2", None)
+    two = st2_arr is not None and np.any(np.asarray(st2_arr) > 0)
+    xi2 = np.zeros(N) if two else 0.0
     cohort_slots = cohort_ids = None
     cranks = []; topids = []
     KT = 300
@@ -588,15 +603,20 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
             mu = mu - np.interp(zp, zk, p.kappa_z) * (mu - home)
         mu = mu + sp * rng.standard_normal(N)
         xi = phi * xi + st * sqv * mrd._tdraw(rng, getattr(p, "t_df", float("inf")), N)
+        if two:
+            xi2 = (np.interp(zp, zk, p.phi2) * xi2
+                   + np.interp(zp, zk, st2_arr) * sqv * rng.standard_normal(N))
         ex = rng.random(N) < np.interp(zp, zk, p.exit_rate)
         ne = int(ex.sum())
         if ne:
             sm = p.bottom_mu[rng.integers(0, p.bottom_mu.size, ne)]
             mu[ex] = sm; home[ex] = sm; xi[ex] = 0.0
+            if two:
+                xi2[ex] = 0.0
             ids[ex] = np.arange(next_id, next_id + ne); next_id += ne
             if ts > 0:
                 sqv[ex] = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, ne))
-        X = mu + xi + so * sqv * rng.standard_normal(N)
+        X = mu + xi + (xi2 if two else 0.0) + so * sqv * rng.standard_normal(N)
         order = np.argsort(-X); rank = np.empty(N, np.int64); rank[order] = np.arange(1, N + 1)
         if t == 0:
             continue  # step 0 anchors at the last train week; record from step 1
@@ -691,17 +711,18 @@ def _build_params_on(df_tr):
 
 
 def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None,
-                   md_lags=None, t_tails=False, sigma_obs_fix=None, md_vr=False):
+                   md_lags=None, t_tails=False, sigma_obs_fix=None, md_vr=False,
+                   two_scale=False):
     """Fast closed-form variance-partition estimator (per split, for rolling CV)."""
     return mrd.estimate(df_tr, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                         md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
-                        md_vr=md_vr)
+                        md_vr=md_vr, two_scale=two_scale)
 
 
 def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
-                 md_vr=False):
+                 md_vr=False, two_scale=False):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -720,6 +741,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
     opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
             + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
             + (" spec-B" if spec_b else "") + (" vr-mom" if md_vr else "")
+            + (" two-scale" if two_scale else "")
             + (f" COND:{conditional}" if conditional else ""))
     print(f"  T={T}  test_len={test_len}  train-end origins={origins}{uni}{opts}")
 
@@ -748,7 +770,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             so_fix = (cur["z"], cur["sigma_obs"])
         p = _estimate_fast(df_tr, obs_frac, temper=temper, min_knot_n=min_knot_n,
                            md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=so_fix,
-                           md_vr=md_vr)
+                           md_vr=md_vr, two_scale=two_scale)
         scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
         p = replace_obs(p, scale)
         ed, erf, ec = emp_dist(df_te, hor)            # held-out truth
@@ -895,6 +917,9 @@ if __name__ == "__main__":
     ap.add_argument("--md-vr", action="store_true",
                     help="append multi-horizon change-variance moments to the MD fit "
                          "(identifies kappa; see minimal_rankdiff)")
+    ap.add_argument("--two-scale", action="store_true",
+                    help="second (medium-timescale) transitory component "
+                         "(requires --md-lags and --md-vr; see minimal_rankdiff)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--conditional", choices=("state", "vhat"), default=None,
@@ -912,7 +937,8 @@ if __name__ == "__main__":
             oos_movement(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult,
                          temper=args.temperament, min_knot_n=args.min_knot_entities,
                          md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
-                         conditional=args.conditional, md_vr=args.md_vr)
+                         conditional=args.conditional, md_vr=args.md_vr,
+                         two_scale=args.two_scale)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)
