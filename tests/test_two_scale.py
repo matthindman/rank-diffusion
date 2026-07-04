@@ -62,6 +62,27 @@ class TwoScaleTests(unittest.TestCase):
         self.assertLess(abs(s_e - tr["s_e"]), 0.04)
         self.assertGreater(s2, 0.02)                 # medium component detected
 
+    def test_long_horizon_moments_exact_recovery(self):
+        """--md-vr-long: D(26)/D(52) rows separate a slow directional component
+        (kappa=0.01) from medium wander -- exact recovery through the 2-scale
+        partition with the long moment set."""
+        true = dict(kappa=0.01, s_eta=0.04, p1=0.20, s1=0.10, p2=0.90, s2=0.06, s_e=0.12)
+        a = 1 - true["kappa"]
+        comps = [(a, true["s_eta"]), (true["p1"], true["s1"]), (true["p2"], true["s2"])]
+        Vs = [(c, sd**2 / (1 - c**2)) for c, sd in comps]
+        gk = [2 * sum(V * (1 - c) for c, V in Vs) + 2 * true["s_e"]**2,
+              -sum(V * (1 - c)**2 for c, V in Vs) - true["s_e"]**2]
+        for k in range(2, 7):
+            gk.append(-sum(V * (1 - c)**2 * c**(k - 1) for c, V in Vs))
+        hs = mrd.VR_MOM_H_LONG
+        dm = np.array([2 * sum(V * (1 - c**h) for c, V in Vs) + 2 * true["s_e"]**2
+                       for h in hs])
+        kap, s_eta, p1, s1, p2, s2, s_e = mrd._md_partition2(
+            np.array(gk), d_mom=dm, d_h=hs)
+        self.assertAlmostEqual(kap, true["kappa"], places=6)
+        self.assertAlmostEqual(p2, true["p2"], places=6)
+        self.assertAlmostEqual(s_e, true["s_e"], places=3)
+
     def test_zero_sigma2_is_inert_in_simulate(self):
         """A zeros sigma_trans2 must not consume rng draws -- output identical
         to phi2/sigma_trans2 = None (nesting + legacy stream preservation)."""

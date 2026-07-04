@@ -1158,6 +1158,67 @@ churn mechanism is warranted; 2m item #2 is closed as understood.**
 3. This likely also explains part of the FB churn-err bounce across specs
    (0.038–0.122): it is ±0.04 MC noise on top of an initialization bias.
 
+## 2p. 2026-07-03 — The comments residual root-caused: DIRECTIONAL slow movement (lifecycle arcs), fixed with long-horizon moments (`--md-vr-long`)
+
+**The question.** Most important remaining unexplained pattern after 2i–2o: the
+comments residual cluster (VR4/8/13 +0.08..+0.12, RACF13 −0.12, R2 rows +0.06–0.08)
+on the cleanest panel at the best spec.
+
+**Hypotheses eliminated by measurement (in order):**
+- H2 *lifecycle drift as constant trend*: dead — true drift dispersion ≈ 0 (raw
+  0.0395 < its own sampling floor); per-entity constant demeaning moves knot D(13)
+  by <1%.
+- H1 *scoring-filter selection*: dead — complete-column vs ≥70%-presence median
+  VR13 = 0.136 vs 0.140.
+- H1′ *estimation-population (low-presence entities in the knot pool)*: dead —
+  survivor-only knot VR13 0.235 vs 0.242.
+
+**The discovery (same 989 entities, two statistics, empirical vs sim):** the raw
+(pooled, undemeaned) long-horizon moments MATCH — sim knot-style VR52 = 0.083–0.088
+vs empirical 0.083 — but **windowed per-entity demeaning removes 50% of empirical
+slow variance vs only 28% of the sim's** (scored/knot ratio at h=52: 0.49 vs 0.72;
+at h=13: 0.855 vs 0.96). Empirical slow movement is DIRECTIONAL within the window —
+multi-year lifecycle arcs (rise-then-fall, invisible to constant-drift demeaning) —
+while the fitted slow component (κ = 0.07, 10-week half-life) wanders out and back.
+One cause, both residuals: directional slow movement preserves rank order (high
+RACF13) while being demeaned out of scored VR (low VR13); diffusive wander does the
+opposite. D(h ≤ 13) cannot separate κ≈0.005 directional from κ≈0.07 diffusive —
+**D(26)/D(52) can, and T = 136 affords them.**
+
+**Fix (`--md-vr-long`; ZERO new components/parameters — two moments and a flag).**
+VR_MOM_H_LONG = (2,4,8,13,26,52), guarded to T ≥ 2.5h; composes with two-scale/
+spec-B; 43 tests (exact recovery of κ=0.01 slow + φ₂=0.90 medium through the long
+moment set); legacy guard 14/15 / 0.013 unchanged.
+
+**Validation vs pre-registered predictions (5 reps; baselines = 2l/2n):**
+- *κ_slow → ≤0.02 with the medium component absorbing the rest* — **PASS**:
+  comments κ(z) = 0.005 flat (was 0.070–0.140), φ₂ = 0.85..0.70 with σ₂ =
+  0.143..0.215 (two-scale finally ACTIVATES on comments, as the mechanism demands).
+- *RACF13 recovers to within ±0.08* — **PASS**: −0.116 → **−0.070** (passes);
+  RACF4 −0.004 (exact).
+- *Scored sim VR13 → ≤0.16* — **FAIL on magnitude**: 0.217 → 0.211 (+0.075);
+  the demeaning differential closed less than hoped.
+- Un-pre-registered wins: comments **12/15 (best; only VR4/8/13 still fail)**,
+  boundary flux best yet (outfluxK +0.038, return4K −0.095); **FB Era A 15/15
+  with churn error 0.018 — the best FB card ever recorded on any spec** (h=26
+  active at T=86; κ = 0.070..0.040).
+- OOS comments (conditional + two-scale + long): 0.169 ± 0.062 vs persistence
+  0.160 ± 0.068 — at par on error, but coverage 60% vs the 2l gate spec's 100%.
+
+**Adoption.** `--md-vr-long` joins the IN-SAMPLE working specs on both platforms
+(comments: + two-scale now included; FB Era A unchanged stack + long). The OOS
+gate specs stay as recorded (comments: 2l md6 + mix + conditional, 100% coverage;
+FB: P1 md6). Defaults unchanged.
+
+**What remains, and the complexity verdict.** The comments VR4/8 mid-block
+(+0.10..+0.12) is the last standing residual: empirical mid-horizon movement is
+still more within-window-reverting than the model's. The next structural candidate
+is explicit non-Gaussian lifecycle asymmetry (rise-fall arc dynamics — a
+birth-growth-death component). That IS real new complexity (a lifecycle state per
+entity), it would blur the clean factorized-law story, and the marginal target has
+shrunk to one metric family that no gate flags — NOT currently worth it. Better
+next uses of the budget stand (2m): breadth, figures, b-detrending bound.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

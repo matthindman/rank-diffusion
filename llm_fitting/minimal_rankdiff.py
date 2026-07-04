@@ -294,6 +294,13 @@ PHI_GRID = np.arange(0.0, 0.66, 0.05)
 # A_GRID_VR extends the reversion grid (declared): md6 fits were already
 # pinned at the old kappa=0.2 edge on some knots.
 VR_MOM_H = (2, 4, 8, 13)
+# --md-vr-long (2p): extend to h = 26, 52 on LONG panels.  Diagnosis: the
+# empirical slow component is DIRECTIONAL within the window (multi-year
+# lifecycle arcs: windowed demeaning removes 50% of empirical D(52) vs 28% in
+# the sim), but D(h<=13) cannot separate a kappa~0.01 directional slow
+# component from kappa~0.07 diffusive wander -- D(26)/D(52) can.  Requires
+# roughly T >= 2.5*h for usable sampling (guarded in estimate()).
+VR_MOM_H_LONG = (2, 4, 8, 13, 26, 52)
 A_GRID_VR = np.array([0.995, 0.99, 0.98, 0.96, 0.93, 0.90, 0.86, 0.80, 0.75, 0.70])
 
 # Two-timescale decomposition (--two-scale, 2026-07-03).  With kappa identified
@@ -507,7 +514,7 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
              sigma_obs_fix: tuple[np.ndarray, np.ndarray] | None = None,
              md_vr: bool = False, stat_factor: bool = False,
              two_scale: bool = False, mix_hetero: bool = False,
-             mix_b_fix: float | None = None) -> RankParams:
+             mix_b_fix: float | None = None, md_vr_long: bool = False) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -541,7 +548,7 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     restriction test, 2n: b = 1 means one amplitude scales everything and the
     lognormal renormalization is exactly 1 -- the factorized law).
     """
-    if two_scale and not (md_lags and md_vr):
+    if two_scale and not (md_lags and (md_vr or md_vr_long)):
         raise ValueError("two_scale requires md_lags and md_vr (the D(h) moments)")
     if mix_hetero and not temper:
         raise ValueError("mix_hetero requires temper (b scales the v_i multiplier)")
@@ -586,8 +593,12 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
 
     d_hs: tuple = ()
     d_list: list = []
-    if md_vr and md_lags:
-        d_hs = tuple(h for h in VR_MOM_H if h < last_period + 1)
+    if (md_vr or md_vr_long) and md_lags:
+        md_vr = True
+        h_set = VR_MOM_H_LONG if md_vr_long else VR_MOM_H
+        # long horizons need sampling depth: keep h only when T >= 2.5h
+        d_hs = tuple(h for h in h_set
+                     if h < last_period + 1 and (h <= 13 or 2.5 * h <= last_period + 1))
         for h in d_hs:
             d = _hstep_var(u, same, abar, nk, h)
             # interpolate the (rare) knots with no h-length runs before pooling
@@ -1157,7 +1168,7 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  spec_b: bool = False, md_vr: bool = False,
                  stat_factor: bool = False, two_scale: bool = False,
                  mix_hetero: bool = False, mix_b_fix: float | None = None,
-                 **sim_kw) -> dict:
+                 md_vr_long: bool = False, **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -1176,7 +1187,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
            if score_k else "")
     opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
             + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
-            + (" spec-B" if spec_b else "") + (" vr-mom" if md_vr else "")
+            + (" spec-B" if spec_b else "")
+            + (" vr-mom-long" if md_vr_long else (" vr-mom" if md_vr else ""))
             + (" stat-factor" if stat_factor else "")
             + (" two-scale" if two_scale else "")
             + (" mix-b" if mix_hetero else ""))
@@ -1201,7 +1213,7 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
     p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                  md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
                  md_vr=md_vr, stat_factor=stat_factor, two_scale=two_scale,
-                 mix_hetero=mix_hetero, mix_b_fix=mix_b_fix)
+                 mix_hetero=mix_hetero, mix_b_fix=mix_b_fix, md_vr_long=md_vr_long)
     if mix_hetero:
         tag = " (IMPOSED -- restriction test)" if mix_b_fix is not None else \
               " (s(h*)/s(1) horizon moment)"
@@ -1300,6 +1312,9 @@ if __name__ == "__main__":
     ap.add_argument("--md-vr", action="store_true",
                     help="append multi-horizon change-variance moments D(2,4,8,13) to the "
                          "MD fit -- identifies kappa where the gamma tail is flat")
+    ap.add_argument("--md-vr-long", action="store_true",
+                    help="extend the D(h) moment set to h=26,52 (long panels; separates "
+                         "a directional slow component from medium wander -- see 2p)")
     ap.add_argument("--stat-factor", action="store_true",
                     help="STATIONARY common factor: apply F as a measured AR(1) level at "
                          "observation instead of integrating it into mu (the empirical "
@@ -1339,6 +1354,6 @@ if __name__ == "__main__":
                      md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
                      md_vr=args.md_vr, stat_factor=args.stat_factor,
                      two_scale=args.two_scale, mix_hetero=args.mix_hetero,
-                     mix_b_fix=args.mix_b_fix,
+                     mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)
