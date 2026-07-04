@@ -506,7 +506,8 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
              t_tails: bool = False,
              sigma_obs_fix: tuple[np.ndarray, np.ndarray] | None = None,
              md_vr: bool = False, stat_factor: bool = False,
-             two_scale: bool = False, mix_hetero: bool = False) -> RankParams:
+             two_scale: bool = False, mix_hetero: bool = False,
+             mix_b_fix: float | None = None) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -536,6 +537,9 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     the D(h) moments (requires md_lags AND md_vr; see A2_GRID note).
     mix_hetero: per-entity permanent-share heterogeneity, exponent b identified
     from the s(h) horizon moment (requires temper; see RankParams.mix_b).
+    mix_b_fix: IMPOSE the mix exponent instead of measuring it (the b = 1
+    restriction test, 2n: b = 1 means one amplitude scales everything and the
+    lognormal renormalization is exactly 1 -- the factorized law).
     """
     if two_scale and not (md_lags and md_vr):
         raise ValueError("two_scale requires md_lags and md_vr (the D(h) moments)")
@@ -690,7 +694,9 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     mu_entity = df.groupby("entity_id")["X"].mean().to_numpy(dtype=float)
     bottom_mu = np.quantile(mu_entity, np.linspace(0.0, 0.10, 200))
     temper_s = estimate_temperament(df)["s"] if temper else 0.0
-    mix_b = estimate_mix_b(df, temper_s) if (mix_hetero and temper_s > 0) else 0.0
+    mix_b = 0.0
+    if mix_hetero and temper_s > 0:
+        mix_b = float(mix_b_fix) if mix_b_fix is not None else estimate_mix_b(df, temper_s)
     t_df = float("inf")
     if t_tails:
         # variance share of the transitory CHANGE in the weekly change, for the
@@ -1150,7 +1156,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  md_lags: int | None = None, t_tails: bool = False,
                  spec_b: bool = False, md_vr: bool = False,
                  stat_factor: bool = False, two_scale: bool = False,
-                 mix_hetero: bool = False, **sim_kw) -> dict:
+                 mix_hetero: bool = False, mix_b_fix: float | None = None,
+                 **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -1194,10 +1201,12 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
     p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                  md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
                  md_vr=md_vr, stat_factor=stat_factor, two_scale=two_scale,
-                 mix_hetero=mix_hetero)
+                 mix_hetero=mix_hetero, mix_b_fix=mix_b_fix)
     if mix_hetero:
-        print(f"  mix heterogeneity: b = {p.mix_b:.2f} "
-              f"(s(h*)/s(1) horizon moment; permanent spread = b*s = {p.mix_b * p.temper_s:.2f})")
+        tag = " (IMPOSED -- restriction test)" if mix_b_fix is not None else \
+              " (s(h*)/s(1) horizon moment)"
+        print(f"  mix heterogeneity: b = {p.mix_b:.2f}{tag}; "
+              f"permanent spread = b*s = {p.mix_b * p.temper_s:.2f}")
     if two_scale:
         print(f"  two-scale: phi2 = {p.phi2[0]:.2f}..{p.phi2[-1]:.2f}  "
               f"sigma_trans2 = {p.sigma_trans2[0]:.3f}..{p.sigma_trans2[-1]:.3f} "
@@ -1301,6 +1310,9 @@ if __name__ == "__main__":
     ap.add_argument("--mix-hetero", action="store_true",
                     help="per-entity permanent-share heterogeneity: sigma_perm scales "
                          "by v^(b/2), b = s(h*)/s(1) horizon moment (requires --temperament)")
+    ap.add_argument("--mix-b-fix", type=float, default=None,
+                    help="impose the mix exponent b instead of measuring it "
+                         "(the b=1 restriction test; requires --mix-hetero)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
@@ -1327,5 +1339,6 @@ if __name__ == "__main__":
                      md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
                      md_vr=args.md_vr, stat_factor=args.stat_factor,
                      two_scale=args.two_scale, mix_hetero=args.mix_hetero,
+                     mix_b_fix=args.mix_b_fix,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)

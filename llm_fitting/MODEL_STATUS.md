@@ -1063,6 +1063,51 @@ elegance + measurement alignment + breadth, NOT more dynamics):**
 - *Slowly-drifting temperament, comments two-scale, deeper conditional machinery* —
   diminishing returns; park.
 
+## 2n. 2026-07-03 — The b = 1 restriction test: rejected as exact, adequate as law
+
+**Question.** If b = 1 (the mix exponent, 2l), the model factorizes — one entity
+amplitude scales everything, the lognormal renormalization is exactly 1, and one
+fitted parameter disappears. Measured values were 1.02 (FB) / 1.08 (comments).
+Tested at two levels, pre-registered: (i) entity-bootstrap CI of b̂ = s(h*)/s(1)
+(B=500, joint resampling of the shared entity set); (ii) imposed b=1 vs measured b
+under COMMON RANDOM NUMBERS (`--mix-b-fix 1.0`, new additive override; 42 tests).
+
+**Moment level: REJECTED as exact.** comments b = 1.079 [95% CI 1.065, 1.093];
+FB Era A b = 1.024 [1.008, 1.040]. At census scale (30–50k entities) the data can
+tell: the permanent component disperses slightly MORE than movement. Note the
+statistic is exact under the null (at b=1 the fast-share approximation vanishes),
+so the rejection is clean w.r.t. the estimator's approximation. DECLARED CAVEAT:
+per-entity secular drift (real rising/dying lifecycles) inflates per-entity
+long-horizon variance dispersion and biases b̂ UP — consistent with the ordering
+(comments 2.5-yr census 1.08 > FB 1.6-yr fixed panel 1.02); the truth is likely
+closer to 1 than the point estimates.
+
+**Results level: practically INDISTINGUISHABLE (all knife-edge flips, both
+directions; CRN so differences are purely b):**
+
+| run | measured b | imposed b = 1 |
+|---|---|---|
+| comments in-sample | 10/15, churn 0.034 (b=1.08) | **11/15, churn 0.027** (R2_4 back under: +0.079) — best comments card yet |
+| FB Era A in-sample | 15/15, churn 0.072 (b=1.02) | 14/15 (Pers4 +5.8 vs tol 5), churn **0.038** |
+| comments OOS conditional | 0.159 ± 0.070, cov 100% | 0.175 ± 0.077, cov 100% (beats persistence 2/5) |
+
+**Verdict and adoption.** b = 1 is the correct FIRST-ORDER LAW (2–8% deviations,
+results-indistinguishable at tolerance level) but is statistically rejected as
+exact. Spec decision: `--mix-hetero` KEEPS measuring b (one already-computed
+moment; respects the data; default behavior unchanged); the paper states the
+factorized b = 1 law with the measured super-unit deviations as the refinement —
+"one entity-specific amplitude, with the permanent share dispersing ~2–8% more
+than movement, an excess that grows with panel length and is at least partly
+lifecycle drift." Follow-up worth one run someday: recompute b with per-entity
+linear detrending to bound the drift contamination.
+
+**Serendipitous lead on the FB head-collision problem (2m item #2):** under CRN,
+moving b from 1.02 to 1.00 moved sim coll1 from 0.351 to **0.478** (emp 0.518) —
+FB head collisions are hypersensitive to the amplitude scaling of the top
+entities' permanent volatility. The coll1 gap may need NO new mechanism, just the
+head-amplitude interaction (near-tie gap structure × w_i of the specific head
+pages) — investigate before building any burst machinery.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

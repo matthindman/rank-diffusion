@@ -729,17 +729,18 @@ def _build_params_on(df_tr):
 
 def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None,
                    md_lags=None, t_tails=False, sigma_obs_fix=None, md_vr=False,
-                   two_scale=False, mix_hetero=False):
+                   two_scale=False, mix_hetero=False, mix_b_fix=None):
     """Fast closed-form variance-partition estimator (per split, for rolling CV)."""
     return mrd.estimate(df_tr, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                         md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
-                        md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero)
+                        md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero,
+                        mix_b_fix=mix_b_fix)
 
 
 def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
-                 md_vr=False, two_scale=False, mix_hetero=False):
+                 md_vr=False, two_scale=False, mix_hetero=False, mix_b_fix=None):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -759,7 +760,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
             + (" spec-B" if spec_b else "") + (" vr-mom" if md_vr else "")
             + (" two-scale" if two_scale else "")
-            + (" mix-b" if mix_hetero else "")
+            + ((" mix-b" + (f"={mix_b_fix:g}(fix)" if mix_b_fix is not None else ""))
+               if mix_hetero else "")
             + (f" COND:{conditional}" if conditional else ""))
     print(f"  T={T}  test_len={test_len}  train-end origins={origins}{uni}{opts}")
 
@@ -788,7 +790,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             so_fix = (cur["z"], cur["sigma_obs"])
         p = _estimate_fast(df_tr, obs_frac, temper=temper, min_knot_n=min_knot_n,
                            md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=so_fix,
-                           md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero)
+                           md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero,
+                           mix_b_fix=mix_b_fix)
         scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
         p = replace_obs(p, scale)
         ed, erf, ec = emp_dist(df_te, hor)            # held-out truth
@@ -941,6 +944,8 @@ if __name__ == "__main__":
     ap.add_argument("--mix-hetero", action="store_true",
                     help="per-entity permanent-share heterogeneity (b from the s(h) "
                          "horizon moment; requires --temperament)")
+    ap.add_argument("--mix-b-fix", type=float, default=None,
+                    help="impose the mix exponent b (the b=1 restriction test)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--conditional", choices=("state", "vhat"), default=None,
@@ -959,7 +964,8 @@ if __name__ == "__main__":
                          temper=args.temperament, min_knot_n=args.min_knot_entities,
                          md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
                          conditional=args.conditional, md_vr=args.md_vr,
-                         two_scale=args.two_scale, mix_hetero=args.mix_hetero)
+                         two_scale=args.two_scale, mix_hetero=args.mix_hetero,
+                         mix_b_fix=args.mix_b_fix)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)

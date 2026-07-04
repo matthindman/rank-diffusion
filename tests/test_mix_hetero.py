@@ -51,6 +51,14 @@ class MixHeteroTests(unittest.TestCase):
         self.assertGreater(b1, 0.8)   # full structure B recovered
         self.assertLess(b0, 0.55)     # movement-only clearly separated
 
+    def test_mix_b_fix_imposes_the_restriction(self):
+        df = _hetero_panel(b=1.0, n_ent=800, T=60)
+        p = mrd.estimate(df, temper=True, mix_hetero=True, mix_b_fix=1.0)
+        self.assertEqual(p.mix_b, 1.0)
+        # at b=1 the lognormal renormalization is exactly 1: w = v (factorized law)
+        sqv = np.sqrt(np.random.default_rng(1).lognormal(-0.32, 0.8, 1000))
+        np.testing.assert_allclose(mrd._sqw(sqv, 1.0, 0.8), sqv, rtol=1e-12)
+
     def test_sqw_normalization(self):
         rng = np.random.default_rng(0)
         s, b = 0.9, 0.8
