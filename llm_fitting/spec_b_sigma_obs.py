@@ -75,10 +75,21 @@ def _week_matrix(d: pd.DataFrame, weeks) -> tuple[np.ndarray, pd.Index]:
     return K[ok], mat.index[ok]
 
 
-def _toeplitz_floor(R: np.ndarray, p_sh: np.ndarray) -> tuple[float, float]:
+def _toeplitz_floor(R: np.ndarray, p_sh: np.ndarray) -> tuple[float, float, float]:
     """Fit sigma_d^2 * Toeplitz(1, rho) to the centered residual covariance and
-    return (sigma_d, corrected weekly floor variance).  R: (n,7) centered log
-    residuals (complete-positive weeks); p_sh: (n,7) daily karma shares."""
+    return (sigma_d, weekly floor variance, INVARIANT centered floor variance).
+    R: (n,7) centered log residuals (complete-positive weeks); p_sh: (n,7)
+    daily karma shares.
+
+    2026-07-05 (external review, PROVEN): sum_l T_l = J (all-ones) and
+    C7 @ J @ C7 = 0, so the centered covariance leaves the all-ones Toeplitz
+    direction UNIDENTIFIED; np.linalg.lstsq resolves it by the min-norm
+    convention, making sigma_d and the uncentered floor p'Sig p
+    convention-dependent by an additive constant.  The invariant quantity is
+    the CENTERED floor p' C Sig C p -- which is also the defensible lower
+    bound (the within-week common component is confounded with weekly signal
+    and must count as signal in a floor).  Both are returned; adjudication and
+    re-pinning are the 2q handoff item."""
     C7 = np.eye(7) - np.ones((7, 7)) / 7
     Cemp = R.T @ R / len(R)
     bases = []
@@ -97,7 +108,9 @@ def _toeplitz_floor(R: np.ndarray, p_sh: np.ndarray) -> tuple[float, float]:
         for j in range(7):
             Sig[i, j] = s2 * (1.0 if i == j else rho[abs(i - j) - 1])
     floor = float(np.mean(np.einsum("nj,jk,nk->n", p_sh, Sig, p_sh)))
-    return float(np.sqrt(max(s2, 0.0))), max(floor, 0.0)
+    Sig_c = C7 @ Sig @ C7
+    floor_c = float(np.mean(np.einsum("nj,jk,nk->n", p_sh, Sig_c, p_sh)))
+    return float(np.sqrt(max(s2, 0.0))), max(floor, 0.0), max(floor_c, 0.0)
 
 
 def spec_b_curve(uni: pd.DataFrame, daily: pd.DataFrame, n_bands: int = 12,
@@ -138,15 +151,17 @@ def spec_b_curve(uni: pd.DataFrame, daily: pd.DataFrame, n_bands: int = 12,
             m = band == b
             if m.sum() < 300:
                 continue
-            sig_d, floor = _toeplitz_floor(R[m], p_sh[m])
+            sig_d, floor, floor_c = _toeplitz_floor(R[m], p_sh[m])
             r_med = float(np.median(pr[m]))
             z_out.append(np.log(np.clip((r_med - 0.5) / N, mrd.Z_CLIP, 1.0)))
             s_out.append(float(np.sqrt(floor)))
             rows.append((r_med, sig_d, float((p_sh[m] ** 2).sum(1).mean()),
-                         float(np.sqrt(floor)), int(pd.unique(ent_f[m]).size)))
+                         float(np.sqrt(floor)), float(np.sqrt(floor_c)),
+                         int(pd.unique(ent_f[m]).size)))
         return dict(z=np.array(z_out), sigma_obs=np.array(s_out), N=N,
                     table=pd.DataFrame(rows, columns=["rank", "sigma_d", "sum_p2",
-                                                      "sigma_obsB", "n_ent"]))
+                                                      "sigma_obsB", "sigma_obsB_cent",
+                                                      "n_ent"]))
 
     if method == "splithalf":
         Sa, Sb = K[:, HALF_A].sum(1), K[:, HALF_B].sum(1)

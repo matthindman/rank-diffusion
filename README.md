@@ -32,9 +32,10 @@ turn over. The active research prototypes model this with: an OU "home" level
 (reversion estimated from the change-autocovariance tail), measurement noise
 independently identified from the daily-within-week noise floor (Reddit),
 persistent entity-level volatility heterogeneity ("temperament", one
-moment-identified scalar, s ≈ 0.9 on both platforms), and Gabaix rebirth at the
-bottom of a pre-registered top-coverage universe (Reddit K=5,000 ≈ 90% of weekly
-karma; FB K=3,500).
+moment-identified scalar per metric — s ≈ 0.89–0.94 for FB interactions and
+Reddit submission karma, 0.69 for Reddit comment karma), and Gabaix rebirth at
+the bottom of a pre-registered top-coverage universe (Reddit K=5,000 ≈ 90% of
+weekly karma; FB K=3,500).
 
 Headline (2026-07-03, MODEL_STATUS §2i–§2m): the long-standing 4–13-week
 over-persistence was decomposed into four measured layers — unidentified home
@@ -49,8 +50,10 @@ Results: **Facebook Era A 15/15 in-sample** (first legitimate perfect goal-1 car
 conditional gate at par with persistence with **100% bootstrap-CI coverage**
 (0.159 ± 0.070 vs 0.160 ± 0.068, last-split held-out displacement exact at all
 horizons); Reddit submissions unchanged (conditional **beats persistence 4/5**,
-0.118 vs 0.168). Every parameter is moment-identified or instrument-identified;
-none is tuned to a score. Remaining: estimation-vs-scorecard population asymmetry
+0.118 vs 0.168). Every parameter is moment-identified, instrument-identified, or
+train-only-calibrated and declared (the OOS gate's σ_obs scale); none is tuned to
+an evaluation score. σ_obs is independently identified at the universe head and
+bracketed below it. Remaining: estimation-vs-scorecard population asymmetry
 (comments), FB head collisions, and system breadth (§2m).
 
 **Canonical status record: [`llm_fitting/MODEL_STATUS.md`](llm_fitting/MODEL_STATUS.md)**

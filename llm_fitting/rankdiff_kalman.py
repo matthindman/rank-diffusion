@@ -411,6 +411,13 @@ def run(platform, top_k=None, buffer_mult=4):
 # Pre-specified calibration moment vector + weights (frozen before validation).
 CAL_WEIGHTS = {"dRank1": 1.0, "dRank4": 1.0, "coll1": 1.0, "coll5": 1.0, "RACF1": 1.0}
 
+# Declared moment floor for the OOS relative-error mean (2026-07-05, external
+# review C4): keys whose |empirical| falls below this are EXCLUDED from the
+# eval vector -- a near-zero denominator previously made one split print as
+# ~5772 (held-out coll1 = 0, the documented 2g-X P3 artifact).  All recorded
+# clean splits had every |emp| >= 0.04, so their numbers are unchanged.
+MOM_FLOOR = 0.02
+
 
 def _rank_dist(R, horizons, cap=100):
     """Full |Δrank over h| arrays (entities with rank<=cap at t) + lag-1 rank ACF.
@@ -815,7 +822,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
     me_all, be_all = [], []
     for r in rows:
         em, sm, bm = r["em"], r["sm"], r["bm"]
-        kk = [k for k in keys if np.isfinite(em.get(k, np.nan)) and np.isfinite(sm.get(k, np.nan))]
+        kk = [k for k in keys if np.isfinite(em.get(k, np.nan)) and np.isfinite(sm.get(k, np.nan))
+              and abs(em[k]) >= MOM_FLOOR]
         me = float(np.mean([abs(sm[k] - em[k]) / max(abs(em[k]), 1e-6) for k in kk]))
         be = float(np.mean([abs(bm[k] - em[k]) / max(abs(em[k]), 1e-6) for k in kk if np.isfinite(bm.get(k, np.nan))]))
         me_all.append(me); be_all.append(be)

@@ -1219,6 +1219,63 @@ entity), it would blur the clean factorized-law story, and the marginal target h
 shrunk to one metric family that no gate flags — NOT currently worth it. Better
 next uses of the budget stand (2m): breadth, figures, b-detrending bound.
 
+## 2q. 2026-07-05 — External review (GPT-5.5 Pro) adjudicated: one proven bug found (Spec-B projection), small fixes applied, big items scoped to the next session
+
+Full review saved verbatim-in-substance at `llm_fitting/reviews/gpt55_pro_review_2026-07-05.md`.
+Overall verdict: the covariance algebra, the D(h) identification logic, `_sqw`, the
+stationary-factor mapping, and the temperament correction chain were all **verified
+correct** by independent derivation (their B1/B3/B6/B10/B11); the flat-SSE degeneracy
+we found empirically in 2i is exactly what mixture-of-exponentials theory predicts.
+The review's real contributions are one proven algebraic bug and a set of
+evidentiary-package critiques.
+
+**THE PROVEN BUG (their B12/D7, confirmed against the code): Spec-B projection
+non-identification.** The Toeplitz bases sum to the all-ones matrix J, and the
+week-mean centering annihilates J (CJC = 0), so the centered residual covariance
+leaves one Toeplitz direction unidentified; `np.linalg.lstsq`'s min-norm convention
+resolves it silently, making BOTH `sigma_d` AND the reported floor pᵀΣp
+convention-dependent by an additive constant. The invariant quantity — and the
+defensible lower bound, since the within-week common component is confounded with
+weekly signal — is the centered floor pᵀCΣCp. FIXED (diagnostic, additive):
+`_toeplitz_floor` now returns both; the curve table gains `sigma_obsB_cent`; pinning
+still uses the legacy floor pending the P0 rerun below. **First audit (subs, K=5000,
+this session): centered floor sits 26% below the legacy floor at the head (0.074 vs
+0.100 at rank ~800), −15% mid, −5..−7% deep.** Consequence: the 2e head-agreement
+claim (Spec-A 0.117 vs floor 0.100, ~17%) weakens against the invariant bound
+(0.117 vs 0.074, ~58%); mid-band agreement survives (0.148 vs 0.130). Until the P0
+adjudication+re-pin, σ_obs language is: **bounded within [centered floor, Spec-A]
+at the head; identified shape; exact head identification pending.** FB Era A and
+comments audits BLOCKED this session: /Volumes/T9 not mounted (flagged to owner).
+
+**Other fixes applied now:**
+- OOS-gate denominator rule (their C4): declared `MOM_FLOOR = 0.02` — eval keys with
+  |empirical| below it are excluded from the relative-error mean. All recorded clean
+  splits had every |emp| ≥ 0.04, so no recorded number changes; only the documented
+  degenerate coll1=0 split (2g-X P3) is affected.
+- README language (their E5): stale "s ≈ 0.9 on both platforms" → metric-dependent
+  values; "every parameter is moment-identified or instrument-identified" → adds
+  "or train-only-calibrated and declared" + the head-identified/bracketed-below
+  σ_obs scoping. (Paper drafts inherit the E5 audit; internal log language stays
+  confident-and-correct, not hedged.)
+- Their R3 was already run before the review (2p): comments long-stack conditional
+  OOS = 0.169 ± 0.062, coverage 60% — matches their prediction; cited, not rerun.
+
+**Accepted and scoped to the next session (see handoff):** P0 Spec-B adjudication +
+re-pin + rerun of every spec-B-dependent result; P1 paper-primary stack freeze +
+full spec×gate matrix incl. their R2 (FB full-stack OOS — genuinely never run);
+P2 frozen confirmation protocol on the comments 2021-07..2022-12 extension;
+P3 uncertainty-aware scorecard (bootstrap + MC bands, omnibus Q) and MC bands on
+all churn rows; P4 b robustness (detrended, block-bootstrap, split-window) +
+temperament κ_acf lag-depth sensitivity (their B7); P5 interpretation uniqueness
+(phase-randomized surrogates for the 2p demeaning differential; per-entity κ_i
+heterogeneity probe); P6 population-matched scoring; P7 breadth.
+
+**Noted, no action:** their C5 (splits are dependent — we already report per-split
+values; reporting practice for the paper); A6 (the 15/15 card was never claimed as
+a hypothesis test internally — P3 is the paper answer); their suggested replacement
+language is in places more hedged than the evidence requires — adopt precision,
+not tepidity.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
