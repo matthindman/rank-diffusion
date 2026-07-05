@@ -1441,6 +1441,119 @@ Key readings, ground truth for the paper's SI-5:
   z −4.6) and the boundary-flux pair (outfluxK +0.038, return4K −0.095, huge
   z from tiny bands) — the sharpest remaining goal-2 targets, stated in SDs.
 
+## 2u. 2026-07-05 — b robustness (P4): the exact-b=1 rejection does NOT survive time-window uncertainty; b = 1 is the law, the excess is long-horizon lifecycle contamination
+
+**Tools:** `llm_fitting/b_robustness.py` + additive `detrend`/`acf_lags`
+options on `estimate_temperament`/`estimate_mix_b` (defaults byte-identical;
+detrend = per-entity LINEAR detrending of the change series, i.e. quadratic
+level detrending — the per-entity variance already removes constant drift,
+so this is the leading-order arc term; ν loses one df).
+
+**Results (both platforms, all this session):**
+
+| variant | FB Era A (K=3500) | comments (K=12,500) |
+|---|---|---|
+| baseline b (committed) | 1.024 | 1.079 |
+| detrended b | **1.024 (unmoved)** | **1.059 (−0.020, toward 1)** |
+| split-window b (h=4): first / second | 0.968 / 0.995 | 1.042 / **0.994** |
+| full-window b at common h=4 | 1.011 | **1.002** |
+| block-bootstrap over weeks (median, 95% CI) | 0.983, **[0.939, 1.064]** | 1.005, **[0.958, 1.108]** |
+
+- **Pre-registered prediction PASSES**: detrended comments b moves toward 1
+  more than FB (−0.020 vs 0.000) — the super-unit excess carries the
+  lifecycle-drift signature, as 2n's declared caveat predicted.
+- **b = 1 sits inside the block-bootstrap 95% CI on BOTH platforms.** The 2n
+  rejection came from entity-bootstrap CIs that treat the time window as
+  fixed (review B9); once week-block uncertainty is counted, exact b = 1 is
+  not rejected. Note the bootstrap medians (0.983 / 1.005) sit below the
+  full-window points (1.024 / 1.079): block resampling limits contiguous
+  spans to ~3h*, which strips the slow multi-year structure — the level
+  shift is itself evidence that the excess lives at long contiguous
+  horizons, not in local dynamics.
+- The excess is HORIZON-SPECIFIC: at the common h=4, comments b = 1.002 and
+  the second-half window gives 0.994. The 1.08 exists only at h*=13 over the
+  full 2.5-year window — exactly where lifecycle arcs accumulate.
+- **Temperament κ_acf sensitivity (review B7): empirically NIL.** Pooled-ACF
+  depth 1→6 moves κ by <0.002 and s by <0.0001 on both platforms
+  (FB: κ 1.3328→1.3345, s 0.8901 flat; comments: κ 1.3418→1.3434, s 0.6922
+  flat) — within-entity dependence beyond lag 2 carries no κ mass; the
+  s-biased-up concern is closed by measurement.
+
+**Conservative b bound (the deliverable): b ∈ [0.94, 1.11] across every
+variant and platform, with all central estimates in [0.98, 1.08] and b = 1
+inside every time-aware CI.** Paper language upgrades from 2n's: the
+factorized b = 1 law is not merely "adequate" — exact b = 1 is not rejected
+once time-window uncertainty and the arc-linear term are accounted for; the
+committed measured-b spec remains the default (respects the data), with the
+super-unit point estimates attributed to long-horizon lifecycle structure.
+
+## 2v. 2026-07-05 — Interpretation uniqueness (P5): surrogates say "excess low-frequency structure", and hand the VR residual a new decomposition; κ_i heterogeneity is real
+
+**Tool (`llm_fitting/surrogate_test.py`).** Multivariate phase-randomized
+surrogates of the comments complete-column scored population (n=9,511,
+T=136, 50 draws): one common phase rotation on the increment panel per draw —
+preserves every entity's increment amplitude spectrum AND all cross-spectra
+(common factor, any stationary long memory); destroys only phase alignment
+(the directional/arc structure). Statistics: demeaning-survival ratio ρ(h),
+scored VR_sc(h), population-internal RACF (declared: differs from the
+scorecard's full-universe RACF).
+
+**(a) The pre-registered verdict is SPLIT, and the split is informative:**
+
+| stat | empirical | surrogate 95% band | inside? |
+|---|---|---|---|
+| ρ(52) demeaning survival | 0.579 | [0.314, 0.634] | **yes** |
+| ρ(26) | 0.845 | [0.670, 0.845] | yes (edge) |
+| RACF13 (internal) | 0.309 | [0.313, 0.475] | no — **below** |
+| VR_sc(13) | 0.136 | [0.167, 0.180] | no — **below** |
+| VR_sc(52) | 0.042 | [0.045, 0.066] | no — below |
+| RACF1 (internal) | 0.684 | [0.723, 0.783] | no — below |
+
+The long-horizon demeaning loss IS reproducible by a stationary Gaussian
+process with the empirical spectrum — so per the pre-registered rule, §2p's
+"directional lifecycle arcs" softens to **"excess low-frequency structure,
+consistent with lifecycle arcs but not uniquely established"** (the review's
+A10/B14/D3 point, conceded by measurement). But the surrogates FAIL the rest
+of the joint pattern in a direction nobody predicted: given the data's own
+spectrum, Gaussian phase-random dynamics produce MORE scored persistence than
+the data shows (VR_sc(13) 0.176 vs 0.136; RACF13 0.406 vs 0.309).
+
+**The new quantitative lead this hands the program:** a process with EXACTLY
+the empirical second-order structure overshoots scored VR13 by **+0.04** —
+half of the model's remaining +0.08 residual — because the scored-VR
+functional (median over entities of demeaned variance ratios) is not
+spectrum-determined; the data's non-Gaussian phase/marginal structure pulls
+it down. Chasing the last VR gap with linear-Gaussian dynamics is therefore
+chasing a functional artifact for ~half the distance (connects review B15).
+The honest target for any future dynamics work is the surrogate-adjusted
+residual (~+0.04), not the raw +0.08.
+
+**(b) κ_i heterogeneity probe (fine-bands' missing axis).** Per-entity
+log VR13 curvature, demeaned within 5×5 rank×volatility cells, split-half:
+Spearman **0.346**, noise-corrected true SD **0.302** (39% of observed
+variance is signal). Persistent per-entity reversion-rate heterogeneity is
+REAL beyond rank and volatility conditioning (2j's unconditioned 0.34
+survives conditioning). D1 stays open as a measured, bounded axis — a
+per-entity κ_i extension has ~0.30 log-SD of structure to work with; not
+implemented (parsimony verdict of 2p stands, sharpened by (a)).
+
+## 2w. 2026-07-05 — Population-matched scoring (P6): the prediction FAILS cleanly — the missingness explanation for the comments VR residual is dead
+
+`scorecard_bands.py --censor`: rank-based weekly censoring of the simulated
+tracked population at the empirical presence fraction (worst simulated rank
+first), then identical complete-column scoring. Comments, long stack,
+reps=20: **every VR row moves < 0.001** (VR13 +0.078 → +0.079; Q 1275 →
+1277). Root cause measured: the comments scored census population is 99.0%
+present per week (mean weekly absence 1.04%, max 7.9%) — there is nothing to
+match. The 2l/2m residual attribution #1 ("estimation-vs-scorecard population
+asymmetry / observation floor") is REFUTED on comments as a sim-side
+mechanism, completing the kill chain started in 2p (H1/H1′ were the
+empirical-side versions). What remains of the comments VR block is (i) the
+functional/marginal-structure component measured in §2v (~+0.04) and (ii) a
+genuine dynamics residue of similar size. Per the handoff decision rule, P5
+alternatives were already revisited (§2v) — the surrogate decomposition IS
+the revised account.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
