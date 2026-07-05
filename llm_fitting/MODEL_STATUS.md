@@ -1604,6 +1604,56 @@ second-order).
    scoring (dead, SI negative result); lifecycle-state models (target now
    ~+0.04 after §2v); data reconstruction decisions (owner).
 
+## 2y. 2026-07-05 — Same-day follow-through on the revised verdict: Q localization, the functional-gap decomposition completed, weighting audit nil
+
+Executes §2x items 4–7 (no new data). Item 5 (κ_i pre-registration) is
+CONFIRMATION_PROTOCOL amendment A1; item 3 (claim-set rewrite) landed in
+README + research_notes positioning update + §6 addendum.
+
+**(1) Q block decomposition (`scorecard_bands.py`, review B5).** Per-block
+Q_b/df at the structure-primary stacks (reps=20, boot=100; churn/boundary
+bootstrapped JOINTLY over week blocks so their Ω is real):
+
+| block (df) | FB Era A | subs | comments |
+|---|---|---|---|
+| VR (4) | 3.2 | 8.9 | **263.5** |
+| ACF/RACF (5) | 3.5 | 9.5 | 18.8 |
+| R2 (3) | 0.7 | 1.9 | 17.2 |
+| Pers (3, MC-only — declared harsh) | 89.3 | 44.8 | 32.0 |
+| churn (7) | 3.9 | 10.0 | 5.0 |
+| boundary (2) | 669 | 85 | **927** |
+
+The localization the verdict asked for, now on the record: FB's entire
+omnibus excess lives in the no-empirical-band Pers rows and the boundary
+pair; every dynamics block sits at Q/df ≈ 1–4. The comments story is two
+blocks — the known VR residual and boundary flux (outfluxK +0.038 /
+return4K −0.095) — while its churn block (5.0) is essentially fine. The
+paper's Fig/SI table: "the only practically meaningful residuals are here."
+
+**(2) Model-side surrogates (`surrogate_test.py --model`) — the §2v
+decomposition is complete.** Phase-randomizing FITTED-model paths (long
+stack, 3 seeds × 20 surrogates, comments): the model's own Gaussianized
+equivalent scores VR_sc(13) only +0.010 above the model (data-side gap:
++0.039). **The existing t-tails supply just 24% of the data's
+non-Gaussianity discount.** Final decomposition of the comments VR13 gap
+(+0.078): ≈ +0.03 missing non-Gaussian phase/marginal structure (the data's
+increments are burstier/more phase-structured than t-innovations produce)
++ ≈ +0.03–0.04 genuine second-order (spectrum) mismatch. Consistent
+cross-check: model ρ(52) = 0.752 vs data 0.579 — the model still survives
+demeaning more than data, the residual low-frequency signature of 2p. Any
+future dynamics work has TWO measured targets, each ~0.03, of different
+kinds (marginal structure vs spectrum) — neither justifying a lifecycle
+state yet.
+
+**(3) MD weighting robustness (`weighting_robustness.py`, review B4):
+identity weighting is empirically INERT.** Pooled + head-quintile panel
+moments with entity-bootstrap SEs, identity vs 1/SE diagonal weighting:
+subs (γ only, 4× SE spread) — identical to 3 decimals; comments with the
+FULL long-D set (γ0..6 + D(2..52), **55× SE spread at the head**) — κ
+grid-identical (0.020), φ within one grid step, σ's within 5%. The
+heterogeneous-precision concern does not move any parameter that matters;
+one-line SI answer.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
@@ -1662,3 +1712,26 @@ measurement model, out-of-sample distributional gates, and instrument forensics.
 Main gap to close for a PNAS-class submission: SYSTEM BREADTH (add 2–4 ranked
 systems through the unchanged pipeline) and data-collapse figures; not more
 dynamics.
+
+_Addendum 2026-07-05 (post §2r–§2x; binding claim set per the revised external
+verdict, saved in reviews/):_ **The paper's spine:** digital attention rankings
+obey an approximately factorized rank-diffusion law — a shared rank-conditional
+stochastic process with independently bounded measurement noise and boundary
+rebirth, multiplied to first order by one persistent endpoint amplitude —
+which predicts held-out rank movement and reproduces the main churn structure
+across Facebook tracked activity and Reddit census attention, with residual
+deviations localized to low-frequency structure and bounded reversion
+heterogeneity. **Main model: b = 1** (measured b = refinement table; block vs
+entity bootstrap in SI). **Claim discipline:** "to first order, endpoint
+heterogeneity collapses to one amplitude; residual reversion-rate heterogeneity
+is measurable but second-order under the validation gates" — never "every
+endpoint follows the same process up to one amplitude." Structure stack vs
+movement stack is a MAIN-TEXT design distinction with a target column. FB
+movement leads with the identified Spec-B + conditional spec (0.118, 4/5, no
+calibration freedom); the calibrated 5/5 number is the parenthetical/SI
+reference. "15/15" is a descriptive scorecard that survives 20 reps; Q rejects
+exact equality and is used to LOCALIZE residuals (per-block Q/df table), never
+as a pass/fail gate. σ_obs: identified in shape everywhere, identified in level
+at the FB head, bounded in level elsewhere. Lifecycle language: "excess
+low-frequency structure"; arcs are one plausible source, not uniquely
+established (spectrum-preserving surrogates, §2v).

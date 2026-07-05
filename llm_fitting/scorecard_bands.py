@@ -74,17 +74,22 @@ def _week_series(top_ids: np.ndarray, K: int, ret_h: int = 4):
     return out
 
 
-def _block_boot_mean(series: np.ndarray, B: int, L: int, rng) -> np.ndarray:
-    n = len(series)
+def _block_boot_joint(ws: dict, B: int, L: int, rng) -> pd.DataFrame:
+    """Moving-block bootstrap over weeks, SAME block indices across metrics
+    per draw -- cross-metric covariance within the churn/boundary family is
+    real, which the per-block Q decomposition needs."""
+    keys = list(ws.keys())
+    n = min(len(v) for v in ws.values())
     if n <= L:
-        return np.full(B, np.nanmean(series))
-    draws = np.empty(B)
+        return pd.DataFrame({k: np.full(B, np.nanmean(v)) for k, v in ws.items()})
     n_blocks = int(np.ceil(n / L))
+    out = {k: np.empty(B) for k in keys}
     for b in range(B):
         starts = rng.integers(0, n - L + 1, size=n_blocks)
         idx = np.concatenate([np.arange(s, s + L) for s in starts])[:n]
-        draws[b] = np.nanmean(series[idx])
-    return draws
+        for k in keys:
+            out[k][b] = np.nanmean(ws[k][:n][idx])
+    return pd.DataFrame(out)
 
 
 def entity_boot_draws(values, ranks, top_ids, ranksize, top_k, score_k,
@@ -207,8 +212,7 @@ def main() -> None:
     print("  moving-block bootstrap (weeks) ...")
     ws = _week_series(et, score_k or 0)
     L = max(4, min(13, (T - 1) // 5))
-    BB = pd.DataFrame({k: _block_boot_mean(v, a.boot, L, rng)
-                       for k, v in ws.items()})
+    BB = _block_boot_joint(ws, a.boot, L, rng)
 
     # ---- table -------------------------------------------------------------
     def band(k):
@@ -253,6 +257,34 @@ def main() -> None:
     print(f"\n  omnibus Q = {Q:.1f} over {ok.sum()} card moments "
           f"(chi2 df={ok.sum()} reference: mean {ok.sum()}, "
           f"p95 ~ {ok.sum() + 1.645 * np.sqrt(2 * ok.sum()):.0f}) -- descriptive")
+
+    # ---- Q block decomposition (residual LOCALIZATION, review B5) ----------
+    # Each block gets its own Omega from whichever bootstrap covers it
+    # (entity boot: VR/ACF/RACF/R2; joint block boot: churn/boundary; Pers:
+    # MC-only, declared harsh). Q_b/df is the comparable per-block scale.
+    BLOCKS = [
+        ("VR", ["VR2", "VR4", "VR8", "VR13"]),
+        ("ACF/RACF", ["ACF1", "ACF2", "RACF1", "RACF4", "RACF13"]),
+        ("R2", ["R2_1", "R2_4", "R2_13"]),
+        ("Pers (MC-only)", ["Pers1", "Pers4", "Pers13"]),
+        ("churn", [f"coll{c}" for c in mrd.COLLISION_RANKS]),
+        ("boundary", ["outfluxK", "return4K"]),
+    ]
+    print(f"\n  Q by block:   {'block':<16}{'df':>4}{'Q_b':>10}{'Q_b/df':>9}")
+    for name, keys_b in BLOCKS:
+        kb = [k for k in keys_b
+              if np.isfinite(emp.get(k, np.nan)) and np.isfinite(sim_mean.get(k, np.nan))]
+        if not kb:
+            continue
+        db = np.array([sim_mean[k] - emp[k] for k in kb])
+        src = EB if kb[0] in EB.columns else (BB if kb[0] in BB.columns else None)
+        C_e = (np.atleast_2d(np.cov(src[kb].to_numpy(), rowvar=False))
+               if src is not None else np.zeros((len(kb), len(kb))))
+        C_m = np.atleast_2d(np.cov(S[kb].to_numpy(), rowvar=False)) / a.reps
+        Ob = C_e + C_m
+        Ob = 0.5 * Ob + 0.5 * np.diag(np.diag(Ob))
+        Qb = float(db @ np.linalg.pinv(Ob, rcond=1e-10) @ db)
+        print(f"                {name:<16}{len(kb):>4}{Qb:>10.1f}{Qb / len(kb):>9.1f}")
     npass, ntot, churn = mrd._score(emp, sim_mean.to_dict(), top_k)
     print(f"  v4.3-style card: {npass}/{ntot}  churn err {churn:.3f}  "
           f"(threshold card, for continuity)")

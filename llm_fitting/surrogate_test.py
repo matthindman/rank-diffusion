@@ -153,13 +153,61 @@ def kappa_probe(X: np.ndarray, n_cells: int = 5) -> None:
           f"({100 * true_sd ** 2 / max(sd1 * sd2, 1e-12):.0f}% of observed variance is signal)")
 
 
+def model_complete_panel(p, T, score_k, seed):
+    """Complete-column tracked panel from a FITTED-model simulation, built
+    with the same population filter as complete_panel (mean rank <= score_k,
+    complete columns)."""
+    sim = mrd.simulate(p, T, seed=seed, top_record=score_k)
+    tv, tr, _, _ = mrd._sim_struct(sim)
+    with np.errstate(invalid="ignore"):
+        rf = np.where(tr > 0, tr.astype(float), np.nan)
+        mean_rank = np.nanmean(rf, axis=0)
+    keep = np.isfinite(mean_rank)
+    if score_k is not None:
+        keep &= mean_rank <= score_k
+    X = tv[:, keep]
+    return X[:, np.all(np.isfinite(X), axis=0)]
+
+
+def model_side(df, score_k, T, n_surr, n_seeds=3):
+    """(c) 2026-07-05: phase-randomize FITTED-model paths.  The model's own
+    functional gap Delta_model = VR_sc(surrogate of model) - VR_sc(model)
+    measures how much of the data-side gap (+0.04, MODEL_STATUS 2v) the
+    existing t-tails/non-Gaussian machinery already produces.  Long-stack
+    estimate (the comments structure-primary spec, 2s)."""
+    p = mrd.estimate(df, temper=True, min_knot_n=8, md_lags=6, t_tails=True,
+                     md_vr_long=True, stat_factor=True, two_scale=True,
+                     mix_hetero=True)
+    rng = np.random.default_rng(1)
+    rows_pt, rows_sur = [], []
+    for seed in range(n_seeds):
+        Xm = model_complete_panel(p, T, score_k, seed)
+        rows_pt.append(stats(Xm))
+        per = max(2, n_surr // n_seeds)
+        rows_sur += [stats(surrogate(Xm, rng)) for _ in range(per)]
+        print(f"    model seed {seed}: n={Xm.shape[1]} complete columns, "
+              f"{per} surrogates")
+    Pt, Su = pd.DataFrame(rows_pt), pd.DataFrame(rows_sur)
+    print(f"\n(c) {'stat':<10}{'model':>10}{'model-surr mean':>16}"
+          f"{'surr 2.5-97.5%':>22}{'Delta_model':>12}")
+    for k in Pt.columns:
+        lo, hi = np.percentile(Su[k], [2.5, 97.5])
+        print(f"    {k:<10}{Pt[k].mean():>10.3f}{Su[k].mean():>16.3f}"
+              f"    [{lo:7.3f},{hi:7.3f}]{Su[k].mean() - Pt[k].mean():>+12.3f}")
+    return Pt, Su
+
+
 def main() -> None:
-    platform = sys.argv[1] if len(sys.argv) > 1 else "reddit_comments"
-    K = int(sys.argv[2]) if len(sys.argv) > 2 else 12500
-    n_surr = int(sys.argv[3]) if len(sys.argv) > 3 else 50
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    platform = args[0] if len(args) > 0 else "reddit_comments"
+    K = int(args[1]) if len(args) > 1 else 12500
+    n_surr = int(args[2]) if len(args) > 2 else 50
+    do_model = "--model" in sys.argv
     cfg = mrd.PLATFORMS[platform]
     df = mrd.restrict_universe(mrd.load_panel(cfg), K, buffer_mult=4)
-    X = complete_panel(df, df.attrs.get("score_k"))
+    score_k = df.attrs.get("score_k")
+    T = int(df["period"].max()) + 1
+    X = complete_panel(df, score_k)
     print(f"=== surrogate test: {platform} K={K}  complete-column population "
           f"n={X.shape[1]}, T={X.shape[0]}, {n_surr} surrogates ===")
 
@@ -175,6 +223,16 @@ def main() -> None:
               f"    [{lo:7.3f},{hi:7.3f}]{str(inside):>12}")
 
     kappa_probe(X)
+
+    if do_model:
+        print("\n--- model-side surrogates (fitted long stack) ---")
+        Pt, Su = model_side(df, score_k, T, n_surr)
+        d_data = S["VRsc13"].mean() - emp["VRsc13"]
+        d_model = Su["VRsc13"].mean() - Pt["VRsc13"].mean()
+        print(f"\n    functional gap at VR_sc(13): data {d_data:+.3f} "
+              f"vs model {d_model:+.3f} -> the model's non-Gaussian machinery "
+              f"produces {100 * d_model / d_data if d_data else np.nan:.0f}% "
+              f"of the data-side gap")
 
 
 if __name__ == "__main__":

@@ -622,6 +622,39 @@ is one PLATFORMS entry; (4) the figure set above. The paper's spine: *one
 rank-conditional law, one entity amplitude, identified measurement model,
 validated out of sample — across platforms, metrics, and instrument eras.*
 
+### Publication positioning update (2026-07-05, post-hardening; supersedes the spine above)
+
+Two external review rounds adjudicated (MODEL_STATUS §2q, §2x; both saved in
+`reviews/`). Revised external verdict: "credible, deeply validated
+model-discovery paper; remaining PNAS risks are confirmation and breadth, not
+internal statistical mechanics." Venue read: PNAS credible AFTER the registered
+confirmation extension + two breadth systems; Nature Communications possibly
+close already if framed as an identification-and-validation advance;
+computational-social-science flagship strong now pending confirmation.
+
+Steering items (1) and (2) above are now DONE and adjudicated: b = 1 is not
+rejected under time-window uncertainty (block-bootstrap CIs contain 1 on both
+platforms; conservative bound b ∈ [0.94, 1.11]) — b = 1 is the MAIN model,
+measured b the refinement; population-matched scoring is measured DEAD
+(census 99% present, censoring moves nothing). The comments VR residual is
+decomposed: ~half is the scored-VR functional's non-Gaussianity discount
+(spectrum-preserving surrogates), the model's t-tails supply only ~24% of that
+discount, and the honest remaining dynamics target is ~+0.03–0.04.
+
+**The revised spine (binding):** *digital attention rankings obey an
+approximately factorized rank-diffusion law — a shared rank-conditional
+stochastic process with independently bounded measurement noise and boundary
+rebirth, multiplied to first order by one persistent endpoint amplitude —
+predicting held-out rank movement and reproducing the main churn structure
+across Facebook tracked activity and Reddit census attention, with residual
+deviations localized to low-frequency structure and bounded reversion
+heterogeneity.* Claim discipline: structure vs movement stacks main-text with
+a target column; FB movement leads with the identified Spec-B + conditional
+spec; "15/15" descriptive + Q as residual localization; "excess low-frequency
+structure" replaces lifecycle-arc lead language; dominant one-amplitude
+factorization, never "all heterogeneity is amplitude" (κ_i log-SD ≈ 0.30,
+bounded, pre-registered as extension diagnostic E4).
+
 ---
 
 ## 7. Key Sources
