@@ -1403,6 +1403,44 @@ sample produces the 15/15 in-sample card with near-exact D(h) curvature.
   scope condition, stated and demonstrated (this section), not a
   specification search.
 
+## 2t. 2026-07-05 — Uncertainty-aware scorecard (P3): bands + omnibus Q on the three headline cards; churn rows get MC bands everywhere
+
+**Tool (`llm_fitting/scorecard_bands.py`, additive).** (a) Empirical bands:
+joint entity bootstrap (resampled tracked columns; cross-metric covariance
+captured) for VR/ACF/RACF/R2/dRank; moving-block bootstrap over weeks for
+coll*/outfluxK/return4K; Pers{h} is a single-origin set overlap with no
+empirical sampling band (MC band only — DECLARED; its z/Q contribution treats
+the empirical value as noiseless and is therefore harsh). (b) Sim MC bands:
+reps=20, cached seeds 0..19, full MC covariance. (c) Omnibus
+Q = dᵀΩ⁺d over the 15 card moments, Ω = Cov_boot + Cov_MC/reps, 50% diagonal
+shrinkage — a covariance-weighted DESCRIPTIVE distance (χ² df=15 is a
+reference scale, not a test; moments overlap in windows).
+
+**Headline cards at the §2s structure-primary stacks (reps=20, boot=100):**
+
+| panel | threshold card (20 reps) | omnibus Q (ref: mean 15, p95 ≈ 24) | largest goal-1 z |
+|---|---|---|---|
+| FB Era A (full stack) | **15/15, churn 0.017 — holds at 20 reps** | 298 | ACF2 +3.2; all VR/RACF/R2 rows within ±2.5 z |
+| subs (2d/2e stack) | 14/15, churn 0.056 | 217 | VR4 +6.3, RACF13 −3.4 (2j-known) |
+| comments (long stack) | 12/15, churn 0.036 | 1275 | VR4 +25, VR13 +21 — the residual block, now in SDs |
+
+Key readings, ground truth for the paper's SI-5:
+- **The FB 15/15 card survives MC scrutiny**: every rank-dynamics row within
+  ~±0.02 of razor-thin empirical bands; **coll1 diff is +0.028 with MC SD
+  ±0.119** — the head-collision "problem" is formally within noise at 20
+  reps, closing 2o's recommendation #1 (bands now standard tooling).
+- **Q separates the platforms the thresholds blur**: FB 298 vs comments 1275.
+  At census-scale precision (4,000–9,500 bootstrap entities) the model is a
+  tight descriptive approximation everywhere and the exact truth nowhere —
+  Q is the honest version of the review's A6/C3 point, and the comments VR
+  block (z ≈ 21–25) is the ONLY place where the misfit is an order of
+  magnitude above everything else.
+- Churn rows now carry bands by default (empirical block-bootstrap + MC):
+  comments coll1 +0.017 ± 0.061, subs coll1 −0.076 ± 0.27 — no churn row on
+  any headline card is outside its joint band except comments coll10 (−0.138,
+  z −4.6) and the boundary-flux pair (outfluxK +0.038, return4K −0.095, huge
+  z from tiny bands) — the sharpest remaining goal-2 targets, stated in SDs.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
