@@ -74,3 +74,30 @@ E3. **Descriptive card + bands** on the extended panel with the §2s comments
   NOT started; no extension data has been read. Owner action required:
   mount the WD drive and run the DATA_PHASE2_REPORT.md resume command, then
   execute §3 exactly.
+
+## 6. AMENDMENT A1 (2026-07-05, same day, BEFORE any data processing): κ_i secondary diagnostic + surrogate-adjusted residual reference
+
+Registered per the revised external verdict (rec. 4 / B4) and MODEL_STATUS
+§2v. No extension data has been read at the time of this amendment (WD drive
+still unmounted).
+
+E4. **κ_i concentration diagnostic (secondary; does not gate E1/E2).**
+    On the EXISTING panel (train), compute per-entity curvature
+    κ̂_i = EB-shrunken log VR13 residual after 5×5 rank×volatility cell
+    demeaning (`surrogate_test.kappa_probe` machinery; shrinkage factor =
+    the measured split-half signal share). On the EXTENSION, compute the
+    same per-entity log VR13 residual for the shared entity set. Registered
+    test: Spearman(κ̂_i^train, resid_i^ext) and the quintile concentration
+    ratio (mean |resid| in the extreme κ̂_i quintiles ÷ middle quintile).
+    - PRE-DECLARED READING: κ_i is "predictive" if Spearman ≥ 0.20 AND
+      concentration ratio ≥ 1.3. Only if E4 passes does a per-entity κ_i
+      model layer get implemented — as a NEW pre-registered step (train-only
+      EB, hard shrinkage, no score-tuned parameters), adopted only if it then
+      improves the frozen OOS movement gate. If E4 fails, κ_i stays a
+      bounded limitation (log-SD ≈ 0.30, §2v) and no layer is added.
+
+E3 reference amendment: the comments in-sample VR residual is evaluated
+against the SURROGATE-ADJUSTED target (§2v): the functional component
+(≈ +0.04 of the +0.08 VR13 gap) is expected to reproduce on the extension
+under any spectrum-equivalent dynamics; only the residual beyond the
+surrogate band counts as evidence of missing dynamics.
