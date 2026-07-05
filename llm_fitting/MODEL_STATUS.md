@@ -1349,6 +1349,60 @@ is the legacy convention; the centered column is canonical from here. 2e's
 "σ_obs identified, not calibrated" scopes to: FB head identified; elsewhere
 bounded-within-bracket + shape.
 
+## 2s. 2026-07-05 — PAPER-PRIMARY STACK FREEZE (P1): the full spec×gate matrix, every cell filled, failures included
+
+**The run that was never run (review R2): the FB full in-sample stack through
+the OOS gate — it LOSES, as 2i predicted.** facebook_a K=3500, temper + pool +
+md6 + t + md-vr-long + two-scale + mix, rolling origins 21/32/43/54/65:
+rel err **0.170 ± 0.040 vs persistence 0.145 ± 0.031, CI coverage 20%**, wins
+2/5 splits, held-out displacement tail truncated (last-split p90 43/69/136 vs
+emp 68/122/203). Mechanism already on record (2i): D(h)-moment estimation needs
+long train windows; on 21–65-week rolling windows the noisy D moments
+destabilize the partition and squash the tail. This is a FINDING about
+estimator/sample-size scope, not a model defect — the same stack at T=86 full
+sample produces the 15/15 in-sample card with near-exact D(h) curvature.
+
+**The complete stack × {in-sample card, OOS gate} matrix (sources dated):**
+
+*FB Era A (K=3500, T=86):*
+
+| stack | in-sample card | OOS movement gate |
+|---|---|---|
+| FULL: md-vr-long+stat-factor+two-scale+mix | **15/15, churn 0.018** (2p) | 0.170 ± 0.040, cov 20% — **loses** (2s) |
+| calibrated Spec-A: temper+pool+md6+t | 8/15, churn 0.122 (2g-X P1) | 0.114 ± 0.046, cov 60%, **beats persistence 5/5** (2g-X P1) |
+| identified Spec-B (centered pin) + cond state | 10/15, churn 0.106 (2r) | **0.118 ± 0.038, cov 60%, beats 4/5, scale 1.0×5** (2r) |
+
+*Reddit comments (K=12,500, T=136):*
+
+| stack | in-sample card | OOS movement gate |
+|---|---|---|
+| LONG: md-vr-long+stat-factor+two-scale+mix | **12/15** (2p) | 0.169 ± 0.062, cov 60% (2p; cited, not rerun) |
+| gate spec: md6+t+mix + cond state | 10/15, churn 0.038 (2s, this session) | **0.159 ± 0.070, cov 100%, at par** (2l) |
+| identified Spec-B (centered pin) | 9/15, churn 0.045 (2r) | 0.187 ± 0.058, cov 60% (2r) |
+
+*Reddit subs (K=5,000, T=30):*
+
+| stack | in-sample card | OOS movement gate |
+|---|---|---|
+| 2d/2e stack: md6+t (Spec-A) | **14/15, churn 0.053** (2e) | uncond 0.171 ± 0.017, cov 100% (2d); **+cond state 0.118 ± 0.061, cov 100%, beats 4/5** (2f) |
+| identified Spec-B (centered pin) | 14/15, churn 0.102 (2r) | 0.218 ± 0.028, cov 100% (2r) |
+
+**PAPER-PRIMARY DECLARATIONS (frozen; the registration doc in P2 pins these):**
+- *Structure estimand (in-sample card):* FB Era A = FULL stack; comments =
+  LONG stack; subs = 2d/2e stack. These are descriptive in-sample cards under
+  the working diagnostic stack (P3 adds bands + Q).
+- *Movement estimand (OOS gate):* **FB = identified Spec-B (centered pin) +
+  conditional state** — chosen over the calibrated Spec-A spec because it is
+  point-indistinguishable (0.118 vs 0.114) with ZERO calibration freedom
+  (scale 1.0 on 5/5); Spec-A stays as the declared sensitivity spec.
+  Comments = md6+t+mix + conditional state (0.159, 100% coverage).
+  Subs = md6+t + conditional state (0.118, 100% coverage, beats 4/5).
+- *The paper reports the two estimands with different stacks BY DESIGN*, with
+  the reason on the table: multi-horizon D(h) moments identify slow structure
+  on full panels and destabilize short rolling train windows — a sample-size
+  scope condition, stated and demonstrated (this section), not a
+  specification search.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
