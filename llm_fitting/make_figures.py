@@ -134,10 +134,10 @@ def fig2_identification():
     hs = np.array((1,) + d_h)
     ax[2].plot(hs, dm_all, "o-", color=C_DATA, ms=5)
     ax[2].plot(hs, D_fit, "s--", color=C_FIT, ms=4)
-    ax[2].text(hs[-1], dm_all[-1] * 0.88, "empirical", color=C_DATA,
+    ax[2].text(hs[-1], dm_all[-1] * 0.80, "empirical", color=C_DATA,
                ha="right", va="top")
-    ax[2].text(hs[-1], D_fit[-1] * 1.1, "fitted", color=C_FIT,
-               ha="right", va="bottom")
+    ax[2].text(hs[-1], D_fit[-1] * 0.62, "fitted", color=C_FIT,
+               ha="right", va="top")
     ax[2].set(xlabel="horizon h (weeks)", ylabel=r"$D(h)=\mathrm{Var}(X_{t+h}-X_t)$",
               xscale="log", title="C  Long-horizon variance curvature")
     ax[2].set_xticks(hs, [str(h) for h in hs])
