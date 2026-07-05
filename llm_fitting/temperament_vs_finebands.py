@@ -42,7 +42,7 @@ def corrected_logvar(df, periods=None, min_changes=8):
     trig_i = psi'(nu_i/2), and the entity's mean rank over the window."""
     if periods is not None:
         df = df[df["period"].isin(periods)]
-    eid, u, same, _ = mrd._change_panel(df)
+    eid, _, u, same, _ = mrd._change_panel(df)
     ok = same & np.isfinite(u)
     sub = pd.DataFrame({"eid": eid[ok], "u": u[ok]})
     g = sub.groupby("eid")["u"]

@@ -470,7 +470,7 @@ def estimate_tail_df(df: pd.DataFrame, trans_share: float, min_changes: int = 12
     small, Delta xi ~ difference of two iid innovations, so
         excess_kurt(u) ~ trans_share^2 * (6/(nu-4)) / 2   =>  nu = 4 + 3 w^2 / k_u.
     Gaussian within-entity changes (k_u <= kurt_floor) => inf (no t needed)."""
-    eid, u, same, _ = _change_panel(df)
+    eid, _, u, same, _ = _change_panel(df)
     ok = same & np.isfinite(u)
     sub = pd.DataFrame({"eid": eid[ok], "u": u[ok]})
     g = sub.groupby("eid")["u"]
@@ -749,10 +749,11 @@ def _change_panel(df: pd.DataFrame):
     N = int(round(df.groupby("period")["entity_id"].size().mean()))
     rbar = df.groupby("entity_id")["rank"].mean()
     zbar = np.log(np.clip((rbar - 0.5) / N, Z_CLIP, 1.0))
-    return eid, u, same, zbar
+    return eid, per, u, same, zbar
 
 
-def estimate_temperament(df: pd.DataFrame, n_bands: int = 10, min_changes: int = 12) -> dict:
+def estimate_temperament(df: pd.DataFrame, n_bands: int = 10, min_changes: int = 12,
+                         acf_lags: int = 2, detrend: bool = False) -> dict:
     """Estimate the dispersion s of the persistent entity-level volatility
     multiplier ("temperament"):  sigma_i = sigma(zbar_i) * sqrt(v_i),
     log v_i ~ N(-s^2/2, s^2), E[v_i] = 1.
@@ -770,22 +771,42 @@ def estimate_temperament(df: pd.DataFrame, n_bands: int = 10, min_changes: int =
     bands, so s^2 = Var_within-band(corrected log s_i^2) - mean_i psi'(nu_i/2).
     Identified from the variance-dispersion moment ONLY -- never tuned to churn
     or displacement.
+
+    acf_lags (2026-07-05, P4/review B7): pooled-ACF depth for the Satterthwaite
+    kappa; default 2 = committed behavior.  Longer within-entity dependence
+    would understate kappa -> overstate nu -> bias s UP; measure at 1..6.
+    detrend (2026-07-05, P4/review R5): per-entity LINEAR detrending of the
+    change series u (= quadratic level detrending; the per-entity variance
+    already removes constant drift = linear level trends).  Bounds the
+    lifecycle-arc contamination of long-horizon dispersion; nu loses one df.
     """
     from scipy.special import digamma, polygamma
-    eid, u, same, zbar = _change_panel(df)
+    eid, per, u, same, zbar = _change_panel(df)
     ok = same & np.isfinite(u)
-    sub = pd.DataFrame({"eid": eid[ok], "u": u[ok]})
+    sub = pd.DataFrame({"eid": eid[ok], "u": u[ok], "t": per[ok].astype(float)})
     g = sub.groupby("eid")["u"]
     n_i = g.count()
-    s2_i = g.var(ddof=1)
-    keep = n_i >= min_changes
+    if detrend:
+        # residual variance of u ~ a + b*t per entity: (Suu - Sut^2/Stt)/(n-2)
+        sub["ud"] = sub["u"] - g.transform("mean")
+        sub["td"] = sub["t"] - sub.groupby("eid")["t"].transform("mean")
+        agg = sub.assign(uu=sub.ud ** 2, ut=sub.ud * sub.td, tt=sub.td ** 2) \
+                 .groupby("eid")[["uu", "ut", "tt"]].sum()
+        stt = np.where(agg["tt"] > 0, agg["tt"], np.inf)
+        s2_i = pd.Series((agg["uu"] - agg["ut"] ** 2 / stt)
+                         / np.maximum(n_i - 2, 1), index=agg.index)
+        dof_lost = 2
+    else:
+        s2_i = g.var(ddof=1)
+        dof_lost = 1
+    keep = n_i >= max(min_changes, dof_lost + 1)
     n_i, s2_i = n_i[keep], s2_i[keep]
     if len(n_i) < 50:
         return dict(s=0.0, n_entities=int(len(n_i)), kappa=np.nan, per_band=[])
 
-    # pooled within-entity ACF of u at lags 1..2 -> Satterthwaite kappa
+    # pooled within-entity ACF of u at lags 1..acf_lags -> Satterthwaite kappa
     rho = []
-    for lag in (1, 2):
+    for lag in range(1, acf_lags + 1):
         idx = np.arange(len(u) - lag)
         v = np.ones(len(u) - lag, dtype=bool)
         for j in range(lag + 1):
@@ -795,7 +816,7 @@ def estimate_temperament(df: pd.DataFrame, n_bands: int = 10, min_changes: int =
         var0 = np.nanvar(u[ok])
         rho.append(float(np.mean(prod[v]) / var0) if v.any() else 0.0)
     kappa = 1.0 + 2.0 * sum(r * r for r in rho)
-    nu = (n_i.to_numpy() - 1.0) / kappa
+    nu = (n_i.to_numpy() - float(dof_lost)) / kappa
 
     # bias-corrected log variance
     e = np.log(np.clip(s2_i.to_numpy(), 1e-12, None)) - (digamma(nu / 2) - np.log(nu / 2))
@@ -821,7 +842,8 @@ def estimate_temperament(df: pd.DataFrame, n_bands: int = 10, min_changes: int =
                                       index=s2_i.index))
 
 
-def estimate_mix_b(df: pd.DataFrame, s1: float, min_changes: int = 8) -> float:
+def estimate_mix_b(df: pd.DataFrame, s1: float, min_changes: int = 8,
+                   detrend: bool = False, acf_lags: int = 2) -> float:
     """Mix exponent b for --mix-hetero, identified from the s(h) HORIZON moment
     (2c): temperament dispersion measured from NON-OVERLAPPING h-week changes.
     At long h the permanent component dominates the change variance, so
@@ -836,7 +858,8 @@ def estimate_mix_b(df: pd.DataFrame, s1: float, min_changes: int = 8) -> float:
         if T // h >= min_changes + 1:
             sub = df[df["period"] % h == 0].copy()
             sub["period"] //= h
-            sh = estimate_temperament(sub, min_changes=min_changes)["s"]
+            sh = estimate_temperament(sub, min_changes=min_changes,
+                                      detrend=detrend, acf_lags=acf_lags)["s"]
             return float(np.clip(sh / s1, 0.0, 1.5))
     return 0.0
 
@@ -1208,7 +1231,7 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                               day_guard=cfg.get("day_guard", False))
         cur = sb.spec_b_curve(df, daily)
         sigma_obs_fix = (cur["z"], cur["sigma_obs"])
-        print(f"  Spec-B sigma_obs (daily noise floor, Toeplitz-corrected): "
+        print(f"  Spec-B sigma_obs (daily noise floor, Toeplitz, centered/invariant): "
               f"{cur['sigma_obs'][0]:.3f}..{cur['sigma_obs'][-1]:.3f} (head..tail)")
     p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                  md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,

@@ -114,12 +114,22 @@ def _toeplitz_floor(R: np.ndarray, p_sh: np.ndarray) -> tuple[float, float, floa
 
 
 def spec_b_curve(uni: pd.DataFrame, daily: pd.DataFrame, n_bands: int = 12,
-                 max_period: int | None = None, method: str = "toeplitz") -> dict:
+                 max_period: int | None = None, method: str = "toeplitz",
+                 floor: str = "centered") -> dict:
     """sigma_obs,B(z) on the universe's rank coordinate.
 
     uni: weekly universe panel (restrict_universe output); daily: load_daily
     output for (a superset of) its members.  max_period: use only weeks with
-    period < max_period (train-only identification for the OOS gate)."""
+    period < max_period (train-only identification for the OOS gate).
+
+    floor (toeplitz method only): which convention `sigma_obs` reports.
+      * "centered" (DEFAULT since 2026-07-05, the P0 adjudication): the
+        invariant floor p' C Sig C p.  The within-week common component is
+        confounded with weekly signal (CJC = 0 null direction) and counts as
+        signal in a floor; this is the only convention the data identifies.
+      * "legacy": the pre-2026-07-05 uncentered floor p' Sig p under lstsq's
+        min-norm convention -- reproduction of committed results only.
+    The table always carries both columns (sigma_obsB, sigma_obsB_cent)."""
     wk = uni.drop_duplicates("period").sort_values("period")[["period", "ts"]]
     if max_period is not None:
         wk = wk[wk["period"] < max_period]
@@ -135,6 +145,8 @@ def spec_b_curve(uni: pd.DataFrame, daily: pd.DataFrame, n_bands: int = 12,
     ent = np.asarray(idx.get_level_values(0))
 
     if method == "toeplitz":
+        if floor not in ("centered", "legacy"):
+            raise ValueError(f"unknown floor convention: {floor!r}")
         full = (K > 0).all(1)
         L = np.log(K[full])
         dow = (L - L.mean(1, keepdims=True)).mean(0)
@@ -151,12 +163,12 @@ def spec_b_curve(uni: pd.DataFrame, daily: pd.DataFrame, n_bands: int = 12,
             m = band == b
             if m.sum() < 300:
                 continue
-            sig_d, floor, floor_c = _toeplitz_floor(R[m], p_sh[m])
+            sig_d, fl_leg, fl_cent = _toeplitz_floor(R[m], p_sh[m])
             r_med = float(np.median(pr[m]))
             z_out.append(np.log(np.clip((r_med - 0.5) / N, mrd.Z_CLIP, 1.0)))
-            s_out.append(float(np.sqrt(floor)))
+            s_out.append(float(np.sqrt(fl_cent if floor == "centered" else fl_leg)))
             rows.append((r_med, sig_d, float((p_sh[m] ** 2).sum(1).mean()),
-                         float(np.sqrt(floor)), float(np.sqrt(floor_c)),
+                         float(np.sqrt(fl_leg)), float(np.sqrt(fl_cent)),
                          int(pd.unique(ent_f[m]).size)))
         return dict(z=np.array(z_out), sigma_obs=np.array(s_out), N=N,
                     table=pd.DataFrame(rows, columns=["rank", "sigma_d", "sum_p2",

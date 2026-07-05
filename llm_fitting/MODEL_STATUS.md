@@ -1276,6 +1276,79 @@ a hypothesis test internally — P3 is the paper answer); their suggested replac
 language is in places more hedged than the evidence requires — adopt precision,
 not tepidity.
 
+## 2r. 2026-07-05 — Spec-B centered floor ADOPTED (P0): the invariant pin fixes a floor violation, ties the calibrated FB gate, and every qualitative conclusion survives
+
+**Adjudication (completes 2q's half-fix).** The centered floor pᵀCΣCp is now the
+PINNED quantity: `spec_b_curve` returns it as `sigma_obs` by default
+(`floor="legacy"` reproduces committed numbers; both columns always in the
+table). Declared convention: the within-week common component is confounded
+with weekly signal (CJC = 0 null direction) and counts as signal in a floor.
+Locked by `tests/test_spec_b_projection.py` (non-identification made exact:
+Σ and Σ+δJ are observationally equivalent after centering and the centered
+floor equals the true invariant; convention switch pinned). Suite 45 passed;
+legacy guard untouched.
+
+**Audits complete (all three platforms, centered vs legacy by band):**
+
+| platform | head | mid | deep |
+|---|---|---|---|
+| subs K=5000 (2q) | 0.100→0.074 (−26%) | −15% | −5..−7% |
+| FB Era A K=3500 | 0.207→0.157 (−24%) | −15..−17% | −14% |
+| comments K=12500 | 0.101→0.071 (−30%) | −19..−25% | −13% |
+
+**The decisive detail: the legacy floor was VIOLATED on FB** — Spec-A head
+(0.176) sat BELOW the claimed floor (0.207), an internal contradiction the
+min-norm convention manufactured. Under the centered floor the ordering
+Spec-A ≥ floor holds at every band on every platform. The centered convention
+is not just the algebraically identified one; it is the only one consistent
+with Spec-A.
+
+**Reruns of every spec-B-dependent result (all this session; legacy → centered):**
+
+| result | legacy (recorded) | centered (this session) | verdict |
+|---|---|---|---|
+| subs in-sample (2e stack) | 14/15, churn 0.053 | **14/15**, churn 0.102 (same sole miss R2_13 +0.102; coll rows carry ±0.07 5-rep SE, 2o) | holds |
+| subs OOS pinned | 0.215 ± 0.059, cov 100% | **0.218 ± 0.028, cov 100%** | holds |
+| FB Era A in-sample spec-B (P2) | 10/15, churn 0.081 | **10/15**, churn 0.106; RACF1 +0.063 / RACF4 +0.014 pass; head σ_trans = 0.000 exactly | holds |
+| FB OOS spec-B uncond | 0.211 ± 0.030, cov 40% | **0.152 ± 0.040**, cov 40%, scale 1.0 ×5 | **improves** |
+| FB OOS spec-B + cond state | 0.164 ± 0.049, cov 40% | **0.118 ± 0.038, cov 60%, beats persistence 4/5** (vs 0.145 ± 0.031) | **improves** |
+| comments in-sample pinned (P3) | 9/15, churn 0.026, VR +0.12..+0.21 | **9/15**, churn 0.045, VR +0.12..+0.21 (block unchanged) | holds |
+| comments OOS pinned | clean-4 mean 0.213, cov 100% | 0.187 ± 0.058, cov 60% (5 splits; MOM_FLOOR=0.02 active — no coll1=0 explosion) | holds (at par: persistence 0.165 ± 0.062) |
+
+**The headline gain: FB spec-B + conditional state at the centered pin =
+0.118 ± 0.038, coverage 60%, beating persistence on 4/5 splits — statistically
+indistinguishable from the calibrated Spec-A operational spec (0.114 ± 0.046,
+P1) with ZERO calibration freedom used (scale = 1.0 on 5/5 splits).** The
+fully-identified FB observation model now clears the gate at the calibrated
+spec's level; the 2q inversion (conditioning helps FB under spec-B) stands and
+strengthens (0.152 → 0.118).
+
+**The 2e "component eliminated" claim, re-measured:** with the lower centered
+pin, subs σ_trans no longer collapses to exactly 0 — it lands at 0.026..0.077
+(head..tail) against σ_perm 0.132..0.103 and σ_obs 0.074..0.222; at the head
+that is ~4% of the permanent variance. Superseding language: the transitory
+component is NEAR-eliminated (σ_trans ≤ 0.08 everywhere, a minor component at
+every band), not identically zero. The reduction "OU home + identified noise +
+temperament + rebirth" remains the right description of the subs weekly model.
+
+**Final σ_obs language (per the review's decision rule):** identified in SHAPE
+on all three platforms (12-band curves, two independent instruments). At the
+head: **FB is identified** — Spec-A 0.176 vs centered floor 0.157 agree within
+~12% (the agreement the legacy convention faked at 18% while violating the
+bound). **Subs and comments are bounded**: Spec-A sits ~1.6× above the centered
+floor at the head (0.117 vs 0.074; 0.120 vs 0.071), so σ_obs lies within
+[centered floor, Spec-A] — a bracket, not a point. Below the head: bounded on
+all platforms (the depth-growing Spec-A/Spec-B divergence of P2/P3 is
+unchanged by the re-pin and remains the intermittency question). The
+cross-platform irony is real and reportable: the platform without daily data
+history (FB) is now the one with head identification, because its weekly
+Spec-A and daily floor coincide there.
+
+**Superseded numbers:** every `sigma_obsB` value in 2e/2g-X P2/P3/P4-era tables
+is the legacy convention; the centered column is canonical from here. 2e's
+"σ_obs identified, not calibrated" scopes to: FB head identified; elsewhere
+bounded-within-bracket + shape.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
