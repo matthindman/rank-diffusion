@@ -12,10 +12,13 @@ so its delta-method image on the weekly log-sum is a FLOOR for sigma_obs:
 Three estimators:
   * toeplitz (PRIMARY): fit sigma_d^2 * Toeplitz(1, rho_1..rho_6) to the
     empirical within-week residual covariance (projected through the
-    week-mean centering), then map exactly: floor = mean_w p_w' Sigma p_w.
-    Within-week residuals are mildly mean-reverting (rho_1..3 ~ -0.1, as the
-    2026-06 handoff warned), which the iid mapping ignores -- the iid floor
-    overstates by ~2x.
+    week-mean centering), then map through the CENTERED projection:
+    floor = mean_w p_w' C Sigma C p_w -- the invariant quantity (2026-07-05,
+    P0 adjudication; the uncentered p' Sigma p is convention-dependent via
+    the CJC = 0 null direction and is retained as floor="legacy" for
+    reproduction only).  Within-week residuals are mildly mean-reverting
+    (rho_1..3 ~ -0.1, as the 2026-06 handoff warned), which the iid mapping
+    ignores -- the iid floor overstates by ~2x.
   * splithalf / residual (cross-checks): iid-mapping variants; report as
     upper bounds.
 

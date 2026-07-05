@@ -1554,6 +1554,56 @@ genuine dynamics residue of similar size. Per the handoff decision rule, P5
 alternatives were already revisited (§2v) — the surrogate decomposition IS
 the revised account.
 
+## 2x. 2026-07-05 — Revised external verdict adjudicated; THE research agenda (supersedes 2m's next-actions and 2q's scoped list)
+
+Revised verdict saved verbatim at
+`llm_fitting/reviews/gpt55_pro_revised_verdict_2026-07-05.md`. Headline:
+upgraded from "technically promising but vulnerable" to "credible, deeply
+validated model-discovery paper; remaining PNAS risks are confirmation and
+breadth, not internal statistical mechanics." All six of the original
+review's major internal objections are adjudicated closed (Spec-B projection,
+full-stack OOS, coll1 MC noise, b=1 rejection, lifecycle uniqueness,
+missingness). Fixed now: the stale legacy-map prose in `spec_b_sigma_obs.py`
+(their B1 implementation note). Accepted framing changes, binding on all
+future write-ups: b=1 is the MAIN model (measured b = refinement table);
+structure stack vs movement stack is a MAIN-TEXT distinction with a "target"
+column; Q is a residual-localization device, never a pass/fail gate ("15/15"
+is descriptive; Q rejects exact equality as expected at census scale); σ_obs
+= "identified in shape everywhere, identified in level at the FB head,
+bounded in level elsewhere"; "excess low-frequency structure" replaces
+lifecycle-arc lead language; the law is "dominant one-amplitude
+factorization", not "all heterogeneity is amplitude" (κ_i measured, bounded,
+second-order).
+
+**REVISED AGENDA (in order):**
+1. **Confirmation extension (owner-gated: mount WD)** — run the registered
+   E1–E3 exactly. Do NOT submit to PNAS before this. No model work first.
+2. **Breadth (owner-gated: data acquisition)** — 2+ ranked systems through
+   the unchanged pipeline, Wikipedia pageviews first; claim to test =
+   amplitude collapse (s(h) flat, b≈1) + OOS-at-par, not 15/15.
+3. **Manuscript claim-set rewrite** (no data needed) — adopt §4 of the
+   revised verdict: main claim, FB movement ordering (identified Spec-B
+   first, calibrated 5/5 as SI), scorecard/comments language, spine sentence.
+4. **Q block decomposition** (no data needed; their B5) — report Q by
+   VR / ACF+RACF / persistence / churn / boundary blocks so the omnibus
+   number localizes instead of condemns.
+5. **Pre-register κ_i as a secondary diagnostic on the extension** (their
+   B4/rec 4) — dated CONFIRMATION_PROTOCOL amendment BEFORE any extension
+   data processing: train-only EB κ̂_i, hard shrinkage, adopt only if it
+   improves frozen OOS / predicts the confirmed residual.
+6. **Complete the §2v functional decomposition** (no data needed) — model-side
+   surrogates: phase-randomize FITTED-model paths to measure how much of the
+   +0.04 scored-VR functional gap the existing t-tails already produce;
+   sets the honest dynamics target, feeds SI.
+7. Weighting robustness (first review B4, still unmeasured): identity vs
+   diagonal-precision MD weighting on one platform.
+8. Figures: γ-tail + SSE(a) flat-to-V (Fig 2); Spec-A vs centered Spec-B
+   with identified/bracketed shading (Fig 3); s(h) flatness + b-variants
+   table (Fig 4); SI discovery chronology.
+9. PARKED: κ_i implementation (until #1 says otherwise); population-matched
+   scoring (dead, SI negative result); lifecycle-state models (target now
+   ~+0.04 after §2v); data reconstruction decisions (owner).
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
