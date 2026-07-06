@@ -8,6 +8,10 @@ intake, or paper work, read these in order:**
 1. `.claude/skills/stochastic-modeling/SKILL.md` — **the core skill. Read it
    in full, every session.** It encodes the working method, the frozen
    per-platform specs, the pitfall catalogue, and the current agenda.
+   Companions in the same directory: `data-intake` (raw-data → validated
+   panel procedure) and `model-status-authoring` (how to write the canonical
+   record). The same three skills are mirrored at `.agents/skills/` for
+   tools that read that path — the `.claude/skills/` copies are canonical.
 2. `llm_fitting/MODEL_STATUS.md` — the canonical record of results. Newest
    dated §2 subsections supersede older ones. All numbers live here, not in
    your memory.
