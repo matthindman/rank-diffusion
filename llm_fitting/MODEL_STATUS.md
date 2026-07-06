@@ -1861,6 +1861,153 @@ positive: removes partition freedom); if not, FB head concentration is
 reported as a measurement-regime-scoped limitation. Either way the paper's
 evidence spine is untouched.
 
+## 2z-c. 2026-07-06 — Instagram RESCUED as a fourth system: the "a"-query censoring modeled as a 3-layer measurement process; the standard pipeline on a measurability-scoped universe gives 9/15 + an AT-PAR OOS gate with zero calibration freedom; per-post variant FAILS by the known φ→0 degeneracy (scored, kept)
+
+**The question (owner-posed):** IG was collected through CrowdTangle's search
+endpoint with the query "a" (posts included iff the caption matches;
+account×day aggregation) — recorded here only as a negative control (§4:
+"flattens the distribution → pathological rank displacement, R² collapse").
+Knowing the censoring process, can added apparatus on top of the CORE model
+recover structure and movement?  Everything below was pre-registered in
+`llm_fitting/ig_censoring_prereg.md` (model + P1–P4 written before any
+measurement; Amendment 1 — universe rule, K, stacks, expected failure
+locus — dated after forensics, before any fit).
+
+**The censoring model (formal, and now measured).** Y_it = Σ engagements over
+M_it = `n_posts` matching posts, M_it ~ Binomial(P_it, q_i), q_i a persistent
+account property (language/caption style). Three implications, all
+independently measured on the FULL panel (`ig_weekly_ranked.parquet`,
+24.5M rows, 2.31M accounts, T=53 w/ partial week 0 dropped → weeks 1–52):
+
+- **L1 — post-level thinning noise ~ a/M (P1 PASS).** Per-post decomposition
+  log Y = log M + log Ȳ: (Δlog Ȳ)² regresses on (1/M_t + 1/M_{t+1}) with
+  slope c² = 0.253, binned means monotone 0.29 → 0.94; at M ≥ 30 both weeks
+  the implied thinning share of per-post movement is ~5% (0.011 of 0.192),
+  at M ≥ 100 ~2%. High-M Δlog Ȳ has excess kurtosis 11.0 — the t-tails
+  family, visible once the thinning is stripped.
+- **L2 — week-correlated INSTRUMENT dropout (P2 FAIL as registered; the
+  registered Poisson-thinning story for absence is DEAD).** Accounts with
+  m̄ ≥ 20 matching posts/week are absent 16.1% of weeks (thinning predicts
+  e^-28 ≈ 0); the hazard is flat in posting rate (10–17% from m̄=10 to 140) —
+  an instrument coin-flip, not behavior; cohort absence rate varies across
+  weeks with sd 0.047 vs iid benchmark 0.0042 (11×) — week-level common
+  shocks; collection RAMP era weeks 1–8 (absence 0.21–0.26, settling to
+  ~0.10–0.12). Failure reported with full prominence: absence on IG is
+  mostly instrument, not thinning zeros.
+- **L3 — low-q ghost flicker at the head.** Top-5k accounts by level have
+  MEDIAN presence 7.5% — mega-accounts whose captions rarely match appear
+  once with huge engagement and vanish. This is precisely the ghost-spiker
+  population the absence-penalized permanent rank exists to exclude, and it
+  is what made naive IG panels pathological.
+- **P3 (aggregation scaling) PASS:** cohort mean (Δlog Y)² = 0.957 / 0.595 /
+  0.444 at 1w / 2w / 4w; the implied thinning constant is consistent across
+  both steps (a_eff 3.2 vs 3.45) — a 1/M noise law, which true diffusion
+  (growing in horizon) cannot mimic.
+
+**The apparatus (zero new model components; the CORE model is untouched):**
+(1) universe = absence-penalized permanent rank over ALL 2.31M accounts
+(standard §2b rule — it sinks the L3 ghosts automatically: the selected 60k
+have mean presence 0.889); (2) **K = 10,000 declared at the 80% coverage
+point** (K90 ≈ 25k, but the marginal tail is M ~ 1–2 ≈ pure thinning noise —
+a measurability cap, n_posts-based, score-blind, declared in Amendment 1
+BEFORE any fit), B = 4K; (3) weeks 1–52 (partial week 0 dropped);
+(4) standard stacks: card = temper + pool≥8 + md6 + t-tails + stat-factor;
+gate = temper + pool≥8 + md6 + t-tails + `--conditional state`. New
+platform entries `instagram_hm` (totals) and `instagram_pp` (per-post,
+metric_value/n_posts — the q_i bias cancels exactly in Ȳ) — additive
+PLATFORMS dict entries only; defaults byte-identical; suite 64 green.
+
+**Results (P4 PASS on all four registered sub-criteria).**
+
+| panel / spec | card | churn err | OOS rel err vs persistence | cov | scale |
+|---|---|---|---|---|---|
+| instagram_hm, card stack (20 reps) | **9/15** | 0.052 | — | — | — |
+| instagram_hm, movement stack (5 splits) | — | — | **0.841 ± 0.536 vs 0.908 ± 0.637** (beats 2/5, AT PAR) | 80% | **1.00×5** |
+| instagram_pp, card stack (5 reps) | 7/15 | 0.032 | — | — | — |
+
+- **No pathology on totals.** dRank1/4/13 sim 17.7/21.3/27.7 vs emp 19/24/30
+  (the recorded "runaway displacement" is GONE); R2_1 0.789 vs 0.635; VR
+  shape right with a uniform ~+0.06 excess. Held-out displacement
+  distribution (T0=39): dR1 median/p90 model 13/88 vs emp 16/82.
+- **Parameter transport (the new-system criteria of the skill §3):**
+  κ(z) = 0.100 → 0.005 head→tail declining ✓; t_df = 4.4 ✓; s = 0.786 —
+  between comments (0.69) and subs (0.94), metric-dependent as recorded ✓;
+  φ = 0.25..0.65 healthy.
+- **σ_obs externally validated by the censoring law (the Spec-B analogue).**
+  The calibrated fit chose σ_obs = 0.209 (head) .. 0.732 (deep tail). The
+  thinning envelope computed from n_posts alone — [√(c²·E[1/M]),
+  √((1+c²)·E[1/M])] — is [0.134..0.298] at perm-rank 1–100 (mean M = 34) and
+  [0.291..0.647] at 3k–10k (M = 6.7), extending to ~1.0 in the M≈1–2 buffer.
+  The estimator, blind to n_posts, landed inside the envelope at both ends.
+  Language: on IG, σ_obs is *bounded by the censoring process* and the
+  calibrated values respect the bound — still not "identified in level"
+  (that needs the IG dailies on the WD drive → true Spec-B).
+- **The card misses are the pre-declared instrument locus, plus the known
+  head family:** return4K −0.148 (instrument dropouts RETURN; the sim's
+  exits don't — L2 exactly as pre-declared), outfluxK +0.082, RACF1 +0.256,
+  RACF4 +0.172, R2_1 +0.154, coll1 +0.225 (5-rep MC ±0.15 caveat; persists
+  at 20 reps), Pers13 +8.85. Sim slightly over-persistent overall — consistent
+  with L2 dropout entering the empirical panel as extra apparent churn that
+  the model (correctly) does not reproduce.
+- **Gate reading:** AT PAR (0.841 vs 0.908, 80% coverage) with calibration
+  selecting scale 1.00 on every split — zero calibration freedom used, as on
+  FB Spec-B. Rel-err LEVELS are ~7× FB/subs (0.84 vs 0.118): the thinning
+  noise floor hurts model and persistence alike; the split spread is large
+  (0.25–1.65). By the registered new-system success criteria (OOS
+  at-par-or-better + transported parameters + clean card), IG is a
+  CONFIRMING fourth system — with the estimand scoped below.
+- **Per-post variant (apparatus B): FAIL, kept with full prominence.** 7/15
+  with the OLD pathology (sim dRank1 1620 vs emp 31; R2_13 0.016 vs 0.635)
+  and the fit shows why: φ = 0.000 everywhere, σ_trans ≡ σ_obs — the KNOWN
+  weak-identification degeneracy (skill §4 step-4 signature). Removing the
+  M-dynamics removed the persistent signal that splits transitory from
+  noise. The registered cure is an EXTERNAL σ_obs pin, and the censoring
+  law supplies one (R_it = c²/M_it, c² = 0.253 measured) — that is
+  apparatus D, opt-in estimator code, NOT built this session (measure-first
+  discipline: build it only if the per-post estimand is ever needed).
+
+**Estimand scope (binding claim language for any use of this result):** the
+rescued system is "weekly engagement on a-matching posts, for the population
+reliably measured through the a-filter" — all coverage language is "of
+tracked (a-matching) activity" (censored-sample class, like FB CrowdTangle,
+NOT census). The persistent inclusion propensity q_i is NOT identifiable
+within-panel; the observed ladder is the true ladder convolved with the
+cross-sectional law of log q — goal-1 shape claims about the TRUE IG ladder
+are out of scope by construction (movement claims are not: log q_i cancels
+in every within-account change).
+
+**Adoption verdict:** no defaults changed; no core code touched (two additive
+PLATFORMS entries + standalone forensics/build scripts); legacy guard
+untouched, suite 64 green. IG's §4 status is UPGRADED from "negative control
+only" to "recovered under the declared censoring model with scoped estimand;
+UNCORRECTED IG panels remain a negative control and are still never to be
+calibrated against." The pitfall-catalogue wording in CLAUDE.md /
+.claude/skills (IG = negative control ONLY) is a method-contract line —
+proposed amendment is OWNER-GATED; not edited this session.
+
+**Follow-ups, in order of value:** (1) WD drive mount → IG account×day data →
+true Spec-B daily floor on IG (turns "bounded" into "identified"), and a
+registered mini-protocol if IG is promoted into the paper's breadth set;
+(2) apparatus D (opt-in `--obs-pin-nposts`: heteroskedastic R_it = a/M_it +
+absence-as-missing in the Kalman update) — the principled L1+L2 treatment,
+expected to help the per-post estimand and the boundary/return rows;
+(3) era-sensitivity re-run on stable weeks 9–52 (ramp era 1–8 declared but
+not yet excluded from the primary).
+
+Reproduction:
+```
+python -u llm_fitting/ig_censoring_forensics.py            # P1/P2 on the top-50k cut
+python -u llm_fitting/ig_censoring_forensics2.py           # P1 refined (per-post decomposition)
+python -u llm_fitting/ig_censoring_forensics3.py           # full-panel instrument health + P2 re-test
+python -u llm_fitting/ig_censoring_forensics4.py           # cohort dropout correlation, K concentration, P3
+python -u llm_fitting/ig_build_hm_panels.py                # builds ig_hm_totals / ig_hm_perpost parquets
+python -u llm_fitting/ig_sigma_obs_check.py                # sigma_obs vs thinning envelope
+python llm_fitting/minimal_rankdiff.py instagram_hm --top-k 10000 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --stat-factor --reps 20
+python llm_fitting/rankdiff_kalman.py instagram_hm --oos --top-k 10000 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --conditional state
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
@@ -1887,6 +2034,11 @@ evidence spine is untouched.
   less σ_obs helps OOS displacement. Real fit tension; report both.
 - **Instagram = negative control, do NOT calibrate to it** ("a"-query censoring flattens its
   distribution → pathological rank displacement, R² collapse).
+  _[PARTIALLY SUPERSEDED 2026-07-06 by §2z-c: with the censoring process modeled (3-layer:
+  thinning a/M, week-correlated instrument dropout, low-q ghost heads) and a measurability-scoped
+  K=10k universe, the UNCHANGED pipeline gives 9/15 + an at-par OOS gate on `instagram_hm`;
+  estimand scoped "of a-matching activity". Uncorrected IG panels remain a negative control;
+  the never-calibrate rule stands.]_
 
 ## 5. Reproduction
 ```

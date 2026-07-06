@@ -65,6 +65,20 @@ PLATFORMS = {
     "instagram": dict(path="llm_fitting/ig_weekly_ranked_top50k.parquet",
                       id_col="user_name", ts_col="date", metric_col="metric_value",
                       max_rank=20000),
+    # 2026-07-06 censoring-rescue panels (ig_censoring_prereg.md Amendment 1):
+    # weeks 1..52 of the FULL "a"-query panel, pre-cut to the top 60k accounts
+    # by absence-penalized permanent rank over ALL ~2.3M accounts (contains the
+    # registered K=10k + B=40k universe with margin).  _hm = totals metric
+    # ("of a-matching activity"); _pp = per-post metric (metric_value/n_posts;
+    # the persistent inclusion-propensity bias q_i cancels exactly).  IG stays
+    # non-calibration data — these exist to TEST recoverability under the known
+    # censoring process, never to tune the model.
+    "instagram_hm": dict(path="llm_fitting/ig_hm_totals.parquet",
+                         id_col="user_name", ts_col="date", metric_col="metric_value",
+                         max_rank=None),
+    "instagram_pp": dict(path="llm_fitting/ig_hm_perpost.parquet",
+                         id_col="user_name", ts_col="date", metric_col="metric_value",
+                         max_rank=None),
     "facebook_a": dict(path="data/ssd/derived/fb_weekly_rebuilt.parquet",
                        id_col="endpoint_id", ts_col="date", metric_col="metric_value",
                        max_rank=None, date_min=_FB_ERAS["A"][0], date_max=_FB_ERAS["A"][1],
