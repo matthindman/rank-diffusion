@@ -1,6 +1,7 @@
 %% ============================================================================
 %% pnas_outline.tex — PNAS research-article TEMPLATE / OUTLINE (not a draft)
-%% for the rank-diffusion paper. 2026-07-05.
+%% for the rank-diffusion paper. 2026-07-05; revised 2026-07-06 after a
+%% second external template review (adjudication block below).
 %%
 %% WHAT THIS FILE IS
 %%   A compilable skeleton at section -> subsection -> paragraph granularity.
@@ -189,9 +190,59 @@
 %%     Mitigation: the two-estimand design is a MAIN-TEXT paragraph with its
 %%     mechanism stated (long-horizon D(h) moments identify slow structure
 %%     on full panels, destabilize short rolling train windows — \S2s), plus
-%%     Table 1 with an explicit "target" column (verdict A4); SI-7 imports
-%%     the dated discovery chronology; SI-8 shows the protocol was frozen
+%%     Table 1 with an explicit "target" column (verdict A4); SI-7 carries a
+%%     CURATED dated discovery chronology; SI-8 shows the protocol was frozen
 %%     before the extension was touched.
+%%
+%% ----------------------------------------------------------------------------
+%% SECOND TEMPLATE REVIEW ADJUDICATED (2026-07-06; external review of this
+%% outline). ACCEPTED AND APPLIED: voice rule + drafting order below; Reddit
+%% added to the Intro hook (was FB-centric); occupancy-weighted-amplitude
+%% number moved out of R1 (Discussion only); equation-clarity directives in
+%% R2 par. 1; "two identification sources" wording (weekly covariance is not
+%% an instrument in the daily-replication sense); \S2r's "platform without
+%% daily history" irony sentence DROPPED from R3 (FB Era A HAS daily data —
+%% \S2g-X P2 — and Fig 3's FB panel is built from it; the sentence would
+%% confuse referees); centered-floor paragraph recast science-first; R5
+%% cards/Q paragraph split in two; calibration phrasing made precise
+%% ("train-calibrated scale returned 1.0 on all splits", not "zero
+%% freedom"); curated (not verbatim) SI imports + review-provenance decision
+%% flagged to owner; conservative data-availability plan in M&M 6; Fig 1
+%% explicit rank-SHARE overlay + submissions small-multiple decision;
+%% caption-honesty edits (Figs 3/4); compact Table 1 with Table S1
+%% spillover; reproducibility index in SI-10; biblio adds (Hansen;
+%% Chamberlain; Gneiting-Raftery; Kunsch block bootstrap; CrowdTangle-
+%% caveats slot); R5/M&M word budget rebalanced (650/600).
+%% REJECTED OR ADAPTED, with reasons: the reviewer's two-line variance
+%% equation is NOT adopted verbatim — whether measurement noise epsilon is
+%% amplitude-scaled differs by spec in the record (\S2e/\S2f: under Spec-B,
+%% temperament "only scales the noise") and must be verified against code
+%% before any variance factorization is displayed (todo in R2 par. 1);
+%% Discussion limitations ordering is CONDITIONAL on sequencing (if the
+%% confirmation is run pre-submission it is a Result, not a limitation, and
+%% breadth leads); the working title keeps the coinage (the citable object)
+%% with the reviewer's plainer variant added as candidate T6.
+%%
+%% VOICE RULE (binding at drafting time): PLAN-block vocabulary — "binding",
+%% "verdict", "external audit", "dead explanation", "honesty exhibit",
+%% "retracted" — is draft-control language and MUST NOT leak into article
+%% prose. The article states the science ("we use the invariant centered
+%% floor because week-mean centering leaves a common within-week component
+%% unidentified"), never the adjudication history. The paper stands on
+%% data, code, tests, and the registered protocol — not on the fact of
+%% having been reviewed.
+%%
+%% DRAFTING ORDER (forcing devices first):
+%%   1. Build Fig 1 (the hook) and Fig 5 (the OOS display); compute the
+%%      Fig-1A overlay statistic — R1 par. 2 cannot be drafted without it.
+%%   2. Fill Table 1 from \S2s (compact form; spillover to Table S1).
+%%   3. Draft the Abstract and Significance statement BEFORE body prose —
+%%      they discipline everything downstream.
+%%   4. Run the registered confirmation (owner: mount WD). Sequencing A
+%%      (run first, then submit) is the PLAN; sequencing B (submit pre-run,
+%%      framed as model discovery) is the FALLBACK only.
+%%   5. Then draft body in order R1, R2/R3, R4, R5, Intro, Discussion, M&M;
+%%      set \plansfalse early and write for readers, not from the plans.
 %% ============================================================================
 
 \documentclass[9pt,twocolumn,twoside]{pnas-new}
@@ -235,12 +286,12 @@
 %%   R2  The model ................ 400
 %%   R3  Identification ........... 500
 %%   R4  One amplitude ............ 350
-%%   R5  Validation ............... 600
+%%   R5  Validation ............... 650   (7 paragraphs; the referee load)
 %%   Discussion ................... 500
-%%   Materials and Methods ........ 650   (small type; details -> SI)
+%%   Materials and Methods ........ 600   (small type; details -> SI)
 %%   TOTAL ........................ 4,000
 %% Figure legends: budget ~120-150 words each (x6 display items), on top.
-%% If 6 pages must bind: cut order is M&M 650->500 (push blocks 2/4 to SI),
+%% If 6 pages must bind: cut order is M&M 600->500 (push blocks 2/4 to SI),
 %% Discussion 500->450, R1 550->500. If expanding to 7-8 pages: expand R5
 %% (validation detail) and R3 first — they carry the referee load.
 %% ============================================================================
@@ -262,6 +313,12 @@
 %% T5. "One process, one amplitude: rank stability and identity churn across
 %%      online attention platforms" — foregrounds the b=1 factorization
 %%      (Q-model echo); best if breadth systems land before submission.
+%% T6. "Stable ranks, churning occupants in digital attention rankings" —
+%%      plainest accessible variant (second-review suggestion); if chosen,
+%%      the coinage "Eulerian stability with Lagrangian churn" moves to the
+%%      first sentence and the Fig 1 caption so it stays citable.
+%% Decision rule: T1 if the coinage should be the citable object (default);
+%% T6 if broad-PNAS accessibility wins. T2-T5 are fallbacks.
 \title{Eulerian stability with Lagrangian churn in digital attention rankings}
 
 %% PNAS first-page banner: article type / classification (placeholder —
@@ -295,8 +352,13 @@
 %%     structural (the ladder persists) even though individual success is
 %%     transient (occupants churn); relevant to platform power, creator
 %%     economies, and information diversity debates.
-%%   Claim flags: FB = "of tracked activity"; do not say "universal law".
-\significancestatement{\todo{Significance statement per the guidance block in the source comments — descriptive fact first, model second, stakes third; $\le$120 words.}}
+%%   Claim flags: FB = "of tracked activity"; do not say "universal law";
+%%   NO symbols (kappa, b, Spec-A/B) and no scorecard jargon here.
+%% LAYOUT NOTE: with plan blocks rendered, the class's deferred Significance
+%% float drifts to the LAST page of this skeleton (plan-dense pages leave no
+%% float room). In the drafted article it must sit on page 1 — verify after
+%% \plansfalse; if it still drifts, adjust the sigstatement float placement.
+\significancestatement{\todo{Significance statement per the guidance block in the source comments — descriptive fact first, model second, stakes third; 50--120 words.}}
 
 \keywords{attention dynamics $|$ ranking dynamics $|$ rank diffusion $|$ measurement error $|$ out-of-sample validation}
 
@@ -349,26 +411,33 @@
 \PLAN{Hook: state the unpublished descriptive fact in one breath — attention
 rankings hold their shape while their membership churns — and name it
 (Eulerian stability with Lagrangian churn).}
-{Open on the object everyone knows (leaderboards / most-engaged pages /
-top subreddits), then the two-sided observation: photograph the ladder twice
-a year apart and it looks identical; track who stands on each rung and almost
-everything has moved. Hand to par.\ 2: why neither existing tradition
-predicts this conjunction.}
+{Three-sentence shape (second-review): sentence 1 states BOTH platforms —
+stable rank-size curve plus fixed-rank churn across Facebook tracked
+activity and Reddit census attention; sentence 2 gives one vivid FB head
+number; sentence 3 shows the same conjunction on Reddit (boundary
+exchange), so the hook is not FB-centric. Hand to par.\ 2: why neither
+existing tradition predicts this conjunction.}
 {Teaser numbers, sourced: FB rank-1 changes hands 52\%/week (\S2m item 2);
-19 distinct \#1 pages in 86 weeks (\S2o); rank-size overlay dispersion for
-Fig 1A \todo{compute for Fig 1}.}
-{FB language "of tracked activity" from the FIRST mention; this fact is
-unpublished — claim novelty explicitly but verifiably ("has not, to our
-knowledge, been documented").}
+19 distinct \#1 pages in 86 weeks (\S2o); Reddit: $\sim$10\%/wk of the
+top-K crosses the boundary, a third back within 4 weeks (census;
+research\_notes \S3); rank-size overlay dispersion for Fig 1A
+\todo{compute for Fig 1}.}
+{FB language "of tracked activity" from the FIRST mention; novelty claimed
+verifiably: "this joint regularity has not, to our knowledge, been
+documented as a single empirical object". Do NOT imply rank-1 churns
+everywhere — comments' \#1 is sticky (AskReddit, \S2g-X P3); FB carries
+head vividness, Reddit carries breadth.}
 
 \todo{Intro paragraph 2}
 \PLAN{Position against the two literatures that each explain half the fact.}
 {Size-distribution / random-growth tradition (Gabaix 1999; Luttmer 2007;
 Axtell 2001; Atlas models) explains stationary ladders but is silent on who
 occupies the rungs; ranking-dynamics work (I\~niguez et al.\ 2022; Blumm et
-al.\ 2012) documents churn regularities across many systems but with
-qualitative model fits — no measurement-error model, no out-of-sample
-prediction. Hand to par.\ 3: what an answer must therefore deliver.}
+al.\ 2012) documents churn regularities across many systems — broader in
+coverage, but without a measurement-error model or out-of-sample
+prediction ("broader but less measurement-identified"; respectful, never
+dismissive — this school is the paper's audience). Hand to par.\ 3: what
+an answer must therefore deliver.}
 {No numbers; citations only (see bibliography plan).}
 {Positioning is the differentiator list from research\_notes \S6c:
 identification discipline, OOS validation, instrument forensics — state as
@@ -378,11 +447,13 @@ requirements here, claim them in par.\ 3.}
 \PLAN{State the answer: the approximately factorized rank-diffusion law
 (the binding spine sentence).}
 {The spine, adapted from MODEL\_STATUS \S6 addendum 2026-07-05 (binding):
-a shared rank-conditional stochastic process with independently bounded
-measurement noise and boundary rebirth, multiplied to first order by one
-persistent endpoint amplitude — predicting held-out rank movement and
-reproducing the main churn structure. Hand to par.\ 4: the evidence base and
-its discipline.}
+a shared rank-conditional stochastic process with measurement noise bounded
+by an independent daily-replication instrument, boundary rebirth, and, to
+first order, one persistent endpoint amplitude — predicting held-out rank
+movement and reproducing the main churn structure. (The concrete
+"daily-replication instrument" phrasing is preferred over "independently
+bounded"; second-review I4.) Hand to par.\ 4: the evidence base and its
+discipline.}
 {b conservative bound $[0.94, 1.11]$, all central estimates $[0.98, 1.08]$
 (\S2u); "to first order one persistent endpoint amplitude" (\S2x).}
 {BINDING: "dominant one-amplitude factorization", NEVER "all heterogeneity
@@ -396,10 +467,12 @@ the two-estimand structure.}
 {Two platforms, three metric-eras (FB tracked interactions, Reddit
 submission karma, Reddit comment karma); a censored instrument handled by
 era segmentation; structure and movement evaluated by different stacks BY
-DESIGN with the scope condition stated (long-horizon moments identify slow
-structure on full panels, destabilize short rolling train windows). Close
-the intro by flagging the registered confirmation protocol (and, if run by
-submission, its outcome). Hands to R1.}
+DESIGN, with the scope condition in ONE sentence only (long-horizon
+moments identify slow structure on full panels, destabilize short rolling
+train windows) — Table 1 and R5 carry the demonstration; do not
+over-explain the failure here. Close the intro by flagging the registered
+confirmation protocol (and, if run by submission, its outcome). Hands to
+R1.}
 {Panels: FB Era A T=86, $\sim$14.4k pages/wk (\S2g); Reddit subs T=30
 K=5{,}000 $\approx$ 89.2\% of weekly karma (\S2b); comments T=136
 K=12{,}500 $\approx$ 98.8\% (\S2g P0).}
@@ -417,10 +490,13 @@ distinction is MAIN TEXT, not SI (revised verdict A4).}
 
 \todo{R1 paragraph 1}
 \PLAN{Introduce the data and the estimand population in two sentences each.}
-{Name the three panels and the top-coverage universe rule (pre-registered
-coverage K, absence-penalized permanent-rank membership, closed universe
-with buffer); point to M\&M and SI-2. Hand to par.\ 2: with the population
-fixed, the Eulerian half of the fact.}
+{Open with the SUBSTANTIVE data, readable by a non-methodologist ("We
+study weekly attention to Facebook pages and Reddit subreddits, restricted
+to the head of the attention distribution where ranks are meaningful and
+ties are rare"); the universe machinery (pre-registered coverage K,
+absence-penalized permanent-rank membership, closed universe with buffer)
+comes second, one sentence, pointing to M\&M and SI-2. Hand to par.\ 2:
+with the population fixed, the Eulerian half of the fact.}
 {FB Era A: 86 complete weeks, $\sim$14{,}362 pages/wk median, enrollment
 frozen (\S2g P0); top-3{,}500 = 89.7\% of tracked activity (\S2g P0).
 Reddit subs: K=5{,}000 = 89.2\% of weekly karma, census (\S2b). Comments:
@@ -448,11 +524,12 @@ continuously.}
 at horizons 1/4/13 weeks; boundary out-flux and 4-week return. The churn is
 not tail noise — it reaches rank 1. Hand to par.\ 4: the conjunction is the
 puzzle.}
-{FB rank 1 changes hands 52\%/wk (\S2m); 19 distinct \#1 pages / 86 wks,
-occupancy-weighted amplitude BELOW population median (0.47 vs 0.71, \S2o);
-$\sim$10\%/wk of top-K crosses the boundary, 33--38\% back within 4 wks
-(research\_notes \S3); comments outfluxK 0.089--0.090 (\S2g-X P5).}
-{}
+{FB rank 1 changes hands 52\%/wk (\S2m); 19 distinct \#1 pages / 86 wks
+(\S2o); $\sim$10\%/wk of top-K crosses the boundary, 33--38\% back within
+4 wks (research\_notes \S3); comments outfluxK 0.089--0.090 (\S2g-X P5).}
+{Keep this paragraph visually and conceptually clean — "same ranks,
+different occupants." The occupancy-weighted-amplitude subtlety (quiet
+\#1 occupants) moved to Discussion par.\ 2 (second-review R1.3).}
 
 \todo{R1 paragraph 4}
 \PLAN{Sharpen the puzzle into model requirements.}
@@ -478,7 +555,16 @@ $X_{it}=\mu_{it}+\sqrt{v_i}\,\eta_{it}(z_i)+\lambda(z_i)L_t+\epsilon_{it}$
 $\eta$; lognormal amplitude $v_i$; stationary platform level $L_t$;
 measurement noise $\epsilon$; Gabaix rebirth at the boundary of the
 top-coverage universe. Rank-dependence enters through permanent-rank bands.
-Hand to par.\ 2: every symbol has its own identifying moment.}
+CLARITY DIRECTIVES (second-review R2.1): the surrounding prose must state
+explicitly that (i) $\eta_{it}$ is idiosyncratic per entity, with a
+rank-conditional law — not a common factor (that is $L_t$'s job); (ii)
+under b=1 the amplitude $v_i$ scales BOTH permanent and transitory
+movement; (iii) \todo{verify against code whether $\epsilon_{it}$ is
+amplitude-scaled before displaying any variance-factorization line —
+\S2e/\S2f say that under Spec-B temperament "only scales the noise", so
+the scaling scope differs by spec; do not display an equation the code
+contradicts}. A second displayed variance line is desirable once (iii) is
+settled. Hand to par.\ 2: every symbol has its own identifying moment.}
 {Component parameters quoted later where used; here only the structure.
 Amplitude spread $s$: FB 0.890, subs 0.941, comments 0.692 — metric-
 dependent (\S2h); $\rho_L$ measured per platform: 0.48 FB / 0.90 subs /
@@ -491,8 +577,10 @@ dependent (\S2h); $\rho_L$ measured per platform: 0.48 FB / 0.90 subs /
 component — the paper's central methodological claim.}
 {One sentence per pairing: home reversion $\kappa(z)$ from multi-horizon
 change variances $D(h)$ (R3, Fig 2); $\sigma_{\mathrm{obs}}$ from two
-independent instruments — weekly covariance structure and a daily-
-replication noise floor (R3, Fig 3); amplitude spread $s$ from
+identification sources — the weekly covariance estimator and an
+independent daily-replication noise floor (R3, Fig 3; do not call the
+weekly covariance an "instrument" — only the daily floor is one in the
+strict sense; second-review R2.2); amplitude spread $s$ from
 bias-corrected log change-variance dispersion; the factorization exponent
 $b$ from the horizon-dispersion moment $s(h)$ (R4, Fig 4); $\rho_L$ from
 the platform-level path. Hand to par.\ 3: what is claimed and what is not.}
@@ -537,34 +625,40 @@ moments destabilize SHORT rolling train windows — FB gate regression
 design — same mechanism, stated once, referenced there.}
 
 \todo{R3 paragraph 2}
-\PLAN{Measurement noise from two independent instruments; the bracket
+\PLAN{Measurement noise from two identification sources; the bracket
 language (Fig 3).}
 {Spec-A: $\sigma_{\mathrm{obs}}$ from the weekly covariance structure.
 Spec-B: a floor from daily-within-week replication, mapped through the
 week-mean centering projection (the algebraically invariant "centered
 floor"). Where they meet, the level is identified; elsewhere the truth is
-bracketed. Hand to par.\ 3: the audit story that makes this credible.}
+bracketed. Hand to par.\ 3: why the centered floor is the right one.}
 {FB head: Spec-A 0.176 vs centered floor 0.157 — agreement within
 $\sim$12\%, level IDENTIFIED (\S2r). Subs head: 0.117 vs 0.074; comments
 head: 0.120 vs 0.071 — bracketed (\S2r). Divergence grows with rank depth
 on both platforms (posting intermittency question, \S2h).}
 {BINDING: "identified in shape everywhere, identified in level at the FB
-head, bounded in level elsewhere" (\S2r/\S2x). The cross-platform irony
-(the platform WITHOUT daily history is the one with head identification) is
-reportable (\S2r).}
+head, bounded in level elsewhere" (\S2r/\S2x). Do NOT use \S2r's "platform
+without daily history" irony sentence — FB Era A HAS daily data (\S2g-X
+P2) and Fig 3's FB panel is built from it; the phrasing (which meant "the
+platform that historically lacked dailies") would read as a factual error
+to a referee (second-review R3.2).}
 
 \todo{R3 paragraph 3}
-\PLAN{The centered-floor audit as an honesty exhibit (one short paragraph;
-details SI-4).}
-{An external audit found the original floor convention algebraically
-unidentified (a null direction of the centering projection); adopting the
-invariant centered floor both fixed the algebra and removed an internal
-contradiction (the legacy floor sat ABOVE Spec-A on FB). All qualitative
-conclusions survived the re-pin. Hands to R4.}
+\PLAN{Why the centered floor: state the science, not the audit history
+(one short paragraph; details SI-4).}
+{Science-first phrasing (second-review R3.3): "Because week-mean centering
+annihilates a common within-week component ($CJC=0$), only the centered
+floor is invariant to an arbitrary convention; we therefore pin to it. An
+uncentered legacy convention — compared in SI-4 — is not only
+non-invariant but produced an internal contradiction on Facebook (a
+'floor' above the weekly-covariance estimate)." One sentence notes that
+all qualitative conclusions are unchanged under the invariant pin. NO
+audit-memo voice ("an external audit found...") in article prose — that
+history lives in SI-7. Hands to R4.}
 {Legacy-to-centered head shifts: subs 0.100 to 0.074 ($-26\%$), FB 0.207 to
 0.157 ($-24\%$), comments 0.101 to 0.071 ($-30\%$) (\S2r); FB identified
-gate result IMPROVED under the honest pin (0.211 to 0.152 uncond; 0.164 to
-0.118 conditional) (\S2r).}
+gate result IMPROVED under the invariant pin (0.211 to 0.152 uncond;
+0.164 to 0.118 conditional) (\S2r).}
 {Frame as discipline, not drama; the full algebra is SI-4.}
 
 \subsection*{One amplitude per endpoint}
@@ -606,7 +700,7 @@ entity-vs-block bootstrap adjudication belongs in SI (verdict B2).}
 
 \subsection*{Validation: descriptive cards, localized residuals, and
 out-of-sample movement}
-\WT{600}
+\WT{650}
 %% ---- R5: validation (Fig 5 + Table 1) ---------------------------------------
 
 \todo{R5 paragraph 1}
@@ -623,33 +717,44 @@ par.\ 2: the structure results.}
 {This is Table 1's "target" column made prose (verdict A4); the failed run
 is REPORTED — it is the anti-forking-paths exhibit (\S2s).}
 
-\todo{R5 paragraph 2}
-\PLAN{Descriptive structure cards with uncertainty; Q as residual
-localization, never pass/fail.}
-{FB Era A reproduces all 15 card moments at 20 simulation reps; subs 14/15;
-comments 12/15. Covariance-weighted omnibus distances reject exact equality
-— as expected at census-scale precision — and are used to LOCALIZE: every
-dynamics block sits at Q/df 1--4 except the comments mid-horizon VR block
-and the boundary-flux pair. Hand to par.\ 3: the harder test is held-out
-movement.}
+\todo{R5 paragraph 2a}
+\PLAN{Descriptive structure cards: the model reproduces the main
+functionals (split from the old dense paragraph; second-review R5.2).}
+{One move only: FB Era A reproduces all 15 card moments at 20 simulation
+reps; subs 14/15; comments 12/15 — rank-size shape, occupant turnover,
+persistence, and boundary flux together, per panel. Hand to par.\ 2b: what
+a covariance-weighted distance adds.}
 {FB 15/15, churn err 0.017--0.018, survives 20 reps (\S2p, \S2t); subs
-14/15; comments 12/15 (\S2s); omnibus Q: FB 298, subs 217, comments 1275
-vs $\chi^2$ df=15 reference $\approx$15--24 (\S2t); per-block Q/df table
-(\S2y): FB VR 3.2 / ACF 3.5 / R2 0.7; comments VR 263.5, boundary 927.}
-{BINDING: "15/15" is a descriptive scorecard; Q rejects exact equality and
-localizes (\S2x; verdict \S4.3 sentence). Never "statistically
-indistinguishable from data".}
+14/15 (\S2e); comments 12/15 (\S2s).}
+{BINDING: "15/15" is a descriptive scorecard (\S2x); never "the model
+passes all tests" or "statistically indistinguishable from data".}
+
+\todo{R5 paragraph 2b}
+\PLAN{Q as residual localization, never pass/fail (second move of the
+split).}
+{Covariance-weighted omnibus distances reject exact equality — as expected
+at census-scale precision — and are used to LOCALIZE: every dynamics block
+sits at Q/df 1--4 except the comments mid-horizon VR block and the
+boundary-flux pair. If space binds, the per-block Q/df detail moves to
+Table 1's footnote or SI-5 and this shrinks to two sentences. Hand to
+par.\ 3: the harder test is held-out movement.}
+{Omnibus Q: FB 298, subs 217, comments 1275 vs $\chi^2$ df=15 reference
+$\approx$15--24 (\S2t); per-block Q/df (\S2y): FB VR 3.2 / ACF 3.5 /
+R2 0.7; comments VR 263.5, boundary 927.}
+{Q rejects exact equality and localizes (\S2x; verdict \S4.3 sentence).}
 
 \todo{R5 paragraph 3}
 \PLAN{The movement gates: identified spec first, calibrated reference
 parenthetical (Fig 5).}
 {On FB Era A the identified Spec-B + conditional-state specification beats
-persistence on 4/5 rolling splits with NO $\sigma_{\mathrm{obs}}$
-calibration freedom, matching the calibrated benchmark in mean error (the
-calibrated Spec-A stack beats 5/5 and is the parenthetical/SI reference).
-Reddit submissions: conditional state beats 4/5. Comments — longest panel,
-regime change inside it — at par with persistence with full bootstrap
-median coverage. Hand to par.\ 4: what remains unexplained.}
+persistence on 4/5 rolling splits, matching the calibrated benchmark in
+mean error, "with the train-calibrated scale returning 1.0 on all five
+splits — no downweighting selected" (PRECISE phrasing; the gate does run a
+scale grid, so "zero calibration freedom" overstates — second-review
+R5.3). The calibrated Spec-A stack beats 5/5 and is the parenthetical/SI
+reference. Reddit submissions: conditional state beats 4/5. Comments —
+longest panel, regime change inside it — at par with persistence with full
+bootstrap median coverage. Hand to par.\ 4: what remains unexplained.}
 {FB identified: 0.118 $\pm$ 0.038 vs 0.145 $\pm$ 0.031, cov 60\%, scale
 1.0$\times$5 (\S2r); FB calibrated reference: 0.114 $\pm$ 0.046 vs 0.144
 $\pm$ 0.030, 5/5, cov 60\% (\S2g-X P1); subs conditional: 0.118 $\pm$
@@ -662,32 +767,36 @@ sentence; never "comments passes".}
 
 \todo{R5 paragraph 4}
 \PLAN{Residuals: decomposed, bounded, and localized — not mysterious.}
-{The one order-of-magnitude residual (comments mid-horizon VR block) is
-decomposed by spectrum-preserving surrogates: roughly half is the scored-VR
-functional's sensitivity to non-Gaussian phase/marginal structure (the
-model's t-tails supply only $\sim$24\% of the data's discount), the rest a
-genuine second-order mismatch of similar size; the demeaning signature is
-"excess low-frequency structure", consistent with lifecycle arcs but not
-uniquely so. Reversion-rate heterogeneity is real but bounded. Hand to
-par.\ 5: the registered confirmation.}
+{Reader-facing shape (second-review R5.4): "The largest remaining residual
+is localized to comments mid-horizon variance ratios. Spectrum-preserving
+surrogates show the demeaning signature reflects excess low-frequency
+structure rather than uniquely lifecycle arcs; missingness and population
+censoring do not explain it (SI-7). Residual reversion-rate heterogeneity
+is measurable but bounded." The quantitative $\approx$+0.03/+0.03
+decomposition and the t-tails-supply-24\% detail go to SI-5/SI-7 unless a
+referee needs them in main. Hand to par.\ 5: the registered confirmation.}
 {VR13 gap +0.078: $\approx$+0.03 non-Gaussian phase/marginal +
 $\approx$+0.03--0.04 spectrum (\S2y); surrogate band vs data (\S2v);
-$\kappa_i$ true log-SD 0.302 (\S2v); missingness explanation measured DEAD
-(census 99.0\% present; censoring moves VR rows $<$0.001) (\S2w).}
-{"Excess low-frequency structure" language (\S2x binding); the dead
-missingness explanation is an SI negative result (verdict R6).}
+$\kappa_i$ true log-SD 0.302 (\S2v); censoring check: census 99.0\%
+present, censoring moves VR rows $<$0.001 (\S2w).}
+{"Excess low-frequency structure" language (\S2x binding). VOICE: "not
+supported by the censoring check" — never "measured DEAD" — in prose; the
+negative result itself is an SI-7 entry (verdict R6).}
 
 \todo{R5 paragraph 5 — CONFIRMATION RESULTS SLOT}
 \PLAN{Report the registered confirmation (or, if submitting pre-run,
 disclose the frozen protocol as the design).}
-{SEQUENCING A (default; verdict A1: do not submit before this is run):
+{SEQUENCING A (THE PLAN; verdict A1: do not submit before this is run):
 one paragraph reporting E1 parameter transport (s, b, $\kappa(z)$ shape,
 centered floor curve vs registered tolerances), E2 frozen-parameter
 movement gate on the untouched 2021-07..2022-12 extension, E3 descriptive
 card, E4 $\kappa_i$ concentration diagnostic — pass or fail, reported as
-confirmation evidence either way. SEQUENCING B (explicit model-discovery
-framing): state that the protocol is registered and frozen, cite SI-8, and
-scope every law claim to the discovery panels. Hands to Discussion.}
+confirmation evidence either way. SEQUENCING B (FALLBACK ONLY; explicit
+model-discovery framing): state that the protocol is registered and
+frozen, cite SI-8, and scope every law claim to the discovery panels —
+and note that a registered-but-unrun protocol carries anti-forking-path
+credibility, NOT confirmation evidence; the prose must not blur that line
+(second-review R5.5). Hands to Discussion.}
 {Registered pass criteria (CONFIRMATION\_PROTOCOL \S4): E1 s $\in$ [0.64,
 0.74], b $\in$ [0.95, 1.15], floor within $\pm$25\% of 0.071 head to 0.248
 deep; E2 rel err $\le$ persistence + 0.05 AND coverage $\ge$ 60\%; E4
@@ -706,7 +815,9 @@ measurement regime, clean daily data for Spec-B). One results sentence per
 system; full cards to SI-9.}
 {\todo{per-system s, b, OOS vs persistence, boundary flux}.}
 {The current spine must not depend on this paragraph; it strengthens
-"law" language but its absence changes no other claim.}
+"law" language but its absence changes no other claim. If unfilled at
+submission, DELETE it from Results entirely — breadth then appears only in
+Discussion limitations (second-review R5.6); no placeholder prose.}
 
 %% ============================================================================
 \section*{Discussion}
@@ -716,8 +827,10 @@ system; full cards to SI-9.}
 \todo{Discussion paragraph 1}
 \PLAN{Restate what was found at full altitude: the fact, the law, the
 validation standard.}
-{The conjunction (stationary ladder, churning occupants) is general across
-two platforms and three metric-eras; a compact factorized process
+{"We observe the conjunction (stationary ladder, churning occupants)
+across two platforms and three metric-eras" — NOT "is general across"
+("general" invites the breadth objection; second-review D1); a compact
+factorized process
 reproduces it and predicts held-out movement; the validation standard
 (identified/bounded measurement model, frozen OOS gates vs persistence,
 instrument forensics, registered confirmation) is itself a contribution to
@@ -731,9 +844,11 @@ respectfully (research\_notes \S6c strengths list).}
 \todo{Discussion paragraph 2}
 \PLAN{Interpret the factorization: what b=1 means for how attention
 hierarchies work.}
-{Positions are structural, occupants are exchangeable up to one persistent
-amplitude — the attention analogue of the Q-model's person-specific
-multiplier on a shared random-impact rule; connects the random-growth
+{Positions are structural and, to first order, occupants are exchangeable
+up to one persistent amplitude ("to first order" is mandatory — $\kappa_i$
+heterogeneity exists; second-review D2) — the attention analogue of the
+Q-model's person-specific multiplier on a shared random-impact rule;
+connects the random-growth
 tradition (ladder shape) to identity dynamics (who is on it). Implication:
 durable concentration without durable incumbents; success at the head is
 real (amplitudes persist) but tenure is stochastic. Hand to par.\ 3:
@@ -745,14 +860,18 @@ tiny, not because occupants are loud.}
 
 \todo{Discussion paragraph 3}
 \PLAN{Limitations, stated where a referee looks for them.}
-{(i) Two platforms / three metrics: a shared model class with strong
-internal validation, not yet a universal law — breadth is the test and the
-pipeline is unchanged by design. (ii) FB is a censored tracked panel with
-instrument eras; all FB claims are of tracked activity; era discipline in
-SI-1. (iii) Confirmation status per the R5 slot. (iv) Residuals: excess
-low-frequency structure and bounded reversion heterogeneity; the
-$\sigma_{\mathrm{obs}}$ level below the head is bracketed, not identified.
-Hand to par.\ 4: outlook.}
+{Four items; ORDER IS CONDITIONAL ON SEQUENCING (adapting second-review
+D3): under sequencing A (confirmation run and reported in R5) it is a
+Result, not a limitation — lead with (i) breadth; under fallback
+sequencing B, confirmation-pending leads as the most immediate submission
+risk. The items: (a) two platforms / three metrics — a shared model class
+with strong internal validation, not yet a universal law; breadth is the
+test and the pipeline is unchanged by design. (b) FB is a censored tracked
+panel with instrument eras; all FB claims are of tracked activity; era
+discipline in SI-1. (c) Confirmation status per the R5 slot (sequencing
+B only). (d) Residuals: excess low-frequency structure and bounded
+reversion heterogeneity; the $\sigma_{\mathrm{obs}}$ level below the head
+is bracketed, not identified. Hand to par.\ 4: outlook.}
 {$s$ varies by metric (0.69--0.94, \S2h) — the amplitude DISTRIBUTION is
 metric-dependent even though the factorization is shared.}
 {This paragraph is where the two review rounds' negotiated language pays
@@ -774,7 +893,7 @@ process, not of the incumbents.}
 %% every subsection points to its SI section for the full treatment)
 %% ============================================================================
 \matmethods{%
-\WT{650}
+\WT{600}
 
 \todo{M\&M block 1 — Data and panels}
 \PLAN{Sources, spans, and instrument status for each panel.}
@@ -783,7 +902,10 @@ complete weeks, $\sim$14.4k pages/wk, enrollment frozen); era segmentation
 from collection metadata only, eras B/M excluded, C/D replication-only
 (SI-1). Reddit: Pushshift census; submissions T=30; comments
 2018-12..2021-06, T=136; day-count guard 0 flagged days (census property).
-Instagram: query-censored negative control, never calibrated to (SI-9).}
+Instagram: ONE pointer clause at most ("a query-censored Instagram panel
+serves as a measurement negative control; SI-9") — or omit from M\&M
+entirely if it appears nowhere in main Results/Discussion (second-review
+M1).}
 {Era table + guard (\S2g P0); low-count-day guard: 60\% of trailing
 28-day median, 59 flagged days, Spec-B drops flagged weeks, weekly fits
 keep them (\S2g P0).}
@@ -795,11 +917,13 @@ directive 4).}
 {Pre-registered coverage K from concentration statistics alone; closed
 Lagrangian universe of B=4K entities by absence-penalized permanent rank;
 weekly ranks recomputed within the universe; boundary flux is a tested
-prediction, not an assumption. Membership-window drift measured and
+prediction, not an assumption. Main text carries the RULE and its REASON
+only; the ghost-spiker pitfall + locked test are SI-2 material
+(second-review M2). Membership-window drift measured and
 headline-invariant (SI-2).}
 {K values (\S2b, \S2g P0); membership overlap full vs half-window 0.73--
 0.92, metrics move $<$ noise (\S2g-X P5); ghost-spiker pitfall and its
-test (\S2b corrected pitfall).}
+test (\S2b corrected pitfall) — SI-2.}
 {}
 
 \todo{M\&M block 3 — Estimators}
@@ -842,9 +966,16 @@ fix); five splits are dependent — reported per-split (\S2q noted).}
 \todo{M\&M block 6 — Code, data, and registration}
 \PLAN{Availability + the frozen confirmation protocol pointer.}
 {Code commit for the frozen evaluation (682d03f per CONFIRMATION\_PROTOCOL
-\S1); registered protocol committed before any extension data was read;
-data availability per platform (Pushshift public dumps; CrowdTangle
-availability statement \todo{legal/ToS language for FB data sharing}).}
+\S1); registered protocol committed before any extension data was read.
+CONSERVATIVE DATA PLAN (second-review M6; PNAS rejects "available upon
+request"): released — full code, derived per-band moment tables, figure
+data, membership-construction rules, and reproduction scripts (everything
+needed to reproduce every estimate from intermediate objects);
+Pushshift-derived aggregates deposited (source dumps are public); raw
+CrowdTangle rows subject to platform access restrictions, DECLARED AT
+SUBMISSION with the justification (instrument defunct; ToS)
+\todo{resolve whether page-level weekly aggregates are shareable under
+CrowdTangle researcher terms}.}
 {Protocol registration date 2026-07-05, amendment A1 same day pre-data
 (CONFIRMATION\_PROTOCOL \S6).}
 {}
@@ -872,11 +1003,15 @@ FIG 1 — DOES NOT EXIST YET. The paper's hook; build first.\\
 Spec below; generator to be added to \texttt{llm\_fitting/make\_figures.py}.}}
 \caption{\textbf{Fig.~1 spec — Eulerian stability with Lagrangian churn
 (THE HOOK; most careful build).}
-(\emph{A}) Rank-size overlay: weekly rank--activity-share curves for all
-weeks of each panel (FB Era A, 86 weeks; Reddit comments, 136 weeks),
-log-log, one translucent line per week atop the era median — reader
-concludes the LADDER IS ONE CURVE (quantify overlay dispersion in an
-inset; \todo{statistic}). Common-factor de-meaning noted in caption.
+(\emph{A}) Rank-SHARE overlay (explicitly activity SHARE at each rank, not
+raw log activity, so stability is immediately interpretable —
+second-review): weekly rank--share curves for all weeks of each panel
+(FB Era A, 86 weeks; Reddit comments, 136 weeks; Reddit submissions
+either as a thin third small-multiple or stated in the caption as SI
+Appendix material because T=30 is short — DECIDE AT BUILD), log-log, one
+translucent line per week atop the era median — reader concludes the
+LADDER IS ONE CURVE (quantify overlay dispersion in an inset;
+\todo{statistic}). Common-factor de-meaning noted in caption.
 (\emph{B}) Per-rank share stationarity: activity share of fixed rank bands
 (1--10, 11--100, 101--1000, 1001--K) as time series over the panel — flat
 lines, reader concludes shares at each rung are stationary.
@@ -911,7 +1046,11 @@ moment vector — reader concludes $\kappa$ is IDENTIFIED by long-horizon
 variances and unidentifiable without them (\S2i).
 (\emph{C}) $D(h)$ curvature, empirical vs fitted through $h$ = 52 —
 the identifying moments are themselves matched.
-Reconciliation vs the E3 plan: matches; no changes needed.}
+Reconciliation vs the E3 plan: matches; no content changes needed.
+BUILD POLISH (second-review Fig 2): current rendering is draft-grade —
+enlarge axis/panel-label typography for print size; make panel B the
+visual center (it carries the argument), with a vertical line at the
+fitted $\kappa$ and a clearer legend.}
 \label{fig:identification}
 \end{figure*}
 
@@ -924,10 +1063,15 @@ Weekly $\sigma_{\mathrm{obs}}$ vs permanent rank, three panels (subs, FB
 Era A tracked, comments): Spec-A weekly-covariance curve (upper), pinned
 centered Spec-B floor (lower), superseded legacy floor as dashed reference;
 shaded region = the bounded interval [centered floor, Spec-A]. FB head
-annotated as IDENTIFIED (two instruments agree within $\sim$12\%, \S2r) —
-reader concludes the noise level is measured, not assumed: identified in
-shape everywhere, in level at the FB head, bracketed elsewhere, with the
-bracket WIDENING with rank depth (the intermittency question, \S2h).
+annotated as IDENTIFIED (the two sources agree within $\sim$12\%, \S2r).
+Caption's conclusion sentence, scoped (second-review R3.4): "the daily
+instrument measures the SHAPE and lower floor of observation noise; where
+it agrees with the weekly-covariance estimate the level is identified,
+elsewhere the level is bracketed" — never the blanket "measured, not
+assumed"; the bracket WIDENS with rank depth (the intermittency question,
+\S2h). BUILD NOTES: keep the superseded legacy floor only as a lightly-
+labeled dashed reference (or move it to SI-4); y-axes are panel-specific —
+either say so in the caption or harmonize them.
 Reconciliation vs the E3 plan: "before/after pin" replaced by the dashed
 legacy reference — keep as built.}
 \label{fig:sigmaobs}
@@ -939,14 +1083,16 @@ legacy reference — keep as built.}
 \caption{\textbf{Fig.~4 spec — Entity-amplitude collapse and the $b=1$
 factorization (EXISTS: \texttt{figures/fig4\_amplitude.pdf}).}
 (\emph{A}) Standardized bias-corrected log change-variance densities for
-all three metrics vs N(0,1) — one lognormal amplitude family across
-metrics (spreads $s$ = 0.89 / 0.94 / 0.69, \S2h).
+all three metrics vs N(0,1) — "one lognormal amplitude FAMILY" (one
+multiplicative dimension per metric, NOT one identical distribution — the
+spreads differ: $s$ = 0.89 / 0.94 / 0.69, \S2h; second-review R4.3).
 (\emph{B}) Temperament dispersion $s(h)$ vs horizon — FLAT, the instrument
 behind $b\approx1$ (\S2l).
-(\emph{C}) Forest plot of $b$ under every robustness variant (entity vs
-block bootstrap, detrended, common-horizon, split-window) against the
-$b=1$ line — reader concludes exact $b=1$ sits inside every time-aware CI
-(\S2u).
+(\emph{C}) Forest plot of $b$ under every robustness variant against the
+$b=1$ line — caption must state BOTH halves honestly (second-review
+Fig 4): the narrow entity bootstrap rejects exact $b=1$ (\S2n); every
+time-aware (block-bootstrap) interval includes it (\S2u) — and why block
+uncertainty is the relevant scale for a law-level claim (SI-3).
 Reconciliation vs the E3 plan: matches (E3's "corrected log-variance
 distribution vs lognormal" = panel A).}
 \label{fig:amplitude}
@@ -972,8 +1118,9 @@ they are dependent (\S2q C5), never as an averaged bar alone.
 (\emph{C}) Coverage and Wasserstein summary per panel/spec, with the FB
 calibrated Spec-A reference (0.114, 5/5) shown as the declared sensitivity
 spec — the identified spec leads (\S2x binding ordering).
-Caption must state: all estimation train-only; scale = 1.0 on 5/5 FB
-identified splits (zero calibration freedom).}
+Caption must state: all estimation train-only; the train-calibrated scale
+returned 1.0 on all five FB identified splits (no downweighting selected —
+precise phrasing per second-review R5.3).}
 \label{fig:oos}
 \end{figure*}
 
@@ -988,15 +1135,16 @@ identified splits (zero calibration freedom).}
 \centering
 \caption{\textbf{Table 1 spec — Specification $\times$ evaluation matrix
 with explicit targets (from \S2s; the anti-forking-paths display).}
-Rows = (panel $\times$ stack); columns = TARGET (structural reproduction /
-OOS movement), in-sample card, churn error, OOS rel.\ err vs persistence,
-CI coverage, calibration freedom used. Every cell filled INCLUDING the
+BRUTALLY COMPACT (second-review): the main table's job is at-a-glance
+target clarity, not exhaustive reporting. Rows = (panel $\times$ stack);
+six columns only, per the header below. Every cell filled INCLUDING the
 failures (FB full stack OOS 0.170 vs 0.145, cov 20\% — loses, \S2s;
-spec-B in-sample cards below structure stacks, \S2r). Footnote states the
-scope condition mechanism (R3 par.\ 1) and that "15/15" is descriptive
-(\S2x).}
+spec-B in-sample cards below structure stacks, \S2r). Churn errors, CI
+coverage, and full stack-flag strings SPILL TO SI Appendix Table S1 if
+they crowd the layout. Footnote states the scope-condition mechanism
+(R3 par.\ 1) and that "15/15" is descriptive (\S2x).}
 \begin{tabular}{llllll}
-Target & Panel & Stack & In-sample & OOS vs persistence & Coverage \\
+Panel & Target & Stack & In-sample card & OOS vs.\ persistence & Calibration \\
 \hline
 \todo{fill from \S2s matrix} & & & & & \\
 \end{tabular}
@@ -1052,17 +1200,26 @@ panels (\S2t, \S2y); Pers rows declared band-less/harsh; churn-row MC noise
 distributions); split dependence caveat; MOM\_FLOOR rule and the one
 degenerate split it retires (\S2f, \S2g-X P1, \S2l, \S2r; review C4/C5).
 
-\textbf{SI-7 Rejected alternatives and the discovery chronology.} Import
-SI\_DISCOVERY\_CHRONOLOGY.md verbatim (dated table: 16 discoveries/fixes,
-6 negative results/retractions, 3 scope conditions, 2 external reviews);
-rejected-alternatives register: fine-bands vs temperament battery (\S2c),
+\textbf{SI-7 Rejected alternatives and the discovery chronology.} CURATED
+chronology table built FROM SI\_DISCOVERY\_CHRONOLOGY.md — not a verbatim
+paste (second-review SI2: verbatim internal logs read as process theater
+and expose drafting provenance; the full dated log stays archived in the
+repository, citable by commit hash). Table S7.1: dated discoveries/fixes,
+negative results, retractions, scope conditions. Table S7.2: rejected
+alternatives and their decision rules. OWNER DECISION: whether and how to
+describe the two adversarial review rounds — if mentioned, as "independent
+technical audits", without tool provenance; the SI's credibility should
+rest on the dated commits and tests, not on who reviewed.
+Rejected-alternatives register: fine-bands vs temperament battery (\S2c),
 common volatility factor (\S2d), lifecycle-drift/scoring-filter/
 survivor-composition kills (\S2p), missingness kill (\S2w), coll1
 b-sensitivity retraction (\S2o), md-vr short-window scope (\S2i).
 
-\textbf{SI-8 Confirmation protocol and results.} CONFIRMATION\_PROTOCOL.md
-verbatim (frozen code commit, registered universe rule, E1--E4, pass
-criteria, amendment A1 dated pre-data); results slots: E1 transport table
+\textbf{SI-8 Confirmation protocol and results.} Registered-protocol
+SUMMARY, polished for readers (frozen code commit, registered universe
+rule, E1--E4, pass criteria, amendment A1 dated pre-data), with the full
+frozen CONFIRMATION\_PROTOCOL.md archived in the repository and cited by
+commit hash — not pasted raw (second-review SI2); results slots: E1 transport table
 \todo{run}, E2 frozen gate \todo{run}, E3 card + Q vs surrogate-adjusted
 target \todo{run}, E4 $\kappa_i$ concentration \todo{run}; discovery-vs-
 confirmation panel map.
@@ -1073,8 +1230,11 @@ calibrated to, \S4); breadth systems as they land (Wikipedia pageviews
 first): per-system s, b, s(h) flatness, OOS-vs-persistence, boundary flux
 — the registered breadth claim set (\S2x item 2).
 
-\textbf{SI-10 Data and code.} Pipeline description; frozen commit; data
-availability and terms per source; reproduction commands (README block).
+\textbf{SI-10 Data, code, and reproducibility index.} Pipeline
+description; frozen commit; data availability and terms per source
+(conservative plan per M\&M block 6); reproduction commands; and a
+CLAIM-TO-COMMAND INDEX mapping every figure, table, and headline number to
+the exact command + commit that produces it (second-review SI4).
 }
 
 %% ============================================================================
@@ -1146,6 +1306,20 @@ availability and terms per source; reproduction commands (README block).
 %%   smyth2004            — Smyth 2004 SAGMB (limma) — cite for the
 %%                          digamma/trigamma log-variance moment machinery
 %%                          behind s and EB v-hat.
+%% ESTIMATION / INFERENCE METHODS (added per second review)
+%%   hansen1982gmm        — Hansen 1982 Econometrica — cite for the GMM
+%%                          lineage of the minimum-distance estimator.
+%%   chamberlain1984      — Chamberlain 1984, Handbook of Econometrics —
+%%                          cite for panel covariance-structure (MD)
+%%                          estimation (named in \S2d as the estimator's
+%%                          ancestor alongside Abowd-Card).
+%%   gneiting2007scoring  — Gneiting & Raftery 2007 JASA — cite for proper
+%%                          scoring rules / distributional forecast
+%%                          evaluation (the OOS gate's Wasserstein +
+%%                          coverage summaries).
+%%   kunsch1989block      — Kunsch 1989 Ann. Statist. — cite for the
+%%                          moving-block bootstrap (empirical bands; the
+%%                          time-aware b confidence intervals, \S2u).
 %% ATTENTION DYNAMICS
 %%   wu2007novelty        — Wu & Huberman 2007 PNAS — cite for collective-
 %%                          attention decay (PNAS lineage).
@@ -1160,6 +1334,11 @@ availability and terms per source; reproduction commands (README block).
 %%                          Pushshift census.
 %%   crowdtangle          — CrowdTangle Team, Meta — cite for the FB
 %%                          instrument (tracked-panel caveats in SI-1).
+%%   crowdtangle-caveats  — \todo{identify a credible published source on
+%%                          CrowdTangle coverage/instrument limitations
+%%                          (transparency-reporting literature); if none
+%%                          fits, SI-1's own forensics self-contain the
+%%                          caveats} (second review, biblio item 4).
 %% ----------------------------------------------------------------------------
 %% At drafting time: create pnas_outline.bib from these keys, switch to
 %%   \bibliography{pnas_outline} with the shipped pnas-new.bst.
