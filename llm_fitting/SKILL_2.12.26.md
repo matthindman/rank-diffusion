@@ -1,3 +1,12 @@
+ > **SUPERSEDED (2026-07-06).** This is the February-2026 skill, preserved for
+> history. Parts of it now contradict the validated research line (e.g., it
+> treats σ_obs as absent, calibrates to matched diagnostics rather than the
+> OOS gate, lacks the Lagrangian/permanent-rank estimation rule, the
+> top-coverage universe, temperament, and MD/Spec-B identification). The
+> current core skill is `.claude/skills/stochastic-modeling/SKILL.md`; the
+> canonical results record is `llm_fitting/MODEL_STATUS.md`. Do not follow
+> this file's procedures.
+
 # SKILL: Modeling Rank Diffusion Systems with Mean-Reverting Noise
 
 ## Overview

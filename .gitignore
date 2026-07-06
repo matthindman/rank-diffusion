@@ -38,8 +38,9 @@ data/reddit/
 *.rds
 *.Rds
 
-# Local agent config & scratch
-.claude/
+# Local agent config & scratch (skills are versioned; the rest is local)
+.claude/*
+!.claude/skills/
 llm_fitting/.claude/
 tmp_*.json
 
