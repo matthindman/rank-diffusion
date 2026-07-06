@@ -1,0 +1,19 @@
+cohort: 6,962 accounts (m̄>=10, npres>=13)
+cohort weekly ABSENCE rate: mean=0.139 sd=0.047 min=0.102 max=0.256
+  worst 8 weeks: {1: 0.256, 4: 0.241, 2: 0.24, 3: 0.237, 5: 0.234, 6: 0.223, 7: 0.221, 8: 0.208}
+  best 4 weeks : {38: 0.102, 40: 0.103, 35: 0.103, 39: 0.105}
+  iid benchmark sd = 0.0042 (observed 0.0470; >>1x means week-level common shocks)
+
+measurable population (npres>=13/52): 647,071 accounts, 18,087,766 rows
+mean weekly top-K share of measurable-population activity:
+  K=   500: 0.425
+  K=  1000: 0.510
+  K=  2500: 0.627
+  K=  5000: 0.716
+  K= 10000: 0.799
+  K= 20000: 0.873
+
+P3 aggregation check (cohort m̄>=10, consecutive-present pairs):
+  1w: pairs=293,284  mean(dlogY)^2=0.957  mean thinning regressor=0.1932
+  2w: pairs=137,574  mean(dlogY)^2=0.595  mean thinning regressor=0.0802
+  4w: pairs= 62,128  mean(dlogY)^2=0.444  mean thinning regressor=0.0364

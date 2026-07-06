@@ -126,6 +126,13 @@ COVERAGE_K = {
     # Owner-mandated WORKING scale is K=12,500 (B=50k, 98.8%) -- a scale
     # decision on top of, not a replacement for, this rule.
     "reddit_comments": {80: 1000, 90: 2500, 95: 5000},
+    # instagram_hm (2026-07-06, ig_censoring_prereg.md Amendment 1): measured on
+    # the measurable population (present >= 13/52 wks) BEFORE any fit --
+    # top-5000 = 71.6%, top-10000 = 79.9%, top-20000 = 87.3% "of a-matching
+    # activity".  ONLY the 80 level is registered: K90 ~ 25k, but the marginal
+    # tail is n_posts ~ 1-2 (pure thinning noise), so the universe is capped at
+    # the 80% point on MEASURABILITY grounds (n_posts-based, score-blind).
+    "instagram_hm": {80: 10000},
 }
 
 

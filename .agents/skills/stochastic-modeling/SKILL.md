@@ -155,6 +155,7 @@ sample-size scope condition, not a spec search).
 | FB Era A (`facebook_a`, K=3500) | full: `--temperament --min-knot-entities 8 --md-lags 6 --t-tails --md-vr-long --stat-factor --two-scale --mix-hetero` → **15/15, churn 0.018** | **Spec-B (centered) + `--conditional state`** → 0.118 ± 0.038, cov 60%, beats persistence 4/5, scale 1.0×5 (zero calibration freedom). Sensitivity spec: calibrated Spec-A md6+t → 0.114 ± 0.046, beats 5/5 |
 | Reddit comments (`reddit_comments`, K=12500) | LONG: `--md-vr-long --stat-factor --two-scale --mix-hetero` (+temper/pool/md6/t) → 12/15 | md6+t+mix + `--conditional state` → 0.159 ± 0.070, cov 100%, at par |
 | Reddit subs (`reddit`, K=5000) | 2d/2e: temper+pool+md6+t → 14/15 | same + `--conditional state` → 0.118 ± 0.061, cov 100%, beats 4/5 |
+| IG rescue (`instagram_hm`, K=10000) — **breadth demonstration, NOT paper-primary**; censored instrument, estimand "of a-matching activity" (§2z-c) | temper+pool+md6+t+stat-factor → 9/15, churn 0.052 (20 reps) | md6+t + `--conditional state` → 0.841 ± 0.536 vs persistence 0.908 ± 0.637, cov 80%, at par, scale 1.0×5; CRPS skill ≈ 0 with near-nominal PIT |
 
 Canonical reproduction commands are at the end of each MODEL_STATUS section
 (§2l, §2p, §2z have the current ones). Interpreter used for registered runs:
@@ -198,6 +199,18 @@ the summary.
      (CrowdTangle FB, IG): all coverage language is "of tracked activity";
      absence is NOT behavior; entry/boundary metrics are within-panel
      quantities. Never compare coverage percentages across the two types.
+   - **Known-mechanism censoring is modelable — do the censoring forensics
+     BEFORE declaring a system unusable** (§2z-c template, the IG rescue):
+     write the formal thinning/observation model + numbered predictions
+     first (`ig_censoring_prereg.md` is the worked example), then measure
+     (i) the noise-vs-1/M law, (ii) whether absence is thinning zeros or
+     week-correlated instrument dropout, (iii) ghost/flicker heads,
+     (iv) the aggregation-scaling signature. A measurability-scoped
+     universe (declared, score-blind) + the UNCHANGED pipeline may be all
+     the "apparatus" needed. Scope the estimand ("of a-matching activity");
+     the per-entity inclusion propensity is NOT identifiable within-panel,
+     so true-ladder shape claims are out of scope while movement claims
+     survive (persistent selection bias cancels in changes).
 3. **Universe construction.** Pre-register K from concentration stats alone
    (K90 typical); B = 4K buffer; membership by **absence-penalized permanent
    rank** (absent weeks at floor N_t+1), train-window-only inside the OOS
@@ -281,8 +294,14 @@ the summary.
   extension raw data needs the WD drive ("My Passport for Mac"). If a drive
   is unmounted, say so and stop that thread — don't substitute other data.
 - `fb_weekly_rebuilt` ids are page NAMES (name churn reads as exit+entry).
-- Instagram = negative control ONLY ("a"-query censoring); never calibrate to
-  it. IG: use `user_name` as id, top-50k pre-cut + `--max-rank-filter 20000`.
+- Instagram RAW panels = negative control; never calibrate to IG. The ONLY
+  modeled use is the §2z-c censoring apparatus (`instagram_hm`: K=10k
+  measurability universe over the full panel, weeks 1–52, estimand "of
+  a-matching activity"). IG id = `user_name`; the old top-50k file is a
+  PER-WEEK cut (presence analyses on it conflate below-cut with absence);
+  full-panel week 0 is partial (drop); IG dailies live on the WD drive.
+  Repo IG parquets can be iCloud-EVICTED (errno 89 reads) — `brctl
+  download <path>` restores.
 - Reddit `metric_value`: submissions panel = submission karma; comments
   panels = comment karma — different metrics, different s (0.94 vs 0.69); s is
   (metric, estimand)-dependent, never assume it transports.
@@ -303,13 +322,20 @@ the summary.
 **The agenda (§2x, in order):** (1) confirmation extension E1–E4 (owner-gated:
 WD mount) — **do NOT let anyone submit the paper before this**; no model work
 first; (2) breadth — new ranked systems through the UNCHANGED pipeline
-(Wikipedia pageviews first); (3) manuscript claim-set rewrite per the revised
-verdict; then figures/SI. Paper outline lives in `paper/`.
+(Wikipedia pageviews first); the IG censoring rescue (§2z-c/§2z-d,
+`instagram_hm`) is BANKED breadth-supporting evidence — a fourth system,
+scoped estimand, not paper-primary unless the owner registers a mini-protocol;
+(3) manuscript claim-set rewrite per the revised verdict; then figures/SI.
+Paper outline lives in `paper/`.
 
 **Open, measured, waiting:** FB stationary head law too wide (subsumes the
 §2o top-2-gap story) — ADJUDICATED §2z-b: Era A CONFIRMED at the paper spec
 (S(1) emp 0.017 vs sim 0.047 ± 0.013, ~2.7×; an isolated residual, everything
-else healthy), comments NOT confirmed (within ~1 seed-SD). Protocol amendment
+else healthy), comments NOT confirmed (within ~1 seed-SD); §2z-d adds IG
+SUPPORTING evidence (instagram_hm S(1) emp 0.035 vs sim 0.101 ± 0.021, ~2.9×,
+≈3 seed-SDs — same ratio as Era A, third instrument; supports the E5
+candidate fix but does NOT trigger the protocol, which is scoped to the
+comments extension). Protocol amendment
 A2 registers E5 (stationary head-law diagnostic on the extension); the
 candidate fix — an Eulerian stationarity CONSTRAINT on the MD vector (removes
 freedom, opt-in) — is implemented ONLY if E5 fires cross-platform. Related

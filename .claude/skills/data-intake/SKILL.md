@@ -98,6 +98,14 @@ pages(entities)/day, pages/week, new-ids/week — the
      "of tracked activity"; ABSENCE IS NOT BEHAVIOR; entry/boundary metrics
      are within-panel quantities; check whether enrollment is frozen
      (new-ids/week ≈ 0 after week 1 on FB).
+   - KNOWN-MECHANISM censoring (e.g. IG's "a"-search thinning) is a third
+     case and is MODELABLE: before declaring the system unusable, run the
+     §2z-c censoring-forensics template (pre-register the observation
+     model + predictions — `llm_fitting/ig_censoring_prereg.md` is the
+     worked example; noise-vs-1/M law, absence structure, ghost heads,
+     aggregation scaling), then a measurability-scoped universe through
+     the unchanged pipeline. Estimand language: "of <query>-matching
+     activity".
    - Never compare coverage percentages across the two types.
 2. **Segment by collection health — breakpoints from metadata ONLY, never
    from model fit.** FB eras (canonical, `instrument_eras.py`): A =

@@ -17,7 +17,8 @@ Quick rules (full contract in the skill):
 - Defaults byte-identical; legacy guard (facebook 14/15 / churn 0.013) +
   `python -m pytest tests/ -q` (repo root) green at every commit.
 - Estimate by permanent rank, never current rank.
-- FB: cutdown parquet or SSD Era A only; IG = negative control.
+- FB: cutdown parquet or SSD Era A only; IG raw = negative control — model IG
+  only via the §2z-c censoring apparatus (`instagram_hm`); never calibrate to IG.
 - Head-churn metrics need bands (seed SD ±0.15); reps ≥ 20 for head claims.
 - Append dated sections to MODEL_STATUS.md; never rewrite history.
 - Frozen specs/thresholds/protocols are owner-gated — ask before changing.

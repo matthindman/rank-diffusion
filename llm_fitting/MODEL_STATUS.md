@@ -2008,6 +2008,92 @@ python llm_fitting/rankdiff_kalman.py instagram_hm --oos --top-k 10000 --tempera
     --min-knot-entities 8 --md-lags 6 --t-tails --conditional state
 ```
 
+## 2z-d. 2026-07-06 — IG rescue OPERATIONALIZED (registered option, scope lines, regression lock, log archive) + measured through the audited metric hierarchy: Tier-2 localizes IG's residuals into the two KNOWN families; the stationary head-law overshoot REPRODUCES (~2.9×) on a third instrument
+
+**The question (owner-posed):** how should §2z-c be operationalized without
+over-optimizing for a special case, and how does the rescued panel read in
+the metric hierarchy audited and extended this same day (§2z/§2z-a)?
+
+**Ruling on scope (the anti-over-optimization line):** what gets encoded
+operationally is the METHOD — "known-mechanism censoring is modelable; do
+the censoring forensics before declaring a system unusable" — with IG kept
+as the worked example. NO new pipeline flags, components, or IG-specific
+code paths; apparatus D (heteroskedastic `--obs-pin-nposts`) stays parked;
+`instagram_hm` is a **breadth demonstration, NOT paper-primary** — promotion
+into the paper's breadth set is owner-gated behind a registered mini-protocol
+(and ideally the WD dailies → true Spec-B).
+
+**Tier-2 measurement (community layer, card stack, 10 reps; + `--dist-scores`
+on the gate). The headline: the §2z-a/2z-b stationary head-law overshoot
+reproduces on IG** — S(1) emp 0.0352 vs sim 0.1005 ± 0.0209 (~2.9×,
+≈3.1 seed-SDs), d(1) emp 0.077 vs sim 0.248, C(1) emp 0.392 vs sim 0.598.
+Same direction and nearly the same ratio as FB Era A (2.7×), now on a THIRD
+platform/instrument with an entirely different censoring regime. Per the
+A2 pre-declared reading this SUPPORTS the Eulerian-stationarity-moment
+candidate fix but does NOT trigger E5 (registered on the comments extension
+only); recorded here as supporting evidence, hierarchy discipline intact
+(no new pass/fail row).
+
+Rest of the Tier-2 read, localized into known families:
+- **L2-instrument/boundary family:** turnover ō emp 0.0414 vs sim 0.1950
+  (sim ~4.7× too open — same direction as comments' 3×, §2z-b), flux F
+  0.336 vs 0.418; deep-band kernel out-mass 0.450 vs 0.364. On IG the
+  empirical side is additionally suppressed by the 10–14% week-correlated
+  instrument dropout (§2z-c L2), so these rows are scoped, not promoted.
+- **Over-persistence family (L2-consistent):** rolling Pers1 emp 68.1 ± 3.2
+  vs sim 79.1 ± 1.1; mid-band kernel diagonal 51-200 sim 0.764 vs emp 0.467.
+  Kernel TV h=1 = 0.0891 ± 0.0011 — inside the FB Era A range (0.065–0.091).
+  Rolling R2_13 emp 0.530 vs sim 0.388 (sim UNDER at long horizon; the
+  period-0 card row shows the opposite sign — the §2z anchoring bias,
+  measured again).
+- **Ladder statistics behave exactly as the §2z-b measurement lesson says:**
+  D_ladder 1.19 / D_share 0.348 are dominated by level-path and (on IG) the
+  q-convolution of the observed ladder — the share statistics S(k) are the
+  level-robust primaries, and they carry the head-law signal above.
+- **Proper scores (the audited gate add-on):** CRPS skill vs persistence
+  −0.004 ± 0.002 (dRank1) and −0.008 ± 0.005 (dRank4) — at par; PIT
+  predictive coverage 0.09–0.16 / 0.45–0.52 / 0.86–0.91 vs nominal
+  .10/.50/.90 — near-nominal calibration on a panel with a ~0.6-log-unit
+  weekly noise floor; W1(model) > W1(persistence) on 4/5 splits (the
+  declared reference-scale caveat: a point-mass forecast is W1-favored when
+  the predictive spread is honest). Hierarchy reading: Tier-0 at par,
+  Tier-1 9/15 descriptive, Tier-2 adds referee-native views and localizes —
+  the audited architecture handles the special case without modification.
+
+**Operationalization shipped (this session):**
+1. **Registered option:** `COVERAGE_K["instagram_hm"] = {80: 10000}` — the
+   run is now `--coverage 80` resolvable like every other platform; only the
+   80 level registered (K90 ≈ 25k is n_posts ~1–2 pure-thinning tail;
+   measurability cap, declared in the code comment). Platform entries
+   `instagram_hm`/`instagram_pp` from §2z-c stand.
+2. **Regression lock:** `tests/test_ig_hm_panel.py` — ghost-spiker exclusion
+   (the L3 property that makes the rescue work) + present-week value
+   preservation in `ig_build_hm_panels.build()`. Suite 66 green.
+3. **Scope lines updated** (owner-authorized this session): CLAUDE.md quick
+   rule, AGENTS.md digest, stochastic-modeling skill (§3 breadth row —
+   labeled NOT paper-primary; §4.2 known-censoring forensics step —
+   generalizable; §6 pitfall rewrite incl. the per-week-cut and
+   iCloud-eviction gotchas; §7 agenda + open-items), data-intake skill
+   (known-mechanism censoring = third instrument class). Mirrors synced
+   (`.agents/skills`), sync test green. "Never calibrate to IG" is
+   UNCHANGED and restated in every location.
+4. **Log archive:** `llm_fitting/runs/2026-07-06_ig_rescue/` — verbatim
+   outputs behind every §2z-c/§2z-d number (forensics regenerated from the
+   committed deterministic scripts; model-run logs are session originals).
+
+**Verdict:** defaults byte-identical; no core code touched; suite 66 green;
+legacy guard untouched. The special case is banked as breadth evidence and
+as a reusable intake procedure, not as machinery.
+
+Reproduction (Tier-2 layer of this section):
+```
+python llm_fitting/community_metrics.py instagram_hm --top-k 10000 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --stat-factor --reps 10 --print-trans
+python llm_fitting/rankdiff_kalman.py instagram_hm --oos --top-k 10000 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --conditional state --dist-scores
+python -m pytest tests/test_ig_hm_panel.py -q
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

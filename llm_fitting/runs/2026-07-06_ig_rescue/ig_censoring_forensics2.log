@@ -1,0 +1,20 @@
+pairs: 1,161,977
+var components: var(dlogY)=0.843 = var(dlogM)=0.359 + var(dlogYbar)=0.602 + 2cov=-0.118
+
+per-post mean regression: (dlog Ybar)^2 = 0.383 + 0.253 * hreg
+binned:  mean_h   mean_dlogYbar2   n
+      0.104     0.291   114,579
+      0.224     0.404   111,009
+      0.337     0.451   115,711
+      0.455     0.509   114,726
+      0.572     0.571   84,075
+      0.704     0.626   100,386
+      0.939     0.675   159,093
+      1.310     0.939   73,503
+      1.500     0.798   137,666
+      2.000     0.749   151,229
+M>=30 both: n=20,681  (dlogYbar)^2=0.192 (implied thinning 0.011)  (dlogY)^2=0.243
+M>=50 both: n=7,282  (dlogYbar)^2=0.152 (implied thinning 0.007)  (dlogY)^2=0.191
+M>=100 both: n=1,508  (dlogYbar)^2=0.143 (implied thinning 0.003)  (dlogY)^2=0.177
+
+high-M dlogYbar: sd=0.438, excess kurtosis=10.97

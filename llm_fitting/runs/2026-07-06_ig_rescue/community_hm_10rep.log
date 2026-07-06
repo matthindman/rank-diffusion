@@ -1,0 +1,78 @@
+=== community metrics: instagram_hm T=52 score_k=10000 reps=10  [shares of tracked activity] ===
+  sim rep 1/10 done
+  sim rep 2/10 done
+  sim rep 3/10 done
+  sim rep 4/10 done
+  sim rep 5/10 done
+  sim rep 6/10 done
+  sim rep 7/10 done
+  sim rep 8/10 done
+  sim rep 9/10 done
+  sim rep 10/10 done
+
+  FLUX / TURNOVER @ top-K (Iniguez et al. 2022 naming; F = outfluxK)
+    rank flux F (weekly out-rate)     emp 0.3363   sim 0.4184 ± 0.0012
+    turnover rate o-dot               emp 0.0414   sim 0.1950 ± 0.0005
+
+  RANK-CHANGE CURVE C(r)  (occupant-change probability by rank)
+         r      emp      sim    simSD
+         1    0.392    0.598    0.102
+         2    0.667    0.739    0.075
+         5    0.902    0.896    0.035
+        12    0.980    0.957    0.024
+        28    1.000    0.965    0.019
+        66    0.980    0.986    0.020
+       152    1.000    0.986    0.015
+       351    1.000    0.998    0.006
+       811    1.000    1.000    0.000
+      1874    1.000    1.000    0.000
+      4329    1.000    1.000    0.000
+     10000    1.000    1.000    0.000
+
+  RANK DIVERSITY d(k)  (distinct occupants of rank k per week)
+         k      emp      sim    simSD
+         1    0.077    0.248    0.059
+         3    0.269    0.265    0.040
+         8    0.462    0.490    0.052
+        22    0.635    0.594    0.033
+        60    0.885    0.815    0.048
+       167    0.923    0.913    0.030
+       464    1.000    0.990    0.013
+      1292    1.000    0.996    0.008
+      3594    1.000    1.000    0.000
+     10000    1.000    1.000    0.000
+
+  LADDER (rank-size / concentration; shares of tracked activity)
+    D_ladder (RMSE of time-mean log-value, log-rank bins) = 1.1927 ± 0.0179
+    D_share  (max_k |S_sim(k) - S_emp(k)|)                = 0.3480 ± 0.0079
+    ladder drift (last vs first third, RMS over bins)     : emp 0.3854   sim 0.5427 ± 0.0598
+    S(1) top-1 activity share (stationary head law)       : emp 0.0352   sim 0.1005 ± 0.0209
+
+  ROLLING-ORIGIN variants (mean over origins ± SD; committed single-origin card row in parens)
+    R2_1     emp    0.674 ± 0.047   sim    0.729 ± 0.032   (card emp: 0.635)
+    R2_4     emp    0.604 ± 0.041   sim    0.611 ± 0.044   (card emp: 0.663)
+    R2_13    emp    0.530 ± 0.040   sim    0.388 ± 0.060   (card emp: 0.486)
+    Pers1    emp   68.137 ± 3.169   sim   79.145 ± 1.147   (card emp: 74.000)
+    Pers4    emp   64.271 ± 3.546   sim   75.623 ± 0.875   (card emp: 64.000)
+    Pers13   emp   57.872 ± 4.171   sim   71.374 ± 0.997   (card emp: 59.000)
+
+  TRANSITION MATRIX (rank-band mobility kernel; occupancy-weighted TV distance)
+    h=1   TV(emp, sim) = 0.0891 ± 0.0011
+    h=4   TV(emp, sim) = 0.1850 ± 0.0009
+    h=13  TV(emp, sim) = 0.3512 ± 0.0013
+
+    EMPIRICAL h=1:  rows = band at t, cols = band at t+1
+            1-10     11-50    51-200  201-10001001-10000       out
+      1-10         0.686     0.255     0.039     0.006     0.004     0.010
+      11-50        0.063     0.578     0.277     0.052     0.009     0.021
+      51-200       0.002     0.073     0.467     0.312     0.092     0.053
+      201-1000     0.000     0.002     0.057     0.467     0.376     0.097
+      1001-10000     0.000     0.000     0.002     0.033     0.602     0.364
+
+    SIMULATED (mean) h=1:  rows = band at t, cols = band at t+1
+            1-10     11-50    51-200  201-10001001-10000       out
+      1-10         0.625     0.334     0.017     0.009     0.007     0.009
+      11-50        0.083     0.780     0.113     0.007     0.005     0.011
+      51-200       0.001     0.031     0.764     0.126     0.033     0.045
+      201-1000     0.000     0.000     0.026     0.456     0.364     0.154
+      1001-10000     0.000     0.000     0.001     0.034     0.515     0.450

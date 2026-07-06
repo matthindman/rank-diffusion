@@ -20,7 +20,7 @@ FULL = "llm_fitting/ig_weekly_ranked.parquet"
 KEEP = 60_000
 
 
-def build(df: pd.DataFrame, metric: np.ndarray, out_path: str) -> None:
+def build(df: pd.DataFrame, metric: np.ndarray, out_path: str, keep: int = KEEP) -> None:
     d = df.copy()
     d["mv"] = metric
     d = d[d["mv"] > 0]
@@ -32,7 +32,7 @@ def build(df: pd.DataFrame, metric: np.ndarray, out_path: str) -> None:
     d["r_minus_floor"] = d["r"] - d["t"].map(floor)
     agg = d.groupby("user_name")["r_minus_floor"].sum()
     perm = (agg + tot_floor) / T                      # absence-penalized permanent rank
-    keep_ids = perm.nsmallest(KEEP).index
+    keep_ids = perm.nsmallest(keep).index
     out = d[d["user_name"].isin(keep_ids)][["date", "user_name", "mv", "n_posts"]]
     out = out.rename(columns={"mv": "metric_value"}).sort_values(["date", "user_name"])
     out.to_parquet(out_path, index=False)

@@ -33,9 +33,11 @@ intake, or paper work, read these in order:**
 - Estimate by permanent (time-averaged) rank, never current rank (Eulerian
   selection bias). Universe membership is absence-penalized.
 - FB data: only `data/raw/fb_ranked_weekly_cutdown.parquet` (legacy) or the
-  SSD Era-A slice; never `fb_ranked_weekly.parquet`. Instagram is a negative
-  control — never calibrate to it. Reddit is a census; FB is a censored
-  sample — coverage language differs (see skill §4.2).
+  SSD Era-A slice; never `fb_ranked_weekly.parquet`. Instagram raw panels are
+  a negative control — never calibrate to it; the ONLY modeled use is the
+  §2z-c censoring apparatus (`instagram_hm`, scoped "of a-matching
+  activity"). Reddit is a census; FB is a censored sample — coverage
+  language differs (see skill §4.2).
 - Head-collision metrics have seed SD ~±0.15: never interpret 5-rep head
   churn diffs without bands (use `scorecard_bands.py`, reps ≥ 20).
 - Document every substantive session as a new dated subsection appended to

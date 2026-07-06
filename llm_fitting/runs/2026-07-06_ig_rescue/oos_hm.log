@@ -1,0 +1,20 @@
+
+========================================================================
+INSTAGRAM_HM — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=52  test_len=13  train-end origins=[13, 20, 26, 32, 39]  universe=top-10000 (B=4x, train-only membership) temper pool>=8 md6 t-tails COND:state
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 13  1.00  |  0.283      |  0.135        |   46.5   | True  s=0.85
+    T0= 20  1.00  |  0.246      |  0.205        |   65.5   | True  s=0.81
+    T0= 26  1.00  |  0.841      |  1.732        |   24.8   | True  s=0.80
+    T0= 32  1.00  |  1.648      |  1.074        |   25.3   | True  s=0.80
+    T0= 39  1.00  |  1.185      |  1.392        |   73.6   | False  s=0.80
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.841 ± 0.536   |   persistence = 0.908 ± 0.637
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 80% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=39): emp median/p90 vs model median/p90
+    dRank1: emp   16/  82   model   13/  88
+    dRank4: emp   18/ 106   model   16/ 112

@@ -1,0 +1,41 @@
+panel: 2,650,405 rows, 440,398 accounts, T=53 weeks  [2022-12-26 .. 2023-12-25]
+
+n_posts distribution over account-weeks (present rows only):
+  quantiles {5: np.float64(1.0), 25: np.float64(1.0), 50: np.float64(2.0), 75: np.float64(4.0), 90: np.float64(8.0), 99: np.float64(32.0)}
+  share M<=1: 0.402   M<=3: 0.713   M>=20: 0.024   M>=30: 0.011
+  metric_value==0 rows: 0.0000
+
+P1: 1,161,977 consecutive present-week pairs
+  pooled OLS: intercept=0.610  slope a=0.270
+  binned (hreg-decile): mean_h, mean_dlogy2
+       0.104     0.401   (n=114,579)
+       0.224     0.575   (n=111,009)
+       0.337     0.642   (n=115,711)
+       0.455     0.705   (n=114,726)
+       0.572     0.881   (n=84,075)
+       0.704     0.922   (n=100,386)
+       0.939     1.022   (n=159,093)
+       1.310     1.746   (n=73,503)
+       1.500     1.044   (n=137,666)
+       2.000     0.749   (n=151,229)
+  by account level band: [band] slope a, intercept, n
+    top 1k   a= 0.747  intercept= 0.334  (n=8,775)
+    1k-5k    a= 0.797  intercept= 0.593  (n=27,509)
+    5k-20k   a= 0.680  intercept= 0.742  (n=94,810)
+    20k+     a= 0.228  intercept= 0.599  (n=1,030,883)
+  M<=3 both weeks: mean dlogy2=0.878, implied thinning share=0.43 (n=517,946)
+  M>=30 both weeks: mean dlogy2=0.243, implied thinning share=0.05 (n=20,681)
+
+P2: absence hazard vs mean n_posts
+                        n  mean_mposts  hazard   pres  poisson_pred
+mb                                                                 
+[1, 2)             281718       1.1459  0.9094 0.0806        0.3180
+[2, 3)              72441       2.2046  0.8295 0.1293        0.1103
+[3, 5)              48955       3.5859  0.7565 0.1755        0.0277
+[5, 10)             24387       6.5146  0.6568 0.2420        0.0015
+[10, 20)             7035      13.2794  0.5340 0.3382        0.0000
+[20, 50)             2092      28.6552  0.4583 0.4052        0.0000
+[50, 100)             293      67.3899  0.4253 0.4168        0.0000
+[100, 1000000000)      75     161.9367  0.3832 0.4350        0.0000
+  accounts with m̄>=20: n=2,460, mean weekly absence hazard=0.4521  (P2 threshold: <0.05)
+  accounts m̄<3: n=354,159, mean hazard=0.893
