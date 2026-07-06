@@ -748,7 +748,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
                  md_vr=False, two_scale=False, mix_hetero=False, mix_b_fix=None,
-                 md_vr_long=False):
+                 md_vr_long=False, dist_scores=False):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -814,7 +814,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             sd, srf, sc = sim_dist(p, test_len, hor, reps=reps)   # model prediction
         rows.append(dict(T0=T0, scale=scale, hor=hor, ts=p.temper_s,
                          em=_moments(ed, erf, ec, hor), bm=_moments(td, trf, tc, hor),
-                         sm=_moments(sd, srf, sc, hor), ed=ed, sd=sd))
+                         sm=_moments(sd, srf, sc, hor), ed=ed, sd=sd, td=td))
 
     hor = rows[0]["hor"]
     keys = [f"dRank{h}" for h in hor] + ["RACF1"] + [f"coll{c}" for c in (1, 5, 20)]
@@ -852,6 +852,43 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         if e.size and s.size:
             print(f"    dRank{h}: emp {np.median(e):>4.0f}/{np.percentile(e,90):>4.0f}   "
                   f"model {np.median(s):>4.0f}/{np.percentile(s,90):>4.0f}")
+
+    if dist_scores:
+        # Opt-in distributional scores (2026-07-06 metrics audit; additive --
+        # the frozen gate criterion above is unchanged).  Predictive law =
+        # POOLED sim displacement distribution (declared: unconditional over
+        # the cohort, not per-entity conditional).  Persistence's predictive
+        # law = the TRAIN displacement distribution (same baseline object the
+        # gate already uses for its moments).
+        import community_metrics as cm
+        h0 = hor[0]
+        print("\n  distributional scores (--dist-scores; pooled predictive, declared):")
+        print(f"    per split @ dRank{h0}:  CRPSmod | CRPSpers | skill | "
+              f"W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)")
+        skills = {h: [] for h in hor}
+        for r in rows:
+            e, s, t = r["ed"][h0], r["sd"][h0], r["td"][h0]
+            if not (e.size and s.size and t.size):
+                continue
+            cmod, cper = cm.crps_mean(s, e), cm.crps_mean(t, e)
+            w1m = wasserstein_distance(e, s)
+            w1p = wasserstein_distance(e, t)
+            cov = cm.quantile_coverage(s, e)
+            for h in hor:
+                if r["ed"][h].size and r["sd"][h].size and r["td"][h].size:
+                    cp = cm.crps_mean(r["td"][h], r["ed"][h])
+                    if cp > 0:
+                        skills[h].append(1.0 - cm.crps_mean(r["sd"][h], r["ed"][h]) / cp)
+            sk = 1.0 - cmod / cper if cper > 0 else np.nan
+            print(f"    T0={r['T0']:>3}  {cmod:>7.2f} | {cper:>7.2f}  | {sk:>+5.2f} | "
+                  f"{w1m:>7.1f}  {w1p:>7.1f}  | "
+                  f"{cov[0.1]:.2f}/{cov[0.5]:.2f}/{cov[0.9]:.2f}")
+        for h in hor:
+            if skills[h]:
+                v = np.array(skills[h])
+                print(f"    CRPS skill vs persistence @ dRank{h}: "
+                      f"{v.mean():+.3f} ± {v.std():.3f}  "
+                      f"(>0 = model beats persistence; n={v.size} splits)")
 
 
 def scorecard(platform, reps=4, top_k=None, buffer_mult=4):
@@ -960,6 +997,11 @@ if __name__ == "__main__":
                     help="extend D(h) moments to h=26,52 (long panels; see minimal_rankdiff)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
+    ap.add_argument("--dist-scores", action="store_true",
+                    help="OOS gate: additionally report ensemble CRPS skill vs "
+                         "persistence, predictive quantile coverage, and the "
+                         "Wasserstein reference scale (additive; the frozen "
+                         "gate criterion is unchanged)")
     ap.add_argument("--conditional", choices=("state", "vhat"), default=None,
                     help="conditional OOS forecast: initialize from the filtered "
                          "end-of-train state ('state'), plus per-entity EB-shrunken "
@@ -977,7 +1019,8 @@ if __name__ == "__main__":
                          md_lags=args.md_lags, t_tails=args.t_tails, spec_b=args.spec_b,
                          conditional=args.conditional, md_vr=args.md_vr,
                          two_scale=args.two_scale, mix_hetero=args.mix_hetero,
-                         mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long)
+                         mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
+                         dist_scores=args.dist_scores)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)

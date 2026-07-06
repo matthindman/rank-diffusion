@@ -101,3 +101,34 @@ against the SURROGATE-ADJUSTED target (§2v): the functional component
 (≈ +0.04 of the +0.08 VR13 gap) is expected to reproduce on the extension
 under any spectrum-equivalent dynamics; only the residual beyond the
 surrogate band counts as evidence of missing dynamics.
+
+## 7. AMENDMENT A2 (2026-07-06, BEFORE any data processing): stationary head-law diagnostic
+
+Registered per MODEL_STATUS §2z-a/§2z-b (metrics-audit finding). No extension
+data has been read at the time of this amendment (WD drive still unmounted;
+T9 only). This amendment is registered only if committed before the
+DATA_PHASE2_REPORT.md resume command is run.
+
+E5. **Stationary head-law diagnostic (secondary; does not gate E1/E2).**
+    On the EXTENDED panel with the registered E3 stack, compute via
+    `community_metrics`: S(1) and S(10) time-mean top-share (emp and sim,
+    ≥10 seeds) and the head ladder offset (mean sim−emp time-mean log-value
+    over ranks 1–600). REGISTERED BASELINES (2026-07-06, T9 panels,
+    structure-primary stacks, 10 seeds): FB Era A — emp S(1) 0.0170 /
+    S(10) 0.1011, sim S(1) 0.047–0.051 / S(10) 0.151 (a confirmed ~2.7×/+50%
+    overshoot; head offset +0.35..+0.46 log, stable across panel thirds =
+    stationary law, not drift; mechanism attribution: mix-b setting moves
+    S(1) only 0.051→0.041 at b=0, so the base (κ, σ_perm) head partition
+    carries the bulk). Comments T=136 — emp S(1) 0.1057, sim 0.1397 ±
+    0.0396 (directionally consistent, WITHIN seed noise — not confirmed).
+    - PRE-DECLARED READING: the overshoot is "cross-platform structural" if
+      the extension sim S(1) exceeds the empirical value by more than 2 sim
+      seed-SDs in the same direction. Only then does the candidate fix get
+      implemented — as a NEW pre-registered step: an Eulerian stationarity
+      moment (empirical stationary band variance / head ladder) appended to
+      the MD partition objective, OPT-IN like --md-vr (no new components;
+      removes partition freedom), adopted only if the in-sample cards hold
+      within one metric and the frozen OOS movement gates do not degrade.
+      If E5 does not confirm, the head-law excess is recorded as an
+      FB-measurement-regime residual and reported as a limitation; no
+      model change.

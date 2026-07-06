@@ -1654,6 +1654,213 @@ grid-identical (0.020), φ within one grid step, σ's within 5%. The
 heterogeneous-precision concern does not move any parameter that matters;
 one-line SI answer.
 
+## 2z. 2026-07-06 — Metrics audit adjudicated (two independent audits, cross-reviewed): suite architecture CONFIRMED; community-canonical + proper-score layer added (`community_metrics.py`, `--dist-scores`)
+
+**The audit question:** are the goal-1 (aggregate structure) and goal-2 (movement)
+metrics theoretically correct and what PNAS referees expect?  Two independent
+audits (this program's + an external model's), adjudicated head-to-head.
+
+**Verdict: the core architecture stands.** The 15-card + Q + block decomposition
+is already the answer to the standard "N/15 scorecard" critique (Windrum/Fagiolo/
+Moneta 2007; Fagiolo et al. 2019 — threshold counts discard magnitude; the correct
+summary is a covariance-weighted quadratic form, which Q is).  The frozen OOS gate
+vs persistence is rarer than it should be in the ranking-dynamics literature
+(Iñiguez et al. 2022 validate by qualitative overlay only).  NOTHING in the card,
+`_score`, churn err, or the gate criterion changed; CONFIRMATION_PROTOCOL is
+untouched.
+
+**Gaps found and filled (all ADDITIVE, descriptive-only; `community_metrics.py`,
+16 new tests, suite 61 green):**
+1. *Community-canonical observables* (near-obligatory for Nat Comms/PNAS referees
+   from the Iñiguez/Gershenson/Cocho lineage): rank-change curve C(r) as a FULL
+   log-spaced curve (generalizes coll{cr}); rank flux F + turnover ō with the
+   literature's names (F ≡ outfluxK); rank diversity d(k) — cumulative
+   distinct-occupant structure that per-week-pair collision rates cannot see.
+2. *Direct ladder metrics* (the goal-1 estimand was never scored directly;
+   `_ranksize` was computed but unused): D_ladder (RMSE of the time-mean
+   rank-size curve over log-rank bins) and D_share (max concentration-curve gap;
+   FB language "of tracked activity", census language for Reddit).
+3. *Rolling-origin R2_h and Pers_h* — the committed card rows are period-0
+   anchored (a first-week statistic, not a stationarity statistic; FB Era A's
+   period 0 is the 2020 election week, §2o).  Rolling variants reported
+   alongside; committed rows stay as the regression guard.
+4. *Rank-band transition matrices* (h=1/4/13) with occupancy-weighted TV
+   distance — the mobility kernel, catching directional/band asymmetries that
+   pooled |Δrank| medians miss.
+5. *Proper scores on the OOS gate* (`rankdiff_kalman --oos --dist-scores`,
+   opt-in, frozen criterion unchanged): ensemble CRPS skill vs persistence
+   (Gneiting–Raftery 2007; the strictly proper generalization of the rel-err
+   vector), pooled-PIT predictive quantile coverage at 10/50/90, and the
+   Wasserstein REFERENCE SCALE (model W1 vs persistence W1 — a bare W1 has no
+   scale).  DECLARED: the existing "bootstrap-CI coverage" is a
+   model-median-in-empirical-sampling-CI check, NOT predictive coverage — paper
+   language must say so; the PIT coverage is the calibration statistic.
+6. *Cross-file inconsistency flagged (not yet changed):* card dRank pools
+   rank ≤ 200 (`minimal_rankdiff:1139`) vs the OOS gate's cap = 100
+   (`rankdiff_kalman:432`) — same name, different population; harmonize or
+   rename before submission.
+
+**Smoke run (facebook legacy panel, K=3500, default estimator, reps=2 — NOT a
+paper number):** the new layer immediately localizes known physics: d(1) emp
+0.216 vs sim 0.074 (the data cycles ~19 distinct rank-1 occupants in 88 wks,
+the unconditional sim ~6 — the §2o head-gap initialization signature in
+identity space); transition kernel shows the sim missing 2+-band jumps
+(emp 0.5–4% vs sim ≈ 0); rolling Pers1 emp 24.8 vs the period-0 card row 20.0
+(the anchoring bias, measured).
+
+**Rejected after consideration (status-quo prior honored):** replacing card
+composition/thresholds; energy score; RBO (tunable p invites quibble; rolling
+top-k overlap + collisions cover it); NDCG/Kendall (mismatched to open
+top-heavy lists); formal Diebold–Mariano on 5 dependent splits (per-split
+reporting stands); GSL-div.  Paper-side to-dos from the audit: (F, ō)
+placement figure among the Iñiguez 30 systems; P(x,t) displacement-overlay
+figure; M&M table of fitted vs validation-only moments.
+
+Reproduction:
+```
+python llm_fitting/community_metrics.py facebook_a --top-k 3500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr-long --stat-factor \
+    --two-scale --mix-hetero --reps 20 --print-trans
+python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --conditional state --dist-scores
+```
+
+## 2z-a. 2026-07-06 — METRIC HIERARCHY (binding communication rule) + the paper-grade re-measurement: the smoke "errors" were spec artifacts; ONE real, previously-unscored residual found and characterized (stationary head law too wide)
+
+**The hierarchy (how to talk about the suite; the metric COUNT is not the
+worry-count — each metric has exactly ONE role and only Tier 0 can reject):**
+
+| tier | role | contents | semantics |
+|---|---|---|---|
+| **0 — acceptance gate** (frozen, OOS) | adjudicates the model | rel err vs persistence + CI coverage (per platform) | pass/fail; registered (CONFIRMATION_PROTOCOL) |
+| **1 — descriptive cards** | summarizes fit, preserves program-history comparability | 15-card + churn err + boundary pair; Q + per-block Q/df localizes | thresholds are descriptive; Q never gates (§2x) |
+| **2 — presentation/diagnostic curves** (2z layer) | referee legibility + residual localization | C(r), d(k), F/ō, D_ladder/D_share/ladder-drift/S(1), rolling R2/Pers, transition kernels; OOS CRPS/PIT/W1-ref | NO thresholds, never gate; a Tier-2 signal is PROMOTED to a measured residual (like below), never to a new pass/fail row |
+| 3 — probes | one-off experiments | surrogates, b_robustness, era_replication, head_diversity_probe, ... | session tools |
+
+Decision surface = 2 numbers/platform (Tier 0). Description = ~18 (Tier 1).
+Everything else is figures. The Tier-2 families are re-expressions of Tier-1
+physics in community coordinates (d/C/coll = identity churn; F/ō = boundary;
+kernel = dRank; CRPS/PIT = the gate's distributional check) — they add
+referee-native views, not new obligations.
+
+**Paper-grade re-measurement (FB legacy full stack, subs 2d/2e stack, 10 reps).**
+The default-estimator smoke's alarming numbers were SPEC artifacts, gone at the
+paper stacks: FB d(1) 0.291 vs emp 0.216 (was 0.074 — no identity-diversity
+deficit; slight excess); head long jumps present with t-tails on (kernel row
+1-10 ≥2-band mass sim 0.093 vs emp 0.061 — over, not under). Subs: near-exact
+everywhere (kernel TV 0.018–0.05; rolling R2/Pers exact to 2 decimals; ladder
+diff a uniform −0.1 level cosmetic). Two KNOWN residuals re-confirmed and
+better localized: FB boundary out-flux deficit lives in mid/deep bands' big
+falls (rows 51-200/201-1000 "out": emp 0.021/0.041 vs sim 0.003/0.009 — partly
+instrument absence per 2g#4, not behavior); subs head-zone over-mobility at
+ranks ~5–25 (C(10) 0.900 vs 0.759 — the §2c head family). The community layer
+is also a sharp SPEC DISCRIMINATOR (default vs identified stack differ hugely
+on it) — usable ablation evidence.
+
+**THE REAL FINDING (previously unscored; Tier-2 catch): the fitted model's
+STATIONARY HEAD CROSS-SECTION IS TOO WIDE on FB.** Time-resolved probe
+(scratchpad, 3 seeds, thirds of the panel; burn=40 so the recorded sim IS the
+stationary law): the sim ladder sits +0.35..+0.46 log ABOVE the empirical
+time-mean at every bin in ranks 1–600, converging to +0.04 by ranks 1000–2000,
+STABLE across thirds (not accumulating drift — it is the stationary law);
+**S(1) top-1 activity share: emp 0.015–0.020 stable; sim 0.032–0.090, hugely
+seed-dependent** — the process intermittently grows a runaway #1. Mechanism is
+arithmetic, not conjecture: stationary home spread = σ_perm/√(1−a²) ≈ 0.36 at
+the head (κ=0.07, σ_perm=0.131), and a p99 temperament entity (s=0.887,
+√v≈2.3) carries home SD ≈ 0.8 log — the data's head is far more tightly
+bounded (emp top-2 gap 0.217). **This subsumes §2o**: the "sim stationary
+top-2 gap 0.77±0.31 vs emp 0.217" was the rank-1-2 slice of this pattern, and
+the initialization attribution was incomplete — the width persists in every
+third; it is the stationary law of the fitted dynamics (the §2o conditional-sim
+exoneration was horizon-limited: 21 test weeks, real state). WHY THE CARD IS
+BLIND: VR/ACF/RACF are change-based, R2 is a scale-free correlation, Pers/coll
+are identity-based — no committed row constrains the stationary cross-section;
+the estimator fits Lagrangian change-moments and nothing ties the implied
+stationary Eulerian law to the observed ladder. Platform scope: FB legacy
+measured (this section); subs = level-only cosmetic (T=30, little relaxation);
+**Era A and comments UNMEASURED (SSD unmounted) — measure on next mount before
+any paper claim about the unconditional head.**
+
+**Verdict on model changes (cost/benefit, per the audit's mandate): NO new
+model component now.** (i) The movement gates (Tier 0) are conditional/cohort
+short-horizon objects and do not see this; the in-sample card survives it by
+construction; the paper's Fig-1 ladder claim is EMPIRICAL. (ii) The correct
+fix, if confirmed on Era A/comments, is a CONSTRAINT, not a component: tie the
+(κ, σ_perm) split (and/or the amplitude loading on the permanent component at
+the head) to the empirical stationary band variance — an Eulerian
+stationarity moment added to the MD vector. That REMOVES a degree of freedom
+(parsimony-positive) but unfreezes every committed fit, so it is scheduled
+BEHIND the registered confirmation extension (§2x #1), pre-registered as an
+extension diagnostic alongside κ_i (E4-style): "stationary head-spread moment:
+sim S(1) and top-600 ladder offset within empirical bands." (iii) Tooling is
+in place now: `ladder_drift` + `S(1) top_share` added to community_metrics
+(suite 63); the head_diversity_probe.py initialization experiment (era-median
+w0 via dataclasses.replace, §2o's flagged fix) exists but is MOOT for this
+finding — the width is stationary, not initialization.
+
+## 2z-b. 2026-07-06 — T9 mounted: the head-law finding ADJUDICATED on the paper-primary panels (Era A CONFIRMED, comments NOT confirmed); mechanism attributed to the base partition; protocol amendment A2 registered; no model change adopted
+
+WD Passport still NOT mounted — the §2x confirmation extension (E1–E3)
+remains owner-gated; this session ran only on the T9 panels.
+
+**Era A (structure-primary full stack, 10 seeds): the stationary head-law
+overshoot is CONFIRMED at the paper spec, on the level-robust share metrics:**
+S(1) emp 0.0170 vs sim 0.0467 ± 0.0129 (~2.7×, ≈2.3 seed-SDs); S(10) emp
+0.1011 vs sim 0.151 (+50%); D_share 0.086. Everything else on Era A is
+healthy — C(1) 0.521 vs 0.518 (exact), d(1) 0.245 vs 0.221, kernel TV
+0.065–0.091 with the misfit concentrated in the known boundary family
+(mid-band "out" mass 0.021/0.041 emp vs 0.003/0.009 sim) — the head-share
+excess is an ISOLATED residual, not part of a broader failure.
+
+**Comments (long stack, 10 seeds): NOT confirmed.** S(1) emp 0.1057 vs sim
+0.1397 ± 0.0396 — directionally consistent, within ~1 seed-SD. New
+quantifications on comments in the community coordinates: the sim top-K set
+is 3× too OPEN in turnover (ō 0.031 vs emp 0.0096; flux 0.128 vs 0.090 —
+the recorded boundary residual, sharpened), while the very-head ranks 2–13
+are too STICKY (d(8) 0.102 vs 0.199; C(6) 0.679 vs 0.793).
+
+**Mechanism (CRN-style probe, 3 estimations × 6 seeds, Era A): the base
+(κ, σ_perm) head partition carries the bulk.** Setting the amplitude loading
+b: measured 1.02 → 0 moves S(1) only 0.051 → 0.041 (emp 0.017); b=1 imposed:
+0.053. The amplitude tail explains ~25–30% of the excess; the rest is the
+partition itself — Lagrangian change-moments admit a (κ, σ_perm) split whose
+implied stationary cross-section is too wide at the head. Nothing in the
+moment vector constrains it.
+
+**Measurement lesson (encoded in community_metrics docstrings): D_ladder is
+level-sensitive.** Comments' D_ladder = 1.23 decomposes as the un-modeled
+secular census growth (sim uniformly −0.7..−1.6 BELOW the time-mean ladder —
+opposite sign to FB); the model removes the platform level by design, so raw
+log-ladder RMSE conflates level path with shape on non-stationary-level
+panels. Share-based statistics (S(k), D_share, S(1)/S(10)) are the
+level-robust primaries — and they are what confirms FB (whose declining
+level would bias the sim ladder DOWN, understating the overshoot).
+
+**Actions taken (this session):**
+1. CONFIRMATION_PROTOCOL **Amendment A2 registered** (working tree; valid
+   only if committed before the WD resume runs): E5 stationary head-law
+   diagnostic on the extension — registered baselines above; pre-declared
+   reading (cross-platform structural iff extension sim S(1) > emp by 2
+   seed-SDs); the candidate fix named and scoped (Eulerian stationarity
+   moment appended to the MD objective, OPT-IN like --md-vr, no new
+   components, adopted only if cards hold and frozen gates don't degrade).
+2. NO model change adopted now — per the pre-declared §2z-a rule the
+   cross-platform trigger did NOT fire (comments inconclusive), the movement
+   gates and card are structurally unaffected, and §2x item 1 (confirmation,
+   "no model work first") stands.
+3. Paper language (binding addition to the §2x claim set): the ladder-
+   reproduction claim is scoped — "reproduces the stationary ladder in shape
+   through the mid-ranks; the model's stationary head concentration
+   overshoots on FB (S(1) ~2.7×, S(10) +50%), a measured residual of the
+   unconditional stationary law" — and the boundary paragraph gains the
+   turnover coordinate (comments ō 3×).
+
+**Sharpest open item carried forward:** if E5 confirms on the extension, the
+stationarity-moment constraint is the next estimator step (parsimony-
+positive: removes partition freedom); if not, FB head concentration is
+reported as a measurement-regime-scoped limitation. Either way the paper's
+evidence spine is untouched.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
