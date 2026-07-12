@@ -2940,6 +2940,27 @@ extension-specific distribution, summary, model statistic, or E1–E5
 outcome was observed by any person or analysis before A10 was frozen. The
 extension is not claimed to be literally "unviewed."
 
+**Implementation + validation executed same-session (all A10 requirements
+that precede registration):** `check_extension_panel.py` hygiene rewritten
+to the registered per-column semantics (`_column_semantics` +
+`_signed_field_readout` + `--frozen-self-test` mode; `verify_frozen_prefix`
+— the E2 runner's import — untouched). Suite **119 green** (110 + 9
+adversarial cases locking BOTH directions: signed `comment_karma` with
+negatives in daily AND assembled weekly PASSES; negative `metric_value`,
+negative count, nonzero submission, broken daily identity, null,
+non-integral, unregistered numeric column, broken-identity self-test each
+FAIL); package suite 8 green; defaults elsewhere untouched. **Frozen
+self-test on the real T=136 panels: PASS**, readouts reproducing the
+adjudication numbers exactly (weekly 0.0754%, daily 0.1891%, clipped-mass
+ratio 0.002130%) — `step2d_frozen_self_test.log`. **Determinism: the
+assembler rebuild reproduces BOTH output hashes byte-exactly**
+(93942240…380d weekly, 296d34ee…2046 boundary days) —
+`step2e_determinism_check.log`; temp files removed. Manifest updated.
+**State: BLOCKED on (i) round-9 external attestation, (ii) owner
+acknowledgment in protocol §5. On registration, A10_DRAFT.md is appended
+verbatim to CONFIRMATION_PROTOCOL.md as §15 and the battery restarts from
+Step 0 under A1–A10 — once, zero discretion.**
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

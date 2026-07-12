@@ -226,6 +226,165 @@ class TestIntakeGate(unittest.TestCase):
                       self.f["log"], self.f["plog"])
 
 
+FULL_COLS = ["endpoint_id", "date", "metric_value", "submission_karma",
+             "comment_karma", "submission_count", "comment_count"]
+
+
+def _full_schema_panel(dates, ids, seed):
+    """Real comments-panel schema: signed comment_karma (net votes --
+    negatives are VALID data), metric_value = its positive part (the
+    build-time clip), submission fields identically 0."""
+    rng = np.random.default_rng(seed)
+    rows = []
+    for d in dates:
+        for i in ids:
+            ck = int(rng.integers(-20, 100))
+            rows.append((i, d, max(ck, 0), 0, ck, 0, int(rng.integers(1, 50))))
+    return pd.DataFrame(rows, columns=FULL_COLS)
+
+
+def _fixture_full(tmp):
+    """A10 fixture: full real schema, negatives present in comment_karma,
+    daily identity metric_value == max(comment_karma, 0) satisfied, weekly
+    BUILT BY THE ASSEMBLER (so weekly comment_karma is a signed sum)."""
+    import shutil
+    import build_extension_weekly as bew
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp.mkdir()
+    ids = [f"e{i:02d}" for i in range(20)]
+    frozen = _full_schema_panel(
+        pd.date_range("2021-05-31", cep.FROZEN_LAST_WEEK, freq="7D"), ids, seed=11)
+    fro_p = str(tmp / "frozen_weekly.parquet")
+    frozen.to_parquet(fro_p, index=False)
+    frozen_daily = _full_schema_panel(
+        pd.date_range("2021-05-21", "2021-06-30", freq="D"), ids, seed=12)
+    frod_p = str(tmp / "frozen_daily.parquet")
+    frozen_daily.to_parquet(frod_p, index=False)
+    daily = _full_schema_panel(
+        pd.date_range(cep.EXT_FIRST_DAY, cep.EXT_LAST_DAY, freq="D"), ids, seed=13)
+    day_p = str(tmp / "ext_daily.parquet")
+    daily.to_parquet(day_p, index=False)
+    out_p = str(tmp / "ext_weekly.parquet")
+    bew.assemble(fro_p, day_p, out_p)
+    log = pd.DataFrame({"month": cep.MONTHS.astype(str), "status": "ok",
+                        "source_path": "x", "rows": 1000, "bytes": 5000})
+    log_p = str(tmp / "coverage.csv")
+    log.to_csv(log_p, index=False)
+    months = cep.MONTHS.astype(str)
+    plog = pd.DataFrame({
+        "record_type": "comments", "month": months, "status": "ok",
+        "lines": 10_000, "errors": 0, "output_bytes": 99_999,
+        "finished_at_utc": "2026-07-01T00:00:00Z"})
+    plog_p = str(tmp / "processing_log.csv")
+    plog.to_csv(plog_p, index=False)
+    return dict(ext=out_p, fro=fro_p, day=day_p, frod=frod_p, log=log_p,
+                plog=plog_p, tmp=tmp, daily=daily, frozen=frozen)
+
+
+class TestA10ColumnSemantics(unittest.TestCase):
+    """A10 (draft; runs/2026-07-12_confirmation/A10_DRAFT.md): registered
+    per-column semantics replace the infeasible blanket non-negativity
+    (the frozen baseline itself contains negative comment_karma —
+    MODEL_STATUS §2z-o/§2z-p). Both directions locked: legitimate signed
+    audit data PASSES; every registered violation FAILS."""
+
+    def setUp(self):
+        self.f = _fixture_full(Path("/tmp/a10_semantics_test"))
+
+    def _rewrite(self, df, name):
+        p = str(self.f["tmp"] / name)
+        df.to_parquet(p, index=False)
+        return p
+
+    def _ext_weekly(self):
+        return pd.read_parquet(self.f["ext"])
+
+    def _one_ext_row(self, df):
+        return df.index[pd.to_datetime(df["date"])
+                        > pd.Timestamp(cep.FROZEN_LAST_WEEK)][0]
+
+    def test_signed_comment_karma_passes(self):
+        # the §2z-o reproduction, inverted: negatives present in the daily
+        # AND in the assembled weekly, and the gate must PASS
+        self.assertTrue((self.f["daily"]["comment_karma"] < 0).any())
+        self.assertTrue((self._ext_weekly()["comment_karma"] < 0).any())
+        cep.check(self.f["ext"], self.f["fro"], self.f["day"],
+                  self.f["frod"], self.f["log"], self.f["plog"])
+
+    def test_negative_metric_value_fails(self):
+        bad = self._ext_weekly()
+        bad.loc[self._one_ext_row(bad), "metric_value"] = -5
+        with self.assertRaisesRegex(SystemExit, "negative.*metric_value"):
+            cep.check(self._rewrite(bad, "a10_neg_mv.parquet"), self.f["fro"],
+                      self.f["day"], self.f["frod"], self.f["log"], self.f["plog"])
+
+    def test_negative_count_fails(self):
+        bad = self._ext_weekly()
+        bad.loc[self._one_ext_row(bad), "comment_count"] = -1
+        with self.assertRaisesRegex(SystemExit, "negative.*comment_count"):
+            cep.check(self._rewrite(bad, "a10_neg_cc.parquet"), self.f["fro"],
+                      self.f["day"], self.f["frod"], self.f["log"], self.f["plog"])
+
+    def test_nonzero_submission_fails(self):
+        bad = self._ext_weekly()
+        bad.loc[self._one_ext_row(bad), "submission_karma"] = 7
+        with self.assertRaisesRegex(SystemExit, "nonzero.*submission_karma"):
+            cep.check(self._rewrite(bad, "a10_sub.parquet"), self.f["fro"],
+                      self.f["day"], self.f["frod"], self.f["log"], self.f["plog"])
+
+    def test_daily_identity_break_fails(self):
+        # a negative-karma day whose metric_value is NOT the positive part:
+        # nonnegative (passes the sign check) but violates the identity
+        d2 = self.f["daily"].copy()
+        idx = d2.index[d2["comment_karma"] < 0][0]
+        d2.loc[idx, "metric_value"] = 1
+        with self.assertRaisesRegex(SystemExit, "identity"):
+            cep.check(self.f["ext"], self.f["fro"],
+                      self._rewrite(d2, "a10_ident.parquet"), self.f["frod"],
+                      self.f["log"], self.f["plog"])
+
+    def test_null_fails(self):
+        bad = self._ext_weekly()
+        bad["comment_karma"] = bad["comment_karma"].astype(float)
+        bad.loc[self._one_ext_row(bad), "comment_karma"] = np.nan
+        with self.assertRaisesRegex(SystemExit, "null"):
+            cep.check(self._rewrite(bad, "a10_null.parquet"), self.f["fro"],
+                      self.f["day"], self.f["frod"], self.f["log"], self.f["plog"])
+
+    def test_non_integral_fails(self):
+        bad = self._ext_weekly()
+        bad["comment_karma"] = bad["comment_karma"].astype(float)
+        bad.loc[self._one_ext_row(bad), "comment_karma"] = 1.5
+        with self.assertRaisesRegex(SystemExit, "non-integral"):
+            cep.check(self._rewrite(bad, "a10_frac.parquet"), self.f["fro"],
+                      self.f["day"], self.f["frod"], self.f["log"], self.f["plog"])
+
+    def test_unregistered_numeric_column_fails(self):
+        # fail-closed: a numeric column with no registered semantics must
+        # FAIL even when schema equality holds (present in frozen AND ext)
+        import build_extension_weekly as bew
+        fro2 = self.f["frozen"].assign(extra_metric=1)
+        fro_p = self._rewrite(fro2, "a10_fro_extra.parquet")
+        day2 = self.f["daily"].assign(extra_metric=1)
+        day_p = self._rewrite(day2, "a10_day_extra.parquet")
+        out_p = str(self.f["tmp"] / "a10_ext_extra.parquet")
+        bew.assemble(fro_p, day_p, out_p)
+        with self.assertRaisesRegex(SystemExit, "unregistered"):
+            cep.check(out_p, fro_p, day_p, self.f["frod"],
+                      self.f["log"], self.f["plog"])
+
+    def test_frozen_self_test_mode(self):
+        # A10 validation requirement 1, synthetic form: panels with
+        # legitimate negatives pass; a broken daily identity fails
+        cep.frozen_self_test(self.f["fro"], self.f["day"])
+        d2 = self.f["daily"].copy()
+        idx = d2.index[d2["comment_karma"] < 0][0]
+        d2.loc[idx, "metric_value"] = 1
+        with self.assertRaisesRegex(SystemExit, "identity"):
+            cep.frozen_self_test(self.f["fro"],
+                                 self._rewrite(d2, "a10_st_bad.parquet"))
+
+
 class TestAssembler(unittest.TestCase):
     def test_prefix_untouched_and_boundary_days_reported(self):
         f = _fixture(Path("/tmp/a8_assembler_test"))

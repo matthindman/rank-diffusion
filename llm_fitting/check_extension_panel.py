@@ -28,7 +28,9 @@ Dec 25. Every input is REQUIRED:
        status == "ok", lines > 0, output_bytes > 0, and **errors == 0** —
        the registered zero-parse-errors rule, enforced mechanically.
   5. Daily panel (REQUIRED): every frozen numeric metric column PRESENT
-     (no silent intersection); no duplicate keys; no negatives; EVERY
+     (no silent intersection); no duplicate keys; A10 column semantics
+     (see below) incl. the daily identity
+     metric_value == max(comment_karma, 0); EVERY
      calendar day 2021-07-01 .. 2022-12-31 present (boundary days through
      year end included — they are registered as reported data);
      weekly == sum(daily) for EVERY frozen metric with EXACT (entity, week)
@@ -39,6 +41,19 @@ Dec 25. Every input is REQUIRED:
      instrument_eras.flag_days (trailing prior-days median), adjudicated on
      extension dates only — so July 1-7 are judged against the frozen
      baseline, not against themselves.
+
+A10 (drafted 2026-07-12; MODEL_STATUS §2z-o/§2z-p — the blanket
+non-negativity rule was INFEASIBLE, the frozen baseline itself fails it):
+hygiene checks [3] and [5] use registered PER-COLUMN semantics
+(comment_karma is a signed audit field the model never ingests;
+metric_value = its daily positive part), with negative-cell rates and the
+daily clipped-mass ratio printed as descriptive readouts that never gate.
+
+Self-test mode (A10 validation requirement 1 — the dry-run whose absence
+caused the §2z-o halt):
+
+  python llm_fitting/check_extension_panel.py --frozen-self-test \
+      FROZEN_WEEKLY FROZEN_DAILY
 
 ANY failure => nonzero exit. Failures are data problems, not modeling
 degrees of freedom (protocol §2).
@@ -100,12 +115,69 @@ def verify_frozen_prefix(ext_path: str, frozen_path: str) -> None:
                   f"{FROZEN_LAST_WEEK} week)")
 
 
-def _basic_hygiene(df, what):
+# A10 registered per-column semantics (comments-only panel). Draft text:
+# runs/2026-07-12_confirmation/A10_DRAFT.md — INERT for confirmation
+# purposes until registered in CONFIRMATION_PROTOCOL.md (attestation +
+# owner acknowledgment). Derived from panel construction and verified
+# against the frozen baseline (MODEL_STATUS §2z-p):
+#   metric_value      finite integral >= 0 (positive-part daily net karma)
+#   comment_count     finite integral >= 0
+#   comment_karma     finite integral SIGNED (net votes; negatives valid)
+#   submission_karma  identically 0   (comments-only panel)
+#   submission_count  identically 0
+# Any other numeric column has no registered semantics -> FAIL-CLOSED.
+A10_NONNEG = {"metric_value", "comment_count"}
+A10_SIGNED = {"comment_karma"}
+A10_ZERO = {"submission_karma", "submission_count"}
+
+
+def _column_semantics(df, what, daily=False):
+    """A10 hygiene: keys unique; nulls rejected everywhere; every numeric
+    field finite + integral; sign/zero semantics per registered column;
+    daily panels additionally satisfy metric_value == max(comment_karma, 0)
+    exactly (binds the audit field to the modeled field cell-by-cell)."""
     if df.duplicated([ID, DT]).any():
         _fail(f"duplicate (entity, date) keys in the {what} panel")
+    nulls = df.columns[df.isna().any()].tolist()
+    if nulls:
+        _fail(f"null values in {what} columns {nulls}")
     for c in _num_cols(df):
-        if (df[c] < 0).any():
+        if c not in (A10_NONNEG | A10_SIGNED | A10_ZERO):
+            _fail(f"unregistered numeric column '{c}' in the {what} panel "
+                  f"(no A10 semantics -- fail-closed)")
+        v = df[c]
+        if not np.issubdtype(v.dtype, np.integer):
+            a = v.to_numpy(dtype=float)
+            if not np.isfinite(a).all():
+                _fail(f"non-finite values in {what} column '{c}'")
+            if (a != np.floor(a)).any():
+                _fail(f"non-integral values in {what} column '{c}'")
+        if c in A10_NONNEG and (v < 0).any():
             _fail(f"negative values in {what} column '{c}'")
+        if c in A10_ZERO and (v != 0).any():
+            _fail(f"nonzero values in {what} column '{c}' "
+                  f"(identically 0 in this comments-only panel)")
+    if daily and "comment_karma" in df.columns:
+        if not (df["metric_value"] == df["comment_karma"].clip(lower=0)).all():
+            _fail(f"daily identity violated in the {what} panel: "
+                  f"metric_value != max(comment_karma, 0)")
+
+
+def _signed_field_readout(df, what, daily=False):
+    """A10 mandatory DESCRIPTIVE readouts — reported, NEVER gates."""
+    if "comment_karma" not in df.columns or not len(df):
+        return
+    ck = df["comment_karma"]
+    neg = ck < 0
+    line = (f"  [descriptive, never gates] {what}: negative comment_karma "
+            f"cells {int(neg.sum()):,}/{len(df):,} ({neg.mean():.4%})")
+    if daily:
+        clipped = int(-ck[neg].sum())
+        total = int(df["metric_value"].sum())
+        ratio = clipped / total if total else float("nan")
+        line += (f"; abs negative karma removed by clipping / total modeled "
+                 f"positive-part karma = {clipped:,}/{total:,} ({ratio:.6%})")
+    print(line)
 
 
 def _check_coverage_log(path: str) -> None:
@@ -179,9 +251,11 @@ def check(ext_weekly: str, frozen_weekly: str, ext_daily: str,
     print(f"  [2/6] complete-week window: OK ({EXT_N_WEEKS} weeks, "
           f"period 136 = {EXT_FIRST_WEEK})")
 
-    # [3] weekly hygiene
-    _basic_hygiene(ext, "extended weekly")
-    print("  [3/6] weekly keys unique, all numerics non-negative: OK")
+    # [3] weekly hygiene (A10 per-column semantics; no weekly clipping
+    #     identity -- clip precedes weekly aggregation by construction)
+    _column_semantics(ext, "extended weekly")
+    print("  [3/6] weekly keys unique + A10 column semantics: OK")
+    _signed_field_readout(new, "extension weekly")
 
     # [4] aggregation logs (parse success is only observable here)
     _check_coverage_log(coverage_log)
@@ -200,7 +274,8 @@ def check(ext_weekly: str, frozen_weekly: str, ext_daily: str,
     if lacking:
         _fail(f"daily panel lacks frozen metric columns {lacking} "
               f"(no silent intersection)")
-    _basic_hygiene(dd, "extension daily")
+    _column_semantics(dd, "extension daily", daily=True)
+    _signed_field_readout(dd, "extension daily", daily=True)
     have_days = pd.DatetimeIndex(np.sort(dd[DT].unique())).normalize()
     want_days = pd.date_range(EXT_FIRST_DAY, EXT_LAST_DAY, freq="D")
     missing_days = want_days.difference(have_days)
@@ -246,7 +321,24 @@ def check(ext_weekly: str, frozen_weekly: str, ext_daily: str,
     print("PASS")
 
 
+def frozen_self_test(frozen_weekly: str, frozen_daily: str) -> None:
+    """A10 validation requirement 1: the gate's column semantics must PASS
+    on the frozen T=136 baseline panels themselves."""
+    fw = pd.read_parquet(frozen_weekly)
+    fw[DT] = pd.to_datetime(fw[DT])
+    _column_semantics(fw, "frozen weekly")
+    _signed_field_readout(fw, "frozen weekly")
+    fd = pd.read_parquet(frozen_daily)
+    fd[DT] = pd.to_datetime(fd[DT])
+    _column_semantics(fd, "frozen daily", daily=True)
+    _signed_field_readout(fd, "frozen daily", daily=True)
+    print("FROZEN SELF-TEST PASS")
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 7:
+    if len(sys.argv) == 4 and sys.argv[1] == "--frozen-self-test":
+        frozen_self_test(sys.argv[2], sys.argv[3])
+    elif len(sys.argv) == 7:
+        check(*sys.argv[1:7])
+    else:
         raise SystemExit(__doc__)
-    check(*sys.argv[1:7])

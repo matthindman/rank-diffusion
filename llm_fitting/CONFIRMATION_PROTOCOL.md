@@ -111,6 +111,26 @@ E3. **Descriptive card + bands** on the extended panel with the §2s comments
   Archive: `llm_fitting/runs/2026-07-12_confirmation/` (logs +
   MANIFEST.sha256); full record MODEL_STATUS §2z-o. Owner adjudication of
   the negative-metrics rule's scope required before any re-attempt.
+- 2026-07-12: intake FAIL **ADJUDICATED as a registered-rule defect**
+  (MODEL_STATUS §2z-p): the model provably never ingests signed
+  `comment_karma` (`metric_value` = its daily positive part at build; all
+  loaders metric_value-only; zero E1–E5 references), and the blanket
+  non-negativity rule is infeasible against the hash-pinned frozen
+  baseline itself. **Amendment A10 DRAFTED, implemented, and validated —
+  INERT** (`runs/2026-07-12_confirmation/A10_DRAFT.md`, sha256
+  286e1082…bb38): per-column semantics + daily identity
+  `metric_value == max(comment_karma, 0)` + descriptive never-gating
+  negativity/clipped-mass readouts; frozen self-test PASS on the T=136
+  panels; assembler rebuild reproduces the REGISTERED-weekly hash
+  byte-exactly; suite 119 green with both-directions adversarial locks.
+  No E1–E5 criterion, stack, band, threshold, or the A6.7 decision rule
+  changed. **BLOCKED on: (i) round-9 external attestation (minimal +
+  outcome-blind), (ii) owner acknowledgment of the post-intake-contact
+  timeline.** On both: A10_DRAFT.md is appended verbatim as §15 and the
+  battery restarts from Step 0 under A1–A10, once. Blindness holds: no
+  extension-specific distribution, summary, statistic, or outcome has
+  been observed; the extension negativity readouts will first be seen
+  when the registered gate runs at the restart.
 
 ## 6. AMENDMENT A1 (2026-07-05, same day, BEFORE any data processing): κ_i secondary diagnostic + surrogate-adjusted residual reference
 
