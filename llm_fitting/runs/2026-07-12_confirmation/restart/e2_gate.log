@@ -1,0 +1,29 @@
+
+========================================================================
+REDDIT_COMMENTS_EXT — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=213  test_len=34  train-end origins=[136]  universe=top-12500 (B=4x, train-only membership) temper pool>=8 md6 t-tails mix-b NNLS COND:state
+  FIXED membership from llm_fitting/e2_members_t136.parquet ({136: 50000})
+  member-ids sha256: f0b463cab014855d72fd238a2b57a073f06cbe16eb65ff9287eb792d5c7f5562
+  frozen-prefix equality re-verified vs data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0=136  1.00  |  0.032      |  0.171        |    1.4   | True  s=0.69
+
+  sigma_obs_scale stability: [1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.032 ± 0.000   |   persistence = 0.171 ± 0.000
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 100% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=136): emp median/p90 vs model median/p90
+    dRank1: emp    7/  27   model    7/  25
+    dRank4: emp    9/  41   model    9/  35
+    dRank13: emp   13/  65   model   13/  51
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0=136     6.70 |    6.70  | +0.00 |     1.4      0.8  | 0.17/0.54/0.89
+    CRPS skill vs persistence @ dRank1: +0.001 ± 0.000  (>0 = model beats persistence; n=1 splits)
+    CRPS skill vs persistence @ dRank4: +0.005 ± 0.000  (>0 = model beats persistence; n=1 splits)
+    CRPS skill vs persistence @ dRank13: +0.002 ± 0.000  (>0 = model beats persistence; n=1 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0=136  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [6.0, 7.0] in

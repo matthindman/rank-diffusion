@@ -1,0 +1,15 @@
+=== surrogate test: reddit_comments_ext K=12500  complete-column population n=8826, T=213, 50 surrogates ===
+
+(a) stat       empirical surrogate mean        surr 2.5-97.5% emp inside?
+    rho13          0.966          0.942    [  0.924,  0.954]       False
+    VRsc13         0.144          0.229    [  0.219,  0.233]       False
+    rho26          0.902          0.851    [  0.771,  0.899]       False
+    VRsc26         0.087          0.161    [  0.134,  0.171]       False
+    rho52          0.732          0.656    [  0.434,  0.760]        True
+    VRsc52         0.049          0.108    [  0.077,  0.126]       False
+    RACF13         0.482          0.514    [  0.464,  0.560]        True
+    RACF1          0.770          0.798    [  0.778,  0.818]       False
+
+(b) kappa_i heterogeneity probe (n=8826 entities, 5x5 rank-x-vol cells):
+    split-half Spearman of conditioned log VR13 curvature: 0.386
+    half SDs 0.473/0.463; noise-corrected TRUE SD = sqrt(cov12) = 0.304 (42% of observed variance is signal)

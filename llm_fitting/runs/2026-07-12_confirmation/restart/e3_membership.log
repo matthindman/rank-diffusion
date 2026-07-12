@@ -1,0 +1,14 @@
+reddit_comments_ext T=213, K=12500, B=50000
+
+member-set overlap (share of B):
+                     full   first-half  second-half  trailing-60
+  full              1.000        0.797        0.911        0.845
+  first-half        0.797        1.000        0.712        0.663
+  second-half        0.911        0.712        1.000        0.911
+  trailing-60        0.845        0.663        0.911        1.000
+
+headline-metric movement (temper+pool+md6+t, reps=3, scored on the same estimand):
+  full         score 9/15  churn 0.084  s=0.721  | emp/sim RACF1:0.758/0.846  VR4:0.339/0.536  dRank1:11.000/12.333  dRank4:14.000/18.000  coll1:0.028/0.211  outfluxK:0.086/0.163  return4K:0.398/0.289
+  first-half   score 9/15  churn 0.087  s=0.690  | emp/sim RACF1:0.738/0.828  VR4:0.335/0.510  dRank1:12.000/12.667  dRank4:15.000/18.000  coll1:0.028/0.182  outfluxK:0.087/0.172  return4K:0.399/0.275
+  second-half  score 9/15  churn 0.059  s=0.726  | emp/sim RACF1:0.767/0.850  VR4:0.337/0.528  dRank1:10.000/12.333  dRank4:14.000/18.000  coll1:0.028/0.143  outfluxK:0.085/0.153  return4K:0.402/0.312
+  trailing-60  score 8/15  churn 0.071  s=0.727  | emp/sim RACF1:0.774/0.864  VR4:0.339/0.512  dRank1:11.000/12.000  dRank4:15.000/17.333  coll1:0.028/0.203  outfluxK:0.083/0.152  return4K:0.404/0.317

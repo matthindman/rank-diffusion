@@ -1,0 +1,63 @@
+=== scorecard bands: reddit_comments_ext T=213 score_k=12500 reps=20 boot=500 censor=False ===
+  sim rep 1/20 done
+  sim rep 2/20 done
+  sim rep 3/20 done
+  sim rep 4/20 done
+  sim rep 5/20 done
+  sim rep 6/20 done
+  sim rep 7/20 done
+  sim rep 8/20 done
+  sim rep 9/20 done
+  sim rep 10/20 done
+  sim rep 11/20 done
+  sim rep 12/20 done
+  sim rep 13/20 done
+  sim rep 14/20 done
+  sim rep 15/20 done
+  sim rep 16/20 done
+  sim rep 17/20 done
+  sim rep 18/20 done
+  sim rep 19/20 done
+  sim rep 20/20 done
+  entity bootstrap ...
+  moving-block bootstrap (weeks) ...
+
+  metric         emp      emp 95% band     sim   simSD    diff      z
+  VR2          0.592 [  0.584,  0.600]   0.681   0.009  +0.090   21.7
+  VR4          0.339 [  0.331,  0.345]   0.469   0.013  +0.130   30.3
+  VR8          0.205 [  0.201,  0.212]   0.331   0.015  +0.126   29.4
+  VR13         0.145 [  0.141,  0.150]   0.256   0.016  +0.111   26.0
+  ACF1        -0.382 [ -0.388, -0.372]  -0.318   0.009  +0.063   14.2
+  ACF2        -0.031 [ -0.038, -0.026]  -0.040   0.008  -0.009   -2.3
+  RACF1        0.758 [  0.744,  0.768]   0.771   0.005  +0.013    2.3
+  RACF4        0.651 [  0.631,  0.664]   0.627   0.008  -0.024   -2.7
+  RACF13       0.481 [  0.451,  0.503]   0.381   0.009  -0.099   -7.4
+  R2_1         0.884 [  0.865,  0.902]   0.952   0.005  +0.067    6.8
+  R2_4         0.858 [  0.835,  0.879]   0.925   0.009  +0.067    5.9
+  R2_13        0.827 [  0.803,  0.852]   0.877   0.012  +0.050    3.8
+  Pers1      106.000      (MC only)    111.600   2.415  +5.600   10.4
+  Pers4      103.000      (MC only)    106.800   2.462  +3.800    6.9
+  Pers13      99.000      (MC only)    102.050   2.064  +3.050    6.6
+  coll1        0.028 [  0.000,  0.075]   0.059   0.029  +0.031    1.5
+  coll2        0.198 [  0.132,  0.285]   0.394   0.068  +0.196    4.5
+  coll5        0.722 [  0.660,  0.764]   0.719   0.049  -0.003   -0.1
+  coll10       0.877 [  0.835,  0.915]   0.792   0.026  -0.086   -4.0
+  coll20       0.929 [  0.901,  0.958]   0.917   0.016  -0.012   -0.8
+  coll50       0.986 [  0.972,  0.995]   0.971   0.012  -0.015   -1.9
+  coll100      0.995 [  0.986,  1.000]   0.980   0.009  -0.015   -3.0
+  dRank1      11.000 [  7.000, 15.000]  12.950   1.731  +1.950    0.9
+  dRank4      14.000 [  9.000, 19.000]  18.000   2.636  +4.000    1.5
+  dRank13     20.000 [ 13.000, 27.000]  25.000   3.784  +5.000    1.4
+  outfluxK     0.086 [  0.084,  0.088]   0.149   0.001  +0.063   67.6
+  return4K     0.398 [  0.394,  0.403]   0.294   0.002  -0.104  -48.3
+
+  omnibus Q = 2067.2 over 15 card moments (chi2 df=15 reference: mean 15, p95 ~ 24) -- descriptive
+
+  Q by block:   block             df       Q_b   Q_b/df
+                VR                 4    1629.6    407.4
+                ACF/RACF           5     258.2     51.6
+                R2                 3      62.7     20.9
+                Pers (MC-only)     3     166.7     55.6
+                churn              7      59.2      8.5
+                boundary           2    6901.1   3450.6
+  v4.3-style card: 11/15  churn err 0.051  (threshold card, for continuity)

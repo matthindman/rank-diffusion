@@ -1,0 +1,9 @@
+  [1/6] schema equality + frozen-prefix equality: OK
+  [2/6] complete-week window: OK (77 weeks, period 136 = 2021-07-05)
+  [3/6] weekly keys unique + A10 column semantics: OK
+  [descriptive, never gates] extension weekly: negative comment_karma cells 5,308/12,358,947 (0.0429%)
+  [4/6] aggregation logs: 18 months, one ok nonempty coverage record each + latest processing record errors == 0: OK
+  [descriptive, never gates] extension daily: negative comment_karma cells 49,311/40,476,063 (0.1218%); abs negative karma removed by clipping / total modeled positive-part karma = 346,537/31,671,313,497 (0.001094%)
+  [5/6] daily metrics complete + hygiene + calendar through 2022-12-31 + weekly=Σdaily with exact index equality: OK
+  [6/6] day-guard (frozen-history trailing prior-days median): 0 flagged extension days: OK
+PASS

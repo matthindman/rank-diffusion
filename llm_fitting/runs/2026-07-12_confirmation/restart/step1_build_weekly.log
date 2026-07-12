@@ -1,0 +1,5 @@
+boundary days EXCLUDED from weekly rows, written to data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED_boundary_days.parquet: 722,222 rows, dates 2021-07-01..2022-12-31
+wrote data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet: frozen prefix 14,099,317 rows (unchanged) + 12,358,947 extension rows over 77 complete weeks (2021-07-05..2022-12-19)
+-- A10 determinism requirement: weekly must be 93942240...380d --
+93942240d766e5fa306f26d6c7ebda0c2da0c0aac741b76b956f5d65ce92380d  data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet
+296d34ee0395c3d9ae5a6bff73557ee840c815a4f05ed3b83bc02657fd2d2046  data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED_boundary_days.parquet

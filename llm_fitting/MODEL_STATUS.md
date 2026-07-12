@@ -2961,6 +2961,184 @@ acknowledgment in protocol §5. On registration, A10_DRAFT.md is appended
 verbatim to CONFIRMATION_PROTOCOL.md as §15 and the battery restarts from
 Step 0 under A1–A10 — once, zero discretion.**
 
+## 2z-q. 2026-07-12 — THE CONFIRMATION BATTERY EXECUTED (once, complete, under A1–A10): **A6.7 VERDICT = MIXED EVIDENCE** — E2 (frozen-parameter movement gate) PASSES decisively (0.032 vs baseline 0.171, h=1 in-CI, scale 1.0); E1 (parameter transport) FAILS on s and the κ orientation; E5 head-law trigger FIRED (cross-platform structural); E4 knife-edge NOT-predictive
+
+This is the confirmation report for the registered battery
+(CONFIRMATION_PROTOCOL §3–§4 as amended A1–A10), executed once on the
+extension 2021-07..2022-12, in order E1→E2→E3→E4→E5 with no conditional
+stopping, scored against PRE-DECLARED criteria only. It is written before
+any exploratory contact with the extension. Language note (A10): this is
+**a registered confirmatory evaluation with one disclosed
+post-registration, pre-outcome technical correction** (the A10 intake-rule
+fix, §2z-o/§2z-p) — not "executed exactly as originally preregistered."
+Archive: `llm_fitting/runs/2026-07-12_confirmation/restart/` (all logs +
+MANIFEST.sha256); the §2z-o halted attempt's archive is preserved
+unchanged beside it.
+
+**Intake (restart steps 0–2, all PASS):** preconditions held (suite 119 =
+the registered 110 + 9 A10 adversarial tests committed pre-restart;
+package 8; mounts; platform entry; all four pinned input hashes);
+assembler rebuild BYTE-DETERMINISTIC (weekly 93942240…380d, boundary
+296d34ee…2046 — the A10 requirement); the 6-input A10 gate printed PASS
+on all six checks. First legitimate extension observations (descriptive
+readouts, never gating): negative `comment_karma` cells 0.1218% daily /
+0.0429% weekly; clipped mass 0.001094% — all BELOW the frozen baseline's
+shares (0.1891% / 0.0754% / 0.002130%).
+
+### E1 — parameter transport (extension segment T0=136, T_seg=77): **FAIL** (2 of 4 components)
+
+| component | extension | band / rule | verdict |
+|---|---|---|---|
+| s (temper, min_changes=12) | **0.8319** (block-boot CI 0.845–0.897) | [0.64, 0.74] | **FAIL** — above the band; the CI excludes the band entirely |
+| b8 = s(8)/s(1) (frozen h=8) | **0.9699** | [0.95, 1.15] (ref 1.0163) | **PASS** |
+| κ thirds (md6, bands 1–4/5–8/9–12) | 0.0390 / 0.0379 / 0.0591 (ref 0.0050/0.0198/0.0191) | head strictly most persistent | **FAIL** — head 0.0390 > mid 0.0379 (Δ 0.0011) |
+| Spec-B centered floor (12 bands) | max band rel dev **0.073** | ±25% at all 12 coordinates | **PASS** |
+
+Non-gating context, registered in A6.2: the train sub-window s range was
+0.64–0.67; the extension block-bootstrap CI (0.845–0.897) sits wholly
+above the band — the s failure is not a band-edge or noise call. The
+amplitude-spread parameter did NOT transport across the 2021-07 era
+boundary; the mix exponent (b8, the b≈1 law) and the Spec-B noise-floor
+shape DID transport (Spec-B strikingly: 7.3% max deviation vs 25%
+tolerance). κ: extension head reversion is ~8× the reference head value
+and the head/mid ordering inverts by 0.0011 on ~0.04 — the registered
+orientation rule fails as printed. MEASURED, not interpreted; any
+mechanism analysis is exploratory and post-report. **A4 both-solves
+readout note:** b8 = 0.9699 sits 0.0199 from the lower band edge — within
+the declared 10%-of-band-width trigger (0.02) — but the frozen
+`e1_transport.py` has NO legacy-solve arm; the registered readout cannot
+be produced by the frozen tooling. Reported as a tooling gap, not patched
+mid-battery; a both-solves readout, if produced later, is labeled
+exploratory/supplementary.
+
+### E2 — frozen-parameter movement gate (A7 command verbatim): **PASS**, decisively
+
+Header enforcement verified before any score: origins=[136],
+test_len=34, member sha f0b463ca…7562, frozen-prefix equality re-verified.
+
+| quantity | value | criterion | verdict |
+|---|---|---|---|
+| model rel err | **0.032** | ≤ baseline + 0.05 = 0.221 | **PASS** |
+| historical-mobility baseline | 0.171 | — | (model beats it outright, 5.3×) |
+| h=1 model-median-in-CI | **in** | must be in | **PASS** |
+| calibrated scale | **1.00** | — | zero calibration freedom used |
+
+Descriptive (declared, can never rescue — none needed): h=4 and h=13
+model-median-in-CI both **in**; week-block clustered CI(h=1) [6.0, 7.0]
+contains the model median; model medians match empirical EXACTLY at all
+three horizons (dR1 7/7, dR4 9/9, dR13 13/13); p90 under-dispersed
+(27→25, 41→35, 65→51 — the known tail pattern); CRPS skill vs
+persistence +0.001/+0.005/+0.002 at h=1/4/13 (~at par on proper scores);
+PIT coverage 0.17/0.54/0.89 vs nominal .10/.50/.90; train fit s = 0.69
+(reproduces the frozen reference — internal consistency).
+
+### E3 — descriptive card + bands + surrogate + membership (no pass/fail attaches)
+
+- **Card (LONG stack, reps=20, boot=500, seed 0): 11/15, churn err
+  0.051** (T=136 record: 12/15 / 0.044). Omnibus Q = 2067 over 15
+  moments; per-block Q/df localizes to VR (407) and boundary (3450);
+  churn block healthiest (8.5).
+- Boundary rows are the largest z's: outfluxK emp 0.086 vs sim 0.149,
+  return4K emp 0.398 vs sim 0.294 — the extension's exit/return flux is
+  materially calmer than the sim's (new, extension-specific residual;
+  Tier-1 descriptive).
+- **Surrogate-adjusted VR reading (A1; 50 phase-random draws, seed 0):**
+  card VR13 residual +0.111; data-side functional gap (surrogate mean −
+  emp) = **+0.085**; residual beyond the surrogate band ≈ **+0.03** —
+  consistent with the §2v decomposition (functional component dominates;
+  honest dynamics target ≈ +0.04 transports). κ_i probe: split-half
+  Spearman 0.386, noise-corrected true log-SD **0.304** (recorded ≈ 0.30
+  — reproduces).
+- **Membership sensitivity (trailing-60 + halves):** overlaps 0.66–0.91;
+  card 9/15 (8/15 trailing) with churn 0.059–0.087 across all four
+  windows at the quick spec (reps=3) — drift real, headline-invariant, as
+  on the frozen panel. Reported, not used for selection.
+
+### E4 — κ_i transport (shared-survivor-conditioned, n=7,777): **NOT predictive** (as printed; knife-edge)
+
+Spearman(κ̂_train, resid_ext) = **0.401** [0.381, 0.422] — clears the
+0.20 gate by 2×. Concentration (Q1∪Q5 / Q3) = **1.299** [1.240, 1.362] —
+fails the 1.3 gate by 0.001, CI spanning the threshold. The pre-declared
+reading is binary and both must hold: **NOT predictive**; no κ_i layer is
+built (CIs are registered secondary uncertainty, never gates — the
+knife-edge is reported, not adjudicated away). ρ̂ (train split-half
+signal share) = 0.410.
+
+### E5 — stationary head-law diagnostic (20 frozen seeds, ddof=0): **TRIGGER FIRED**
+
+Within recorded top-2,000 (A3): S(1) emp 0.0901, sim **0.1363 ± 0.0156**;
+excess **+0.0461 > 2·SD = 0.0312**, same direction as the recorded
+overshoot → **cross-platform structural** per the registered reading
+(comments extension joins FB Era A ~2.7× and IG ~2.9×; here ~1.51×).
+Diagnostics: S(10) emp 0.2291 vs sim 0.2999 ± 0.0144; head offset 1–600
+level-adjusted +0.2559 ± 0.0108 (raw −1.3705, level-contaminated on the
+growing census — declared). Consequence per A2: the candidate fix — the
+Eulerian stationarity moment appended to the MD partition objective,
+opt-in, removes freedom — is now ACTIVATED as a pre-registered next step
+(adoption still gated on in-sample cards holding and the frozen OOS gates
+not degrading). NOT implemented this session, as registered.
+
+### OVERALL A6.7 VERDICT: **MIXED EVIDENCE** (E2 passes, E1 fails; E3/E4/E5 cannot change it)
+
+Scored against the registered non-gating predictions: E2 rel err
+predicted ~0.16–0.24 → actual **0.032 (better than predicted)**; s
+predicted near 0.64–0.69 → actual **0.8319 (outside, FAIL)**; b(8)
+predicted near 1.02 → actual **0.9699 (in band, low side)**. The
+substantive shape: **the frozen T=136 model's held-out movement forecast
+into the era it never saw is the battery's strongest result on record,
+while the era's own re-estimated amplitude spread and head-κ orientation
+drifted out of their transport bands** — movement law confirmed, two
+parameter-level transports failed, head-law overshoot confirmed
+structural. Failures carry the same prominence as the pass; none prompts
+a refit.
+
+### Execution record (honest, complete)
+
+- 3 background runs were killed by the environment mid-battery (E3a at
+  zero output, E4 at zero output, E5 twice — at 0, 9, and 12 of 20
+  seeds); each produced no verdict when killed and was relaunched with
+  the IDENTICAL registered command; E5 completed on the 4th attempt under
+  `caffeinate` (machine idle-sleep suspected; severe memory pressure
+  observed). Nothing outcome-contingent: no killed run produced a
+  scoreable number.
+- The A4 both-solves E1 readout is unproducible by frozen tooling (gap
+  reported above).
+- Suites at battery end: `tests/` 119 green, `Python/rankdiff/tests` 8
+  green; zero code edits during the battery (the A10 gate change predates
+  the restart and is itself registered).
+
+### Reproduction (exact commands; full logs in `runs/2026-07-12_confirmation/restart/`)
+
+```
+python3 -m pytest tests/ -q                                     # 119 passed
+python3 -u llm_fitting/build_extension_weekly.py \
+    data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet \
+    data/ssd/derived/reddit_comments_2018-12_2022-12_daily.parquet \
+    data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet
+python3 -u llm_fitting/check_extension_panel.py \
+    data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet \
+    data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet \
+    data/ssd/derived/reddit_comments_2018-12_2022-12_daily.parquet \
+    data/ssd/derived/reddit_comments_2018-12_2021-06_daily.parquet \
+    data/ssd/manifest/reddit_comments_2018-12_2022-12_coverage.csv \
+    data/ssd/logs/reddit_monthly_processing_log.csv                # PASS
+python3 -u llm_fitting/e1_transport.py --score 136 --platform reddit_comments_ext
+python3 -u llm_fitting/rankdiff_kalman.py reddit_comments_ext --oos --top-k 12500 \
+    --temperament --min-knot-entities 8 --md-lags 6 --t-tails --mix-hetero \
+    --conditional state --dist-scores \
+    --origins 136 --test-len 34 --reps 20 --boot 2000 \
+    --member-ids-file llm_fitting/e2_members_t136.parquet \
+    --expect-member-sha f0b463cab014855d72fd238a2b57a073f06cbe16eb65ff9287eb792d5c7f5562 \
+    --frozen-prefix data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet
+python3 -u llm_fitting/scorecard_bands.py reddit_comments_ext --top-k 12500 \
+    --temperament --min-knot-entities 8 --md-lags 6 --t-tails --md-vr-long \
+    --stat-factor --two-scale --mix-hetero --reps 20 --boot 500
+python3 -u llm_fitting/membership_robustness.py --platform reddit_comments_ext
+python3 -u llm_fitting/surrogate_test.py reddit_comments_ext 12500 50
+python3 -u llm_fitting/e4_kappa_transport.py reddit_comments_ext 136 --top-k 12500
+python3 -u llm_fitting/e5_headlaw.py reddit_comments_ext --top-k 12500
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

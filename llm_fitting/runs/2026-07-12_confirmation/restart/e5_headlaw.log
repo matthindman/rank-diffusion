@@ -1,0 +1,28 @@
+  seed 1/20 done
+  seed 2/20 done
+  seed 3/20 done
+  seed 4/20 done
+  seed 5/20 done
+  seed 6/20 done
+  seed 7/20 done
+  seed 8/20 done
+  seed 9/20 done
+  seed 10/20 done
+  seed 11/20 done
+  seed 12/20 done
+  seed 13/20 done
+  seed 14/20 done
+  seed 15/20 done
+  seed 16/20 done
+  seed 17/20 done
+  seed 18/20 done
+  seed 19/20 done
+  seed 20/20 done
+
+E5 readouts (shares within recorded top-2000, A3; 20 seeds frozen; SDs = population/ddof=0, the registered-baseline convention):
+  S(1)  emp 0.0901   sim 0.1363 ± 0.0156
+  S(10) emp 0.2291   sim 0.2999 ± 0.0144   [diagnostic]
+  head offset 1-600 RAW           -1.3705 ± 0.0903   [diagnostic; level-contaminated on growth panels]
+  head offset 1-600 LEVEL-ADJ     +0.2559 ± 0.0108   [diagnostic]
+
+E5 TRIGGER (registered, S(1) only): excess +0.0461 vs 2*SD 0.0312  ->  FIRED (cross-platform structural; the pre-registered Eulerian-constraint step activates)

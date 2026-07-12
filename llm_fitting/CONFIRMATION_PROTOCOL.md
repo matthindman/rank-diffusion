@@ -146,6 +146,20 @@ E3. **Descriptive card + bands** on the extended panel with the §2s comments
   The battery restarts from Step 0 under A1–A10, once, exactly as
   registered; restart archive `runs/2026-07-12_confirmation/restart/`;
   the halted attempt's archive preserved unchanged.
+- 2026-07-12: **E1–E5 EXECUTED, once, complete, under A1–A10. A6.7
+  VERDICT: MIXED EVIDENCE** — E2 PASS (model rel err 0.032 vs
+  historical-mobility 0.171, h=1 model-median-in-CI, scale 1.0), E1 FAIL
+  (s = 0.8319 vs [0.64, 0.74], κ head-most-persistent violated by 0.0011;
+  b8 = 0.9699 and Spec-B max dev 7.3% pass). E3 descriptive card 11/15 /
+  churn 0.051, VR residual ≈ +0.03 beyond the surrogate band; E4 NOT
+  predictive (Spearman 0.401 passes, concentration 1.299 vs 1.3
+  knife-edge); E5 TRIGGER FIRED (S(1) excess +0.0461 > 2·SD 0.0312 —
+  cross-platform structural; the pre-registered Eulerian-constraint step
+  activates, not implemented this session). Intake gate PASS on all six
+  checks; assembler rebuild byte-deterministic. Full report MODEL_STATUS
+  §2z-q; archive `llm_fitting/runs/2026-07-12_confirmation/restart/`
+  (all logs + MANIFEST.sha256). Anything after this line touching the
+  extension is EXPLORATORY and labeled so.
 
 ## 6. AMENDMENT A1 (2026-07-05, same day, BEFORE any data processing): κ_i secondary diagnostic + surrogate-adjusted residual reference
 
