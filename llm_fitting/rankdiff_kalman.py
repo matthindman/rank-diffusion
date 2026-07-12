@@ -753,7 +753,7 @@ def _build_params_on(df_tr):
 def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None,
                    md_lags=None, t_tails=False, sigma_obs_fix=None, md_vr=False,
                    two_scale=False, mix_hetero=False, mix_b_fix=None, md_vr_long=False,
-                   nnls=False):
+                   nnls=True):
     """Fast closed-form variance-partition estimator (per split, for rolling CV)."""
     return mrd.estimate(df_tr, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                         md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
@@ -765,7 +765,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
                  md_vr=False, two_scale=False, mix_hetero=False, mix_b_fix=None,
-                 md_vr_long=False, dist_scores=False, nnls=False,
+                 md_vr_long=False, dist_scores=False, nnls=True,
                  cond_home="state", member_ids_file=None):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
@@ -1042,8 +1042,10 @@ if __name__ == "__main__":
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--nnls", action="store_true",
-                    help="exact NNLS in the MD moment solves (legacy default = "
-                         "clipped OLS; see minimal_rankdiff._solve_nonneg / 2z-e)")
+                    help="exact NNLS in the MD moment solves -- the DEFAULT since "
+                         "the 2026-07-11 re-freeze (2z-g/A4); kept for compat")
+    ap.add_argument("--legacy-clip", action="store_true",
+                    help="REPRODUCTION ARM: pre-2026-07-11 clipped-OLS MD solves")
     ap.add_argument("--member-ids-file", default=None,
                     help="parquet (T0, entity_id): EXACT per-origin train-only "
                          "membership computed on the FULL population; required "
@@ -1076,7 +1078,8 @@ if __name__ == "__main__":
                          conditional=args.conditional, md_vr=args.md_vr,
                          two_scale=args.two_scale, mix_hetero=args.mix_hetero,
                          mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
-                         dist_scores=args.dist_scores, nnls=args.nnls,
+                         dist_scores=args.dist_scores,
+                         nnls=not args.legacy_clip,
                          cond_home=args.cond_home,
                          member_ids_file=args.member_ids_file)
     else:

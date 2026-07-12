@@ -754,25 +754,27 @@ R2 0.7; comments VR 263.5, boundary 927.}
 
 \todo{R5 paragraph 3}
 \PLAN{The movement gates: identified spec first, calibrated reference
-parenthetical (Fig 5).}
+parenthetical (Fig 5). NUMBERS FROM THE NNLS RE-FREEZE (\S2z-g; the paper's
+estimator is exact NNLS per protocol A4 — legacy clipped-OLS numbers are
+the reproduction/sensitivity arm, SI only).}
 {On FB Era A the identified Spec-B + conditional-state specification beats
-persistence on 4/5 rolling splits, matching the calibrated benchmark in
-mean error, "with the train-calibrated scale returning 1.0 on all five
-splits — no downweighting selected" (PRECISE phrasing; the gate does run a
-scale grid, so "zero calibration freedom" overstates — second-review
-R5.3). The calibrated Spec-A stack beats 5/5 and is the parenthetical/SI
-reference. Reddit submissions: conditional state beats 4/5. Comments —
-longest panel, regime change inside it — at par with persistence with full
-bootstrap median coverage. Hand to par.\ 4: what remains unexplained.}
-{FB identified: 0.118 $\pm$ 0.038 vs 0.145 $\pm$ 0.031, cov 60\%, scale
-1.0$\times$5 (\S2r); FB calibrated reference: 0.114 $\pm$ 0.046 vs 0.144
-$\pm$ 0.030, 5/5, cov 60\% (\S2g-X P1); subs conditional: 0.118 $\pm$
-0.061 vs 0.168 $\pm$ 0.004, 4/5, cov 100\% (\S2f); comments: 0.159 $\pm$
-0.070 vs 0.160 $\pm$ 0.068, cov 100\%, last-split held-out distribution
-exact at all horizons (\S2l).}
-{BINDING ordering: identified Spec-B leads; calibrated 5/5 is
-parenthetical/SI (verdict \S4.2, \S2x). Use the verdict's \S4.4 comments
-sentence; never "comments passes".}
+the historical-mobility baseline on 4/5 rolling splits, "with the
+train-calibrated scale returning 1.0 on four of five splits — essentially
+no downweighting selected" (PRECISE phrasing; the gate runs a scale grid,
+and under NNLS one split selects 0.5, so neither "zero calibration
+freedom" nor "1.0 on all five" survives — say "4--5 of 5 across solver
+conventions"). Reddit submissions: conditional state at par (the legacy
+"beats 4/5" is solver-convention-sensitive — SI). Comments — longest
+panel, regime change inside it — at par. Hand to par.\ 4: what remains
+unexplained.}
+{FB identified (NNLS): 0.123 $\pm$ 0.033 vs 0.145 $\pm$ 0.031, cov 60\%,
+scale 1.0 on 4/5 (\S2z-e/\S2z-g); subs conditional (NNLS): 0.164 $\pm$
+0.053 vs 0.168 $\pm$ 0.004, cov 80\% (legacy sensitivity: 0.118 $\pm$
+0.061, beats 4/5, cov 100\% — SI); comments (NNLS): 0.171 $\pm$ 0.046 vs
+0.165 $\pm$ 0.062, cov 60\% (legacy 0.167 $\pm$ 0.068, cov 100\%).}
+{BINDING ordering: identified Spec-B leads (verdict \S4.2, \S2x); solver
+convention = NNLS everywhere in main text (\S2z-g); use the verdict's
+\S4.4 comments sentence; never "comments passes".}
 
 \todo{R5 paragraph 4}
 \PLAN{Residuals: decomposed, bounded, and localized — not mysterious.}

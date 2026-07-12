@@ -385,17 +385,20 @@ PHI2_GRID = np.array([0.70, 0.75, 0.80, 0.85, 0.90, 0.95])
 def _solve_nonneg(X: np.ndarray, y: np.ndarray, nnls: bool) -> tuple[np.ndarray, float]:
     """Coefficient solve for the MD moment system, returning (coef, sse).
 
-    Legacy (default, committed convention): unconstrained OLS, negatives
-    clipped to zero, SSE scored on the CLIPPED vector.  This is NOT true NNLS
-    -- after clipping, the surviving coefficients are not re-fit, and the
-    clipped SSE also drives the (a, phi) grid choice.  Kept as the default for
-    bit-reproducibility of every committed result (external review 2026-07-11,
-    finding 2; audited in MODEL_STATUS 2z-e).
+    nnls=True (DEFAULT since 2026-07-11, owner adoption of Option A --
+    MODEL_STATUS 2z-g, protocol Amendment A4): exact non-negative least
+    squares (Lawson-Hanson), the correct optimizer for the stated
+    constrained MD objective and the SCIENTIFIC PRIMARY estimator.
 
-    nnls=True: exact non-negative least squares (Lawson-Hanson) -- the
-    estimator the docstrings describe.  Differences from legacy concentrate
-    where the unconstrained solution has negative components, i.e. exactly
-    the weakly-identified boundary regions."""
+    nnls=False (--legacy-clip): the pre-2026-07-11 committed convention --
+    unconstrained OLS, negatives clipped to zero, SSE scored on the CLIPPED
+    vector (not true NNLS: survivors are not re-fit, and the clipped SSE
+    also drove the (a, phi) grid choice).  Retained SOLELY to reproduce
+    results recorded before the re-freeze (2z-e audit: the clip acted as an
+    accidental regularizer keeping the unpinned head off the phi->0 /
+    sigma_obs=0 degenerate corner; differences concentrate in
+    weakly-identified regions).  The v4.3-era legacy guard does not touch
+    this path (no md_lags => 3-moment inversion)."""
     if nnls:
         from scipy.optimize import nnls as _nnls
         coef, rnorm = _nnls(X, y)
@@ -408,7 +411,7 @@ def _solve_nonneg(X: np.ndarray, y: np.ndarray, nnls: bool) -> tuple[np.ndarray,
 def _md_partition(gk: np.ndarray, s_e_fix: float | None = None,
                   d_mom: np.ndarray | None = None,
                   d_h: tuple = VR_MOM_H,
-                  nnls: bool = False) -> tuple[float, float, float, float, float]:
+                  nnls: bool = True) -> tuple[float, float, float, float, float]:
     """Minimum-distance fit of the change-autocovariance function gamma_0..L
     (Chamberlain / Abowd-Card covariance-structure estimation) to
         X_it = h_it + xi_it + eps_it
@@ -499,7 +502,7 @@ def _hstep_var(u: np.ndarray, same: np.ndarray, abar: np.ndarray, nk: int,
 
 def _md_partition2(gk: np.ndarray, s_e_fix: float | None = None,
                    d_mom: np.ndarray | None = None,
-                   d_h: tuple = VR_MOM_H, nnls: bool = False):
+                   d_h: tuple = VR_MOM_H, nnls: bool = True):
     """Two-timescale minimum-distance fit (see A2_GRID note):
         X = h(OU slow, a in A2_GRID) + xi1(AR fast, phi1 in PHI_GRID)
           + xi2(AR medium, phi2 in PHI2_GRID) + eps(iid)
@@ -599,7 +602,7 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
              md_vr: bool = False, stat_factor: bool = False,
              two_scale: bool = False, mix_hetero: bool = False,
              mix_b_fix: float | None = None, md_vr_long: bool = False,
-             nnls: bool = False) -> RankParams:
+             nnls: bool = True) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -1280,7 +1283,7 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  spec_b: bool = False, md_vr: bool = False,
                  stat_factor: bool = False, two_scale: bool = False,
                  mix_hetero: bool = False, mix_b_fix: float | None = None,
-                 md_vr_long: bool = False, nnls: bool = False, **sim_kw) -> dict:
+                 md_vr_long: bool = False, nnls: bool = True, **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -1445,8 +1448,12 @@ if __name__ == "__main__":
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     ap.add_argument("--nnls", action="store_true",
-                    help="exact non-negative least squares in the MD moment solves "
-                         "(legacy default = clipped OLS; see _solve_nonneg / 2z-e)")
+                    help="exact NNLS in the MD moment solves -- the DEFAULT since "
+                         "the 2026-07-11 re-freeze (2z-g/A4); flag kept so recorded "
+                         "2z-e commands still run")
+    ap.add_argument("--legacy-clip", action="store_true",
+                    help="REPRODUCTION ARM: pre-2026-07-11 clipped-OLS MD solves "
+                         "(reproduces results recorded before the NNLS re-freeze)")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
     ap.add_argument("--top-k", type=int, default=None,
                     help="top-coverage universe boundary K (applies to every platform listed)")
@@ -1472,6 +1479,6 @@ if __name__ == "__main__":
                      md_vr=args.md_vr, stat_factor=args.stat_factor,
                      two_scale=args.two_scale, mix_hetero=args.mix_hetero,
                      mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
-                     nnls=args.nnls,
+                     nnls=not args.legacy_clip,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)

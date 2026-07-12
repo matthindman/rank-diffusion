@@ -151,3 +151,32 @@ read (WD drive still unmounted at the time of this amendment):
   recorded top-M" with M stated; cross-platform absolute comparisons must
   hold M fixed. (The 2026-07-11 code labels in community_metrics.py were
   updated to print this.)
+
+## 9. AMENDMENT A4 (2026-07-11, BEFORE any data processing): estimator re-freeze under exact NNLS (owner adoption of Option A)
+
+No extension data has been read at the time of this amendment (the WD drive
+is mounted but untouched by any analysis session). Registered per the
+2026-07-11 external review (finding 2 + round-3 recommendation) and the
+owner's explicit adoption decision; full audit in MODEL_STATUS §2z-e/§2z-g.
+
+- **The frozen scientific estimator for E1–E5 is the exact-NNLS MD solve**
+  (`minimal_rankdiff._solve_nonneg` with nnls=True — the code DEFAULT as of
+  the commit containing this amendment). The pre-2026-07-11 clipped-OLS
+  convention is retained solely as the reproduction/sensitivity arm
+  (`--legacy-clip`) and is NOT used in any registered evaluation.
+- §1's frozen-code reference (682d03f) is superseded for the estimator by
+  the commit containing this amendment; all other §1 items (interpreter,
+  Spec-B centered floor, MOM_FLOOR) are unchanged. The legacy guard
+  (facebook default: 14/15, churn 0.013) is unaffected — the v4.3 path does
+  not use the MD solver.
+- E1/E2/E3 registered bands and criteria are UNCHANGED and now apply to the
+  NNLS estimator. The controlled audit (2z-e; PREREG written before any
+  NNLS run) found: paper-primary FB Spec-B + conditional gate
+  convention-robust (0.118 → 0.123 ± 0.033); cards within one knife-edge
+  row; subs conditional at-par under NNLS (0.164 vs 0.168; the legacy
+  "beats 4/5" is reported as legacy-convention sensitivity). E1 parameter
+  bands (§4) were set from legacy-convention estimates; the E1 readout
+  reports both solves if any transported parameter sits within 10% of a
+  band edge — DECLARED here so it is not a post-hoc choice.
+- FB calibrated-scale language: "no calibration freedom used on 4–5 of 5
+  splits across solver conventions" (NNLS selects 1.0 on 4/5).

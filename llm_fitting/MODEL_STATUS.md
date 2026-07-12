@@ -2336,6 +2336,71 @@ python llm_fitting/rankdiff_kalman.py instagram_hm_ts --oos --top-k 10000 \
     --member-ids-file llm_fitting/ig_trainsafe_members.parquet
 ```
 
+## 2z-g. 2026-07-11 — OWNER ADOPTION OF OPTION A: the scientific estimator is RE-FROZEN under exact NNLS (protocol Amendment A4); the NNLS-primary record replaces the §2s numbers; clipped OLS retained as `--legacy-clip` reproduction arm
+
+**The decision (owner, this session, after the §2z-e audit and the round-3
+review):** exact NNLS is the correct optimizer for the stated constrained MD
+objective; it becomes the scientific primary. Rationale, costs, and the
+rejected alternative (legacy-primary + SI note) are in the decision memo
+delivered to the owner; the deciding considerations were estimator/prose
+consistency, doing the re-freeze BEFORE the extension (one confirmation run,
+under the defensible estimator), and the fact that every solver-sensitive
+claim was already flagged as fragile (Pers4 knife-edge, subs conditional
+edge, unpinned head noise).
+
+**Implementation:** `nnls=True` is now the DEFAULT throughout the MD path
+(`_solve_nonneg`, `_md_partition`, `_md_partition2`, `estimate`,
+`run_platform`, `_estimate_fast`, `oos_movement`); `--legacy-clip` on both
+CLIs reproduces every pre-re-freeze recorded result; `--nnls` kept as a
+compat no-op so §2z-e commands still run. The v4.3 legacy guard never
+touches the MD path and is UNCHANGED (14/15, churn 0.013). Suite 77 green
+(recovery tests pass under the exact solve); package suite 8 green.
+Protocol **Amendment A4** registered (before any extension row read; WD
+mounted but untouched): the frozen E1–E5 estimator = exact NNLS; E1 bands
+unchanged, with a declared both-solves readout rule if any transported
+parameter sits within 10% of a band edge.
+
+**THE NNLS-PRIMARY RECORD (supersedes the §2s table for citation; legacy
+values in parentheses are the `--legacy-clip` reproduction arm, cite only
+as SI sensitivity):**
+
+| panel | structure card | movement gate |
+|---|---|---|
+| FB Era A | **14/15, churn 0.029** (legacy 15/15/0.018; sole miss = the Pers4 period-0 knife-edge, §2k/§2t) | **Spec-B + cond state: 0.123 ± 0.033 vs 0.145 ± 0.031, cov 60%, beats the historical-mobility baseline 4/5, scale 1.0 on 4/5** (legacy 0.118 ± 0.038, scale 1.0×5). Calibration language: "no calibration freedom used on 4–5 of 5 splits across solver conventions" |
+| Reddit comments | **12/15, churn 0.044** (legacy 12/15/0.037) | **0.171 ± 0.046 vs 0.165 ± 0.062, cov 60%, at par** (legacy 0.167 ± 0.068, cov 100%) |
+| Reddit subs | **14/15, churn 0.052** (legacy 14/15/0.074) | **0.164 ± 0.053 vs 0.168 ± 0.004, cov 80%, AT PAR** (legacy 0.118 ± 0.061 "beats 4/5" = solver-convention-sensitive; SI only, never main text) |
+| IG rescue (exact membership, §2z-f) | **8/15, churn 0.062** (20 reps; legacy 9/15/0.052) | **0.320 ± 0.189 vs 0.593 ± 0.309, above baseline 4/5, cov 60%, CRPS ≈ 0** (legacy 0.317 ± 0.123 — convention-robust; scale 1.0 on 3/5, interior on 2) |
+
+Logs: `runs/2026-07-11_nnls_audit/` (card_ig_nnls, gate_ig_exact_members_nnls
+added this section; all other cells from the §2z-e audit).
+
+**What the re-freeze changes and does not change:**
+- CHANGED: all main-text numbers now come from this table; the paper
+  outline's R5 movement block updated accordingly; skill §3 table re-frozen.
+- UNCHANGED: every §2s stack definition; the gate protocol and criteria;
+  Spec-B centered pin; MOM_FLOOR; the b=1 law, temperament, κ(z), Spec-B
+  identification results (all solver-independent); the legacy guard.
+- LANGUAGE: subs movement claim is now "at par with the historical-mobility
+  baseline" (its former edge was convention-dependent); FB scale claim is
+  "1.0 on 4–5 of 5 across conventions"; IG stays "at-or-above on pooled
+  moments, at par on proper scores".
+- To re-record AT PAPER BUILD (declared, not blocking): §2t/§2y
+  bands + per-block Q under NNLS (descriptive layers; the audit's card
+  deltas bound the expected movement at ≤ one knife-edge row).
+
+**Next step is E1–E5 exactly as registered** (A1–A4), on the mounted WD
+data — no further model or estimator work first (§2x item 1 stands).
+
+Reproduction:
+```
+# NNLS is the default -- the §2s stack commands now produce the primary record
+python llm_fitting/minimal_rankdiff.py facebook_a --top-k 3500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr-long --stat-factor \
+    --two-scale --mix-hetero                      # 14/15, churn 0.029
+# pre-re-freeze reproduction arm:
+python llm_fitting/minimal_rankdiff.py facebook_a ... --legacy-clip   # 15/15, churn 0.018
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

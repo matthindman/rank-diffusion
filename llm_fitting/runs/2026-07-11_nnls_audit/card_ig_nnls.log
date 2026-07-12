@@ -1,0 +1,58 @@
+
+========================================================================
+INSTAGRAM_HM  | periods=52 mean_N=35049 entities=40,000 top_k=100 universe=top-10000 (buffer B=40000) temper pool>=8 md6 t-tails stat-factor NNLS
+========================================================================
+  stationary common factor: rho_L = 0.25 (measured from the detrended cumulative-F path; legacy = integrated)
+  temperament: s = 0.786 (sigma_i spread p90/p10 = 2.74x)
+  MD partition: kappa(z) = 0.100..0.005 (top..tail, estimated -- hand-set kappa retired)
+  transitory tails: t_df = 4.4
+
+  RANK DYNAMICS (goal 1)
+    metric          emp      sim     diff
+    VR2           0.551    0.616   +0.065
+    VR4           0.302    0.370   +0.068
+    VR8           0.160    0.230   +0.071
+    VR13          0.099    0.161   +0.062
+    ACF1         -0.447   -0.383   +0.065
+    ACF2         -0.015   -0.037   -0.022
+    RACF1         0.289    0.550   +0.261
+    RACF4         0.159    0.330   +0.172
+    RACF13        0.004   -0.001   -0.005
+    R2_1          0.635    0.771   +0.135
+    R2_4          0.663    0.692   +0.028
+    R2_13         0.486    0.548   +0.062
+
+  CHURN @ rank (goal 2)
+    metric          emp      sim     diff
+    coll1         0.392    0.650   +0.258
+    coll2         0.667    0.745   +0.078
+    coll5         0.902    0.882   -0.020
+    coll10        0.980    0.933   -0.047
+    coll20        0.961    0.975   +0.015
+    coll50        0.961    0.976   +0.016
+    coll100       0.980    0.982   +0.002
+
+  rank displacement
+    metric          emp      sim     diff
+    dRank1       19.000   16.100   -2.900
+    dRank4       24.000   19.350   -4.650
+    dRank13      30.000   24.875   -5.125
+
+  top-k persistence
+    metric          emp      sim     diff
+    Pers1        74.000   81.950   +7.950
+    Pers4        64.000   77.950  +13.950
+    Pers13       59.000   74.850  +15.850
+
+  boundary flux @ top-10000 (out-rate / 4wk return)
+    metric          emp      sim     diff
+    outfluxK      0.336    0.413   +0.077
+    return4K      0.380    0.231   -0.149
+
+  >>> v4.3-style score: 8/15   |   mean churn error: 0.062
+  factor sigma_F=0.128  N=35049   (top..tail by permanent rank)
+    phi        =0.250..0.650
+    sigma_trans=0.189..0.198
+    sigma_perm =0.149..0.188
+    sigma_obs  =0.209..0.732
+    lambda     =0.92..0.98

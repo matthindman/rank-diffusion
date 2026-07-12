@@ -97,7 +97,8 @@ instrument — nothing is tuned to a score.** Keep it that way.
 | `--conditional state\|vhat` | cohort sim from filtered end-of-train state | the lever that made subs beat persistence; does not help FB Spec-A |
 | `--oos` | rolling-origin distributional movement gate | THE acceptance criterion |
 | `--dist-scores` | CRPS skill, PIT coverage, W1 reference on the gate | descriptive add-on; frozen criterion unchanged |
-| `--nnls` | exact NNLS in the MD moment solves | legacy default = clipped OLS (committed convention); 2z-e audit — differences live in weak-ID regions; NNLS pushes the unpinned FB head to the σ_obs=0 corner |
+| `--nnls` | exact NNLS in the MD moment solves | **THE DEFAULT since the 2026-07-11 re-freeze (owner-adopted; A4/§2z-g)**; flag kept for compat. 2z-e audit — differences live in weak-ID regions; NNLS puts the unpinned head on the σ_obs=0 corner exactly (raw-MD head noise = convention artifact under EITHER solve; only Spec-B-pinned head noise is physics) |
+| `--legacy-clip` | pre-2026-07-11 clipped-OLS MD solves | REPRODUCTION ARM ONLY — reproduces results recorded before the re-freeze; never in registered evaluations |
 | `--cond-home state\|trainmean` | OU anchor in the conditional sim | 'state' (committed) = filtered-state-anchored; 'trainmean' = separate long-run home diagnostic (review finding 4) |
 
 ## 2. The epistemic contract (non-negotiable)
@@ -140,7 +141,12 @@ b-sensitivity retraction).
    rng streams gated so flag-off runs are bit-reproducible; the **legacy
    guard** (facebook legacy panel, default settings: **14/15, churn 0.013**)
    and the full test suite must pass at every commit. New estimators get
-   exact-recovery + noisy-panel-recovery unit tests.
+   exact-recovery + noisy-panel-recovery unit tests. ONE owner-adopted
+   exception on record: the 2026-07-11 NNLS re-freeze (A4/§2z-g) changed the
+   MD-solve default to exact NNLS by explicit owner decision after a
+   pre-registered controlled audit; `--legacy-clip` reproduces pre-re-freeze
+   results (the v4.3 legacy guard never touches the MD path and is
+   unaffected). The rule binds ALL agent-initiated changes.
 7. **MC noise discipline.** Head-collision rows (coll1) have seed SD ≈ ±0.15
    (~±0.07 SE at 5 reps); churn err carries ±0.03–0.04 from it. Never
    interpret 5-rep head-churn point-diffs without bands; use reps ≥ 20 or
@@ -161,18 +167,21 @@ b-sensitivity retraction).
     expectation, that IS the result. Do not re-run until it looks better.
     Distinguish "measured" from "conjectured" in every writeup.
 
-## 3. Frozen per-platform specs (§2s; do not silently change)
+## 3. Frozen per-platform specs (§2s stacks; numbers re-frozen under NNLS 2026-07-11, §2z-g/A4 — do not silently change)
 
 Two estimands, two stacks BY DESIGN (D(h) moments identify slow structure on
 full panels but destabilize short rolling train windows — a stated
-sample-size scope condition, not a spec search).
+sample-size scope condition, not a spec search). NUMBERS BELOW ARE THE
+NNLS-PRIMARY RECORD (the scientific estimator since the 2026-07-11
+re-freeze); pre-re-freeze legacy-clip numbers are the reproduction/
+sensitivity arm (`--legacy-clip`), cited only as SI sensitivity.
 
 | panel | structure stack (in-sample card) | movement stack (OOS gate) |
 |---|---|---|
-| FB Era A (`facebook_a`, K=3500) | full: `--temperament --min-knot-entities 8 --md-lags 6 --t-tails --md-vr-long --stat-factor --two-scale --mix-hetero` → **15/15, churn 0.018** | **Spec-B (centered) + `--conditional state`** → 0.118 ± 0.038, cov 60%, beats persistence 4/5, scale 1.0×5 (zero calibration freedom). Sensitivity spec: calibrated Spec-A md6+t → 0.114 ± 0.046, beats 5/5 |
-| Reddit comments (`reddit_comments`, K=12500) | LONG: `--md-vr-long --stat-factor --two-scale --mix-hetero` (+temper/pool/md6/t) → 12/15 | md6+t+mix + `--conditional state` → 0.159 ± 0.070, cov 100%, at par |
-| Reddit subs (`reddit`, K=5000) | 2d/2e: temper+pool+md6+t → 14/15 | same + `--conditional state` → 0.118 ± 0.061, cov 100%, beats 4/5 |
-| IG rescue (`instagram_hm_ts`, K=10000) — **breadth demonstration, NOT paper-primary**; censored instrument, estimand "of a-matching activity" (§2z-c); leak-safe ONLY via EXACT per-origin fixed membership (§2z-f: `ig_trainsafe_members.py` + `--member-ids-file`; a pre-cut superset alone is NOT leak-free — membership re-selection diverges ~80% overlap) | temper+pool+md6+t+stat-factor → 9/15, churn 0.052 (20 reps; on the original panel) | md6+t + `--conditional state` + exact membership → **0.317 ± 0.123 vs persistence 0.593 ± 0.309, above baseline 4/5, cov 40%, scale 1.0×5, CRPS ≈ 0** — claim language "at-or-above on pooled moments, at par on proper scores" (supersedes 0.841 leaked and 0.671 not-leak-free) |
+| FB Era A (`facebook_a`, K=3500) | full: `--temperament --min-knot-entities 8 --md-lags 6 --t-tails --md-vr-long --stat-factor --two-scale --mix-hetero` → **14/15, churn 0.029** (sole miss: the Pers4 period-0 knife-edge; legacy arm: 15/15/0.018) | **Spec-B (centered) + `--conditional state`** → **0.123 ± 0.033 vs 0.145 ± 0.031, cov 60%, beats the historical-mobility baseline 4/5, scale 1.0 on 4/5** ("no calibration freedom used on 4–5 of 5 across solver conventions"; legacy arm 0.118 ± 0.038, scale 1.0×5) |
+| Reddit comments (`reddit_comments`, K=12500) | LONG: `--md-vr-long --stat-factor --two-scale --mix-hetero` (+temper/pool/md6/t) → **12/15, churn 0.044** (legacy 12/15/0.037) | md6+t+mix + `--conditional state` → **0.171 ± 0.046 vs 0.165 ± 0.062, cov 60%, at par** (legacy 0.167 ± 0.068, cov 100%) |
+| Reddit subs (`reddit`, K=5000) | 2d/2e: temper+pool+md6+t → **14/15, churn 0.052** (legacy 14/15/0.074) | same + `--conditional state` → **0.164 ± 0.053 vs 0.168 ± 0.004, cov 80%, AT PAR** (the legacy "beats 4/5" at 0.118 ± 0.061 is solver-convention-sensitive — SI sensitivity, never a main-text claim) |
+| IG rescue (`instagram_hm_ts`, K=10000) — **breadth demonstration, NOT paper-primary**; censored instrument, estimand "of a-matching activity" (§2z-c); leak-safe ONLY via EXACT per-origin fixed membership (§2z-f: `ig_trainsafe_members.py` + `--member-ids-file`; a pre-cut superset alone is NOT leak-free — membership re-selection diverges ~80% overlap) | temper+pool+md6+t+stat-factor → **8/15, churn 0.062** (20 reps; legacy 9/15/0.052) | md6+t + `--conditional state` + exact membership → **0.320 ± 0.189 vs 0.593 ± 0.309, above baseline 4/5, cov 60%, CRPS ≈ 0** (legacy arm 0.317 ± 0.123 — convention-robust; scale 1.0 on 3/5, interior on 2) — claim language "at-or-above on pooled moments, at par on proper scores" (supersedes 0.841 leaked and 0.671 not-leak-free) |
 
 Canonical reproduction commands are at the end of each MODEL_STATUS section
 (§2l, §2p, §2z have the current ones). Interpreter used for registered runs:
