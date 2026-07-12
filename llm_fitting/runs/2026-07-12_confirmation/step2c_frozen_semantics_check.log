@@ -1,0 +1,10 @@
+== frozen DAILY ==
+identity mv == max(ck,0): True
+identity mv == sk+ck    : False
+submission_karma all zero: True | submission_count all zero: True
+clipped mass: sum|neg ck| = 831,807 vs sum mv = 39,055,688,181 -> clipped share = 0.002130%
+== frozen WEEKLY ==
+identity mv == max(ck,0): False  (expected FALSE: clip does not commute with weekly sum)
+submission_karma all zero: True | submission_count all zero: True
+weekly mv negatives: 0 | counts negatives: 0
+neg ck rate: daily 0.1891%, weekly 0.0754%

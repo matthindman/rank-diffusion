@@ -2852,6 +2852,94 @@ python3 -u llm_fitting/check_extension_panel.py \
     data/ssd/logs/reddit_monthly_processing_log.csv               # INTAKE FAIL
 ```
 
+## 2z-p. 2026-07-12 — The §2z-o intake FAIL adjudicated as a REGISTERED-RULE DEFECT (blanket non-negativity applied to a signed audit field the model never ingests), by frozen-data measurement and mechanical code verification; Amendment A10 drafted (per-column semantics; INERT until attested + acknowledged); battery restarts from Step 0 after registration
+
+**Adjudication basis (all measurements FROZEN panels + code only; the
+extension's negativity rate, distribution, and every other
+extension-specific quantity remain unexamined — exact blindness language at
+the end of this section). Three assessments converged (this session, one
+external model review, the owner's own analysis); disagreements adjudicated
+below. Archived: `runs/2026-07-12_confirmation/step2c_frozen_semantics_check.log`.**
+
+**Verified facts (each mechanically checked this session):**
+1. **The model never ingests signed `comment_karma`.** Daily-panel build:
+   `metric_value = comment_karma.clip(lower=0)`
+   (`scripts/data_wrangling/build_reddit_comment_panels.py`,
+   `load_comment_month`). `load_panel` (`minimal_rankdiff.py`) reads ONLY
+   `[id_col, ts_col, metric_col]`; a grep across `minimal_rankdiff.py`,
+   `rankdiff_kalman.py`, `e1_transport.py`, `e4_kappa_transport.py`,
+   `e5_headlaw.py`, `scorecard_bands.py`, `spec_b_sigma_obs.py` finds ZERO
+   references to `comment_karma`/`submission_karma`. Negative signed karma
+   cannot affect ranks, membership, estimates, simulations, or any E1–E5
+   quantity.
+2. **The daily identity `metric_value == max(comment_karma, 0)` holds on
+   ALL 47,307,511 frozen daily rows** (exact). The weekly analogue is
+   FALSE by construction (clipping precedes weekly aggregation — clip does
+   not commute with the sum); weekly integrity is the existing
+   weekly = Σ daily check, which already binds `comment_karma` exactly.
+3. **`submission_karma` and `submission_count` are identically zero** in
+   both frozen panels (comments-only panel).
+4. **Clipped mass is measured, not assumed:** absolute negative karma
+   removed by clipping ÷ total modeled positive-part karma =
+   831,807 / 39,055,688,181 = **0.002130%** on the frozen daily (negative
+   cells: 0.1891% daily, 0.0754% weekly — §2z-o).
+5. **One outside-input claim REFUTED:** the external model's §2z-p draft
+   asserted `metric_value = submission_karma + comment_karma` as the schema
+   contract — false on the frozen daily (identity fails; submission fields
+   are identically zero). Its draft is not committed; this section is the
+   record.
+
+**Adjudication.** A6.1's "zero negative metrics", as scoped in code to
+every numeric column of both panels, is INFEASIBLE: the hash-pinned frozen
+baseline itself fails it. This is the same defect class as the A6.2 κ
+criterion (a registered rule its own frozen reference fails), which the
+protocol already treats as correctable by dated amendment. The §2z-o halt
+was the CORRECT execution of a frozen fail-closed protocol and stands
+unrelabeled; the root cause is a rule defect, not a data defect. Rejected
+along the way (with reasons, so it is not resurrected): a `[0.5×, 2×]`
+extension-negativity-rate acceptance band — arbitrary new gate constants
+that would convert legitimate voting-behavior drift into another false
+data failure; negativity rate and clipped mass become MANDATORY DESCRIPTIVE
+READOUTS (daily rate primary — clipping is daily; weekly rate describes
+signed aggregation), never gates.
+
+**Amendment A10 (drafted this session;
+`runs/2026-07-12_confirmation/A10_DRAFT.md`; INERT for confirmation
+purposes until registered):** *post-registration, post-intake-contact,
+pre-confirmatory-outcome correction of an infeasible data-validation
+rule.* Replaces the [3/6]/[5/6] blanket non-negativity with registered
+per-column semantics (metric_value finite integral ≥ 0; comment_count
+finite integral ≥ 0; comment_karma finite integral SIGNED; submission
+fields ≡ 0; nulls/nonfinite/non-integral rejected everywhere; unregistered
+numeric columns fail closed; daily-only identity
+`metric_value == max(comment_karma, 0)`); every other check — prefix,
+schema, week window, key sets, Σ-equality, coverage/processing logs,
+parse errors, day guard — unchanged verbatim. Validation written into the
+amendment: frozen-baseline self-test must PASS; adversarial tests both
+directions; assembler rebuild at restart must reproduce the recorded
+REGISTERED-weekly sha256 (93942240…380d); then a FULL restart Step 0→5,
+once, zero discretion, with the §2z-o halted archive preserved unchanged.
+Registration requires (i) external round-9 attestation that A10 is minimal
+and outcome-blind, (ii) owner acknowledgment of the timeline construction
+in protocol §5 — the A6–A9 mechanism.
+
+**Estimand declaration (for the record and the paper's M&M):** the modeled
+quantity is **positive-part daily net comment karma**; signed
+`comment_karma` is retained solely as an audit field. Clipping affects
+0.19% of frozen daily cells and 0.002130% of aggregate modeled karma mass;
+the extension's shares will be REPORTED by the amended gate (descriptive,
+never gating). Claim language for the eventual confirmation: "a registered
+confirmatory evaluation with one disclosed post-registration, pre-outcome
+technical correction" — never "executed exactly as originally
+preregistered."
+
+**Exact blindness statement (binding for the disclosure):** the automated
+intake program accessed the assembled extension panel and printed a single
+failure line, itself fully explained by the frozen prefix. No
+extension-specific distribution, summary, model statistic, or E1–E5
+outcome was observed by any person or analysis before A10 was frozen. The
+extension is not claimed to be literally "unviewed."
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

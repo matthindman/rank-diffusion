@@ -15,3 +15,5 @@ fe9a99d12423cf13fa22d786cdb28d3001e3f2d567a8a4ec8c4507127afe6a7c  llm_fitting/ru
 77f50c80300c9e2bfaebe43bd4a83431cb3eea253243318536e6975ea76f30ce  llm_fitting/runs/2026-07-12_confirmation/step1_hashes.log
 8bb5aabcc668234668fd91b73f73ae6b938aad46939f8d3c6e0ac7845a1d44fd  llm_fitting/runs/2026-07-12_confirmation/step2_intake_gate.log
 bd2cd634a599d4f9908caa3a72c1d591e0f830d09f99dd9a27b9de0ea2d4f437  llm_fitting/runs/2026-07-12_confirmation/step2b_frozen_negative_context.log
+# addendum 2026-07-12 (adjudication record, pre-A10-implementation): frozen-only semantics check
+456a7a5c3a9a9a62dd368b8a6f217a7dfb669c5a518412b3b307bbec112c3cd1  llm_fitting/runs/2026-07-12_confirmation/step2c_frozen_semantics_check.log
