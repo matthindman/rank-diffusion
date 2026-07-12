@@ -2585,6 +2585,62 @@ s = 0.6922, b8 = 1.0163, κ thirds 0.0050/0.0198/0.0191, Spec-B
 criterion dry-run-validated against its own reference, and every input
 hash-pinned. The remaining human action is the owner's go.**
 
+## 2z-k. 2026-07-12 — Round-6 execution audit accepted in full (Amendment A7): the A6 tooling failed OPEN in four places; every gate now enforces what the registration claims, with the false-pass cases locked by test
+
+The round-6 review's framing was exact: "execution corrections to make A6
+true in code" — no scientific threshold or gate changed. All four blocking
+findings verified and fixed; all smaller gaps closed (implemented, not
+withdrawn). Suite **103 green** (94 + 9); package 8 green; no extension
+data read.
+
+**(1) Intake gate rewritten FAIL-CLOSED** (`check_extension_panel.py`, now
+4 REQUIRED args): exact schema equality (a missing frozen column FAILED
+OPEN via the shared-column intersection — now FAILS); daily panel and raw
+monthly dir are required arguments (the no-daily branch previously reached
+PASS); 18-file raw inventory; full calendar-day coverage
+2021-07-01..2022-12-25; daily hygiene; weekly = Σ daily on EVERY shared
+numeric metric column; day-guard corrected to the registered PRIOR-days
+trailing median (the draft included the current day). The reviewer's three
+reproduced false passes — missing frozen column, missing extension day,
+omitted daily panel — are now failing tests.
+
+**(2) Prefix-preserving assembler built** (`build_extension_weekly.py`):
+frozen rows byte-identical + complete-week daily sums only; boundary days
+(2021-07-01..04, post-2022-12-19) to a side parquet, never folded. The
+official Monday-fold builder is explicitly NOT the weekly assembler
+(verified: `build_reddit_comment_panels.py` folds every date to its
+Monday — it would reproduce the A6.1 leak). Round-trip locked by test:
+assemble → gate PASSes, prefix sums unchanged, July 1–4 in the boundary
+file.
+
+**(3) E1 daily-path P0 fixed:** `_quantities` required-arg `daily_path`,
+resolved fail-closed from the SELECTED platform's entry (the hardcoded
+`reddit_comments` path would have fed FROZEN-period dailies to the
+extension Spec-B — wrong input, silently). Wiring locked by test
+(fail-closed resolution + no-default signature). The s block bootstrap is
+now a true MBB (gapped block relabeling keeps repeats; the set() version
+was a subsample statistic — non-gating, relabeled honestly).
+
+**(4) Registered E2 command corrected** to include `--frozen-prefix`
+(A6's "independently re-verifies" claim was untrue of the command as
+written). A7 carries the full corrected command.
+
+**Smaller gaps, all implemented rather than withdrawn:** per-horizon
+in-CI indicators + week-block clustered CI sensitivity now print in the
+gate log (declared descriptive, can never rescue; `_boot_ci_weekblock`
+covered by a synthetic coverage test); `membership_robustness.py
+--platform` (was hardcoded); `e5_headlaw.py` frozen E5 invocation — 20
+seeds (0..19) hard-coded, S(1)/S(10)/raw+level-adjusted offsets, and the
+registered trigger computed algebraically with the verdict printed
+(trigger algebra + direction + frozen seeds locked by test).
+
+**Amendment A7 registered** (execution-truthing; pre-data; command texts
+superseded where they omitted enforcement). The protocol now runs A1–A7:
+every evaluation has a runner, every runner has synthetic tests INCLUDING
+its failure modes, every criterion was dry-run against its own reference,
+every input is hash-pinned, and the intake gate cannot pass on an
+incomplete intake. **Awaiting the owner's go.**
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

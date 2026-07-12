@@ -385,3 +385,61 @@ before extension access). Pins:
   historical-mobility baseline itself regime-dependent (recorded 0.07–
   0.24); s expected near the sub-window range 0.64–0.69; b(8) expected
   near 1.02.
+
+## 12. AMENDMENT A7 (2026-07-12, BEFORE any data processing): execution-truthing — the code now enforces what A6 claims (round-6 review; no scientific threshold or gate changed)
+
+No extension data has been read. A round-6 execution audit found the A6
+tooling failed OPEN in four places; this amendment records the corrections
+so that every A6 claim is true of the command that will actually run.
+
+- **Intake gate is FAIL-CLOSED** (`check_extension_panel.py`, 4 REQUIRED
+  arguments: extended weekly, frozen weekly, extension daily, raw monthly
+  dir). Enforced: exact schema equality (a missing frozen column FAILS —
+  previously silently skipped); frozen-prefix equality on every column;
+  complete-week window; weekly AND daily hygiene (dup keys, negatives, all
+  numeric columns); the 18-file raw inventory; full calendar-day coverage
+  2021-07-01..2022-12-25; weekly = Σ daily for EVERY shared numeric metric
+  column; day-guard with the registered PRIOR-days trailing median
+  (previous draft included the current day). Omitting the daily panel or
+  raw dir is now impossible (required args), not a silent skip.
+- **Prefix-preserving assembler exists** (`build_extension_weekly.py`):
+  frozen weekly rows byte-identical + complete-week sums of extension
+  dailies only; boundary days written to a side parquet, never folded.
+  The official pipeline's Monday-fold builder is NOT used for the weekly
+  assembly (it reproduces the A6.1 leak).
+- **E1 daily-path propagation fixed** (P0): `_quantities` no longer
+  hardcodes the frozen `reddit_comments` daily path — the Spec-B component
+  uses the SELECTED platform's own `daily_path`, fail-closed if the
+  platform entry lacks one. The extension platform entry MUST set
+  `daily_path` to the extension daily panel. E1's s block bootstrap is now
+  a true moving-block bootstrap (gapped relabeling keeps repeated blocks;
+  the earlier set() deduplication made it a subsample statistic —
+  non-gating, relabeled).
+- **Registered E2 command CORRECTED to activate prefix enforcement**
+  (supersedes the A5/A6.3 command text; design unchanged):
+```
+python llm_fitting/rankdiff_kalman.py reddit_comments_ext --oos --top-k 12500 \
+    --temperament --min-knot-entities 8 --md-lags 6 --t-tails --mix-hetero \
+    --conditional state --dist-scores \
+    --origins 136 --test-len 34 --reps 20 --boot 2000 \
+    --member-ids-file llm_fitting/e2_members_t136.parquet \
+    --expect-member-sha f0b463cab014855d72fd238a2b57a073f06cbe16eb65ff9287eb792d5c7f5562 \
+    --frozen-prefix data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet
+```
+- **E2 declared-descriptive outputs are now implemented** (not withdrawn):
+  per-horizon (h=1/4/13) model-median-in-CI indicators and a week-block
+  clustered CI sensitivity for the h=1 median (pairs sharing weeks are
+  dependent). Both print in the gate log; the registered criterion remains
+  the h=1 IID-bootstrap in-CI binary and nothing can rescue it.
+- **E3 membership-sensitivity invocation**:
+  `python llm_fitting/membership_robustness.py --platform reddit_comments_ext`
+  (the tool previously hardcoded the old panel).
+- **E5 frozen invocation with an executable trigger**
+  (`e5_headlaw.py`; 20 seeds 0..19 hard-coded; prints the algebraic
+  trigger verdict; S(10) and both offsets diagnostic):
+```
+python llm_fitting/e5_headlaw.py reddit_comments_ext --top-k 12500
+```
+All corrections are covered by synthetic tests (including the round-6
+reproduced false-pass cases: missing frozen column, missing extension day,
+omitted daily panel — each now FAILS).

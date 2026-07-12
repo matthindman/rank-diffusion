@@ -56,7 +56,14 @@ def card(df, uni, tag: str) -> None:
 
 
 if __name__ == "__main__":
-    df = mrd.load_panel(mrd.PLATFORMS["reddit_comments"])
+    import argparse
+    _ap = argparse.ArgumentParser()
+    _ap.add_argument("--platform", default="reddit_comments",
+                     help="panel for the membership-sensitivity battery "
+                          "(A6.6/A7: the E3 invocation passes "
+                          "reddit_comments_ext explicitly)")
+    _args = _ap.parse_args()
+    df = mrd.load_panel(mrd.PLATFORMS[_args.platform])
     T = int(df["period"].max()) + 1
     windows = {
         "full": (0, T),
@@ -69,7 +76,7 @@ if __name__ == "__main__":
     sets = {tag: members(u) for tag, u in unis.items()}
     B = BUF * K
 
-    print(f"reddit_comments T={T}, K={K}, B={B}")
+    print(f"{_args.platform} T={T}, K={K}, B={B}")
     print("\nmember-set overlap (share of B):")
     tags = list(windows)
     print("            " + "".join(f"{t:>13}" for t in tags))

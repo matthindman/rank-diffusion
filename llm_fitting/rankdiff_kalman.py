@@ -471,7 +471,7 @@ def _collisions_from_topids(top_ids, ranks):
     return out
 
 
-def emp_dist(df, horizons, coll_ranks=(1, 5, 20), cohort_k=200):
+def emp_dist(df, horizons, coll_ranks=(1, 5, 20), cohort_k=200, return_R=False):
     """Empirical displacement distribution + RACF1 + collisions over a 0-based window."""
     T = int(df["period"].max()) + 1
     cohort = df.loc[(df["period"] == 0) & (df["rank"] <= cohort_k), "entity_id"].to_numpy()
@@ -479,7 +479,38 @@ def emp_dist(df, horizons, coll_ranks=(1, 5, 20), cohort_k=200):
     R = sub.pivot(index="period", columns="entity_id", values="rank").reindex(range(T)).to_numpy()
     dist, racf1 = _rank_dist(R, horizons)
     colls = empirical_churn(df, coll_ranks, lo_period=0, hi_period=T)
+    if return_R:
+        return dist, racf1, colls, R
     return dist, racf1, colls
+
+
+def _boot_ci_weekblock(R, h, B=400, lo=2.5, hi=97.5, seed=0, cap=100):
+    """A7 descriptive sensitivity: CI for the held-out median |dRank(h)|
+    with WEEK-BLOCK resampling of pair start-times (pairs sharing weeks are
+    dependent; the IID bootstrap understates that).  Block length ~ sqrt of
+    the number of start-times."""
+    T = R.shape[0]
+    n_start = T - h
+    if n_start < 3:
+        return (np.nan, np.nan)
+    L = max(2, int(np.sqrt(n_start)))
+    rng = np.random.default_rng(seed)
+    per_t = []
+    for t in range(n_start):
+        r0, rh = R[t], R[t + h]
+        m = np.isfinite(r0) & np.isfinite(rh) & (r0 <= cap)
+        per_t.append(np.abs(rh[m] - r0[m]))
+    meds = []
+    n_blocks = int(np.ceil(n_start / L))
+    for _ in range(B):
+        starts = rng.integers(0, n_start - L + 1, size=n_blocks)
+        idx = np.concatenate([np.arange(s, s + L) for s in starts])[:n_start]
+        pool = np.concatenate([per_t[i] for i in idx]) if len(idx) else np.array([])
+        if pool.size:
+            meds.append(np.median(pool))
+    if not meds:
+        return (np.nan, np.nan)
+    return float(np.percentile(meds, lo)), float(np.percentile(meds, hi))
 
 
 def sim_cohort(p, T_sim, kappa, seed=0, cohort_k=200, burn=40):
@@ -889,6 +920,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                                         member_window=T0) if top_k else df_full)
         df_tr, df_te = _split_panel(df, T0, test_len)
         hor = [h for h in (1, 4, 13) if h < test_len]
+        ed_R = None   # time-tagged held-out cohort ranks (A7 descriptive CIs)
         so_fix = None
         if spec_b:
             # Spec-B curve identified on TRAIN weeks only (no test leakage)
@@ -900,7 +932,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                            mix_b_fix=mix_b_fix, md_vr_long=md_vr_long, nnls=nnls)
         scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
         p = replace_obs(p, scale)
-        ed, erf, ec = emp_dist(df_te, hor)            # held-out truth
+        ed, erf, ec, ed_R = emp_dist(df_te, hor, return_R=True)  # held-out truth
         td, trf, tc = emp_dist(df_tr, hor)            # persistence baseline = train movement
         if conditional:
             # conditional forecast: real filtered end-of-train state; per-entity
@@ -912,7 +944,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             sd, srf, sc = sim_dist(p, test_len, hor, reps=reps)   # model prediction
         rows.append(dict(T0=T0, scale=scale, hor=hor, ts=p.temper_s,
                          em=_moments(ed, erf, ec, hor), bm=_moments(td, trf, tc, hor),
-                         sm=_moments(sd, srf, sc, hor), ed=ed, sd=sd, td=td))
+                         sm=_moments(sd, srf, sc, hor), ed=ed, sd=sd, td=td,
+                         ed_R=ed_R))
 
     hor = rows[0]["hor"]
     keys = [f"dRank{h}" for h in hor] + ["RACF1"] + [f"coll{c}" for c in (1, 5, 20)]
@@ -987,6 +1020,26 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                 print(f"    CRPS skill vs persistence @ dRank{h}: "
                       f"{v.mean():+.3f} ± {v.std():.3f}  "
                       f"(>0 = model beats persistence; n={v.size} splits)")
+
+        # A7 declared-descriptive readouts (can never rescue the registered
+        # criterion): per-horizon in-CI indicators + a week-block clustered
+        # CI sensitivity for the h0 median (pairs sharing weeks are
+        # dependent; the IID bootstrap understates that)
+        print("    per-horizon model-median-in-CI (descriptive; registered "
+              "criterion = h=%d only):" % h0)
+        for r in rows:
+            parts = []
+            for h in r["hor"]:
+                lo_h, hi_h = _boot_ci(r["ed"][h], B=boot)
+                ok = (np.isfinite(lo_h)
+                      and lo_h <= r["sm"].get(f"dRank{h}", np.nan) <= hi_h)
+                parts.append(f"h={h}:{'in' if ok else 'OUT'}")
+            wl, wh = (_boot_ci_weekblock(r["ed_R"], h0, B=boot)
+                      if r.get("ed_R") is not None else (np.nan, np.nan))
+            wb = (f"  week-block CI(h={h0}) [{wl:.1f}, {wh:.1f}] "
+                  f"{'in' if (np.isfinite(wl) and wl <= r['sm'][f'dRank{h0}'] <= wh) else 'OUT'}"
+                  if np.isfinite(wl) else "")
+            print(f"      T0={r['T0']:>3}  " + "  ".join(parts) + wb)
 
 
 def scorecard(platform, reps=4, top_k=None, buffer_mult=4):

@@ -39,6 +39,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import minimal_rankdiff as mrd  # noqa: E402
@@ -81,13 +82,15 @@ def kappa_orientation_ok(bands12) -> bool:
     return min(m, d) > h + 1e-9
 
 
-def _quantities(df, tag: str) -> dict:
+def _quantities(df, tag: str, daily_path: str) -> dict:
+    """daily_path is REQUIRED (round-6 review P0: a hardcoded
+    reddit_comments daily path fed FROZEN-period dailies to the extension
+    Spec-B calculation; the caller must pass the platform's own path)."""
     import spec_b_sigma_obs as sb
     p = mrd.estimate(df, temper=True, min_knot_n=8, md_lags=6, t_tails=True,
                      mix_hetero=True)
     daily = sb.load_daily(set(df["entity_id"].unique()),
-                          path=mrd.PLATFORMS["reddit_comments"]["daily_path"],
-                          day_guard=False)
+                          path=daily_path, day_guard=False)
     cur = sb.spec_b_curve(df, daily)
     b12 = kappa_bands12(p.kappa_z)
     h, m, d = kappa_thirds(b12)
@@ -97,10 +100,22 @@ def _quantities(df, tag: str) -> dict:
                 specb_sigma=[float(x) for x in cur["sigma_obs"]])
 
 
+def daily_path_for(platform: str) -> str:
+    """Fail-closed daily-path resolution from the platform entry itself."""
+    cfg = mrd.PLATFORMS[platform]
+    if "daily_path" not in cfg:
+        raise SystemExit(f"platform '{platform}' has no daily_path -- E1's "
+                         f"Spec-B component requires the platform's OWN daily "
+                         f"panel (round-6 P0: never fall back to another "
+                         f"platform's dailies)")
+    return cfg["daily_path"]
+
+
 def make_reference() -> None:
     df = mrd.load_panel(mrd.PLATFORMS["reddit_comments"])
     df = mrd.restrict_universe(df, K, buffer_mult=BUF)
-    q = _quantities(df, "reference_T136_nnls")
+    q = _quantities(df, "reference_T136_nnls",
+                    daily_path=daily_path_for("reddit_comments"))
     q["estimator"] = "NNLS (A4 re-freeze default)"
     q["stack"] = "temper min_knot 8 md6 t-tails mix (registered E1)"
     Path(REF_PATH).write_text(json.dumps(q, indent=1))
@@ -118,7 +133,8 @@ def score(platform: str, t0: int, boot: int = 100) -> None:
     df = mrd.restrict_universe(df, K, buffer_mult=BUF)   # A5: full-window
     seg = df[df["period"] >= t0].copy()
     seg["period"] -= t0
-    q = _quantities(seg, f"extension_T0={t0}")
+    q = _quantities(seg, f"extension_T0={t0}",
+                    daily_path=daily_path_for(platform))
 
     ok_s = S_BAND[0] <= q["s"] <= S_BAND[1]
     ok_b = B_BAND[0] <= q["b8"] <= B_BAND[1]
@@ -127,15 +143,25 @@ def score(platform: str, t0: int, boot: int = 100) -> None:
     rel = np.abs(np.array(q["specb_sigma"]) - ref_interp) / np.clip(ref_interp, 1e-9, None)
     ok_f = bool(np.all(rel <= SPECB_TOL))
 
-    # non-gating: moving-block bootstrap CI for s over segment weeks (A6.2)
+    # non-gating: moving-block bootstrap CI for s over segment weeks (A6.2).
+    # TRUE block bootstrap (round-6 fix: a set() had silently deduplicated
+    # repeated blocks): each sampled block is RELABELED to its own gapped
+    # period range, so repeats are kept and block seams are never
+    # consecutive periods (the same-entity consecutive-change mask then
+    # excludes seams naturally).
     rng = np.random.default_rng(0)
     T = int(seg["period"].max()) + 1
     L = max(4, T // 8)
+    n_blocks = int(np.ceil(T / L))
     svals = []
     for _ in range(boot):
-        starts = rng.integers(0, T - L + 1, size=int(np.ceil(T / L)))
-        periods = np.concatenate([np.arange(s0, s0 + L) for s0 in starts])[:T]
-        rs = seg[seg["period"].isin(set(periods.tolist()))]
+        starts = rng.integers(0, T - L + 1, size=n_blocks)
+        parts = []
+        for j, s0 in enumerate(starts):
+            blk = seg[(seg["period"] >= s0) & (seg["period"] < s0 + L)].copy()
+            blk["period"] = blk["period"] - s0 + j * (L + 1)   # gapped relabel
+            parts.append(blk)
+        rs = pd.concat(parts, ignore_index=True)
         try:
             svals.append(mrd.estimate_temperament(rs, min_changes=12)["s"])
         except Exception:
