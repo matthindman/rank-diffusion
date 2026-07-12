@@ -1,0 +1,57 @@
+
+========================================================================
+REDDIT  | periods=30 mean_N=19994 entities=20,000 top_k=50 universe=top-5000 (buffer B=20000) temper pool>=8 md6 t-tails NNLS
+========================================================================
+  temperament: s = 0.941 (sigma_i spread p90/p10 = 3.34x)
+  MD partition: kappa(z) = 0.005..0.040 (top..tail, estimated -- hand-set kappa retired)
+  transitory tails: t_df = 9.9
+
+  RANK DYNAMICS (goal 1)
+    metric          emp      sim     diff
+    VR2           0.686    0.725   +0.039
+    VR4           0.464    0.503   +0.039
+    VR8           0.287    0.313   +0.026
+    VR13          0.172    0.181   +0.009
+    ACF1         -0.313   -0.274   +0.039
+    ACF2         -0.041   -0.044   -0.003
+    RACF1         0.586    0.653   +0.067
+    RACF4         0.220    0.262   +0.041
+    RACF13       -0.020   -0.066   -0.046
+    R2_1          0.886    0.912   +0.026
+    R2_4          0.823    0.831   +0.008
+    R2_13         0.550    0.659   +0.109
+
+  CHURN @ rank (goal 2)
+    metric          emp      sim     diff
+    coll1         0.414    0.372   -0.041
+    coll2         0.655    0.669   +0.014
+    coll5         0.759    0.669   -0.090
+    coll10        0.759    0.855   +0.097
+    coll20        1.000    0.945   -0.055
+    coll50        1.000    0.952   -0.048
+    coll100       1.000    0.979   -0.021
+
+  rank displacement
+    metric          emp      sim     diff
+    dRank1       13.000   12.400   -0.600
+    dRank4       21.000   19.800   -1.200
+    dRank13      34.000   27.400   -6.600
+
+  top-k persistence
+    metric          emp      sim     diff
+    Pers1        43.000   45.000   +2.000
+    Pers4        37.000   42.600   +5.600
+    Pers13       35.000   39.000   +4.000
+
+  boundary flux @ top-5000 (out-rate / 4wk return)
+    metric          emp      sim     diff
+    outfluxK      0.095    0.108   +0.014
+    return4K      0.369    0.372   +0.004
+
+  >>> v4.3-style score: 14/15   |   mean churn error: 0.052
+  factor sigma_F=0.038  N=19994   (top..tail by permanent rank)
+    phi        =0.600..0.250
+    sigma_trans=0.151..0.134
+    sigma_perm =0.028..0.098
+    sigma_obs  =0.030..0.197
+    lambda     =1.08..0.38

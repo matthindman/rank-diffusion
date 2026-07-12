@@ -1,35 +1,42 @@
 #!/usr/bin/env python3
 """
-Minimal rank-based diffusion (Atlas / Gabaix) prototype.
+Rank-diffusion model: entity-home OU + transitory + measurement noise, one
+entity amplitude, Gabaix rebirth, on a pre-registered top-coverage universe.
 
-Theory
-------
-A stable rank-size distribution that churns at the entity level is the signature
-of a rank-based interacting diffusion (Banner-Fernholz-Karatzas Atlas models;
-Gabaix random-growth-with-a-barrier).  Each entity i carries a log-activity X_i
-whose one-step dynamics depend only on its CURRENT rank:
+(Header rewritten 2026-07-11 -- the original described the long-superseded
+current-rank Atlas prototype.  MODEL_STATUS.md is canonical; this is the
+one-screen version of what THIS file now implements.)
 
-    X_i(t+1) = X_i(t) + b(z_i) + lambda(z_i) * F_t + sigma(z_i) * eps_i
+The model (per entity i, week t; per-period common factor handled separately):
 
-    z   = log((r - 0.5) / N)         rank coordinate (same as the v4.3 core)
-    F_t ~ N(0, sigma_F)              one common (market-wide) factor
-    eps ~ N(0, 1)                    idiosyncratic innovation
-    + Gabaix rebirth boundary:       rank-dependent exit -> reseed near the bottom
+    X_it = h_it + xi_it (+ xi2_it) + eps_it,   all scaled by one persistent
+                                               entity amplitude v_i (lognormal,
+                                               spread s; b = 1 factorization)
+    h   : OU "home" -- slow reversion kappa(z) toward the ENTITY'S OWN home
+          level, innovation sigma_perm(z)
+    xi  : fast transitory AR(1) (phi, sigma_trans(z); Student-t innovations)
+    xi2 : optional medium AR(1) (--two-scale)
+    eps : measurement noise sigma_obs(z) (Spec-B identified/bounded)
+    + stationary common level (--stat-factor), Gabaix rebirth at the bottom,
+      weekly re-ranking by observed X.
 
-`b(z)` is the centripetal (mean-reverting) drift that holds the rank-size curve
-stationary; `sigma(z)` is the idiosyncratic diffusion that drives rank crossings;
-`lambda(z) F_t` is the shared move that preserves proportional shares.  No heavy
-tails, no ARCH, no jumps, no separate transitory AR(1), no kappa-stab grid: the
-mean-reversion (low variance ratio) is meant to emerge from b(z) via rank, and
-the heavy aggregate kurtosis is meant to emerge from rank composition.
+EXPLICIT CONDITIONING ASSUMPTION (the model's one taken-as-given input): each
+entity has a persistent home, and the cross-section of homes is the MEASURED
+stationary rank-size ladder (the simulator seeds homes from the period-0
+ladder, `w0`).  Ladder stationarity is the universal stylized fact of these
+systems (Zipf/Gabaix); the model takes the ladder as given and explains the
+dynamics AROUND it -- movement, churn, noise -- rather than deriving ladder
+genesis.  This is entity-home OU with rank-dependent variances, NOT reversion
+to a rank-conditional level: `T_curve` is estimated as a diagnostic but is not
+read by any simulator, and goal-1 claims are "conditional reproduction +
+maintenance of the ladder" (the sim can still drift or over-concentrate --
+the stationary-head-law residual of MODEL_STATUS 2z-a/2z-b is exactly such a
+measured failure, so the maintenance test has teeth).
 
-Estimation is ONE pass, no optimization:
-
-    b(z)      = E[dX | z]
-    F_t       = mean_i (dX_i - b(z_i))
-    lambda(z) = slope of (dX - b) on F within the z-bin
-    sigma(z)  = std(dX - b - lambda F | z)
-    exit(z)   = P(present at t, absent at t+1 | z)
+Parameters vary by PERMANENT-rank band (Lagrangian knots; sparse head knots
+pooled).  Estimation is moment-based (MD covariance-structure fit gamma_0..L
+plus optional multi-horizon D(h) moments); every parameter comes from a
+declared moment or an independent instrument -- nothing is tuned to a score.
 """
 from __future__ import annotations
 
@@ -76,6 +83,19 @@ PLATFORMS = {
     "instagram_hm": dict(path="llm_fitting/ig_hm_totals.parquet",
                          id_col="user_name", ts_col="date", metric_col="metric_value",
                          max_rank=None),
+    # 2026-07-11 train-safe source (external review: the 60k pre-cut used
+    # full-window permanent rank -- future membership leakage into the OOS
+    # train-only selection; omitted share of the train-selected 40k universe
+    # 15.3% at T0=13 .. 1.1% at T0=39).  _ts = UNION pre-cut: full-window
+    # top-60k  ∪  (train-only top-40k at every gate origin, computed on the
+    # FULL 2.31M-account panel) -- a superset of every train-only universe BY
+    # CONSTRUCTION, verified 0.0000%% omitted per origin by
+    # ig_trainsafe_check.py.  No entity a train-only rule would select is
+    # excluded by future information; the pre-cut-internal ranking
+    # approximation declared in ig_censoring_prereg Amendment 1 is unchanged.
+    "instagram_hm_ts": dict(path="llm_fitting/ig_hm_totals_ts.parquet",
+                            id_col="user_name", ts_col="date", metric_col="metric_value",
+                            max_rank=None),
     "instagram_pp": dict(path="llm_fitting/ig_hm_perpost.parquet",
                          id_col="user_name", ts_col="date", metric_col="metric_value",
                          max_rank=None),
@@ -237,8 +257,11 @@ class RankParams:
     sigma_obs: np.ndarray    # iid measurement noise std (high-freq rank jitter)
     lam: np.ndarray          # common-factor loading on the permanent level
     exit_rate: np.ndarray
-    T_curve: np.ndarray      # rank-size target E[X | rank] (centripetal anchor)
-    kappa: float             # permanent reversion strength toward T_curve
+    T_curve: np.ndarray      # rank-size curve E[X | rank] -- DIAGNOSTIC ONLY:
+                             # estimated, stored, NOT read by any simulator
+                             # (2026-07-11 audit; the sim reverts to entity homes)
+    kappa: float             # permanent reversion strength toward the ENTITY'S
+                             # OWN home (seeded from w0; see module header)
     sigma_F: float
     N: int
     w0: np.ndarray           # sorted period-0 log-values (initial permanent levels)
@@ -339,9 +362,33 @@ A2_GRID = np.array([0.995, 0.99, 0.98, 0.96, 0.93])   # slow home only
 PHI2_GRID = np.array([0.70, 0.75, 0.80, 0.85, 0.90, 0.95])
 
 
+def _solve_nonneg(X: np.ndarray, y: np.ndarray, nnls: bool) -> tuple[np.ndarray, float]:
+    """Coefficient solve for the MD moment system, returning (coef, sse).
+
+    Legacy (default, committed convention): unconstrained OLS, negatives
+    clipped to zero, SSE scored on the CLIPPED vector.  This is NOT true NNLS
+    -- after clipping, the surviving coefficients are not re-fit, and the
+    clipped SSE also drives the (a, phi) grid choice.  Kept as the default for
+    bit-reproducibility of every committed result (external review 2026-07-11,
+    finding 2; audited in MODEL_STATUS 2z-e).
+
+    nnls=True: exact non-negative least squares (Lawson-Hanson) -- the
+    estimator the docstrings describe.  Differences from legacy concentrate
+    where the unconstrained solution has negative components, i.e. exactly
+    the weakly-identified boundary regions."""
+    if nnls:
+        from scipy.optimize import nnls as _nnls
+        coef, rnorm = _nnls(X, y)
+        return coef, float(rnorm * rnorm)
+    coef, *_ = np.linalg.lstsq(X, y, rcond=None)
+    coef = np.clip(coef, 0.0, None)
+    return coef, float(np.sum((y - X @ coef) ** 2))
+
+
 def _md_partition(gk: np.ndarray, s_e_fix: float | None = None,
                   d_mom: np.ndarray | None = None,
-                  d_h: tuple = VR_MOM_H) -> tuple[float, float, float, float, float]:
+                  d_h: tuple = VR_MOM_H,
+                  nnls: bool = False) -> tuple[float, float, float, float, float]:
     """Minimum-distance fit of the change-autocovariance function gamma_0..L
     (Chamberlain / Abowd-Card covariance-structure estimation) to
         X_it = h_it + xi_it + eps_it
@@ -394,9 +441,7 @@ def _md_partition(gk: np.ndarray, s_e_fix: float | None = None,
                 noise = np.array([[2.0], [-1.0]] + [[0.0]] * (n_g - 2)
                                  + [[2.0]] * (len(rows) - n_g))
                 X = np.hstack([X, noise])
-            coef, *_ = np.linalg.lstsq(X, y, rcond=None)
-            coef = np.clip(coef, 0.0, None)
-            sse = float(np.sum((y - X @ coef) ** 2))
+            coef, sse = _solve_nonneg(X, y, nnls)
             if sse < best[0]:
                 best = (sse, (a, phi, coef))
     a, phi, coef = best[1]
@@ -434,7 +479,7 @@ def _hstep_var(u: np.ndarray, same: np.ndarray, abar: np.ndarray, nk: int,
 
 def _md_partition2(gk: np.ndarray, s_e_fix: float | None = None,
                    d_mom: np.ndarray | None = None,
-                   d_h: tuple = VR_MOM_H):
+                   d_h: tuple = VR_MOM_H, nnls: bool = False):
     """Two-timescale minimum-distance fit (see A2_GRID note):
         X = h(OU slow, a in A2_GRID) + xi1(AR fast, phi1 in PHI_GRID)
           + xi2(AR medium, phi2 in PHI2_GRID) + eps(iid)
@@ -468,9 +513,7 @@ def _md_partition2(gk: np.ndarray, s_e_fix: float | None = None,
                     noise = np.array([[2.0], [-1.0]] + [[0.0]] * (n_g - 2)
                                      + [[2.0]] * len(d_h))
                     X = np.hstack([X, noise])
-                coef, *_ = np.linalg.lstsq(X, y, rcond=None)
-                coef = np.clip(coef, 0.0, None)
-                sse = float(np.sum((y - X @ coef) ** 2))
+                coef, sse = _solve_nonneg(X, y, nnls)
                 if sse < best[0]:
                     best = (sse, (a, p1, p2, coef))
     a, p1, p2, coef = best[1]
@@ -535,7 +578,8 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
              sigma_obs_fix: tuple[np.ndarray, np.ndarray] | None = None,
              md_vr: bool = False, stat_factor: bool = False,
              two_scale: bool = False, mix_hetero: bool = False,
-             mix_b_fix: float | None = None, md_vr_long: bool = False) -> RankParams:
+             mix_b_fix: float | None = None, md_vr_long: bool = False,
+             nnls: bool = False) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -568,6 +612,8 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     mix_b_fix: IMPOSE the mix exponent instead of measuring it (the b = 1
     restriction test, 2n: b = 1 means one amplitude scales everything and the
     lognormal renormalization is exactly 1 -- the factorized law).
+    nnls: exact non-negative least squares in the MD moment solves instead of
+    the legacy clipped-OLS convention (see _solve_nonneg; 2z-e audit).
     """
     if two_scale and not (md_lags and (md_vr or md_vr_long)):
         raise ValueError("two_scale requires md_lags and md_vr (the D(h) moments)")
@@ -654,11 +700,11 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
             sef = None if so_fix is None else float(so_fix[j])
             if two_scale:
                 (kap, s_eta, ph, s_nu, ph2, s_nu2, s_e) = _md_partition2(
-                    gmat[j], s_e_fix=sef, d_mom=d_j, d_h=d_hs)
+                    gmat[j], s_e_fix=sef, d_mom=d_j, d_h=d_hs, nnls=nnls)
                 phi2[j], sigma_trans2[j] = ph2, s_nu2
             else:
                 kap, s_eta, ph, s_nu, s_e = _md_partition(
-                    gmat[j], s_e_fix=sef, d_mom=d_j, d_h=d_hs)
+                    gmat[j], s_e_fix=sef, d_mom=d_j, d_h=d_hs, nnls=nnls)
             kappa_z[j], sigma_perm[j], phi[j] = kap, s_eta, ph
             sigma_trans[j], sigma_obs[j] = s_nu, s_e
     else:
@@ -700,8 +746,10 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     if phi2 is not None:
         phi2, sigma_trans2 = _fill(ct, phi2), _fill(ct, sigma_trans2)
 
-    # rank-size target curve T(z) = E[X | current rank] (unbiased; the centripetal
-    # anchor the permanent level reverts toward to keep the distribution stationary)
+    # rank-size curve T(z) = E[X | current rank].  DIAGNOSTIC ONLY (2026-07-11
+    # audit): no simulator reads it -- the permanent level reverts to each
+    # entity's own home (seeded from w0), not to this curve.  Kept because the
+    # curve is cheap, useful for figures, and documents the measured ladder.
     acur = _assign(df["z"].to_numpy(), z_knots)
     cc = np.bincount(acur, minlength=nk).astype(float)
     T_curve = _fill(cc, np.divide(np.bincount(acur, weights=X, minlength=nk), cc,
@@ -1212,7 +1260,7 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  spec_b: bool = False, md_vr: bool = False,
                  stat_factor: bool = False, two_scale: bool = False,
                  mix_hetero: bool = False, mix_b_fix: float | None = None,
-                 md_vr_long: bool = False, **sim_kw) -> dict:
+                 md_vr_long: bool = False, nnls: bool = False, **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -1235,7 +1283,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
             + (" vr-mom-long" if md_vr_long else (" vr-mom" if md_vr else ""))
             + (" stat-factor" if stat_factor else "")
             + (" two-scale" if two_scale else "")
-            + (" mix-b" if mix_hetero else ""))
+            + (" mix-b" if mix_hetero else "")
+            + (" NNLS" if nnls else ""))
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
           f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}{opts}\n{'='*72}")
 
@@ -1257,7 +1306,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
     p = estimate(df, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                  md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
                  md_vr=md_vr, stat_factor=stat_factor, two_scale=two_scale,
-                 mix_hetero=mix_hetero, mix_b_fix=mix_b_fix, md_vr_long=md_vr_long)
+                 mix_hetero=mix_hetero, mix_b_fix=mix_b_fix, md_vr_long=md_vr_long,
+                 nnls=nnls)
     if mix_hetero:
         tag = " (IMPOSED -- restriction test)" if mix_b_fix is not None else \
               " (s(h*)/s(1) horizon moment)"
@@ -1374,6 +1424,9 @@ if __name__ == "__main__":
                          "(the b=1 restriction test; requires --mix-hetero)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
+    ap.add_argument("--nnls", action="store_true",
+                    help="exact non-negative least squares in the MD moment solves "
+                         "(legacy default = clipped OLS; see _solve_nonneg / 2z-e)")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
     ap.add_argument("--top-k", type=int, default=None,
                     help="top-coverage universe boundary K (applies to every platform listed)")
@@ -1399,5 +1452,6 @@ if __name__ == "__main__":
                      md_vr=args.md_vr, stat_factor=args.stat_factor,
                      two_scale=args.two_scale, mix_hetero=args.mix_hetero,
                      mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
+                     nnls=args.nnls,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)

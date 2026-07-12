@@ -43,6 +43,22 @@ def build(df: pd.DataFrame, metric: np.ndarray, out_path: str, keep: int = KEEP)
 
 
 def main() -> None:
+    # --keep/--suffix/--variant added 2026-07-11 (external review): the 60k
+    # pre-cut ranks accounts by FULL-window permanent rank, which leaks future
+    # membership into the gate's train-only selection (omitted share of the
+    # train-selected 40k universe: 15.3% at T0=13 down to 1.1% at T0=39).
+    # A much deeper pre-cut (--keep 200000 --suffix _k200 --variant totals)
+    # plus the per-origin containment check (ig_trainsafe_check.py) makes the
+    # pre-cut a VERIFIED SUPERSET of every train-only universe -- train-safe
+    # by construction, gate pipeline unchanged.  Defaults reproduce the
+    # original files.
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--keep", type=int, default=KEEP)
+    ap.add_argument("--suffix", default="")
+    ap.add_argument("--variant", choices=("both", "totals", "perpost"), default="both")
+    a = ap.parse_args()
+
     df = pq.read_table(FULL, columns=["date", "user_name", "metric_value", "n_posts"]).to_pandas()
     df["date"] = pd.to_datetime(df["date"])
     weeks = np.sort(df["date"].unique())
@@ -53,8 +69,11 @@ def main() -> None:
 
     y = df["metric_value"].to_numpy(float)
     m = df["n_posts"].to_numpy(float)
-    build(df, y, "llm_fitting/ig_hm_totals.parquet")
-    build(df, np.where(m > 0, y / np.maximum(m, 1), 0.0), "llm_fitting/ig_hm_perpost.parquet")
+    if a.variant in ("both", "totals"):
+        build(df, y, f"llm_fitting/ig_hm_totals{a.suffix}.parquet", keep=a.keep)
+    if a.variant in ("both", "perpost"):
+        build(df, np.where(m > 0, y / np.maximum(m, 1), 0.0),
+              f"llm_fitting/ig_hm_perpost{a.suffix}.parquet", keep=a.keep)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,30 @@
+
+========================================================================
+REDDIT — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=30  test_len=13  train-end origins=[12, 13, 14, 16, 17]  universe=top-5000 (B=4x, train-only membership) temper pool>=8 md6 t-tails COND:state/home=trainmean
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 12  1.00  |  0.279      |  0.172        |    3.3   | False
+    T0= 13  0.25  |  0.151      |  0.171        |    1.9   | True  s=0.95
+    T0= 14  0.35  |  0.099      |  0.162        |    2.6   | True  s=0.95
+    T0= 16  0.50  |  0.054      |  0.167        |    1.1   | True  s=0.96
+    T0= 17  0.70  |  0.184      |  0.168        |    1.7   | True  s=0.96
+
+  sigma_obs_scale stability: [1.0, 0.25, 0.35, 0.5, 0.7]  median=0.50 range=0.25-1.00
+  MODEL rel err = 0.153 ± 0.077   |   persistence = 0.168 ± 0.004
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 80% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=17): emp median/p90 vs model median/p90
+    dRank1: emp    6/  27   model    7/  24
+    dRank4: emp    9/  40   model   12/  44
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 12     6.67 |    6.53  | -0.02 |     3.3      1.2  | 0.20/0.62/0.93
+    T0= 13     6.71 |    6.68  | -0.00 |     1.9      1.1  | 0.20/0.58/0.92
+    T0= 14     7.42 |    7.40  | -0.00 |     2.6      1.9  | 0.20/0.53/0.91
+    T0= 16     6.68 |    6.68  | -0.00 |     1.1      1.1  | 0.21/0.53/0.89
+    T0= 17     6.74 |    6.72  | -0.00 |     1.7      1.2  | 0.20/0.56/0.89
+    CRPS skill vs persistence @ dRank1: -0.006 ± 0.008  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.009 ± 0.006  (>0 = model beats persistence; n=5 splits)

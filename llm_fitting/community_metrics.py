@@ -157,12 +157,19 @@ def ladder_drift(ranksize: np.ndarray, n_bins: int = 8) -> float:
 
 
 def top_share(ranksize: np.ndarray, k: int = 1) -> float:
-    """Time-mean share of activity held by the top-k ranks within the
-    recorded top-M (activity = expm1(X)).  S(1) is the sharpest single probe
-    of the stationary head law: a process whose stationary cross-section is
-    too wide at the head intermittently grows a runaway #1 and overshoots
-    this badly (and seed-noisily) while every change-based card row stays
-    blind to it."""
+    """Time-mean share of activity held by the top-k ranks WITHIN THE RECORDED
+    TOP-M (M = ranksize width, typically 2,000; activity = expm1(X)).  S(1) is
+    the sharpest single probe of the stationary head law: a process whose
+    stationary cross-section is too wide at the head intermittently grows a
+    runaway #1 and overshoots this badly (and seed-noisily) while every
+    change-based card row stays blind to it.
+
+    LABELING (review 2026-07-11): these are shares "within the recorded
+    top-M", NEVER "of tracked activity" or "platform-wide" -- the denominator
+    is the top-M slice, and absolute S(k) values shrink as the denominator
+    widens (IG example: 0.0352 within top-2,000 vs 0.0259 within the full
+    buffer).  Emp-vs-sim comparisons are valid (same denominator both sides);
+    cross-platform ABSOLUTE comparisons must state M."""
     act = np.expm1(ranksize)
     tot = np.nansum(act, axis=1)
     ok = tot > 0
@@ -389,10 +396,11 @@ def main() -> None:
     T = int(df["period"].max()) + 1
     mean_n = df.groupby("period").size().mean()
     top_k = max(10, int(round(0.01 * (score_k if score_k else mean_n))))
-    cov_lang = ("of tracked activity" if a.platform.startswith("facebook")
-                or a.platform.startswith("instagram") else "platform-wide (census)")
+    cov_lang = ("tracked" if a.platform.startswith("facebook")
+                or a.platform.startswith("instagram") else "census")
     print(f"=== community metrics: {a.platform} T={T} score_k={score_k} "
-          f"reps={a.reps}  [shares {cov_lang}] ===")
+          f"reps={a.reps}  [shares are within-recorded-top-M of {cov_lang} "
+          f"activity] ===")
 
     ev, er, et, ers = mrd.empirical_structures(df, top_k, topid_k=score_k)
     emp = _compute_all(ev, er, et, ers, top_k, score_k)
@@ -452,14 +460,16 @@ def main() -> None:
         print(f"    {k:>6}{emp['_d'][k - 1]:>9.3f}{np.nanmean(Ds[:, j]):>9.3f}"
               f"{np.nanstd(Ds[:, j]):>9.3f}")
 
-    print(f"\n  LADDER (rank-size / concentration; shares {cov_lang})")
+    M_rec = min(ers.shape[1], min(s["_ranksize"].shape[1] for s in sims))
+    print(f"\n  LADDER (rank-size / concentration; shares WITHIN RECORDED "
+          f"top-{M_rec} of {cov_lang} activity -- not whole-universe shares)")
     print(f"    D_ladder (RMSE of time-mean log-value, log-rank bins) = "
           f"{np.nanmean(lad):.4f} ± {np.nanstd(lad):.4f}")
-    print(f"    D_share  (max_k |S_sim(k) - S_emp(k)|)                = "
+    print(f"    D_share  (max_k |S_sim(k) - S_emp(k)|, within top-{M_rec})     = "
           f"{np.nanmean(shr):.4f} ± {np.nanstd(shr):.4f}")
     print(f"    ladder drift (last vs first third, RMS over bins)     : "
           f"emp {ladder_drift(ers):.4f}   sim {np.nanmean(drf):.4f} ± {np.nanstd(drf):.4f}")
-    print(f"    S(1) top-1 activity share (stationary head law)       : "
+    print(f"    S(1) top-1 share within top-{M_rec} (stationary head law) : "
           f"emp {top_share(ers, 1):.4f}   sim {np.nanmean(ts1):.4f} ± {np.nanstd(ts1):.4f}")
 
     print("\n  ROLLING-ORIGIN variants (mean over origins ± SD; committed "

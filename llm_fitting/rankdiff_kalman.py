@@ -575,17 +575,32 @@ def _filtered_levels(df_tr, p):
     return pd.Series(h, index=X.columns).dropna()
 
 
-def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=None):
+def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=None,
+                           cond_home="state"):
     """CONDITIONAL forecast: simulate the ACTUAL member universe forward from
     its filtered end-of-train state (real gap structure, no burn-in), with each
     entity's own EB-shrunken temperament multiplier when vhat is given (else
     random draws as in the unconditional sim).  Step 0 = last train week; the
     tracked cohort is formed at step 1 (aligned with the gate's empirical
-    cohort = top-k by observed rank at the first test week)."""
+    cohort = top-k by observed rank at the first test week).
+
+    cond_home (2026-07-11, external-review finding 4): where the OU home sits.
+      "state"     (default, committed): home = the filtered end-of-train state
+                  itself -- the forecast is FILTERED-STATE-ANCHORED (reversion
+                  pulls future shocks back toward the last filtered state, a
+                  locally persistence-anchored forecaster).
+      "trainmean" : home = the entity's train-window mean level (its long-run
+                  home under the entity-home OU reading); the STATE still
+                  starts at the filtered end-of-train level.  The clean
+                  "current state + separate long-run home" semantics."""
     rng = np.random.default_rng(seed)
     levels = _filtered_levels(df_tr, p)
     mu = levels.to_numpy().copy()
-    home = mu.copy()
+    if cond_home == "trainmean":
+        hm = df_tr.groupby("entity_id")["X"].mean().reindex(levels.index)
+        home = hm.fillna(pd.Series(mu, index=levels.index)).to_numpy().copy()
+    else:
+        home = mu.copy()
     N = mu.size
     xi = np.zeros(N)
     ids = np.arange(N, dtype=np.int64); next_id = N
@@ -653,12 +668,13 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
 
 
 def sim_dist_cond(p, df_tr, T_sim, horizons, reps=3, coll_ranks=(1, 5, 20),
-                  kappa=0.0, vhat=None):
+                  kappa=0.0, vhat=None, cond_home="state"):
     """Conditional counterpart of sim_dist."""
     pooled = {h: [] for h in horizons}
     racfs, colls = [], {c: [] for c in coll_ranks}
     for s in range(reps):
-        cr, ti = sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=s, vhat=vhat)
+        cr, ti = sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=s, vhat=vhat,
+                                        cond_home=cond_home)
         d, rf = _rank_dist(cr, horizons)
         for h in horizons:
             pooled[h].append(d[h])
@@ -736,19 +752,21 @@ def _build_params_on(df_tr):
 
 def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None,
                    md_lags=None, t_tails=False, sigma_obs_fix=None, md_vr=False,
-                   two_scale=False, mix_hetero=False, mix_b_fix=None, md_vr_long=False):
+                   two_scale=False, mix_hetero=False, mix_b_fix=None, md_vr_long=False,
+                   nnls=False):
     """Fast closed-form variance-partition estimator (per split, for rolling CV)."""
     return mrd.estimate(df_tr, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                         md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
                         md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero,
-                        mix_b_fix=mix_b_fix, md_vr_long=md_vr_long)
+                        mix_b_fix=mix_b_fix, md_vr_long=md_vr_long, nnls=nnls)
 
 
 def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
                  md_vr=False, two_scale=False, mix_hetero=False, mix_b_fix=None,
-                 md_vr_long=False, dist_scores=False):
+                 md_vr_long=False, dist_scores=False, nnls=False,
+                 cond_home="state"):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -771,7 +789,10 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             + (" two-scale" if two_scale else "")
             + ((" mix-b" + (f"={mix_b_fix:g}(fix)" if mix_b_fix is not None else ""))
                if mix_hetero else "")
-            + (f" COND:{conditional}" if conditional else ""))
+            + (" NNLS" if nnls else "")
+            + ((f" COND:{conditional}"
+                + (f"/home={cond_home}" if cond_home != "state" else ""))
+               if conditional else ""))
     print(f"  T={T}  test_len={test_len}  train-end origins={origins}{uni}{opts}")
 
     daily = None
@@ -800,7 +821,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         p = _estimate_fast(df_tr, obs_frac, temper=temper, min_knot_n=min_knot_n,
                            md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=so_fix,
                            md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero,
-                           mix_b_fix=mix_b_fix, md_vr_long=md_vr_long)
+                           mix_b_fix=mix_b_fix, md_vr_long=md_vr_long, nnls=nnls)
         scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
         p = replace_obs(p, scale)
         ed, erf, ec = emp_dist(df_te, hor)            # held-out truth
@@ -809,7 +830,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             # conditional forecast: real filtered end-of-train state; per-entity
             # EB-shrunken temperament when conditional == 'vhat'
             vh = (mrd.eb_vhat(df_tr, s=p.temper_s) if conditional == "vhat" else None)
-            sd, srf, sc = sim_dist_cond(p, df_tr, test_len, hor, reps=reps, vhat=vh)
+            sd, srf, sc = sim_dist_cond(p, df_tr, test_len, hor, reps=reps, vhat=vh,
+                                        cond_home=cond_home)
         else:
             sd, srf, sc = sim_dist(p, test_len, hor, reps=reps)   # model prediction
         rows.append(dict(T0=T0, scale=scale, hor=hor, ts=p.temper_s,
@@ -997,11 +1019,19 @@ if __name__ == "__main__":
                     help="extend D(h) moments to h=26,52 (long panels; see minimal_rankdiff)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
+    ap.add_argument("--nnls", action="store_true",
+                    help="exact NNLS in the MD moment solves (legacy default = "
+                         "clipped OLS; see minimal_rankdiff._solve_nonneg / 2z-e)")
     ap.add_argument("--dist-scores", action="store_true",
                     help="OOS gate: additionally report ensemble CRPS skill vs "
                          "persistence, predictive quantile coverage, and the "
                          "Wasserstein reference scale (additive; the frozen "
                          "gate criterion is unchanged)")
+    ap.add_argument("--cond-home", choices=("state", "trainmean"), default="state",
+                    help="OU home in the conditional sim: 'state' (committed; "
+                         "filtered-state-anchored) or 'trainmean' (entity's "
+                         "train-window mean level as long-run home; state stays "
+                         "filtered) -- review finding 4 diagnostic")
     ap.add_argument("--conditional", choices=("state", "vhat"), default=None,
                     help="conditional OOS forecast: initialize from the filtered "
                          "end-of-train state ('state'), plus per-entity EB-shrunken "
@@ -1020,7 +1050,8 @@ if __name__ == "__main__":
                          conditional=args.conditional, md_vr=args.md_vr,
                          two_scale=args.two_scale, mix_hetero=args.mix_hetero,
                          mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
-                         dist_scores=args.dist_scores)
+                         dist_scores=args.dist_scores, nnls=args.nnls,
+                         cond_home=args.cond_home)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)

@@ -1,0 +1,33 @@
+
+========================================================================
+FACEBOOK_A — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=86  test_len=21  train-end origins=[21, 32, 43, 54, 65]  universe=top-3500 (B=4x, train-only membership) temper pool>=8 md6 t-tails spec-B COND:state/home=trainmean
+  day guard: 59 flagged days -> dropped 33 of 176 member-weeks from daily estimation
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 21  1.00  |  0.176      |  0.136        |   22.3   | False  s=0.98
+    T0= 32  1.00  |  0.102      |  0.183        |   39.9   | False  s=0.97
+    T0= 43  1.00  |  0.176      |  0.093        |   13.7   | True  s=0.95
+    T0= 54  1.00  |  0.133      |  0.145        |    4.5   | True  s=0.94
+    T0= 65  1.00  |  0.095      |  0.169        |   12.0   | True  s=0.92
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.137 ± 0.034   |   persistence = 0.145 ± 0.031
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 60% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=65): emp median/p90 vs model median/p90
+    dRank1: emp   14/  68   model   13/  73
+    dRank4: emp   20/ 122   model   19/ 124
+    dRank13: emp   26/ 203   model   31/ 214
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 21    47.18 |   47.26  | +0.00 |    22.3     30.5  | 0.09/0.47/0.87
+    T0= 32    60.83 |   60.84  | +0.00 |    39.9     39.4  | 0.10/0.47/0.87
+    T0= 43    40.65 |   40.73  | +0.00 |    13.7     20.4  | 0.17/0.53/0.89
+    T0= 54    25.64 |   25.64  | +0.00 |     4.5      6.8  | 0.11/0.50/0.91
+    T0= 65    34.09 |   34.20  | +0.00 |    12.0     13.3  | 0.10/0.49/0.91
+    CRPS skill vs persistence @ dRank1: +0.001 ± 0.001  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.003 ± 0.003  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.004 ± 0.004  (>0 = model beats persistence; n=5 splits)
