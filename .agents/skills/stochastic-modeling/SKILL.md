@@ -345,9 +345,20 @@ the summary.
 
 ## 7. Current state & parked items (as of 2026-07-06)
 
-**The agenda (§2x, in order):** (1) confirmation extension E1–E4 (owner-gated:
-WD mount) — **do NOT let anyone submit the paper before this**; no model work
-first; (2) breadth — new ranked systems through the UNCHANGED pipeline
+**The agenda (§2x, in order):** (1) confirmation extension E1–E5 —
+**EXECUTED 2026-07-12 under A1–A10 (MODEL_STATUS §2z-q): A6.7 verdict =
+MIXED EVIDENCE** (E2 movement gate PASSED decisively, 0.032 vs 0.171,
+frozen params, scale 1.0; E1 transport FAILED on s — a measured secular
+trend 0.65→0.75→0.84, §2z-s — and the κ level shift; E5 head-law trigger
+FIRED cross-platform; E4 NOT predictive, robust per the §2z-s second-half
+readout). The A2 candidate head-law fix, variant 1 (within-entity
+level-variance anchor, `--eul-level`) was REFUTED by its own adoption
+gates (§2z-t; anchor contaminated by §2v home drift); the surviving
+candidate is the cross-sectional/head-ladder anchor — MEASURE FIRST,
+owner-visible, before any implementation. Claim language: "a registered
+confirmatory evaluation with one disclosed post-registration, pre-outcome
+technical correction" (A10 — the infeasible negative-metrics intake rule;
+§2z-o/§2z-p) — never "exactly as originally preregistered"; (2) breadth — new ranked systems through the UNCHANGED pipeline
 (Wikipedia pageviews first); the IG censoring rescue (§2z-c/§2z-d,
 `instagram_hm`) is BANKED breadth-supporting evidence — a fourth system,
 scoped estimand, not paper-primary unless the owner registers a mini-protocol;

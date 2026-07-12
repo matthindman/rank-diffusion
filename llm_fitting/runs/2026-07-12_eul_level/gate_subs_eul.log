@@ -1,0 +1,36 @@
+
+========================================================================
+REDDIT — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=30  test_len=13  train-end origins=[12, 13, 14, 16, 17]  universe=top-5000 (B=4x, train-only membership) temper pool>=8 md6 t-tails NNLS COND:state
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 12  1.00  |  0.209      |  0.172        |    2.8   | False
+    T0= 13  0.70  |  0.154      |  0.171        |    2.1   | True  s=0.95
+    T0= 14  0.15  |  0.180      |  0.162        |    3.3   | True  s=0.95
+    T0= 16  0.35  |  0.104      |  0.167        |    1.2   | True  s=0.96
+    T0= 17  1.00  |  0.173      |  0.168        |    1.4   | True  s=0.96
+
+  sigma_obs_scale stability: [1.0, 0.7, 0.15, 0.35, 1.0]  median=0.70 range=0.15-1.00
+  MODEL rel err = 0.164 ± 0.035   |   persistence = 0.168 ± 0.004
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 80% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=17): emp median/p90 vs model median/p90
+    dRank1: emp    6/  27   model    7/  24
+    dRank4: emp    9/  40   model   11/  42
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 12     6.64 |    6.53  | -0.02 |     2.8      1.2  | 0.20/0.62/0.92
+    T0= 13     6.72 |    6.68  | -0.00 |     2.1      1.1  | 0.20/0.58/0.92
+    T0= 14     7.47 |    7.40  | -0.01 |     3.3      1.9  | 0.20/0.59/0.93
+    T0= 16     6.69 |    6.68  | -0.00 |     1.2      1.1  | 0.21/0.53/0.89
+    T0= 17     6.73 |    6.72  | -0.00 |     1.4      1.2  | 0.20/0.56/0.89
+    CRPS skill vs persistence @ dRank1: -0.006 ± 0.006  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.008 ± 0.003  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 12  h=1:OUT  h=4:OUT  week-block CI(h=1) [6.0, 6.0] OUT
+      T0= 13  h=1:in  h=4:OUT  week-block CI(h=1) [6.0, 7.0] in
+      T0= 14  h=1:in  h=4:OUT  week-block CI(h=1) [6.0, 7.0] in
+      T0= 16  h=1:in  h=4:OUT  week-block CI(h=1) [5.0, 6.0] in
+      T0= 17  h=1:in  h=4:OUT  week-block CI(h=1) [5.0, 7.0] in

@@ -1,0 +1,26 @@
+
+========================================================================
+REDDIT_COMMENTS_EXT_LATE — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=77  test_len=34  train-end origins=[43]  universe=top-12500 (B=4x, train-only membership) temper pool>=8 md6 t-tails mix-b NNLS COND:state
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 43  0.15  |  0.072      |  0.038        |    0.5   | True  s=0.85
+
+  sigma_obs_scale stability: [0.15]  median=0.15 range=0.15-0.15
+  MODEL rel err = 0.072 ± 0.000   |   persistence = 0.038 ± 0.000
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 100% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=43): emp median/p90 vs model median/p90
+    dRank1: emp    6/  25   model    6/  25
+    dRank4: emp    9/  37   model   10/  40
+    dRank13: emp   14/  59   model   15/  66
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 43     6.56 |    6.56  | -0.00 |     0.5      0.4  | 0.17/0.51/0.90
+    CRPS skill vs persistence @ dRank1: -0.000 ± 0.000  (>0 = model beats persistence; n=1 splits)
+    CRPS skill vs persistence @ dRank4: -0.002 ± 0.000  (>0 = model beats persistence; n=1 splits)
+    CRPS skill vs persistence @ dRank13: -0.001 ± 0.000  (>0 = model beats persistence; n=1 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 43  h=1:in  h=4:OUT  h=13:in  week-block CI(h=1) [6.0, 7.0] in

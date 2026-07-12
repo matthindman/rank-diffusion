@@ -1,0 +1,60 @@
+
+========================================================================
+REDDIT_COMMENTS  | periods=136 mean_N=42462 entities=50,000 top_k=125 universe=top-12500 (buffer B=50000) temper pool>=8 md6 t-tails vr-mom-long stat-factor two-scale mix-b NNLS eul-level
+========================================================================
+  mix heterogeneity: b = 1.08 (s(h*)/s(1) horizon moment); permanent spread = b*s = 0.75
+  two-scale: phi2 = 0.85..0.70  sigma_trans2 = 0.137..0.215 (top..tail; medium timescale, D(h)-identified)
+  stationary common factor: rho_L = 0.82 (measured from the detrended cumulative-F path; legacy = integrated)
+  temperament: s = 0.692 (sigma_i spread p90/p10 = 2.43x)
+  MD partition: kappa(z) = 0.005..0.005 (top..tail, estimated -- hand-set kappa retired)
+  transitory tails: t_df = 5.7
+
+  RANK DYNAMICS (goal 1)
+    metric          emp      sim     diff
+    VR2           0.583    0.663   +0.080
+    VR4           0.327    0.445   +0.118
+    VR8           0.198    0.296   +0.098
+    VR13          0.136    0.219   +0.082
+    ACF1         -0.362   -0.336   +0.026
+    ACF2         -0.031   -0.036   -0.005
+    RACF1         0.669    0.723   +0.053
+    RACF4         0.545    0.549   +0.004
+    RACF13        0.329    0.282   -0.047
+    R2_1          0.879    0.946   +0.067
+    R2_4          0.841    0.914   +0.072
+    R2_13         0.813    0.868   +0.056
+
+  CHURN @ rank (goal 2)
+    metric          emp      sim     diff
+    coll1         0.044    0.076   +0.031
+    coll2         0.296    0.313   +0.016
+    coll5         0.681    0.677   -0.004
+    coll10        0.896    0.839   -0.058
+    coll20        0.956    0.942   -0.013
+    coll50        0.993    0.959   -0.034
+    coll100       0.978    0.984   +0.006
+
+  rank displacement
+    metric          emp      sim     diff
+    dRank1       12.000   12.800   +0.800
+    dRank4       16.000   17.600   +1.600
+    dRank13      20.000   23.600   +3.600
+
+  top-k persistence
+    metric          emp      sim     diff
+    Pers1       108.000  113.800   +5.800
+    Pers4       105.000  107.600   +2.600
+    Pers13      101.000  100.600   -0.400
+
+  boundary flux @ top-12500 (out-rate / 4wk return)
+    metric          emp      sim     diff
+    outfluxK      0.090    0.127   +0.037
+    return4K      0.394    0.304   -0.089
+
+  >>> v4.3-style score: 12/15   |   mean churn error: 0.023
+  factor sigma_F=0.137  N=42462   (top..tail by permanent rank)
+    phi        =0.650..0.200
+    sigma_trans=0.043..0.372
+    sigma_perm =0.064..0.076
+    sigma_obs  =0.076..0.499
+    lambda     =0.93..0.73

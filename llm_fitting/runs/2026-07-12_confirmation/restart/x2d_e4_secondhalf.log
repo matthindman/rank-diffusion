@@ -1,0 +1,7 @@
+EXPLORATORY ext-window [174, 213) -- subsample stability readout, NOT the registered E4 (which scored [136, 213))
+train n=9,606  ext n=11,636  SHARED n=7,702 (shared-survivor-conditioned, A5)
+Python(55351) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+rho_hat (train split-half signal share): 0.413
+Spearman(khat_train, resid_ext) = 0.323 [0.301, 0.344]  (gate >= 0.20)
+concentration (Q1uQ5 / Q3)      = 1.225 [1.166, 1.285]  (gate >= 1.3)
+E4 VERDICT: NOT predictive

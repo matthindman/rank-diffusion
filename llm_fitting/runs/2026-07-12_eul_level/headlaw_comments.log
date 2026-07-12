@@ -1,0 +1,6 @@
+== reddit_comments  T=136  score_k=12500  shares within recorded top-2000 ==
+  empirical S(1) 0.1057   S(10) 0.2506
+  [flag OFF     ] kappa head4 [0.005 0.005 0.005 0.005]  sigma_perm head4 [0.0612 0.0612 0.0612 0.0612]  implied head stationary level 0.4554
+  [flag OFF     ] sim S(1) 0.1376 ± 0.0361   S(10) 0.3242 ± 0.0226   offset(adj) +0.2185 ± 0.0086   (10 seeds, ddof=0)
+  [eul-level ON ] kappa head4 [0.005 0.005 0.005 0.005]  sigma_perm head4 [0.0641 0.0641 0.0641 0.0641]  implied head stationary level 0.4890
+  [eul-level ON ] sim S(1) 0.1156 ± 0.0256   S(10) 0.2887 ± 0.0263   offset(adj) +0.1852 ± 0.0117   (10 seeds, ddof=0)

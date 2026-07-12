@@ -3185,6 +3185,136 @@ python3 -u llm_fitting/e1_transport.py --score 136 \
     --platform reddit_comments_ext --legacy-clip
 ```
 
+## 2z-s. 2026-07-12 — EXPLORATORY post-battery diagnostics (labeled per the §5 protocol line; nothing here amends E1–E5): the s failure is a SECULAR TREND, not composition; the E2 tail under-dispersion is parameter-vintage-consistent; the boundary excess is UNIVERSE-WIDE hazard, not a shell artifact; the E4 knife-edge resolves DOWNWARD
+
+All four diagnostics from the adjudicated post-battery plan, run on the
+extension AFTER the §2z-q report was committed, all EXPLORATORY. Logs +
+scripts: `runs/2026-07-12_confirmation/restart/x2*.log`,
+`ext_s_decomposition.py`, `ext_boundary_flux.py`, `e4 --ext-window`,
+platform `reddit_comments_ext_late`.
+
+**(2a) s decomposition — ERA, not composition; and a trend, not a break.**
+Four cells (era × membership; fixed-membership machinery; E1-estimand
+replication 0.8319 exact; cell A reproduces the reference 0.6922 exact):
+
+| | train mem | ext mem |
+|---|---|---|
+| train window | **0.6922** | 0.6885 |
+| ext window | 0.7998 | **0.8401** |
+
+Era effect **+0.130**, composition effect **+0.018** (train↔ext membership
+Jaccard only 0.575, yet membership barely moves s). Matched-77-week frozen
+sub-windows: [0,77) → **0.6465**, [59,136) → **0.7524** — no length bias
+(they straddle 0.692), and s was RISING within the frozen panel already:
+0.65 → 0.75 → 0.84 across 2019→2022. The E1 band was set from a
+full-window average of a trending quantity; the "failure" is the trend's
+continuation. Amplitude dispersion is a slowly increasing platform
+property on Reddit comments (measured; mechanism unexplored — candidate
+paper language: s is era-indexed, the FORM transports).
+
+**(2b) E2 oracle arm (extension-estimated parameters, later 34-wk block;
+era-block confound DECLARED; never comparable to the registered E2):**
+`reddit_comments_ext_late --origins 43 --test-len 34`, reps 20/boot 2000.
+Model 0.072 vs historical-mobility 0.038 (the late-2022 baseline is very
+strong — the era had stabilized); h=1 in-CI; scale 0.15 (calibration
+freedom USED — oracle-arm property). THE TAIL READOUT is the point:
+p90 h=1 model 25 vs emp 25 (**exact**; frozen-parameter E2 gave 25 vs 27),
+h=4 40 vs 37, h=13 66 vs 59 — with era-vintage parameters (s≈0.84) the
+displacement tails are no longer under-dispersed (slightly OVER at long
+h). SUPPORTS (directionally, confound declared) the hypothesis that E2's
+growing p90 under-dispersion traces to the s trend, i.e. a
+parameter-vintage effect, not a structural tail deficit.
+
+**(2c) boundary-flux decomposition (3 seeds, MC caveat):** the §2z-q
+excess is NOT a boundary-shell artifact — it is a universe-wide excess
+exit hazard, LARGEST DEEP INSIDE the universe: out-flux by dropper's band
+core/mid/shell sim÷emp = **4.0× / 2.2× / 1.3×**; permanent-exit share
+(no return within 13) 0.268 vs 0.157 (1.7×); return rates uniformly low
+(~0.29 vs ~0.39 at every h — the empirical return curve is FLAT in h,
+returns happen fast or never). The sim ejects established core/mid
+entities too often and drops them too deep; the truncation boundary
+itself is nearly right. Points at the deep-displacement tail /
+exit-hazard interaction, NOT at boundary handling. No parameter added.
+
+**(2d) E4 second-half stability (SI-descriptive, non-confirmatory):**
+ext residuals on periods [174, 213) only: Spearman **0.323** (still 1.6×
+the gate), concentration **1.225** [1.166, 1.285] — clearly below 1.3.
+The registered knife-edge (1.299) resolves DOWNWARD out of sample within
+the extension: κ_i ordering is a persistent trait; its concentration does
+not clear the pre-declared modeling bar. "NOT predictive" is robust, not
+a coin flip.
+
+## 2z-t. 2026-07-12 — Eulerian constraint, VARIANT 1 (within-entity level-variance anchor) implemented opt-in and REFUTED by its own pre-declared adoption gates: the anchor is contaminated by the measured excess low-frequency structure and moves the FB head law the WRONG way. No adoption; defaults unchanged; cross-sectional/ladder anchor is the surviving candidate
+
+The A2 candidate fix (activated by the §2z-q E5 trigger) requires an
+"empirical stationary band variance / head ladder" moment. Variant 1
+implemented here reads that as the WITHIN-ENTITY stationary level
+variance: `--eul-level` appends a finite-window-corrected level-variance
+row (E[sample var] = Var·(1−S_T(c)/T²), linear in the solver
+coefficients) to BOTH partition solvers, measured Lagrangian by permanent
+rank, entity-run-weighted, pooled; zero new components, no new knobs (row
+unweighted — the objective's existing convention, declared). Opt-in;
+suite 126 green (6 new tests: exact recovery both solvers incl. Spec-B
+composition, directional-live row, gating locks, e2e smoke); defaults
+byte-identical.
+
+**Adoption gates (A2, pre-declared): S(1)/S(10)/adjusted offset must
+improve across platforms; cards hold; frozen gates not degrade. Scored:**
+
+| dev panel | S(1) emp | flag OFF (NNLS re-measured, 10 seeds) | --eul-level | verdict |
+|---|---|---|---|---|
+| facebook_a | 0.0170 | 0.0463 ± 0.0073 | **0.0870 ± 0.0523** | **WORSE 2×, noisy** (S10 0.147→0.222, offset +0.196→+0.230: all three regress) |
+| reddit_comments | 0.1057 | 0.1376 ± 0.0361 | 0.1156 ± 0.0256 | better, within ~1 seed-SD |
+| reddit (subs) | 0.0165 | 0.0188 ± 0.0038 | 0.0201 ± 0.0032 | ~unchanged |
+
+Gates (flag-on vs the §2z-g record): FB Spec-B+cond **0.110 ± 0.030** (vs
+0.123 ± 0.033 — improves, cov 60%); subs 0.164 ± 0.035 (unchanged);
+comments **0.195 ± 0.087** (vs 0.171 ± 0.046 — degrades ~0.5 SD, scale
+leaves 1.0 on 3/5). Cards flag-on: FB **15/15 / 0.022** (Pers4 knife-edge
+flips back), subs 14/15 / 0.042, comments 12/15 / 0.023.
+
+**VERDICT (by the pre-declared gates): NOT ADOPTED — refuted.** The
+S(1)-family regresses decisively on FB, the confirmed-overshoot platform,
+and the comments gate degrades. **Mechanism (measured, and it teaches the
+next design):** the within-entity level variance at the FB head is ~0.64
+vs the partition's implied stationary level 0.19 — the anchor is
+DOMINATED by the program's own measured excess low-frequency structure
+(§2v home drift), so matching it inflates the head's stationary W
+(κ pinned at grid-min, implied level 0.19→0.64) — the OPPOSITE of the
+deflation E5 calls for. Where the anchor ≈ the implied level (comments:
+0.49 vs 0.46) the row is a benign nudge. A time-variance anchor cannot
+separate "wide stationary law" from "drifting homes"; the E5 overshoot is
+about the CROSS-SECTIONAL width of the stationary head. **Surviving
+candidate = the cross-sectional/head-ladder reading of A2** (constrain
+the model's stationary within-band cross-sectional dispersion / head
+ladder spacing) — requires measure-first design (how to net out ladder
+curvature and temperament mixture) BEFORE implementation; queued as the
+next model-development step, owner-visible. `--eul-level` is retained as
+the measured negative arm (opt-in, never default).
+
+Interesting non-adopting observations, recorded honestly: the FB gate
+IMPROVED and the FB card returned to 15/15 under the refuted variant —
+the level row is doing something right in the FB mid-band even while
+wrecking the head; the cross-sectional variant should be checked against
+both effects. Logs: `runs/2026-07-12_eul_level/`.
+
+**Claim-language PROPOSAL for the owner (Phase 4; §6/§2x edit is
+owner-gated, this is a proposal only):** "A parsimonious permanent–
+transitory rank model trained through June 2021 transported central
+conditional movement into a later era without recalibration (moment error
+0.032 vs 0.171 for the historical-mobility baseline; medians exact at
+h=1/4/13), while not transporting two parameter values — the amplitude
+dispersion s, which is a measured secular trend (0.65→0.75→0.84 across
+2019→2022), and the head reversion level — and generating an excessively
+concentrated stationary head (S(1) 51% high), now confirmed on a third
+instrument. The confirmation supports the movement mechanism while
+identifying the stationary head law and movement-tail heterogeneity
+(parameter-vintage-consistent, oracle-arm evidence) as the principal
+remaining limitations; the first candidate head-law fix was implemented
+and refuted by its own pre-declared gates." One disclosed
+post-registration pre-outcome technical correction (A10); never "exactly
+as originally preregistered."
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

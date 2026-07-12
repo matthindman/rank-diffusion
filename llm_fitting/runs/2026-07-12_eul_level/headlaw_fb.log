@@ -1,0 +1,6 @@
+== facebook_a  T=86  score_k=3500  shares within recorded top-2000 ==
+  empirical S(1) 0.0170   S(10) 0.1011
+  [flag OFF     ] kappa head4 [0.07 0.07 0.07 0.07]  sigma_perm head4 [0.1143 0.1143 0.1143 0.1143]  implied head stationary level 0.1865
+  [flag OFF     ] sim S(1) 0.0463 ± 0.0073   S(10) 0.1469 ± 0.0069   offset(adj) +0.1960 ± 0.0114   (10 seeds, ddof=0)
+  [eul-level ON ] kappa head4 [0.005 0.005 0.005 0.005]  sigma_perm head4 [0.0732 0.0732 0.0732 0.0732]  implied head stationary level 0.6435
+  [eul-level ON ] sim S(1) 0.0870 ± 0.0523   S(10) 0.2215 ± 0.0570   offset(adj) +0.2299 ± 0.0143   (10 seeds, ddof=0)

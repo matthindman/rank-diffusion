@@ -1,0 +1,18 @@
+extended panel loaded: T=213 weeks
+membership: train-selected B=50,000  ext-selected B=50,000  Jaccard overlap 0.575
+replication controls:
+Python(59587) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+  ext window, FULL-window mem (E1 estimand)    s = 0.8319
+four cells (era x membership):
+  A train win, train mem (ref ~0.692)          s = 0.6922
+  B ext win,  ext mem                          s = 0.8401
+  C train win, ext mem                         s = 0.6885
+  D ext win,  train mem                        s = 0.7998
+window-length controls (frozen span, own membership, 77 weeks):
+  W1 frozen [0,77)                             s = 0.6465
+  W2 frozen [59,136)                           s = 0.7524
+
+decomposition (additive, mean of the two one-factor contrasts):
+  era effect (window):        +0.1296
+  composition effect (mem):   +0.0183
+  window-length bias bound:   frozen 77-wk windows give 0.6465/0.7524 vs full-train 0.6922 (if ~equal, segment length does not inflate s)

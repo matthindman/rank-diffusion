@@ -1,0 +1,10 @@
+# MANIFEST — 2026-07-12 Eulerian constraint VARIANT 1 validation (REFUTED by pre-declared gates; MODEL_STATUS 2z-t; opt-in flag retained, defaults unchanged)
+f7b4b0c6d2c59a2d3eb6746bbde1794f4d1df7476a7dae01af25282bb76aa9a3  llm_fitting/runs/2026-07-12_eul_level/card_comments_eul.log
+115ff03f27d674e06289a9acabb4ed7ba8e0952f855340d0fc681ff01ed27ea3  llm_fitting/runs/2026-07-12_eul_level/card_fb_eul.log
+53e53e136f55a00525382cb2270ad4e53aa0b00ca2263755c999025c2879ede8  llm_fitting/runs/2026-07-12_eul_level/card_subs_eul.log
+1b7f42124fc4c149ae55db87936e2cb1812347b6f13fe1a8557033e1cb997871  llm_fitting/runs/2026-07-12_eul_level/gate_comments_eul.log
+06be4985922865090618704a3d90700c3e54e9149b03838c3d3c1ce0370c94c4  llm_fitting/runs/2026-07-12_eul_level/gate_fb_eul.log
+57127e1107b2e2018cdcc362bd164b74a614e7fea999aebd97a22caea2c4f082  llm_fitting/runs/2026-07-12_eul_level/gate_subs_eul.log
+f3a238c680a496909200ba9432020895a251bea95c90027f451cc64f4ef8fbff  llm_fitting/runs/2026-07-12_eul_level/headlaw_comments.log
+1c1fddc61deb9b008749ce1d502877c3e6f611a908c3a64bd86bb3c2e785f6f0  llm_fitting/runs/2026-07-12_eul_level/headlaw_fb.log
+6ba5963bbfbc30354f27da1ff4c32d4674af9551444a2858ad256be2a1a3163e  llm_fitting/runs/2026-07-12_eul_level/headlaw_subs.log

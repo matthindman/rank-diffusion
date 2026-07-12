@@ -22,3 +22,8 @@ cf0166f861c47472425de04e1cabd9847cdded25dc65467db93450390f0addcd  llm_fitting/ru
 9461e19e58e9ad864219e283de9fd64642a4ed09ba518549966692da444c9c14  llm_fitting/runs/2026-07-12_confirmation/restart/e5_headlaw.log
 # addendum 2026-07-12 (A4 both-solves sensitivity, declared-delayed; MODEL_STATUS 2z-r)
 6a6572d6749b6768f207f79f90c135a91b6697e4fba378ee147f541149528c94  llm_fitting/runs/2026-07-12_confirmation/restart/e1_transport_a4_sensitivity.log
+# addendum 2026-07-12 (EXPLORATORY post-battery diagnostics, MODEL_STATUS 2z-s)
+e2d87baace2e40431d81c0cdd6ec8a1db6002638b8364e9e97246a0f9863974a  llm_fitting/runs/2026-07-12_confirmation/restart/x2a_s_decomposition.log
+0edd79de19ab14c738bf75fed27c0a5c48579c5e1355f5b26b74a72930dc9606  llm_fitting/runs/2026-07-12_confirmation/restart/x2b_oracle_arm.log
+8270c9e998fd361bb33e7f78b68eb0bcef852f6cef8eba08de85fd9bfdd71120  llm_fitting/runs/2026-07-12_confirmation/restart/x2c_boundary_flux.log
+53bd382188a6eeb404cf4a107e2ffb11455194d3093cd0bbb861bcda53742340  llm_fitting/runs/2026-07-12_confirmation/restart/x2d_e4_secondhalf.log
