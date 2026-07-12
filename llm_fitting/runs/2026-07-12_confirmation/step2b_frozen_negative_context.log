@@ -1,0 +1,12 @@
+frozen_weekly columns: ['endpoint_id', 'date', 'metric_value', 'submission_karma', 'comment_karma', 'submission_count', 'comment_count']
+  frozen_weekly.metric_value: n=14099317, negatives=0 
+  frozen_weekly.submission_karma: n=14099317, negatives=0 
+  frozen_weekly.comment_karma: n=14099317, negatives=10634 min=-29291
+  frozen_weekly.submission_count: n=14099317, negatives=0 
+  frozen_weekly.comment_count: n=14099317, negatives=0 
+frozen_daily columns: ['date', 'endpoint_id', 'metric_value', 'submission_karma', 'comment_karma', 'submission_count', 'comment_count']
+  frozen_daily.metric_value: n=47307511, negatives=0 
+  frozen_daily.submission_karma: n=47307511, negatives=0 
+  frozen_daily.comment_karma: n=47307511, negatives=89477 min=-30761
+  frozen_daily.submission_count: n=47307511, negatives=0 
+  frozen_daily.comment_count: n=47307511, negatives=0 

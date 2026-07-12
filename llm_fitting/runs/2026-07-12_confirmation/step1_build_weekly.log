@@ -1,0 +1,2 @@
+boundary days EXCLUDED from weekly rows, written to data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED_boundary_days.parquet: 722,222 rows, dates 2021-07-01..2022-12-31
+wrote data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet: frozen prefix 14,099,317 rows (unchanged) + 12,358,947 extension rows over 77 complete weeks (2021-07-05..2022-12-19)

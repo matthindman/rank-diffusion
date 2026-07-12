@@ -1,0 +1,3 @@
+  [1/6] schema equality + frozen-prefix equality: OK
+  [2/6] complete-week window: OK (77 weeks, period 136 = 2021-07-05)
+INTAKE FAIL: negative values in extended weekly column 'comment_karma'

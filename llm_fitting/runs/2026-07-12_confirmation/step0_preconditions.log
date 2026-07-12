@@ -1,0 +1,33 @@
+== STEP 0 PRECONDITIONS — 2026-07-12T13:49:17Z ==
+pwd: /Users/hindman/Documents/github/rank-diffusion
+interpreter: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 / Python 3.11.6
+-- pytest tests/ -q --
+........................................................................ [ 65%]
+......................................                                   [100%]
+110 passed in 6.20s
+-- mounts --
+/Volumes/My Passport for Mac
+data/ssd/derived
+-- platform entry --
+127:    "reddit_comments_ext": dict(
+128-        path="data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet",
+129-        id_col="endpoint_id", ts_col="date", metric_col="metric_value",
+130-        max_rank=None,
+131-        daily_path="data/ssd/derived/reddit_comments_2018-12_2022-12_daily.parquet",
+132-        day_guard=False),
+133-}
+-- pinned hashes --
+f0b463cab014855d72fd238a2b57a073f06cbe16eb65ff9287eb792d5c7f5562  llm_fitting/e2_members_t136.parquet
+f78a6ee27434dc0a1ad2501cdc837b69ae86852c09b1b601e2954ce23dc8c298  llm_fitting/e1_reference.json
+b00ee41f7d2813e744b1dc9663a9a8df5c6d7c3dc07d24bbbb2cbf7fb8070041  data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet
+19ea5eeb846cd775d28e9b8d027a7641b315c57a374f0ed5d37a306f2a6e2323  data/ssd/derived/reddit_comments_2018-12_2021-06_daily.parquet
+-- manifest (2026-07-11_nnls_audit) --
+5f37e3ab07e28c8257e666dae32ceaa4292f2c2c39ae6cffa5c93578ce59c75e  ig_hm_totals_ts.parquet
+130726eb194597fcbba67ca3eced29a5f8e5e20d34dcc8e3ae186e455ac75aac  ig_trainsafe_members.parquet
+fca964861a67ab592681e1dc9a115f74c45a0fee49208d23f5befcef8295fafa  ig_hm_totals.parquet
+f683ac6a03b916cdbbb85d02efd8a4c2b92ab9a446400f0f231c47140ae8f243  ig_hm_totals_k200.parquet
+f0b463cab014855d72fd238a2b57a073f06cbe16eb65ff9287eb792d5c7f5562  e2_members_t136.parquet
+f78a6ee27434dc0a1ad2501cdc837b69ae86852c09b1b601e2954ce23dc8c298  e1_reference.json
+b00ee41f7d2813e744b1dc9663a9a8df5c6d7c3dc07d24bbbb2cbf7fb8070041  reddit_comments_2018-12_2021-06_weekly.parquet
+19ea5eeb846cd775d28e9b8d027a7641b315c57a374f0ed5d37a306f2a6e2323  reddit_comments_2018-12_2021-06_daily.parquet
+== STEP 0 RESULT: ALL PRECONDITIONS HOLD ==

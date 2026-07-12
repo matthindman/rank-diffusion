@@ -96,6 +96,21 @@ E3. **Descriptive card + bands** on the extended panel with the §2s comments
   those commits; no analysis has read an extension observation) **and gives
   the GO for E1–E5**, to be executed once, exactly as registered under
   A1–A9, by the §2z-n go-time sequence.
+- 2026-07-12: **EXECUTION ATTEMPT — HALTED AT THE INTAKE GATE; E1–E5 NOT
+  RUN.** Preconditions all held; the A7 assembler produced the registered
+  weekly exactly (frozen prefix unchanged + 77 complete weeks
+  2021-07-05..2022-12-19); `check_extension_panel.py` then printed
+  `INTAKE FAIL: negative values in extended weekly column 'comment_karma'`
+  after [1/6] and [2/6] passed. Measured on FROZEN panels only: the
+  registered T=136 weekly baseline itself contains 10,634 negative
+  `comment_karma` cells (frozen daily: 89,477) — the hygiene check runs
+  over the whole panel including the byte-equal prefix, so the FAIL is
+  over-determined by the frozen baseline and no assembly could pass as the
+  rule is scoped in code. Reported as a DATA/GATE-SCOPE problem per §2; no
+  workaround attempted; no extension observation read by any analysis.
+  Archive: `llm_fitting/runs/2026-07-12_confirmation/` (logs +
+  MANIFEST.sha256); full record MODEL_STATUS §2z-o. Owner adjudication of
+  the negative-metrics rule's scope required before any re-attempt.
 
 ## 6. AMENDMENT A1 (2026-07-05, same day, BEFORE any data processing): κ_i secondary diagnostic + surrogate-adjusted residual reference
 

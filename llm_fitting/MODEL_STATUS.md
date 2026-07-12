@@ -2756,6 +2756,102 @@ registered weekly via `build_extension_weekly.py`; (3)
 `check_extension_panel.py` on the 6 inputs must print PASS; (4)
 E1→E2→E3→E4→E5 exactly as registered; (5) the confirmation report.
 
+## 2z-o. 2026-07-12 — CONFIRMATION BATTERY HALTED AT THE INTAKE GATE: `check_extension_panel.py` FAILS on "negative values in extended weekly column 'comment_karma'" — a failure OVER-DETERMINED by the frozen prefix itself (10,634 negative cells in the registered T=136 baseline); E1–E5 NOT run; owner adjudication required
+
+**What was executed (owner GO + timeline acknowledgment recorded in protocol
+§5, 2026-07-12; battery attempted once, exactly as registered under A1–A9,
+per the §2z-n go-time sequence; ZERO code edits this session):**
+
+- **Step 0 — preconditions: ALL HELD.** Suite 110 green from repo root;
+  T9 (`data/ssd/derived`) and WD ("/Volumes/My Passport for Mac") mounted;
+  `PLATFORMS["reddit_comments_ext"]` present with `daily_path` set to the
+  extension daily; all four pinned hashes verified against the prompt AND
+  `runs/2026-07-11_nnls_audit/MANIFEST.sha256` (e2_members f0b463ca…7562,
+  e1_reference f78a6ee2…c298, frozen weekly b00ee41f…0041, frozen daily
+  19ea5eeb…2323). Interpreter = the registered 3.11 framework python.
+  Log: `runs/2026-07-12_confirmation/step0_preconditions.log`.
+- **Step 1 — registered weekly assembled (A7 builder, non-destructive):
+  output EXACTLY as registered.** Frozen prefix 14,099,317 rows unchanged +
+  12,358,947 extension rows over 77 complete weeks (2021-07-05..2022-12-19);
+  boundary days (2021-07-01..2022-12-31, 722,222 rows) written to the side
+  parquet, never folded. Output sha256 recorded:
+  REGISTERED weekly `93942240d766e5fa…380d`, boundary days
+  `296d34ee0395c3d9…2046`. Log: `step1_build_weekly.log`.
+- **Step 2 — the 6-input intake gate: FAIL.** Verbatim output
+  (`step2_intake_gate.log`):
+  ```
+    [1/6] schema equality + frozen-prefix equality: OK
+    [2/6] complete-week window: OK (77 weeks, period 136 = 2021-07-05)
+  INTAKE FAIL: negative values in extended weekly column 'comment_karma'
+  ```
+  Per A6.1/A7/A8/A9 and the execution instructions, a non-PASS stops
+  EVERYTHING: **E1–E5 were NOT run.** No workaround was attempted; no
+  criterion, threshold, or gate line was touched.
+
+**Diagnosis by measurement — on FROZEN, already-registered panels ONLY (no
+extension observation was read by this session; the only extension contact
+was the gate's own internal reads):**
+
+- Frozen T=136 weekly (`b00ee41f…0041`): `comment_karma` has **10,634
+  negative cells** (min −29,291) out of 14,099,317 rows. Frozen daily
+  (`19ea5eeb…2323`): **89,477 negative** `comment_karma` cells (min −30,761)
+  out of 47,307,511. `metric_value`, `submission_karma`, and both count
+  columns: zero negatives in both panels.
+  Log: `step2b_frozen_negative_context.log`.
+- The gate's `_basic_hygiene` applies "no negatives" to EVERY numeric column
+  over the ENTIRE extended weekly — including the frozen prefix, which check
+  [1/6] had just verified byte-equal to the registered baseline. **The FAIL
+  is therefore over-determined by the frozen prefix alone: no assembly of
+  the extension, however perfect, could pass the gate as implemented.**
+  Whether extension rows ALSO contain negative `comment_karma` was NOT
+  examined (that would be extension analysis beyond the halted battery).
+- Interpretation (measured, then plainly stated): negative comment karma is
+  a real platform outcome (net-downvoted comments) and is present throughout
+  the program's own frozen baseline — the registered "zero negative metrics"
+  stop rule, as scoped in code to all numeric columns of the whole panel, is
+  inconsistent with the registered frozen inputs themselves. This is the
+  INVERSE of the false-PASS defect class that rounds 6–8 (A7–A9) hunted: a
+  fail-closed check whose SCOPE was locked by synthetic adversarial tests
+  (which contained no negatives) but was never dry-run end-to-end against
+  the real frozen panel. The fail-closed discipline worked mechanically; the
+  rule's scope was wrong for this platform's metric.
+
+**Disposition (protocol §2: a data-gate failure is a DATA problem, never a
+modeling degree of freedom):** battery halted at step 2; partial record
+archived and committed. The negative-metrics stop rule is a frozen,
+registered intake criterion — changing its scope (e.g., restricting the
+no-negatives rule to `metric_value` and count columns, where the frozen
+baseline is clean) is an OWNER decision. Note the timeline consequence for
+any such change: the gate has now run over the assembled extended panel, so
+a scope correction cannot be registered as a clean pre-data amendment; it
+would need the same disclosed-construction + explicit-owner-acknowledgment
+treatment as A6–A9 (protocol §5, 2026-07-12), with the mitigating facts
+that (i) the failure is provable from the frozen prefix alone and (ii) no
+extension observation has been read by any ANALYSIS. Whether and how to
+proceed is not this session's call.
+
+**Archive:** `llm_fitting/runs/2026-07-12_confirmation/` — step0–step2b
+logs + `MANIFEST.sha256` (all 9 inputs incl. the REGISTERED weekly and
+boundary-days parquets, all logs). Suites at session end: `tests/` 110
+green; `Python/rankdiff/tests` 8 green; legacy guard untouched (no code
+edits).
+
+**Reproduction:**
+```
+python3 -m pytest tests/ -q                                    # 110 passed
+python3 -u llm_fitting/build_extension_weekly.py \
+    data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet \
+    data/ssd/derived/reddit_comments_2018-12_2022-12_daily.parquet \
+    data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet
+python3 -u llm_fitting/check_extension_panel.py \
+    data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet \
+    data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet \
+    data/ssd/derived/reddit_comments_2018-12_2022-12_daily.parquet \
+    data/ssd/derived/reddit_comments_2018-12_2021-06_daily.parquet \
+    data/ssd/manifest/reddit_comments_2018-12_2022-12_coverage.csv \
+    data/ssd/logs/reddit_monthly_processing_log.csv               # INTAKE FAIL
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
