@@ -3101,6 +3101,11 @@ a refit.
   `caffeinate` (machine idle-sleep suspected; severe memory pressure
   observed). Nothing outcome-contingent: no killed run produced a
   scoreable number.
+  _[CORRECTION same-day (external review caught the arithmetic): FIVE
+  killed runs across THREE commands — E3a ×1, E4 ×1, E5 ×3 (killed at 0,
+  9, and 12 of 20 seeds; completed on attempt 4). The gloss for the SI:
+  one complete scored execution per evaluation; every completed result
+  came from a fresh identical command; no partial output was reused.]_
 - The A4 both-solves E1 readout is unproducible by frozen tooling (gap
   reported above).
 - Suites at battery end: `tests/` 119 green, `Python/rankdiff/tests` 8
