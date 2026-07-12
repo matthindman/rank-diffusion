@@ -443,3 +443,38 @@ python llm_fitting/e5_headlaw.py reddit_comments_ext --top-k 12500
 All corrections are covered by synthetic tests (including the round-6
 reproduced false-pass cases: missing frozen column, missing extension day,
 omitted daily panel — each now FAILS).
+
+## 13. AMENDMENT A8 (2026-07-12, BEFORE any data processing): intake enforcement completed + E5 SD convention frozen (round-7 review; no scientific threshold or gate changed)
+
+No extension data has been read. Round 7 reproduced three remaining
+false-PASS paths in the A7 intake gate; all are closed, each locked by an
+adversarial test:
+
+- **Exact (entity, week) index-set equality** in the weekly = Σ daily
+  check, both directions (the A7 reindex silently DROPPED daily-only
+  cells); every frozen numeric metric must be PRESENT in the daily panel
+  (no silent intersection).
+- **Day guard with frozen history**: the count series is frozen daily
+  counts + extension counts, flagged by the registered
+  `instrument_eras.flag_days` and adjudicated on extension dates only —
+  July 1–7 (which contain E1/E2's first scored week) are judged against
+  the frozen baseline, not against themselves. An aggregation-consistent
+  90%-entity collapse of July 1–7 now FAILS (it passed A7's guard).
+- **Aggregation-log validation replaces the directory glob** (a listing
+  cannot establish parse success; 19 files and zero-byte files passed):
+  the builder's coverage log is a REQUIRED input, with exactly one
+  record per month 2021-07..2022-12, status == "ok", rows > 0, bytes > 0,
+  no duplicates, no missing months. The A6.1 "18 monthly files in
+  RAW_MONTHLY_DIR" clause is superseded by this strictly stronger check.
+- **Boundary-day coverage extended through 2022-12-31** (A6 registers
+  boundary days as REPORTED data; a daily panel ending Dec 25 previously
+  passed).
+- Gate signature (5 REQUIRED inputs):
+```
+python llm_fitting/check_extension_panel.py \
+    EXT_WEEKLY FROZEN_WEEKLY EXT_DAILY FROZEN_DAILY COVERAGE_LOG
+```
+- **E5 SD convention FROZEN: POPULATION SD (ddof=0)** — the convention of
+  the registered baselines (community_metrics / np.std default); the A7
+  runner had used sample SD, which would have shifted the 2-SD trigger.
+  Locked by an exact-threshold test on a fixed vector.

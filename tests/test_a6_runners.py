@@ -29,143 +29,164 @@ def _panel(dates, ids, seed=0):
     return _weekly(rows)
 
 
+def _fixture(tmp, n_ent=20, collapse_july=False):
+    """Full synthetic intake fixture: frozen weekly+daily, extension daily
+    (via values), extended weekly BUILT BY THE ASSEMBLER, coverage log.
+    collapse_july: drop 90% of entities on July 1-7 (aggregation-consistent
+    -- the round-7 day-guard false pass)."""
+    import shutil
+    import build_extension_weekly as bew
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp.mkdir()
+    ids = [f"e{i:02d}" for i in range(n_ent)]
+    frozen_weeks = pd.date_range("2021-05-31", cep.FROZEN_LAST_WEEK, freq="7D")
+    frozen = _panel(frozen_weeks, ids, seed=1)
+    fro_p = str(tmp / "frozen_weekly.parquet")
+    frozen.to_parquet(fro_p, index=False)
+    fro_days = pd.date_range("2021-05-21", "2021-06-30", freq="D")
+    frozen_daily = _panel(fro_days, ids, seed=2)
+    frod_p = str(tmp / "frozen_daily.parquet")
+    frozen_daily.to_parquet(frod_p, index=False)
+    days = pd.date_range(cep.EXT_FIRST_DAY, cep.EXT_LAST_DAY, freq="D")
+    daily = _panel(days, ids, seed=3)
+    if collapse_july:
+        july = (daily["date"] >= "2021-07-01") & (daily["date"] <= "2021-07-07")
+        keep = daily["endpoint_id"].isin(ids[:2])           # 10% of entities
+        daily = daily[~july | keep]
+    day_p = str(tmp / "ext_daily.parquet")
+    daily.to_parquet(day_p, index=False)
+    out_p = str(tmp / "ext_weekly.parquet")
+    bew.assemble(fro_p, day_p, out_p)                       # weekly = sum(daily)
+    log = pd.DataFrame({"month": cep.MONTHS.astype(str), "status": "ok",
+                        "source_path": "x", "rows": 1000, "bytes": 5000})
+    log_p = str(tmp / "coverage.csv")
+    log.to_csv(log_p, index=False)
+    return dict(ext=out_p, fro=fro_p, day=day_p, frod=frod_p, log=log_p,
+                tmp=tmp, daily=daily, frozen=frozen)
+
+
 class TestIntakeGate(unittest.TestCase):
-    """FAIL-CLOSED intake gate (A7): the round-6 reproduced false passes —
-    missing frozen column, missing extension day, omitted daily panel —
-    must all FAIL now."""
+    """FAIL-CLOSED intake gate (A7 + A8): every reproduced false pass from
+    rounds 6 and 7 must FAIL."""
 
     def setUp(self):
-        import shutil
-        self.tmp = Path("/tmp/a6_intake_test")
-        shutil.rmtree(self.tmp, ignore_errors=True)
-        self.tmp.mkdir()
-        frozen_weeks = pd.date_range("2021-05-31", cep.FROZEN_LAST_WEEK, freq="7D")
-        ext_weeks = pd.date_range(cep.EXT_FIRST_WEEK, cep.EXT_LAST_WEEK, freq="7D")
-        self.frozen = _panel(frozen_weeks, ["a", "b", "c"], seed=1)
-        self.good = pd.concat([self.frozen,
-                               _panel(ext_weeks, ["a", "b", "c"], seed=2)],
-                              ignore_index=True)
-        self.fro_p = str(self.tmp / "frozen.parquet")
-        self.frozen.to_parquet(self.fro_p, index=False)
-        # daily panel consistent with the good weekly extension: put each
-        # week's total on its Monday, plus zero-filler on every other
-        # calendar day so coverage is complete
-        ext = self.good[self.good["date"] > pd.Timestamp(cep.FROZEN_LAST_WEEK)]
-        daily = ext.copy()
-        fill_days = pd.date_range(cep.EXT_FIRST_DAY, cep.EXT_LAST_DAY, freq="D")
-        filler = pd.DataFrame({"endpoint_id": "filler",
-                               "date": fill_days,
-                               "metric_value": 1.0})
-        wk_fill = filler.copy()
-        wk_fill["wk"] = (wk_fill["date"]
-                         - pd.to_timedelta(wk_fill["date"].dt.dayofweek, unit="D"))
-        wk_fill = wk_fill[(wk_fill["wk"] >= pd.Timestamp(cep.EXT_FIRST_WEEK))
-                          & (wk_fill["wk"] <= pd.Timestamp(cep.EXT_LAST_WEEK))]
-        wk_fill = (wk_fill.groupby(["endpoint_id", "wk"], as_index=False)
-                   ["metric_value"].sum().rename(columns={"wk": "date"}))
-        self.good = pd.concat([self.good, wk_fill], ignore_index=True)
-        self.daily = pd.concat([daily, filler], ignore_index=True)
-        self.day_p = str(self.tmp / "daily.parquet")
-        self.daily.to_parquet(self.day_p, index=False)
-        raw = self.tmp / "raw"
-        raw.mkdir()
-        for m in cep.MONTHS.astype(str):
-            (raw / f"RC_{m}.zst").touch()
-        self.raw = str(raw)
+        self.f = _fixture(Path("/tmp/a8_intake_test"))
 
-    def _write(self, df, name="ext.parquet"):
-        p = str(self.tmp / name)
+    def _rewrite(self, df, name):
+        p = str(self.f["tmp"] / name)
         df.to_parquet(p, index=False)
         return p
 
     def test_good_extension_passes(self):
-        cep.check(self._write(self.good), self.fro_p, self.day_p, self.raw)
+        cep.check(self.f["ext"], self.f["fro"], self.f["day"],
+                  self.f["frod"], self.f["log"])
 
     def test_boundary_leak_detected(self):
-        bad = self.good.copy()
-        m = bad["date"] == pd.Timestamp(cep.FROZEN_LAST_WEEK)
+        bad = pd.read_parquet(self.f["ext"])
+        m = pd.to_datetime(bad["date"]) == pd.Timestamp(cep.FROZEN_LAST_WEEK)
         bad.loc[m, "metric_value"] += 1.0    # July 1-4 folded in
         with self.assertRaises(SystemExit):
-            cep.check(self._write(bad), self.fro_p, self.day_p, self.raw)
+            cep.check(self._rewrite(bad, "bad1.parquet"), self.f["fro"],
+                      self.f["day"], self.f["frod"], self.f["log"])
 
     def test_missing_frozen_column_fails(self):
-        # round-6 false pass #1: schema must be EQUAL, not intersected
-        bad = self.good.drop(columns=["metric_value"]).assign(other=1.0)
+        bad = pd.read_parquet(self.f["ext"]).drop(columns=["metric_value"])
+        bad["other"] = 1.0
         with self.assertRaises(SystemExit):
-            cep.check(self._write(bad), self.fro_p, self.day_p, self.raw)
+            cep.check(self._rewrite(bad, "bad2.parquet"), self.f["fro"],
+                      self.f["day"], self.f["frod"], self.f["log"])
 
     def test_missing_extension_day_fails(self):
-        # round-6 false pass #2: a whole missing day must fail coverage
-        d2 = self.daily[self.daily["date"] != pd.Timestamp("2022-03-03")]
-        p2 = str(self.tmp / "daily2.parquet")
-        d2.to_parquet(p2, index=False)
+        d2 = self.f["daily"][self.f["daily"]["date"] != pd.Timestamp("2022-03-03")]
         with self.assertRaises(SystemExit):
-            cep.check(self._write(self.good), self.fro_p, p2, self.raw)
+            cep.check(self.f["ext"], self.f["fro"],
+                      self._rewrite(d2, "day2.parquet"), self.f["frod"],
+                      self.f["log"])
 
-    def test_missing_raw_month_fails(self):
-        (Path(self.raw) / "RC_2022-05.zst").unlink()
+    def test_daily_only_cell_fails(self):
+        # round-7 false pass #1: an extra daily entity/week must not be
+        # silently dropped by reindexing
+        extra = pd.DataFrame({"endpoint_id": ["ghost"] * 3,
+                              "date": pd.date_range("2022-05-02", periods=3),
+                              "metric_value": [5.0, 6.0, 7.0]})
+        d2 = pd.concat([self.f["daily"], extra], ignore_index=True)
         with self.assertRaises(SystemExit):
-            cep.check(self._write(self.good), self.fro_p, self.day_p, self.raw)
+            cep.check(self.f["ext"], self.f["fro"],
+                      self._rewrite(d2, "day3.parquet"), self.f["frod"],
+                      self.f["log"])
+
+    def test_first_week_collapse_flagged(self):
+        # round-7 false pass #2: July 1-7 must be judged against FROZEN
+        # history (aggregation-consistent collapse: weekly rebuilt from the
+        # collapsed dailies, so only the day guard can catch it)
+        f2 = _fixture(Path("/tmp/a8_intake_collapse"), collapse_july=True)
+        with self.assertRaises(SystemExit):
+            cep.check(f2["ext"], f2["fro"], f2["day"], f2["frod"], f2["log"])
+
+    def test_coverage_log_defects_fail(self):
+        # round-7 false pass #3 family: duplicate month, missing month,
+        # empty month -- a directory glob saw none of these
+        log = pd.read_csv(self.f["log"], dtype={"month": str})
+        cases = [pd.concat([log, log.tail(1)], ignore_index=True),      # dup
+                 log[log["month"] != "2022-05"],                        # missing
+                 log.assign(rows=np.where(log["month"] == "2021-09",
+                                          0, log["rows"]))]             # empty
+        for j, bad in enumerate(cases):
+            p = str(self.f["tmp"] / f"log{j}.csv")
+            bad.to_csv(p, index=False)
+            with self.assertRaises(SystemExit):
+                cep.check(self.f["ext"], self.f["fro"], self.f["day"],
+                          self.f["frod"], p)
+
+    def test_daily_ending_dec25_fails(self):
+        d2 = self.f["daily"][self.f["daily"]["date"] <= pd.Timestamp("2022-12-25")]
+        with self.assertRaises(SystemExit):
+            cep.check(self.f["ext"], self.f["fro"],
+                      self._rewrite(d2, "day4.parquet"), self.f["frod"],
+                      self.f["log"])
+
+    def test_metric_missing_from_daily_fails(self):
+        d2 = self.f["daily"].rename(columns={"metric_value": "renamed"})
+        d2["renamed"] = d2["renamed"]
+        with self.assertRaises(SystemExit):
+            cep.check(self.f["ext"], self.f["fro"],
+                      self._rewrite(d2, "day5.parquet"), self.f["frod"],
+                      self.f["log"])
 
     def test_partial_final_week_detected(self):
-        bad = pd.concat([self.good,
-                         _panel([pd.Timestamp("2022-12-26")], ["a"], seed=3)],
+        bad = pd.concat([pd.read_parquet(self.f["ext"]),
+                         _panel([pd.Timestamp("2022-12-26")], ["e00"], seed=9)],
                         ignore_index=True)
         with self.assertRaises(SystemExit):
-            cep.check(self._write(bad), self.fro_p, self.day_p, self.raw)
+            cep.check(self._rewrite(bad, "bad3.parquet"), self.f["fro"],
+                      self.f["day"], self.f["frod"], self.f["log"])
 
-    def test_duplicate_keys_detected(self):
-        bad = pd.concat([self.good, self.good.tail(1)], ignore_index=True)
+    def test_weekly_daily_value_mismatch_fails(self):
+        d2 = self.f["daily"].copy()
+        # perturb an IN-WINDOW day (boundary days like Dec 31 are correctly
+        # outside the weekly aggregation and would not -- and should not --
+        # trip this check)
+        idx = d2.index[d2["date"] == pd.Timestamp("2022-05-03")][0]
+        d2.loc[idx, "metric_value"] += 5.0
         with self.assertRaises(SystemExit):
-            cep.check(self._write(bad), self.fro_p, self.day_p, self.raw)
-
-    def test_weekly_daily_mismatch_fails(self):
-        d2 = self.daily.copy()
-        d2.loc[d2.index[-1], "metric_value"] += 5.0
-        p2 = str(self.tmp / "daily3.parquet")
-        d2.to_parquet(p2, index=False)
-        with self.assertRaises(SystemExit):
-            cep.check(self._write(self.good), self.fro_p, p2, self.raw)
+            cep.check(self.f["ext"], self.f["fro"],
+                      self._rewrite(d2, "day6.parquet"), self.f["frod"],
+                      self.f["log"])
 
 
 class TestAssembler(unittest.TestCase):
-    def test_roundtrip_passes_gate_and_prefix_is_untouched(self):
-        import shutil
-        import build_extension_weekly as bew
-        tmp = Path("/tmp/a7_assembler_test")
-        shutil.rmtree(tmp, ignore_errors=True)
-        tmp.mkdir()
-        frozen_weeks = pd.date_range("2021-05-31", cep.FROZEN_LAST_WEEK, freq="7D")
-        frozen = _panel(frozen_weeks, ["a", "b"], seed=1)
-        fro_p = str(tmp / "frozen.parquet")
-        frozen.to_parquet(fro_p, index=False)
-        # dailies: include July 1-4 boundary days that MUST NOT be folded
-        days = pd.date_range("2021-07-01", cep.EXT_LAST_DAY, freq="D")
-        daily = _panel(days, ["a", "b"], seed=2)
-        day_p = str(tmp / "daily.parquet")
-        daily.to_parquet(day_p, index=False)
-        out_p = str(tmp / "ext.parquet")
-        bew.assemble(fro_p, day_p, out_p)
-        cep.check(out_p, fro_p, day_p, str(self._raw(tmp)))   # gate PASSes
-        out = pd.read_parquet(out_p)
-        pre = out[out["date"] <= pd.Timestamp(cep.FROZEN_LAST_WEEK)]
+    def test_prefix_untouched_and_boundary_days_reported(self):
+        f = _fixture(Path("/tmp/a8_assembler_test"))
+        out = pd.read_parquet(f["ext"])
+        frozen = f["frozen"]
+        pre = out[pd.to_datetime(out["date"]) <= pd.Timestamp(cep.FROZEN_LAST_WEEK)]
         self.assertEqual(len(pre), len(frozen))               # prefix intact
-        self.assertEqual(
-            float(pre["metric_value"].sum()),
-            float(frozen["metric_value"].sum()))              # no fold-in
-        # boundary days went to the side parquet
-        b = pd.read_parquet(out_p.replace(".parquet", "_boundary_days.parquet"))
-        self.assertEqual(set(pd.to_datetime(b["date"]).dt.date.astype(str)) &
-                         {"2021-07-01", "2021-07-04"},
-                         {"2021-07-01", "2021-07-04"})
-
-    @staticmethod
-    def _raw(tmp):
-        raw = tmp / "raw"
-        raw.mkdir(exist_ok=True)
-        for m in cep.MONTHS.astype(str):
-            (raw / f"RC_{m}.zst").touch()
-        return raw
+        self.assertEqual(float(pre["metric_value"].sum()),
+                         float(frozen["metric_value"].sum()))  # no fold-in
+        b = pd.read_parquet(f["ext"].replace(".parquet", "_boundary_days.parquet"))
+        bdates = set(pd.to_datetime(b["date"]).dt.date.astype(str))
+        for d in ("2021-07-01", "2021-07-04", "2022-12-26", "2022-12-31"):
+            self.assertIn(d, bdates)
 
 
 def _ou_panel(a_i, T, seed):
@@ -269,6 +290,16 @@ class TestE5Trigger(unittest.TestCase):
         # undershoot never fires (direction matters)
         t3 = e5.e5_trigger(0.10, np.full(20, 0.05))
         self.assertFalse(t3["fired"])
+
+    def test_sd_convention_frozen_ddof0(self):
+        # A8: POPULATION SD (ddof=0), the registered-baseline convention --
+        # exact threshold on a fixed vector
+        import e5_headlaw as e5
+        sims = np.array([0.10, 0.12, 0.14, 0.16])   # mean .13, pop SD sqrt(.0005)
+        t = e5.e5_trigger(0.05, sims)
+        self.assertAlmostEqual(t["threshold"], 2 * np.std(sims, ddof=0), places=15)
+        self.assertAlmostEqual(t["threshold"], 2 * 0.022360679774997897, places=12)
+        self.assertNotAlmostEqual(t["threshold"], 2 * np.std(sims, ddof=1), places=6)
 
     def test_seeds_frozen_at_20(self):
         import e5_headlaw as e5

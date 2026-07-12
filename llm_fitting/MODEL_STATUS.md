@@ -2641,6 +2641,42 @@ its failure modes, every criterion was dry-run against its own reference,
 every input is hash-pinned, and the intake gate cannot pass on an
 incomplete intake. **Awaiting the owner's go.**
 
+## 2z-l. 2026-07-12 — Round-7 accepted (Amendment A8): the last three intake false-PASS paths closed with adversarial tests; E5 SD convention frozen at ddof=0. The gate now fails closed under every reproduced attack
+
+Round 7 verified everything from A7 and reproduced three remaining
+false-PASS paths, all intake-side. All closed; suite **107 green** (103 +
+4 net new adversarial cases); package 8 green; no extension data read.
+
+1. **Daily-only cells** (P0): the weekly=Σdaily check reindexed daily sums
+   to the weekly index, silently discarding daily-only (entity, week)
+   cells. Now: exact index-set equality in BOTH directions before value
+   comparison, and every frozen numeric metric must exist in the daily
+   panel. Adversarial test: a ghost entity's daily rows → FAIL.
+2. **First-week guard blindness** (P0): the day guard built its trailing
+   median from extension dates alone, leaving July 1–7 — which contain
+   E1/E2's first scored week — with no baseline. Now: frozen daily counts
+   prepended, the registered `instrument_eras.flag_days` applied,
+   extension dates adjudicated. Adversarial test: an
+   aggregation-consistent 90%-entity collapse of July 1–7 (weekly rebuilt
+   from the collapsed dailies, so ONLY the guard can catch it) → FAIL.
+3. **Inventory ≠ parse success** (P0): the directory glob passed 19 files
+   and zero-byte files and could not see parse errors. Now: the builder's
+   coverage log is a required gate input — exactly one "ok" nonempty
+   record per month, no duplicates/missing. Adversarial tests: duplicate
+   month, missing month, rows=0 → each FAILS.
+4. Boundary-day coverage extended through 2022-12-31 (a daily panel ending
+   Dec 25 previously passed while A6 registers those days as reported).
+5. **E5 SD convention frozen** (P1): trigger uses POPULATION SD (ddof=0),
+   matching the registered baselines' convention (A7's sample-SD would
+   have shifted the 2-SD threshold); exact-threshold test on a fixed
+   vector locks it, and the direction/firing tests still pass.
+
+The intake fixture now builds its "good" panel THROUGH the assembler, so
+every gate test also exercises the prefix-preserving build path
+end-to-end. Amendment A8 registered (supersedes A6.1's directory-glob
+clause with the strictly stronger log check; no scientific threshold or
+gate changed). Protocol = A1–A8. **Awaiting the owner's go.**
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

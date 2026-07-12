@@ -1,32 +1,38 @@
 #!/usr/bin/env python3
-"""A6.1/A7 intake gate for the comments extension — FAIL-CLOSED.
+"""A6.1/A7/A8 intake gate for the comments extension — FAIL-CLOSED.
 
-Must print PASS before any model code touches the extension. Round-6 review
-finding (accepted): the first version failed OPEN — shared-column-only
-comparison, optional daily panel, no raw-file inventory, day guard including
-the current day. This version enforces every registered stop rule and every
-input is REQUIRED:
+Must print PASS before any model code touches the extension. Round-6 made
+the gate's inputs required; round-7 (A8) closed the remaining false-PASS
+paths: daily-only cells silently dropped by reindexing, a day guard with no
+frozen-period history for the first extension week, a directory glob that
+could not establish parse success, and boundary-day coverage stopping at
+Dec 25. Every input is REQUIRED:
 
   python llm_fitting/check_extension_panel.py \
-      EXT_WEEKLY FROZEN_WEEKLY EXT_DAILY RAW_MONTHLY_DIR
+      EXT_WEEKLY FROZEN_WEEKLY EXT_DAILY FROZEN_DAILY COVERAGE_LOG
 
-  1. SCHEMA EQUALITY: extended weekly columns == frozen weekly columns,
-     exactly. A missing (or extra) column is a FAIL, not a silent skip.
+  1. SCHEMA EQUALITY: extended weekly columns == frozen weekly columns.
   2. FROZEN-PREFIX EQUALITY: every row with date <= 2021-06-28 equal to the
-     frozen panel on every column (keys AND values) — catches the July-1..4
-     fold-in (E2 training period 135) that the date anchor cannot see.
+     frozen panel on every column — catches the July-1..4 fold-in (E2
+     training period 135) that the date anchor cannot see.
   3. COMPLETE-WEEK WINDOW: extension weekly rows exactly the complete weeks
      2021-07-05 .. 2022-12-19 (77 weeks; extended T = 213).
-  4. Weekly panel: no duplicate (entity, date) keys; no negative values in
-     any numeric column.
-  5. RAW INVENTORY: exactly the 18 monthly files RC_2021-07..RC_2022-12
-     present in RAW_MONTHLY_DIR (missing month = FAIL).
-  6. Daily panel (REQUIRED): no duplicate (entity, date) keys; no negative
-     numerics; EVERY calendar day 2021-07-01 .. 2022-12-25 present
-     (extension weeks + boundary days); weekly == sum(daily) EXACTLY for
-     EVERY shared numeric metric column on every extension (entity, week);
-     day-guard (trailing 28-day PRIOR-days median, 60% — the registered
-     instrument_eras convention) flags 0 extension days.
+  4. AGGREGATION LOG (replaces the A6 directory glob, which could not see
+     parse errors and passed 19 or zero-byte files): exactly ONE record per
+     month 2021-07..2022-12, status == "ok", rows > 0, bytes > 0, no
+     duplicate or missing months.
+  5. Daily panel (REQUIRED): every frozen numeric metric column PRESENT
+     (no silent intersection); no duplicate keys; no negatives; EVERY
+     calendar day 2021-07-01 .. 2022-12-31 present (boundary days through
+     year end included — they are registered as reported data);
+     weekly == sum(daily) for EVERY frozen metric with EXACT (entity, week)
+     INDEX-SET EQUALITY in both directions (a daily-only or weekly-only
+     cell is a FAIL, not a reindex drop).
+  6. Day guard on the extension days with FROZEN-PERIOD HISTORY: the count
+     series is frozen daily counts + extension daily counts, flagged by
+     instrument_eras.flag_days (trailing prior-days median), adjudicated on
+     extension dates only — so July 1-7 are judged against the frozen
+     baseline, not against themselves.
 
 ANY failure => nonzero exit. Failures are data problems, not modeling
 degrees of freedom (protocol §2).
@@ -39,15 +45,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from instrument_eras import flag_days  # noqa: E402
+
 FROZEN_LAST_WEEK = "2021-06-28"
 EXT_FIRST_WEEK = "2021-07-05"
 EXT_LAST_WEEK = "2022-12-19"
 EXT_N_WEEKS = 77
 EXT_FIRST_DAY = "2021-07-01"     # boundary days included in daily coverage
-EXT_LAST_DAY = "2022-12-25"      # last day of the last complete week
+EXT_LAST_DAY = "2022-12-31"      # through year end (A8: boundary days are
+                                 # registered as REPORTED data)
 MONTHS = pd.period_range("2021-07", "2022-12", freq="M")
 ID, DT = "endpoint_id", "date"
-GUARD_WINDOW, GUARD_FRAC = 28, 0.60
 
 
 def _fail(msg):
@@ -93,8 +102,30 @@ def _basic_hygiene(df, what):
             _fail(f"negative values in {what} column '{c}'")
 
 
+def _check_coverage_log(path: str) -> None:
+    log = pd.read_csv(path, dtype={"month": str})
+    for col in ("month", "status", "rows", "bytes"):
+        if col not in log.columns:
+            _fail(f"coverage log lacks required column '{col}'")
+    want = set(MONTHS.astype(str))
+    sub = log[log["month"].isin(want)]
+    dup = sub["month"].duplicated()
+    if dup.any():
+        _fail(f"coverage log has duplicate records for months "
+              f"{sorted(sub.loc[dup, 'month'].unique())}")
+    missing = sorted(want - set(sub["month"]))
+    if missing:
+        _fail(f"coverage log missing months {missing}")
+    bad = sub[(sub["status"] != "ok")
+              | (pd.to_numeric(sub["rows"], errors="coerce").fillna(0) <= 0)
+              | (pd.to_numeric(sub["bytes"], errors="coerce").fillna(0) <= 0)]
+    if len(bad):
+        _fail(f"coverage log has non-ok/empty months: "
+              f"{bad[['month', 'status', 'rows']].to_dict('records')}")
+
+
 def check(ext_weekly: str, frozen_weekly: str, ext_daily: str,
-          raw_dir: str) -> None:
+          frozen_daily: str, coverage_log: str) -> None:
     # [1] schema + frozen prefix
     verify_frozen_prefix(ext_weekly, frozen_weekly)
     print("  [1/6] schema equality + frozen-prefix equality: OK")
@@ -117,19 +148,21 @@ def check(ext_weekly: str, frozen_weekly: str, ext_daily: str,
     _basic_hygiene(ext, "extended weekly")
     print("  [3/6] weekly keys unique, all numerics non-negative: OK")
 
-    # [4] raw inventory
-    raw = Path(raw_dir)
-    missing = [f"RC_{m}" for m in MONTHS.astype(str)
-               if not any(raw.glob(f"RC_{m}*"))]
-    if missing:
-        _fail(f"raw monthly inventory incomplete: missing {missing}")
-    print(f"  [4/6] raw inventory: OK (18 monthly files present)")
+    # [4] aggregation log (parse success is only observable here)
+    _check_coverage_log(coverage_log)
+    print("  [4/6] aggregation log: 18 months, one ok nonempty record each: OK")
 
-    # [5] daily panel: hygiene, calendar coverage, all-metric aggregation
+    # [5] daily panel: required metrics, hygiene, calendar coverage,
+    #     aggregation equality with exact index-set equality
     d = pd.read_parquet(ext_daily)
     d[DT] = pd.to_datetime(d[DT])
     dd = d[(d[DT] >= pd.Timestamp(EXT_FIRST_DAY))
            & (d[DT] <= pd.Timestamp(EXT_LAST_DAY))]
+    metrics = _num_cols(ext)
+    lacking = [c for c in metrics if c not in dd.columns]
+    if lacking:
+        _fail(f"daily panel lacks frozen metric columns {lacking} "
+              f"(no silent intersection)")
     _basic_hygiene(dd, "extension daily")
     have_days = pd.DatetimeIndex(np.sort(dd[DT].unique())).normalize()
     want_days = pd.date_range(EXT_FIRST_DAY, EXT_LAST_DAY, freq="D")
@@ -137,37 +170,46 @@ def check(ext_weekly: str, frozen_weekly: str, ext_daily: str,
     if len(missing_days):
         _fail(f"{len(missing_days)} missing extension calendar days "
               f"(first: {list(missing_days.date)[:3]})")
-    metrics = [c for c in _num_cols(ext) if c in dd.columns]
-    if not metrics:
-        _fail("no shared numeric metric columns between weekly and daily panels")
     dw = dd[dd[DT] >= pd.Timestamp(EXT_FIRST_WEEK)].copy()
     dw["wk"] = dw[DT] - pd.to_timedelta(dw[DT].dt.dayofweek, unit="D")
     dw = dw[dw["wk"] <= pd.Timestamp(EXT_LAST_WEEK)]
-    ds = dw.groupby([ID, "wk"])[metrics].sum()
+    ds = dw.groupby([ID, "wk"])[metrics].sum().sort_index()
     ws = new.set_index([ID, DT])[metrics].sort_index()
     ds.index.names = ws.index.names
-    if not ds.sort_index().reindex(ws.index).fillna(np.inf).equals(
-            ws.astype(ds.dtypes.to_dict())):
-        j = ds.sort_index().reindex(ws.index)
-        bad = (j.fillna(-1) != ws.fillna(-2)).any(axis=1)
+    only_daily = ds.index.difference(ws.index)
+    only_weekly = ws.index.difference(ds.index)
+    if len(only_daily) or len(only_weekly):
+        _fail(f"(entity, week) index sets differ: {len(only_daily)} daily-only, "
+              f"{len(only_weekly)} weekly-only cells (first daily-only: "
+              f"{list(only_daily[:2])}; first weekly-only: {list(only_weekly[:2])})")
+    if not np.allclose(ds.to_numpy(dtype=float), ws.to_numpy(dtype=float),
+                       rtol=0, atol=0):
+        bad = (ds.to_numpy(dtype=float) != ws.to_numpy(dtype=float)).any(axis=1)
         _fail(f"weekly != sum(daily) on {int(bad.sum()):,} extension "
               f"(entity, week) cells across columns {metrics}")
-    print(f"  [5/6] daily hygiene + full calendar coverage + "
-          f"weekly=Σdaily on ALL metrics {metrics}: OK")
+    print(f"  [5/6] daily metrics complete + hygiene + calendar through "
+          f"{EXT_LAST_DAY} + weekly=Σdaily with exact index equality: OK")
 
-    # [6] day guard — trailing PRIOR-days median (instrument_eras convention)
-    counts = dd.groupby(dd[DT].dt.normalize())[ID].size().reindex(want_days)
-    trail = counts.rolling(GUARD_WINDOW, min_periods=7).median().shift(1)
-    flagged = counts < GUARD_FRAC * trail
-    if flagged.fillna(False).any():
-        _fail(f"day-guard flagged {int(flagged.sum())} extension days "
-              f"(census property violated)")
-    print("  [6/6] day-guard (trailing prior-days median): 0 flagged: OK")
+    # [6] day guard WITH frozen history (registered instrument_eras guard):
+    #     July 1-7 must be judged against the frozen baseline
+    fd = pd.read_parquet(frozen_daily)
+    fd[DT] = pd.to_datetime(fd[DT])
+    fro_counts = fd.groupby(fd[DT].dt.normalize())[ID].size()
+    ext_counts = dd.groupby(dd[DT].dt.normalize())[ID].size().reindex(want_days)
+    counts = pd.concat([fro_counts[~fro_counts.index.isin(ext_counts.index)],
+                        ext_counts]).sort_index()
+    flagged = flag_days(counts)
+    flagged_ext = flagged[flagged >= pd.Timestamp(EXT_FIRST_DAY)]
+    if len(flagged_ext):
+        _fail(f"day-guard flagged {len(flagged_ext)} extension days "
+              f"(first: {list(flagged_ext.date)[:3]}) -- census property violated")
+    print("  [6/6] day-guard (frozen-history trailing prior-days median): "
+          "0 flagged extension days: OK")
 
     print("PASS")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 6:
         raise SystemExit(__doc__)
-    check(*sys.argv[1:5])
+    check(*sys.argv[1:6])

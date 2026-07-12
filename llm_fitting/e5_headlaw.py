@@ -31,9 +31,13 @@ SEEDS = range(20)     # frozen (A6.5): exactly 20 seeds, 0..19
 
 
 def e5_trigger(s1_emp: float, s1_sims) -> dict:
-    """Pure registered-trigger algebra (A6.5)."""
+    """Pure registered-trigger algebra (A6.5). SD CONVENTION FROZEN (A8):
+    POPULATION SD (ddof=0) — the convention of the registered baselines
+    (community_metrics / np.std default). Round-7 review caught the runner
+    using sample SD; A7 declared the trigger unchanged, so ddof=0 is the
+    faithful reading."""
     s1_sims = np.asarray(list(s1_sims), dtype=float)
-    mu, sd = float(np.mean(s1_sims)), float(np.std(s1_sims, ddof=1))
+    mu, sd = float(np.mean(s1_sims)), float(np.std(s1_sims, ddof=0))
     fired = bool(mu - s1_emp > 2.0 * sd)
     return dict(mean_sim=mu, sd_sim=sd, emp=float(s1_emp), excess=mu - s1_emp,
                 threshold=2.0 * sd, fired=fired)
@@ -63,9 +67,10 @@ def main() -> None:
         print(f"  seed {s + 1}/20 done")
     M = min(ers.shape[1], 2000)
     e1v, e10 = cm.top_share(ers, 1), cm.top_share(ers, 10)
-    print(f"\nE5 readouts (shares within recorded top-{M}, A3; 20 seeds frozen):")
-    print(f"  S(1)  emp {e1v:.4f}   sim {np.mean(s1s):.4f} ± {np.std(s1s, ddof=1):.4f}")
-    print(f"  S(10) emp {e10:.4f}   sim {np.mean(s10s):.4f} ± {np.std(s10s, ddof=1):.4f}   [diagnostic]")
+    print(f"\nE5 readouts (shares within recorded top-{M}, A3; 20 seeds frozen; "
+          f"SDs = population/ddof=0, the registered-baseline convention):")
+    print(f"  S(1)  emp {e1v:.4f}   sim {np.mean(s1s):.4f} ± {np.std(s1s):.4f}")
+    print(f"  S(10) emp {e10:.4f}   sim {np.mean(s10s):.4f} ± {np.std(s10s):.4f}   [diagnostic]")
     print(f"  head offset 1-600 RAW           {np.mean(offr):+.4f} ± {np.std(offr):.4f}   "
           f"[diagnostic; level-contaminated on growth panels]")
     print(f"  head offset 1-600 LEVEL-ADJ     {np.mean(offa):+.4f} ± {np.std(offa):.4f}   [diagnostic]")
