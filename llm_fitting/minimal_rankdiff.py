@@ -83,16 +83,17 @@ PLATFORMS = {
     "instagram_hm": dict(path="llm_fitting/ig_hm_totals.parquet",
                          id_col="user_name", ts_col="date", metric_col="metric_value",
                          max_rank=None),
-    # 2026-07-11 train-safe source (external review: the 60k pre-cut used
-    # full-window permanent rank -- future membership leakage into the OOS
-    # train-only selection; omitted share of the train-selected 40k universe
-    # 15.3% at T0=13 .. 1.1% at T0=39).  _ts = UNION pre-cut: full-window
-    # top-60k  ∪  (train-only top-40k at every gate origin, computed on the
-    # FULL 2.31M-account panel) -- a superset of every train-only universe BY
-    # CONSTRUCTION, verified 0.0000%% omitted per origin by
-    # ig_trainsafe_check.py.  No entity a train-only rule would select is
-    # excluded by future information; the pre-cut-internal ranking
-    # approximation declared in ig_censoring_prereg Amendment 1 is unchanged.
+    # 2026-07-11 train-safe source (review rounds 2+3).  _ts = UNION pre-cut
+    # (full-window top-60k ∪ per-origin train-only top-40k from the full
+    # 2.31M-account panel; 67,524 accounts) -- verified DATA superset of
+    # every train-only universe (ig_trainsafe_check.py, 0.0000% omitted x5).
+    # CAUTION: the superset property alone is NOT leak-free -- membership
+    # re-selection within the pre-cut diverges from full-population
+    # selection (79-83% overlap; round-2 error, corrected round 3).  The
+    # leak-safe gate REQUIRES fixed exact membership:
+    #   python llm_fitting/ig_trainsafe_members.py            # builds ids
+    #   rankdiff_kalman instagram_hm_ts --oos ... \
+    #       --member-ids-file llm_fitting/ig_trainsafe_members.parquet
     "instagram_hm_ts": dict(path="llm_fitting/ig_hm_totals_ts.parquet",
                             id_col="user_name", ts_col="date", metric_col="metric_value",
                             max_rank=None),
@@ -196,7 +197,8 @@ def load_panel(cfg: dict) -> pd.DataFrame:
 
 def restrict_universe(df: pd.DataFrame, top_k: int, buffer_mult: int = 4,
                       member_window: int | None = None,
-                      member_span: tuple[int, int] | None = None) -> pd.DataFrame:
+                      member_span: tuple[int, int] | None = None,
+                      member_ids: set | None = None) -> pd.DataFrame:
     """Closed Lagrangian top-coverage universe with an observed buffer.
 
     Restrict the panel to the B = buffer_mult * top_k entities with the best
@@ -215,7 +217,25 @@ def restrict_universe(df: pd.DataFrame, top_k: int, buffer_mult: int = 4,
     pitfall).  Diagnostics should score ranks <= top_k only; the buffer is a
     sponge layer that absorbs boundary flux (empirically p99 of drop-landings
     and entrant origins is ~4*K, hence buffer_mult=4).
+
+    member_ids (2026-07-11, review round 3): FIXED membership -- skip the
+    permanent-rank selection entirely and use exactly these entity ids
+    (intersected with the panel); weekly ranks still recomputed within the
+    universe.  This is the ONLY leak-safe way to run the gate on a PRE-CUT
+    source panel: selection on a pre-cut re-ranks within the pre-cut, so
+    even a verified candidate-superset yields a DIFFERENT member set than
+    full-population train-only selection (measured on IG: only 79-83%
+    overlap).  Compute member_ids on the FULL population (train-only) and
+    pass them here.  Mutually exclusive with member_window/member_span.
     """
+    if member_ids is not None:
+        assert member_window is None and member_span is None, \
+            "member_ids is exclusive with member_window/member_span"
+        members = set(member_ids) & set(df["entity_id"].unique())
+        out = _rank_within(df[df["entity_id"].isin(members)].copy())
+        out.attrs["score_k"] = int(top_k)
+        out.attrs["universe_B"] = len(members)
+        return out
     B = int(buffer_mult * top_k)
     if member_span is not None:
         assert member_window is None, "member_span and member_window are exclusive"

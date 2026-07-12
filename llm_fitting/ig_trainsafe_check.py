@@ -5,12 +5,18 @@ leakage into the OOS gate's train-only membership; omitted share of the
 train-selected 40k universe was 15.3% (T0=13) .. 1.1% (T0=39)).
 
 For each gate origin T0, compute the TRAIN-ONLY (weeks < T0) absence-
-penalized permanent-rank top-(K+B... = buffer B = 4K = 40k) selection from
-the FULL account panel, and report the share NOT contained in a given
-pre-cut.  A pre-cut with omitted share 0.0000 at every origin is a VERIFIED
-SUPERSET of every train-only universe: the gate's per-split
-restrict_universe(member_window=T0) then selects identically from the
-pre-cut and from the full panel -- train-safe by construction.
+penalized permanent-rank top-40k selection from the FULL account panel, and
+report the share NOT contained in a given pre-cut.
+
+SCOPE CORRECTION (2026-07-11 review round 3): a 0.0000% omitted share
+verifies CANDIDATE INCLUSION (data availability) ONLY.  It does NOT imply
+the gate selects identically from the pre-cut -- restrict_universe re-ranks
+within the loaded panel, so pre-cut-internal selection diverges from
+full-population selection (measured: 79-83% overlap).  The original
+docstring claimed equivalence; that step was invalid.  Leak-safe gates on a
+pre-cut require EXACT fixed membership: ig_trainsafe_members.py +
+rankdiff_kalman --member-ids-file.  This check remains the data-availability
+precondition for that path.
 
 Usage:
   python llm_fitting/ig_trainsafe_check.py llm_fitting/ig_hm_totals_k200.parquet

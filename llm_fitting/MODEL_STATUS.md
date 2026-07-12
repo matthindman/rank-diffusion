@@ -1960,7 +1960,7 @@ PLATFORMS dict entries only; defaults byte-identical; suite 64 green.
 | panel / spec | card | churn err | OOS rel err vs persistence | cov | scale |
 |---|---|---|---|---|---|
 | instagram_hm, card stack (20 reps) | **9/15** | 0.052 | — | — | — |
-| instagram_hm, movement stack (5 splits) | — | — | **0.841 ± 0.536 vs 0.908 ± 0.637** (beats 2/5, AT PAR) _[SUPERSEDED 2026-07-11 by §2z-e(5): the 60k pre-cut leaked future membership; leak-free gate = 0.671 ± 0.417 vs 0.652 ± 0.436, cov 60%, same at-par verdict]_ | 80% | **1.00×5** |
+| instagram_hm, movement stack (5 splits) | — | — | **0.841 ± 0.536 vs 0.908 ± 0.637** (beats 2/5, AT PAR) _[SUPERSEDED 2026-07-11 by §2z-f: the 60k pre-cut leaked future membership; the citable gate is the EXACT-membership one — 0.317 ± 0.123 vs 0.593 ± 0.309, cov 40%, scale 1.0×5. §2z-e(5)'s intermediate 0.671 was NOT leak-free and is also superseded.]_ | 80% | **1.00×5** |
 | instagram_pp, card stack (5 reps) | 7/15 | 0.032 | — | — | — |
 
 - **No pathology on totals.** dRank1/4/13 sim 17.7/21.3/27.7 vs emp 19/24/30
@@ -2235,6 +2235,11 @@ transports: **at par with the historical-mobility baseline with zero
 calibration freedom, now leak-free**. IG stays breadth-supporting,
 non-primary; §2z-d's gate numbers are SUPERSEDED for citation by these
 (leak-free) ones.
+_[SUPERSEDED 2026-07-11 same-day by §2z-f: the equivalence step was INVALID
+— candidate inclusion ≠ selection equivalence (restrict_universe re-ranks
+within the pre-cut; measured overlap with full-population train-only
+membership only 79–83%). The 0.671 gate is NOT leak-free and must not be
+cited; the exact fixed-membership gate in §2z-f replaces it.]_
 
 Reproduction:
 ```
@@ -2253,6 +2258,82 @@ python llm_fitting/rankdiff_kalman.py instagram_hm_ts --oos --top-k 10000 \
     --temperament --min-knot-entities 8 --md-lags 6 --t-tails \
     --conditional state --dist-scores        # leak-free IG gate
 # full logs: llm_fitting/runs/2026-07-11_nnls_audit/
+```
+
+## 2z-f. 2026-07-11 — Review round 3: the §2z-e(5) "leak-free" claim was WRONG and is corrected — exact per-origin fixed membership implemented; the citable IG gate is 0.317 ± 0.123 vs 0.593 ± 0.309 (above baseline 4/5, at par on proper scores); NNLS convention decision framed for the owner (WD now mounted — decide BEFORE E1–E5)
+
+**The error (reviewer's finding, verified and reproduced).** §2z-e(5)
+claimed the union pre-cut made the gate leak-free "by construction" because
+it contained every full-population train-only candidate. That step was
+INVALID: candidate inclusion ≠ selection equivalence. `restrict_universe`
+re-ranks within the loaded panel, so absence floors (N_t+1 of 67.5k vs
+~1M+) and weekly compressions differ, and membership selection INSIDE the
+pre-cut diverges from full-population train-only selection. Measured
+overlap (reviewer: 78.6–82.7%; independently reproduced this session with
+the exact rule: **81.8 / 80.1 / 79.0 / 78.5 / 78.6% at T0=13..39**) — so
+~18–21% of each modeled universe differed and the union's full-window
+component let future information shape the re-ranked selection. The 0.671
+gate is WITHDRAWN (inline notes at §2z-d and §2z-e(5)).
+
+**The exact fix (the reviewer's recommendation, implemented).**
+- `restrict_universe(member_ids=...)`: FIXED membership — selection skipped
+  entirely, weekly re-ranking only (4 unit tests; suite 77).
+- `ig_trainsafe_members.py`: computes each origin's full-population
+  train-only top-40k under the program's EXACT rule (replicates
+  `restrict_universe`'s selection block verbatim: metric-desc/entity-id
+  weekly tiebreak, absence floor N_t+1, mergesort id tiebreak) and writes
+  `ig_trainsafe_members.parquet` (T0 × 40k ids). It also SELF-HEALS the
+  union data panel: the round-2 union was built with the checker's
+  tie-breaking, so 5 tie-boundary ids were missing; appended, panel now
+  67,529 accounts. The round-2 containment check is re-scoped to what it
+  actually proves (data availability precondition), with the invalid step
+  documented in its docstring.
+- `rankdiff_kalman --member-ids-file`: consumes the fixed ids per origin.
+
+**The citable IG gate (exact train-only membership, registered movement
+spec, `runs/2026-07-11_nnls_audit/gate_ig_exact_members.log`):**
+
+| | rel err | persistence (historical-mobility) | cov | scale | CRPS skill |
+|---|---|---|---|---|---|
+| exact membership | **0.317 ± 0.123** | 0.593 ± 0.309 | 40% | **1.00 ×5** | ≈ 0 (−0.00) |
+
+Above the baseline on 4/5 splits (0.354<0.407, 0.282<0.598, 0.152<0.785,
+0.525<1.038; loses T0=13) with zero calibration freedom; PIT coverage
+0.14–0.16 / 0.46–0.53 / 0.85–0.88 vs nominal .10/.50/.90. The baseline
+itself degrades sharply at later origins on the true train-only universe
+(0.785, 1.038) — its train-window movement does not transport there, while
+the model's does. CLAIM DISCIPLINE: IG remains breadth-supporting,
+non-primary; the language is "at-or-above the historical-mobility baseline
+on the pooled moments, at par on proper scores" — NOT "beats" as a
+headline (CRPS ≈ 0, coverage 40%, and IG gate numbers have proven
+universe-sensitive: 0.841 → 0.671 → 0.317 across the three universes).
+
+**NNLS adoption (reviewer round 3, seconded): framed for the OWNER, with
+the reviewer's recommendation on the table.** Their position: exact NNLS is
+not a "convention" but the correct optimizer for the stated constrained MD
+objective; re-freeze the scientific estimator under NNLS, keep clipped OLS
+solely as the legacy reproduction/sensitivity arm, and treat the NNLS
+results as current truth (FB spec-B cond 0.123 ± 0.033 strong; comments
+0.171 at par; subs 0.164 at par — NOT robustly better; FB card 14/15 with
+the Pers4 knife-edge). Nuance adopted into claim language NOW: under NNLS
+the FB calibrated scale is 1.0 on **4/5** splits (0.50 at T0=65) — the
+"zero calibration freedom on 5/5" sentence is legacy-convention-specific;
+say "no calibration freedom used on 4–5 of 5 splits across solver
+conventions". Re-freezing is an owner decision (defaults, frozen specs,
+protocol) — REQUIRED, either way, before extension processing.
+
+**Sequencing note: the WD drive is now MOUNTED (per the reviewer's session).
+No extension data has been read by this session. Order: (1) owner decides
+the NNLS convention (re-freeze + re-record, or legacy-primary + NNLS SI);
+(2) any protocol amendment is committed; (3) E1–E5 runs.**
+
+Reproduction:
+```
+python llm_fitting/ig_trainsafe_members.py     # exact per-origin ids + panel self-heal
+python llm_fitting/rankdiff_kalman.py instagram_hm_ts --oos --top-k 10000 \
+    --temperament --min-knot-entities 8 --md-lags 6 --t-tails \
+    --conditional state --dist-scores \
+    --member-ids-file llm_fitting/ig_trainsafe_members.parquet
 ```
 
 ## 3. The three corrected estimation pitfalls (do not regress)

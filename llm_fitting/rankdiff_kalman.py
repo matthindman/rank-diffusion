@@ -766,7 +766,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
                  md_vr=False, two_scale=False, mix_hetero=False, mix_b_fix=None,
                  md_vr_long=False, dist_scores=False, nnls=False,
-                 cond_home="state"):
+                 cond_home="state", member_ids_file=None):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -805,10 +805,32 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         daily = sb.load_daily(set(df_full["entity_id"].unique()), path=daily_path,
                               day_guard=cfg.get("day_guard", False))
 
+    mids = None
+    if member_ids_file is not None:
+        # EXACT full-population train-only membership per origin (review
+        # round 3): fixed ids computed on the full panel by
+        # ig_trainsafe_members.py-style builders; restrict_universe then only
+        # re-ranks within the fixed set.  Required for PRE-CUT source panels,
+        # where membership re-selection is not equivalent to full-population
+        # selection even when the pre-cut is a verified candidate superset.
+        mtab = pd.read_parquet(member_ids_file)
+        mids = {int(t): set(g["entity_id"].astype(str))
+                for t, g in mtab.groupby("T0")}
+        missing = [t for t in origins if t not in mids]
+        if missing:
+            raise SystemExit(f"--member-ids-file lacks origins {missing} "
+                             f"(has {sorted(mids)})")
+        print(f"  FIXED membership from {member_ids_file} "
+              f"({ {t: len(v) for t, v in sorted(mids.items())} })")
+
     rows = []
     for T0 in origins:
-        df = (mrd.restrict_universe(df_full, top_k, buffer_mult=buffer_mult,
-                                    member_window=T0) if top_k else df_full)
+        if mids is not None:
+            df = mrd.restrict_universe(df_full, top_k, buffer_mult=buffer_mult,
+                                       member_ids=mids[T0])
+        else:
+            df = (mrd.restrict_universe(df_full, top_k, buffer_mult=buffer_mult,
+                                        member_window=T0) if top_k else df_full)
         df_tr = df[df["period"] < T0].copy()
         df_te = df[(df["period"] >= T0) & (df["period"] < T0 + test_len)].copy()
         df_te["period"] -= T0
@@ -1022,6 +1044,10 @@ if __name__ == "__main__":
     ap.add_argument("--nnls", action="store_true",
                     help="exact NNLS in the MD moment solves (legacy default = "
                          "clipped OLS; see minimal_rankdiff._solve_nonneg / 2z-e)")
+    ap.add_argument("--member-ids-file", default=None,
+                    help="parquet (T0, entity_id): EXACT per-origin train-only "
+                         "membership computed on the FULL population; required "
+                         "for leak-safe gates on pre-cut source panels (2z-f)")
     ap.add_argument("--dist-scores", action="store_true",
                     help="OOS gate: additionally report ensemble CRPS skill vs "
                          "persistence, predictive quantile coverage, and the "
@@ -1051,7 +1077,8 @@ if __name__ == "__main__":
                          two_scale=args.two_scale, mix_hetero=args.mix_hetero,
                          mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
                          dist_scores=args.dist_scores, nnls=args.nnls,
-                         cond_home=args.cond_home)
+                         cond_home=args.cond_home,
+                         member_ids_file=args.member_ids_file)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)
