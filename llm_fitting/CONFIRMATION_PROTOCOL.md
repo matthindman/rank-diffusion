@@ -132,3 +132,22 @@ E5. **Stationary head-law diagnostic (secondary; does not gate E1/E2).**
       If E5 does not confirm, the head-law excess is recorded as an
       FB-measurement-regime residual and reported as a limitation; no
       model change.
+
+## 8. AMENDMENT A3 (2026-07-11, BEFORE any data processing): E5 share-denominator clarification
+
+External review (2026-07-11) noted the S(k) statistics are computed within
+the RECORDED top-M rank-size slice (M = 2,000 at the standard settings), not
+over the whole tracked/census universe, while §7's prose could be read as
+whole-universe shares. Clarification, registered before any extension row is
+read (WD drive still unmounted at the time of this amendment):
+
+- Every S(1)/S(10) quantity in A2/E5 — the registered baselines AND the
+  extension readouts — is a share WITHIN THE RECORDED TOP-2,000, empirical
+  and simulated computed with the same denominator (`community_metrics.
+  top_share`, ranksize width M=2,000 at K=12,500/B=50,000). The E5 diagnostic
+  and its 2-seed-SD trigger are UNCHANGED (denominator-consistent both
+  sides); only the labeling is corrected.
+- Reporting rule going forward: S(k) values are always labeled "within
+  recorded top-M" with M stated; cross-platform absolute comparisons must
+  hold M fixed. (The 2026-07-11 code labels in community_metrics.py were
+  updated to print this.)

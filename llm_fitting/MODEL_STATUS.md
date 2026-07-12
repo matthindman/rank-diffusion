@@ -1,29 +1,67 @@
 # Rank-Diffusion Model — Status & Locked-In Results
 
-_Canonical record of the validated FB / Reddit results and the model as written in code._
-_Last updated: 2026-07-02 (top-coverage universe; supersedes parts of §2 — see §2b)._
+_Canonical record of the validated FB / Reddit / IG-rescue results and the model as written in code._
+_Last updated: 2026-07-11 (§1 revised to the current model + explicit conditioning
+assumption; research record through the latest §2 section). Newest §2 sections
+supersede older ones._
 
 ## 1. Unified model (one structure, platform-specific parameters)
+
+_(§1 revised 2026-07-11 — the previous §1 text described the pre-§2d structure
+[RW/AR(1) home, no temperament, integrated factor]; the §2 history preserves
+that evolution. This is the model as written in code today, per the 2026-07-11
+external-review adjudication.)_
 
 Observed log-activity of endpoint *i* at week *t*:
 
 ```
-X_it = h_it + ξ_it + ε_it
-  h_it = ρ_perm · h_i,t-1 + η_it      permanent "home" (level)   η ~ N(0, σ_perm²)
-  ξ_it = φ · ξ_i,t-1     + ν_it       transitory activity (AR1)   ν ~ N(0, σ_trans²)
-  ε_it ~ N(0, σ_obs²)                 iid measurement noise
+X_it = h_it + ξ_it (+ ξ2_it) + ε_it     — components scaled by ONE persistent
+                                          entity amplitude v_i (lognormal, spread s;
+                                          b = 1 factorization is the main law)
+  h_it : OU "home" — reversion κ(z) toward THE ENTITY'S OWN home level,
+         innovation σ_perm(z)                (κ, σ_obs MD-identified, §2d/§2i)
+  ξ_it : fast transitory AR(1) — φ, σ_trans(z); Student-t innovations (--t-tails)
+  ξ2   : optional medium AR(1) (--two-scale; D(h)-identified, long panels)
+  ε_it : measurement noise σ_obs(z) — identified in shape everywhere, in level
+         at the FB head, bounded in [centered floor, Spec-A] elsewhere (§2r)
 ```
-- **Rank** each week by the *observed* `X = h + ξ + ε`.
-- **Gabaix rebirth** at the bottom: rank-dependent exit; re-entry near the lower tail (keeps the
-  distribution stationary, reproduces bottom churn).
-- **Common factor** removed by per-period de-meaning (platform-wide moves preserve relative ranks).
-- **Rank-dependence**: `(ρ_perm, σ_perm, φ, σ_trans, σ_obs)` vary by **permanent-rank band**
-  (each entity binned by its *time-averaged* rank — Lagrangian, immune to current-rank selection bias).
-- `ρ_perm = 1` ⇒ random-walk home; `ρ_perm < 1` ⇒ persistent reverting home; `σ_perm = 0` ⇒ fixed home.
-  Empirically **fixed home ≈ slowly-drifting home over these horizons** — use the simpler fixed home;
-  evolving home is a long-horizon refinement, not required for the current windows.
+- **Rank** each week by the *observed* X; **stationary common level** applied at
+  observation (`--stat-factor`, ρ_L measured; §2j); **Gabaix rebirth** at the bottom;
+  all on a **pre-registered top-coverage universe** (top-K, buffer B = 4K,
+  absence-penalized permanent-rank membership; §2b).
+- **Rank-dependence**: parameters vary by **permanent-rank band** (Lagrangian
+  knots, sparse head knots pooled — immune to current-rank selection bias).
 
-This is one generative law. FB and Reddit differ in **parameters and measurement regime, not theory**.
+**EXPLICIT CONDITIONING ASSUMPTION (2026-07-11, review adjudication).** The
+model is **entity-home OU with rank-dependent variances**, not reversion to a
+rank-conditional level: each entity has a persistent home, and the
+cross-section of homes is the MEASURED stationary ladder (simulators seed
+homes from the period-0 ladder `w0`; the estimated `T_curve` is a diagnostic,
+read by no simulator). Ladder stationarity is the universal stylized fact of
+these systems (Zipf/Gabaix) and is taken as given — the ONE taken-as-given
+input; everything else is measured. Goal-1 claims are therefore
+**conditional reproduction + MAINTENANCE of the ladder** (the sim can still
+drift or over-concentrate — the stationary-head-law residual, §2z-a/§2z-b, is
+exactly such a measured failure, so the maintenance test has teeth). Ladder
+GENESIS is out of scope (Gabaix explains it); the contribution is the
+identified dynamics around it.
+
+**Movement-gate glossary (binding language, 2026-07-11):** the OOS gate is a
+**pooled-moment movement gate** (dRank medians at h=1/4/13, RACF1, coll1/5/20)
+against a **train-window historical-mobility baseline** ("persistence" = the
+train movement distribution asserted for the test window, not a no-change
+forecast); displacement is **survivor-conditional** (both endpoints observed —
+exits are tested separately by the boundary-flux rows); "bootstrap-CI
+coverage" = the model median inside the empirical median's 95% sampling band
+(NOT predictive coverage — PIT/CRPS via `--dist-scores` are the calibration
+statistics); p90/Wasserstein are descriptive. Full-distribution and
+identity-specific movement claims are NOT made. Parsimony language:
+**parsimonious latent architecture with flexible nonparametric rank profiles**
+(~500 moment-estimated band values across ~55 knots; never "a simple model"
+without the qualification).
+
+This is one generative law. Platforms differ in **parameters and measurement
+regime, not theory**.
 
 ## 2. Locked-in results
 
@@ -1922,7 +1960,7 @@ PLATFORMS dict entries only; defaults byte-identical; suite 64 green.
 | panel / spec | card | churn err | OOS rel err vs persistence | cov | scale |
 |---|---|---|---|---|---|
 | instagram_hm, card stack (20 reps) | **9/15** | 0.052 | — | — | — |
-| instagram_hm, movement stack (5 splits) | — | — | **0.841 ± 0.536 vs 0.908 ± 0.637** (beats 2/5, AT PAR) | 80% | **1.00×5** |
+| instagram_hm, movement stack (5 splits) | — | — | **0.841 ± 0.536 vs 0.908 ± 0.637** (beats 2/5, AT PAR) _[SUPERSEDED 2026-07-11 by §2z-e(5): the 60k pre-cut leaked future membership; leak-free gate = 0.671 ± 0.417 vs 0.652 ± 0.436, cov 60%, same at-par verdict]_ | 80% | **1.00×5** |
 | instagram_pp, card stack (5 reps) | 7/15 | 0.032 | — | — | — |
 
 - **No pathology on totals.** dRank1/4/13 sim 17.7/21.3/27.7 vs emp 19/24/30
@@ -2092,6 +2130,129 @@ python llm_fitting/community_metrics.py instagram_hm --top-k 10000 --temperament
 python llm_fitting/rankdiff_kalman.py instagram_hm --oos --top-k 10000 --temperament \
     --min-knot-entities 8 --md-lags 6 --t-tails --conditional state --dist-scores
 python -m pytest tests/test_ig_hm_panel.py -q
+```
+
+## 2z-e. 2026-07-11 — External review round 2 implemented: NNLS estimator audited (defaults unchanged; head σ_obs is a solver-convention artifact — Spec-B pinning confirmed as the resolution), conditional anchor adjudicated (filtered-state anchor KEPT), entity-home language made binding, S(k) labels fixed (A3), IG re-run LEAK-FREE (at-par verdict transports)
+
+Implements the 2026-07-11 external review (four findings, all verified
+against code before action). Runs archived with manifests in
+`llm_fitting/runs/2026-07-11_nnls_audit/` (PREREG.md written before any
+--nnls run). Suite 73 tests green (66 + 5 NNLS + 2 cond-home); legacy guard
+14/15 / churn 0.013 EXACT; package suite 8 green.
+
+**(1) NNLS audit (review finding 2 — the MD solves were clipped OLS, not
+NNLS; the clipped SSE also drove the (a, φ) grid choice).** `--nnls` added
+(exact Lawson–Hanson via `_solve_nonneg`; opt-in on both CLIs; defaults
+byte-identical; 5 unit tests incl. an NNLS-strictly-better construction).
+Controlled §2s-matrix rerun, legacy vs NNLS under identical code/seeds
+(every legacy arm reproduced its recorded number exactly):
+
+| target | legacy (reproduced) | NNLS | Δ verdict |
+|---|---|---|---|
+| FB Era A card (full stack) | **15/15, churn 0.018** | 14/15, churn 0.029 (sole flip: Pers4 +5.2 vs tol 5 — the §2k knife-edge, period-0-anchored row) | within P3 band |
+| subs card (2d/2e) | 14/15, 0.074 | 14/15, 0.052 | unchanged |
+| comments card (LONG) | 12/15, 0.037 | 12/15, 0.044 | unchanged |
+| FB gate spec-B + cond (paper-primary) | **0.118 ± 0.038, cov 60%** | **0.123 ± 0.033, cov 60%**, scale 1.0 on 4/5 | **robust (P2 PASS)** |
+| subs gate cond | 0.118 ± 0.061, cov 100% | 0.164 ± 0.053, cov 80% (+0.75 SD; at par w/ 0.168) | within P4 band; **edge softens** |
+| comments gate cond | 0.167 ± 0.068, cov 100% (current-code baseline; §2l era 0.159 predates MOM_FLOOR) | 0.171 ± 0.046, cov 60% | unchanged (at par both) |
+
+Pre-registered predictions: P2/P3/P4 **PASS**; P1 **PARTIAL** — interior
+knots moved as predicted BUT the FB and comments head σ_obs endpoints
+collapsed to exactly 0.000 (legacy 0.058/0.054), with FB head φ 0.30→0.20.
+**The sharpened conclusion (the audit's real yield): the clip was an
+ACCIDENTAL REGULARIZER keeping the unpinned head off the φ→0/σ_obs=0
+degenerate corner; under the exact solve the head degeneracy is exact.
+Raw-MD head noise values are solver-convention artifacts under EITHER
+convention — only the Spec-B-pinned head is meaningful, which is the
+paper-primary movement spec already (§2s), and that gate is
+convention-robust (0.118→0.123).** Honest scoping: the subs conditional
+"beats 4/5" is convention-sensitive (NNLS: at par, 0.164 vs 0.168);
+report the committed number with the NNLS sensitivity in SI.
+**Adoption (pre-declared rule): defaults stay legacy (bit-reproducibility
+of every committed result); NNLS = SI robustness result; switching the
+documented convention is an OWNER decision required BEFORE extension
+processing** (the protocol freeze pins the estimator; if the convention
+switches, re-freeze + re-record under NNLS).
+
+**(2) Conditional anchor (review finding 4 — the conditional sim used the
+filtered end-of-train state as BOTH state and OU home; "conditioning =
+real initial state" was imprecise).** `--cond-home {state,trainmean}`
+added (trainmean = entity's train-window mean level as a separate long-run
+home; state path byte-identical, 2 unit tests). Both platforms, legacy
+solver, state baselines reproduced exactly:
+
+| gate | state (committed) | trainmean |
+|---|---|---|
+| FB spec-B + cond | **0.118 ± 0.038, cov 60%** | 0.137 ± 0.034, cov 60% |
+| subs cond | **0.118 ± 0.061, cov 100%** | 0.153 ± 0.077, cov 80% |
+
+**Verdict (pre-declared "adopt only if ≥ as good"): NOT adopted — the
+committed forecaster stays, renamed honestly as FILTERED-STATE-ANCHORED
+(binding glossary, §1).** The result is informative in itself: the filtered
+state beats the train-mean as a home anchor on both platforms — the local
+anchor carries real information, consistent with slowly-drifting homes /
+excess low-frequency structure (§2v).
+
+**(3) Entity-home model statement (review finding 1).** Verified: `T_curve`
+is estimated and stored but read by NO simulator; both simulators revert
+each entity to its own home (seeded from `w0`). Adjudication: own the
+assumption, don't re-architect — §1 rewritten (2026-07-11) with the
+EXPLICIT CONDITIONING ASSUMPTION (measured stationary ladder = the one
+taken-as-given input; goal-1 = conditional reproduction + maintenance;
+genesis out of scope), the movement-gate glossary (pooled-moment gate;
+historical-mobility baseline; survivor-conditional displacement;
+coverage ≠ predictive coverage), and the parsimony phrasing ("parsimonious
+latent architecture with flexible nonparametric rank profiles"). Source
+header + RankParams comments fixed (T_curve marked DIAGNOSTIC ONLY);
+skill + mirror synced; paper outline M&M/R2 blocks updated. Emergent
+stationarity REJECTED as a remedy: it would trade one defensible,
+evidence-backed assumption (persistent entity homes at the measured
+ladder — the program's own temperament/permanent-rank measurements) for
+real dynamical complexity, to derive something Gabaix already explains.
+
+**(4) S(k) denominator labels (review, IG section).** All S(k)/D_share
+outputs relabeled "share within recorded top-M" (M stated;
+community_metrics docstrings + prints); CONFIRMATION_PROTOCOL **Amendment
+A3** registers the clarification for E5 pre-data (baselines valid — same
+denominator both sides; label-only). Cross-platform absolute S(k)
+comparisons must hold M fixed.
+
+**(5) IG train-safe universe (review: the 60k pre-cut ranked by FULL-window
+permanent rank — future-membership leakage; omitted share of the
+train-selected 40k universe 15.3% @T0=13 .. 1.1% @T0=39).** Fix: UNION
+pre-cut (`ig_hm_totals_ts.parquet` = full-window top-60k ∪ train-only
+top-40k at every gate origin, computed on the full 2.31M-account panel;
+67,524 accounts) — a superset of every train-only universe BY CONSTRUCTION,
+**verified 0.0000% omitted at all five origins** (`ig_trainsafe_check.py`;
+a keep=200k depth cut was tried first and REJECTED: 2.56% omitted at
+T0=13). Declared scope: this removes the future-information EXCLUSION; the
+pre-cut-internal ranking approximation of Amendment 1 is unchanged. New
+platform entry `instagram_hm_ts` (additive). Gate on the leak-free
+universe (registered movement spec): **0.671 ± 0.417 vs persistence
+0.652 ± 0.436, cov 60%, scale 1.0 ×5, CRPS skill ≈ 0** — absolute numbers
+differ from §2z-d (different universe ⇒ different cohort), but the VERDICT
+transports: **at par with the historical-mobility baseline with zero
+calibration freedom, now leak-free**. IG stays breadth-supporting,
+non-primary; §2z-d's gate numbers are SUPERSEDED for citation by these
+(leak-free) ones.
+
+Reproduction:
+```
+python llm_fitting/minimal_rankdiff.py facebook_a --top-k 3500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --md-vr-long --stat-factor \
+    --two-scale --mix-hetero --nnls          # NNLS arm of any card
+python llm_fitting/rankdiff_kalman.py facebook_a --oos --top-k 3500 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --spec-b --conditional state \
+    --dist-scores --nnls                     # NNLS arm of the paper-primary gate
+python llm_fitting/rankdiff_kalman.py reddit --oos --top-k 5000 --temperament \
+    --min-knot-entities 8 --md-lags 6 --t-tails --conditional state \
+    --cond-home trainmean --dist-scores      # anchor experiment
+python llm_fitting/ig_build_hm_panels.py --keep 200000 --suffix _k200 --variant totals
+python llm_fitting/ig_trainsafe_check.py llm_fitting/ig_hm_totals_ts.parquet
+python llm_fitting/rankdiff_kalman.py instagram_hm_ts --oos --top-k 10000 \
+    --temperament --min-knot-entities 8 --md-lags 6 --t-tails \
+    --conditional state --dist-scores        # leak-free IG gate
+# full logs: llm_fitting/runs/2026-07-11_nnls_audit/
 ```
 
 ## 3. The three corrected estimation pitfalls (do not regress)

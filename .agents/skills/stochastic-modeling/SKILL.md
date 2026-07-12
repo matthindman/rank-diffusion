@@ -42,11 +42,26 @@ Observed log-activity of entity *i* in week *t* (per-period common factor remove
 
 ```
 X_it = h_it + ξ_it (+ ξ2_it) + ε_it
-  h  : OU "home"  — slow reversion κ(z) to a rank-conditional level, innovation σ_perm(z)
+  h  : OU "home"  — slow reversion κ(z) toward THE ENTITY'S OWN home level, innovation σ_perm(z)
   ξ  : fast transitory AR(1) — φ, σ_trans(z); Student-t innovations (--t-tails)
   ξ2 : optional medium AR(1) (--two-scale; identified only with D(h) moments)
   ε  : measurement noise σ_obs(z) — identified/bounded from the daily-replication floor (Spec-B)
 ```
+
+**Explicit conditioning assumption + binding gate language (2026-07-11, MODEL_STATUS §1):**
+this is entity-home OU with rank-dependent variances, NOT reversion to a
+rank-conditional level — homes are seeded from the measured period-0 ladder
+(`w0`; `T_curve` is a diagnostic, read by no simulator). The stationary ladder
+is the model's ONE taken-as-given input (the universal Zipf/Gabaix stylized
+fact); goal-1 claims are "conditional reproduction + maintenance of the
+ladder", never ladder genesis. The OOS gate is a POOLED-MOMENT movement gate
+vs a TRAIN-WINDOW HISTORICAL-MOBILITY baseline; displacement is
+survivor-conditional; its "coverage" is a median-consistency check, not
+predictive coverage (PIT/CRPS via --dist-scores are the calibration
+statistics). S(k) head shares are "within recorded top-M" (M stated), never
+whole-universe. Parsimony: "parsimonious latent architecture with flexible
+nonparametric rank profiles" (~500 moment-estimated band values), never "a
+simple model" bare.
 
 multiplied by **one persistent entity amplitude** v_i (temperament): lognormal,
 spread s, scaling permanent and transitory equally to first order (**b = 1 is
@@ -82,6 +97,8 @@ instrument — nothing is tuned to a score.** Keep it that way.
 | `--conditional state\|vhat` | cohort sim from filtered end-of-train state | the lever that made subs beat persistence; does not help FB Spec-A |
 | `--oos` | rolling-origin distributional movement gate | THE acceptance criterion |
 | `--dist-scores` | CRPS skill, PIT coverage, W1 reference on the gate | descriptive add-on; frozen criterion unchanged |
+| `--nnls` | exact NNLS in the MD moment solves | legacy default = clipped OLS (committed convention); 2z-e audit — differences live in weak-ID regions; NNLS pushes the unpinned FB head to the σ_obs=0 corner |
+| `--cond-home state\|trainmean` | OU anchor in the conditional sim | 'state' (committed) = filtered-state-anchored; 'trainmean' = separate long-run home diagnostic (review finding 4) |
 
 ## 2. The epistemic contract (non-negotiable)
 
@@ -155,7 +172,7 @@ sample-size scope condition, not a spec search).
 | FB Era A (`facebook_a`, K=3500) | full: `--temperament --min-knot-entities 8 --md-lags 6 --t-tails --md-vr-long --stat-factor --two-scale --mix-hetero` → **15/15, churn 0.018** | **Spec-B (centered) + `--conditional state`** → 0.118 ± 0.038, cov 60%, beats persistence 4/5, scale 1.0×5 (zero calibration freedom). Sensitivity spec: calibrated Spec-A md6+t → 0.114 ± 0.046, beats 5/5 |
 | Reddit comments (`reddit_comments`, K=12500) | LONG: `--md-vr-long --stat-factor --two-scale --mix-hetero` (+temper/pool/md6/t) → 12/15 | md6+t+mix + `--conditional state` → 0.159 ± 0.070, cov 100%, at par |
 | Reddit subs (`reddit`, K=5000) | 2d/2e: temper+pool+md6+t → 14/15 | same + `--conditional state` → 0.118 ± 0.061, cov 100%, beats 4/5 |
-| IG rescue (`instagram_hm`, K=10000) — **breadth demonstration, NOT paper-primary**; censored instrument, estimand "of a-matching activity" (§2z-c) | temper+pool+md6+t+stat-factor → 9/15, churn 0.052 (20 reps) | md6+t + `--conditional state` → 0.841 ± 0.536 vs persistence 0.908 ± 0.637, cov 80%, at par, scale 1.0×5; CRPS skill ≈ 0 with near-nominal PIT |
+| IG rescue (`instagram_hm_ts`, K=10000) — **breadth demonstration, NOT paper-primary**; censored instrument, estimand "of a-matching activity" (§2z-c); TRAIN-SAFE union pre-cut since 2026-07-11 (§2z-e(5) — the old 60k pre-cut leaked future membership) | temper+pool+md6+t+stat-factor → 9/15, churn 0.052 (20 reps; on the original panel) | md6+t + `--conditional state` on the leak-free universe → **0.671 ± 0.417 vs persistence 0.652 ± 0.436, cov 60%, at par, scale 1.0×5**; CRPS skill ≈ 0 (supersedes the leaked 0.841 ± 0.536) |
 
 Canonical reproduction commands are at the end of each MODEL_STATUS section
 (§2l, §2p, §2z have the current ones). Interpreter used for registered runs:
