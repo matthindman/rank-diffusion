@@ -761,26 +761,60 @@ def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None,
                         mix_b_fix=mix_b_fix, md_vr_long=md_vr_long, nnls=nnls)
 
 
+def _gate_windows(T, n_splits, test_len=None, origins=None):
+    """Resolve the gate's (origins, test_len).  Defaults reproduce the
+    committed auto-derivation exactly; explicit values (A5 execution path,
+    2z-i) are validated and passed through verbatim."""
+    if test_len is None:
+        test_len = max(13, T // 4)
+    if origins is None:
+        origins = sorted(set(int(round(o)) for o in
+                             np.linspace(max(12, T // 4), T - test_len, n_splits)))
+    else:
+        origins = sorted(int(o) for o in origins)
+        bad = [o for o in origins if o < 2 or o + test_len > T]
+        if bad:
+            raise SystemExit(f"origins {bad} invalid for T={T}, "
+                             f"test_len={test_len} (need 2 <= T0 and "
+                             f"T0 + test_len <= T)")
+    return origins, int(test_len)
+
+
+def _split_panel(df, T0, test_len):
+    """TRAIN = periods < T0; TEST = periods T0 .. T0+test_len-1, re-indexed
+    to 0..test_len-1.  The single point where the gate touches time."""
+    df_tr = df[df["period"] < T0].copy()
+    df_te = df[(df["period"] >= T0) & (df["period"] < T0 + test_len)].copy()
+    df_te["period"] -= T0
+    return df_tr, df_te
+
+
 def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
                  md_vr=False, two_scale=False, mix_hetero=False, mix_b_fix=None,
                  md_vr_long=False, dist_scores=False, nnls=True,
-                 cond_home="state", member_ids_file=None):
+                 cond_home="state", member_ids_file=None,
+                 origins=None, test_len=None):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
     DISTRIBUTION (median, p90, Wasserstein, bootstrap-CI coverage). Test data is
     never used in estimation or calibration.  With top_k set, the panel is
     restricted per split to the closed top-coverage universe whose membership
-    is computed on the TRAIN window only (no membership leakage)."""
+    is computed on the TRAIN window only (no membership leakage).
+
+    origins / test_len (2026-07-11, A5 execution path): explicit single- or
+    multi-block designs -- e.g. the registered E2 confirmation block is
+    origins=[136], test_len=34 (train on periods < 136, score exactly
+    136..169) with the frozen T0=136 membership file.  None = the committed
+    auto-derivation (unchanged)."""
     from scipy.stats import wasserstein_distance
     print(f"\n{'='*72}\n{platform.upper()} — OOS movement gate (rolling-origin, distributional)\n{'='*72}")
     df_full = mrd.load_panel(mrd.PLATFORMS[platform])
     T = int(df_full["period"].max()) + 1
-    test_len = max(13, T // 4)
-    origins = sorted(set(int(round(o)) for o in
-                         np.linspace(max(12, T // 4), T - test_len, n_splits)))
+    origins, test_len = _gate_windows(T, n_splits, test_len=test_len,
+                                      origins=origins)
     uni = f"  universe=top-{top_k} (B={buffer_mult}x, train-only membership)" if top_k else ""
     opts = ((" temper" if temper else "") + (f" pool>={min_knot_n}" if min_knot_n else "")
             + (f" md{md_lags}" if md_lags else "") + (" t-tails" if t_tails else "")
@@ -813,15 +847,24 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         # re-ranks within the fixed set.  Required for PRE-CUT source panels,
         # where membership re-selection is not equivalent to full-population
         # selection even when the pre-cut is a verified candidate superset.
+        import hashlib
         mtab = pd.read_parquet(member_ids_file)
+        # pre-score validation (A5): per-origin ids must be unique, and the
+        # file hash is recorded in the log BEFORE any scoring output
+        dup = mtab.duplicated(["T0", "entity_id"]).sum()
+        if dup:
+            raise SystemExit(f"--member-ids-file has {dup} duplicate "
+                             f"(T0, entity_id) rows")
         mids = {int(t): set(g["entity_id"].astype(str))
                 for t, g in mtab.groupby("T0")}
         missing = [t for t in origins if t not in mids]
         if missing:
             raise SystemExit(f"--member-ids-file lacks origins {missing} "
                              f"(has {sorted(mids)})")
+        sha = hashlib.sha256(Path(member_ids_file).read_bytes()).hexdigest()
         print(f"  FIXED membership from {member_ids_file} "
               f"({ {t: len(v) for t, v in sorted(mids.items())} })")
+        print(f"  member-ids sha256: {sha}")
 
     rows = []
     for T0 in origins:
@@ -831,9 +874,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         else:
             df = (mrd.restrict_universe(df_full, top_k, buffer_mult=buffer_mult,
                                         member_window=T0) if top_k else df_full)
-        df_tr = df[df["period"] < T0].copy()
-        df_te = df[(df["period"] >= T0) & (df["period"] < T0 + test_len)].copy()
-        df_te["period"] -= T0
+        df_tr, df_te = _split_panel(df, T0, test_len)
         hor = [h for h in (1, 4, 13) if h < test_len]
         so_fix = None
         if spec_b:
@@ -1050,7 +1091,14 @@ if __name__ == "__main__":
     ap.add_argument("--member-ids-file", default=None,
                     help="parquet (T0, entity_id): EXACT per-origin train-only "
                          "membership computed on the FULL population; required "
-                         "for leak-safe gates on pre-cut source panels (2z-f)")
+                         "for leak-safe gates on pre-cut source panels (2z-f) "
+                         "and for the A5 frozen E2 membership (2z-i)")
+    ap.add_argument("--origins", type=int, nargs="+", default=None,
+                    help="explicit train-end origins (A5/E2 single block: "
+                         "--origins 136); default = committed auto-derivation")
+    ap.add_argument("--test-len", type=int, default=None,
+                    help="explicit held-out window length (E2: --test-len 34); "
+                         "default = max(13, T//4)")
     ap.add_argument("--dist-scores", action="store_true",
                     help="OOS gate: additionally report ensemble CRPS skill vs "
                          "persistence, predictive quantile coverage, and the "
@@ -1082,7 +1130,8 @@ if __name__ == "__main__":
                          dist_scores=args.dist_scores,
                          nnls=not args.legacy_clip,
                          cond_home=args.cond_home,
-                         member_ids_file=args.member_ids_file)
+                         member_ids_file=args.member_ids_file,
+                         origins=args.origins, test_len=args.test_len)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)

@@ -212,3 +212,20 @@ Pre-registering a selection does not make it out-of-sample.
   SHARED-SURVIVOR-CONDITIONED and its pre-declared reading is unchanged.
 - **No threshold, tolerance, stack, band, or pass criterion changes.**
   E2's criteria (§4) apply verbatim to the train-only-membership run.
+
+**A5 execution record (2026-07-11, still before any extension row read):**
+the frozen E2 membership was built and pinned this day —
+`llm_fitting/e2_members_t136.parquet`, 50,000 unique ids, T0=136, SHA-256
+`f0b463cab014855d72fd238a2b57a073f06cbe16eb65ff9287eb792d5c7f5562` (also in
+`runs/2026-07-11_nnls_audit/MANIFEST.sha256`); source panel train-end
+anchor: period 135 = week of 2021-06-28, which the E2 runner MUST verify
+matches the extended panel's period 135 before scoring. Registered E2
+command (single block, explicit design; `reddit_comments_ext` = the
+PLATFORMS entry the §2 data build registers for the extended weekly panel):
+```
+python llm_fitting/rankdiff_kalman.py reddit_comments_ext --oos --top-k 12500 \
+    --temperament --min-knot-entities 8 --md-lags 6 --t-tails --mix-hetero \
+    --conditional state --dist-scores \
+    --origins 136 --test-len 34 \
+    --member-ids-file llm_fitting/e2_members_t136.parquet
+```

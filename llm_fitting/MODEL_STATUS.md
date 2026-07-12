@@ -2433,8 +2433,10 @@ conditioned; zero threshold/stack/criterion changes.
 1. *NNLS default regression-locked properly:* the prior lock compared
    default-vs-NNLS on a case where the solvers coincide (would not catch a
    reversion). Added: API-default inspection across all six entry points,
-   a hard-coded moment vector where legacy and NNLS provably diverge
-   (default must equal NNLS there), and a CLI mutual-exclusivity test.
+   a deterministic rng-reconstructed moment vector where legacy and NNLS
+   provably diverge (default must equal NNLS there; reconstructed, not
+   hard-coded — a 6-decimal hard-coding defused the discrimination once
+   and was caught), and a CLI mutual-exclusivity test.
    `--nnls`/`--legacy-clip` are now an argparse mutually exclusive group
    on both CLIs (previously legacy silently won when both were passed).
    Suite 80 green.
@@ -2458,6 +2460,54 @@ head-law overshoot remains the meaningful open residual (E5).
 **State: E1–E5 is now ready to execute once, under A1–A5, with no further
 model or estimator work first.** Owner go required to read the first
 extension row.
+_[AMENDED same day by §2z-i: round-5 review — A5's evaluation was defined
+but its EXECUTION PATH was not implementable (the gate auto-derived origins
+and test length); now implemented, tested, and the E2 membership frozen.]_
+
+## 2z-i. 2026-07-11 — Round-5 (implementation-readiness): the A5/E2 execution path built and dry-tested; E2 membership FROZEN (sha pinned); registered E2 command recorded. Extension now genuinely one command away
+
+**The gap (round-5 review, accepted):** A5 defined E2 fully, but
+`oos_movement` auto-derived origins and test length from the panel — the
+registered single-block design (one origin at T0=136, exactly 34 held-out
+weeks, frozen membership) had no execution path, and no membership builder
+existed.
+
+**Implemented (all additive; defaults byte-identical, locked by test):**
+1. `_gate_windows(T, n_splits, test_len, origins)` — explicit designs with
+   validation (T0 ≥ 2, T0+test_len ≤ T); defaults reproduce the committed
+   auto-derivation EXACTLY (locked for the three recorded panel lengths:
+   T=52 → [13,20,26,32,39]/13; T=86 → [21,32,43,54,65]/21; T=136 →
+   [34,51,68,85,102]/34). CLI: `--origins ... --test-len ...`.
+2. `_split_panel(df, T0, test_len)` — the single point where the gate
+   touches time; unit test proves the E2 design trains on periods < 136
+   and scores EXACTLY 136..169 (re-indexed 0..33), with no leakage even on
+   a longer panel.
+3. `build_e2_members.py` — selects the E2 universe from the EXISTING T=136
+   panel only (standard rule, K=12,500/B=50,000); validates 50,000 unique
+   ids; prints the SHA-256 and the train-end anchor date. **Executed and
+   frozen this day (no extension data read):**
+   `e2_members_t136.parquet`, sha256 f0b463ca…7562 (manifest + protocol A5
+   execution record); anchor = period 135 = week of 2021-06-28, which the
+   E2 runner must verify on the extended panel before scoring.
+4. Gate-side pre-score validation: `--member-ids-file` now rejects
+   duplicate (T0, entity_id) rows and prints the file's sha256 into the
+   run log before any scoring output.
+5. Round-4 record fixes: §2z-h wording corrected (the discriminating
+   vector is rng-reconstructed, not hard-coded); CLI default-to-NNLS
+   wiring now has its own tripwire test (`nnls = not args.legacy_clip`
+   in both entry points), closing the reviewer's "wiring could evade the
+   API lock" concern.
+
+Suite **85 green** (80 + 5: window resolution, E2 split exactness ×2,
+explicit-design validation, CLI wiring); package suite 8 green; legacy
+guard unchanged. The registered E2 command is recorded verbatim in the A5
+execution record (CONFIRMATION_PROTOCOL §10) — single block,
+`--origins 136 --test-len 34`, frozen membership file.
+
+**State: the extension is one owner "go" away.** E1/E3/E5 run on the
+extended panel as registered; E2 runs the recorded command after the §2
+data build registers `reddit_comments_ext` and the period-135 anchor date
+is verified. No model or estimator work remains queued ahead of it.
 
 ## 3. The three corrected estimation pitfalls (do not regress)
 
