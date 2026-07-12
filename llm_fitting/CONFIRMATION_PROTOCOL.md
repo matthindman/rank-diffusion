@@ -478,3 +478,31 @@ python llm_fitting/check_extension_panel.py \
   the registered baselines (community_metrics / np.std default); the A7
   runner had used sample SD, which would have shifted the 2-SD trigger.
   Locked by an exact-threshold test on a fixed vector.
+
+## 14. AMENDMENT A9 (2026-07-12, BEFORE any data processing): zero parse errors enforced mechanically (round-8 review; the final intake defect)
+
+No extension data has been read. Round 8 reproduced one remaining false
+PASS: the builder coverage log carries no parse-error field, and the raw
+aggregator writes status="ok" even when errors > 0 — so A8's "ok and
+nonempty" did not establish the registered zero-parse-errors rule (a
+synthetic errors=123 month passed).
+
+- The gate gains a SIXTH required input: the aggregator's own processing
+  log (`logs/reddit_monthly_processing_log.csv` — an EXISTING pipeline
+  artifact; the registered "unchanged pipeline" clause is untouched).
+  For every month 2021-07..2022-12 there must exist a comments record,
+  and the LATEST comments record per month (by finished_at_utc; re-runs
+  append and the panel is built from the last run — declared) must have
+  status == "ok", lines > 0, output_bytes > 0, and **errors == 0**.
+  Nonzero parse errors are NOT acceptable at any tolerance; a month that
+  cannot be re-aggregated to errors == 0 stops model contact (data
+  problem, not a modeling degree of freedom).
+- Gate signature (6 REQUIRED inputs):
+```
+python llm_fitting/check_extension_panel.py \
+    EXT_WEEKLY FROZEN_WEEKLY EXT_DAILY FROZEN_DAILY COVERAGE_LOG PROCESSING_LOG
+```
+- Adversarial tests locked: errors=123 with status ok → FAIL (the round-8
+  reproduction); missing comments month → FAIL; latest-record semantics
+  (old errors superseded by a clean re-run → PASS; a newer errored run
+  after a clean one → FAIL).

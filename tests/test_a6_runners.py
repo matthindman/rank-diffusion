@@ -61,8 +61,17 @@ def _fixture(tmp, n_ent=20, collapse_july=False):
                         "source_path": "x", "rows": 1000, "bytes": 5000})
     log_p = str(tmp / "coverage.csv")
     log.to_csv(log_p, index=False)
+    months = cep.MONTHS.astype(str)
+    plog = pd.DataFrame({
+        "record_type": (["comments"] * len(months)) + ["submissions"],
+        "month": list(months) + [months[0]],
+        "status": "ok", "lines": 10_000, "errors": 0,
+        "output_bytes": 99_999,
+        "finished_at_utc": "2026-07-01T00:00:00Z"})
+    plog_p = str(tmp / "processing_log.csv")
+    plog.to_csv(plog_p, index=False)
     return dict(ext=out_p, fro=fro_p, day=day_p, frod=frod_p, log=log_p,
-                tmp=tmp, daily=daily, frozen=frozen)
+                plog=plog_p, tmp=tmp, daily=daily, frozen=frozen)
 
 
 class TestIntakeGate(unittest.TestCase):
@@ -79,7 +88,7 @@ class TestIntakeGate(unittest.TestCase):
 
     def test_good_extension_passes(self):
         cep.check(self.f["ext"], self.f["fro"], self.f["day"],
-                  self.f["frod"], self.f["log"])
+                  self.f["frod"], self.f["log"], self.f["plog"])
 
     def test_boundary_leak_detected(self):
         bad = pd.read_parquet(self.f["ext"])
@@ -87,21 +96,21 @@ class TestIntakeGate(unittest.TestCase):
         bad.loc[m, "metric_value"] += 1.0    # July 1-4 folded in
         with self.assertRaises(SystemExit):
             cep.check(self._rewrite(bad, "bad1.parquet"), self.f["fro"],
-                      self.f["day"], self.f["frod"], self.f["log"])
+                      self.f["day"], self.f["frod"], self.f["log"], self.f["plog"])
 
     def test_missing_frozen_column_fails(self):
         bad = pd.read_parquet(self.f["ext"]).drop(columns=["metric_value"])
         bad["other"] = 1.0
         with self.assertRaises(SystemExit):
             cep.check(self._rewrite(bad, "bad2.parquet"), self.f["fro"],
-                      self.f["day"], self.f["frod"], self.f["log"])
+                      self.f["day"], self.f["frod"], self.f["log"], self.f["plog"])
 
     def test_missing_extension_day_fails(self):
         d2 = self.f["daily"][self.f["daily"]["date"] != pd.Timestamp("2022-03-03")]
         with self.assertRaises(SystemExit):
             cep.check(self.f["ext"], self.f["fro"],
                       self._rewrite(d2, "day2.parquet"), self.f["frod"],
-                      self.f["log"])
+                      self.f["log"], self.f["plog"])
 
     def test_daily_only_cell_fails(self):
         # round-7 false pass #1: an extra daily entity/week must not be
@@ -113,7 +122,7 @@ class TestIntakeGate(unittest.TestCase):
         with self.assertRaises(SystemExit):
             cep.check(self.f["ext"], self.f["fro"],
                       self._rewrite(d2, "day3.parquet"), self.f["frod"],
-                      self.f["log"])
+                      self.f["log"], self.f["plog"])
 
     def test_first_week_collapse_flagged(self):
         # round-7 false pass #2: July 1-7 must be judged against FROZEN
@@ -121,7 +130,7 @@ class TestIntakeGate(unittest.TestCase):
         # collapsed dailies, so only the day guard can catch it)
         f2 = _fixture(Path("/tmp/a8_intake_collapse"), collapse_july=True)
         with self.assertRaises(SystemExit):
-            cep.check(f2["ext"], f2["fro"], f2["day"], f2["frod"], f2["log"])
+            cep.check(f2["ext"], f2["fro"], f2["day"], f2["frod"], f2["log"], f2["plog"])
 
     def test_coverage_log_defects_fail(self):
         # round-7 false pass #3 family: duplicate month, missing month,
@@ -136,14 +145,57 @@ class TestIntakeGate(unittest.TestCase):
             bad.to_csv(p, index=False)
             with self.assertRaises(SystemExit):
                 cep.check(self.f["ext"], self.f["fro"], self.f["day"],
-                          self.f["frod"], p)
+                          self.f["frod"], p, self.f["plog"])
+
+    def test_parse_errors_fail(self):
+        # round-8 reproduced false pass (A9): status="ok" with errors>0 --
+        # the reviewer's exact errors=123 case must FAIL
+        plog = pd.read_csv(self.f["plog"], dtype={"month": str})
+        plog.loc[plog["month"] == "2022-02", "errors"] = 123
+        p = str(self.f["tmp"] / "plog_err.csv")
+        plog.to_csv(p, index=False)
+        with self.assertRaises(SystemExit):
+            cep.check(self.f["ext"], self.f["fro"], self.f["day"],
+                      self.f["frod"], self.f["log"], p)
+
+    def test_parse_errors_latest_record_governs(self):
+        # re-runs append: an old errors>0 record superseded by a newer
+        # clean run PASSES; the reverse FAILS (declared latest-record rule)
+        plog = pd.read_csv(self.f["plog"], dtype={"month": str})
+        old_bad = pd.DataFrame({"record_type": ["comments"],
+                                "month": ["2022-02"], "status": ["ok"],
+                                "lines": [10], "errors": [7],
+                                "output_bytes": [1],
+                                "finished_at_utc": ["2026-06-01T00:00:00Z"]})
+        ok_after_retry = pd.concat([old_bad, plog], ignore_index=True)
+        p1 = str(self.f["tmp"] / "plog_retry.csv")
+        ok_after_retry.to_csv(p1, index=False)
+        cep.check(self.f["ext"], self.f["fro"], self.f["day"],
+                  self.f["frod"], self.f["log"], p1)          # PASSES
+        new_bad = old_bad.assign(finished_at_utc="2026-08-01T00:00:00Z")
+        bad_after_ok = pd.concat([plog, new_bad], ignore_index=True)
+        p2 = str(self.f["tmp"] / "plog_newbad.csv")
+        bad_after_ok.to_csv(p2, index=False)
+        with self.assertRaises(SystemExit):
+            cep.check(self.f["ext"], self.f["fro"], self.f["day"],
+                      self.f["frod"], self.f["log"], p2)
+
+    def test_processing_log_missing_month_fails(self):
+        plog = pd.read_csv(self.f["plog"], dtype={"month": str})
+        plog = plog[~((plog["month"] == "2022-07")
+                      & (plog["record_type"] == "comments"))]
+        p = str(self.f["tmp"] / "plog_missing.csv")
+        plog.to_csv(p, index=False)
+        with self.assertRaises(SystemExit):
+            cep.check(self.f["ext"], self.f["fro"], self.f["day"],
+                      self.f["frod"], self.f["log"], p)
 
     def test_daily_ending_dec25_fails(self):
         d2 = self.f["daily"][self.f["daily"]["date"] <= pd.Timestamp("2022-12-25")]
         with self.assertRaises(SystemExit):
             cep.check(self.f["ext"], self.f["fro"],
                       self._rewrite(d2, "day4.parquet"), self.f["frod"],
-                      self.f["log"])
+                      self.f["log"], self.f["plog"])
 
     def test_metric_missing_from_daily_fails(self):
         d2 = self.f["daily"].rename(columns={"metric_value": "renamed"})
@@ -151,7 +203,7 @@ class TestIntakeGate(unittest.TestCase):
         with self.assertRaises(SystemExit):
             cep.check(self.f["ext"], self.f["fro"],
                       self._rewrite(d2, "day5.parquet"), self.f["frod"],
-                      self.f["log"])
+                      self.f["log"], self.f["plog"])
 
     def test_partial_final_week_detected(self):
         bad = pd.concat([pd.read_parquet(self.f["ext"]),
@@ -159,7 +211,7 @@ class TestIntakeGate(unittest.TestCase):
                         ignore_index=True)
         with self.assertRaises(SystemExit):
             cep.check(self._rewrite(bad, "bad3.parquet"), self.f["fro"],
-                      self.f["day"], self.f["frod"], self.f["log"])
+                      self.f["day"], self.f["frod"], self.f["log"], self.f["plog"])
 
     def test_weekly_daily_value_mismatch_fails(self):
         d2 = self.f["daily"].copy()
@@ -171,7 +223,7 @@ class TestIntakeGate(unittest.TestCase):
         with self.assertRaises(SystemExit):
             cep.check(self.f["ext"], self.f["fro"],
                       self._rewrite(d2, "day6.parquet"), self.f["frod"],
-                      self.f["log"])
+                      self.f["log"], self.f["plog"])
 
 
 class TestAssembler(unittest.TestCase):

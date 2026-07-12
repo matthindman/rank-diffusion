@@ -9,7 +9,7 @@ could not establish parse success, and boundary-day coverage stopping at
 Dec 25. Every input is REQUIRED:
 
   python llm_fitting/check_extension_panel.py \
-      EXT_WEEKLY FROZEN_WEEKLY EXT_DAILY FROZEN_DAILY COVERAGE_LOG
+      EXT_WEEKLY FROZEN_WEEKLY EXT_DAILY FROZEN_DAILY COVERAGE_LOG PROCESSING_LOG
 
   1. SCHEMA EQUALITY: extended weekly columns == frozen weekly columns.
   2. FROZEN-PREFIX EQUALITY: every row with date <= 2021-06-28 equal to the
@@ -17,10 +17,16 @@ Dec 25. Every input is REQUIRED:
      training period 135) that the date anchor cannot see.
   3. COMPLETE-WEEK WINDOW: extension weekly rows exactly the complete weeks
      2021-07-05 .. 2022-12-19 (77 weeks; extended T = 213).
-  4. AGGREGATION LOG (replaces the A6 directory glob, which could not see
-     parse errors and passed 19 or zero-byte files): exactly ONE record per
-     month 2021-07..2022-12, status == "ok", rows > 0, bytes > 0, no
-     duplicate or missing months.
+  4. AGGREGATION LOGS (replaces the A6 directory glob, which could not see
+     parse errors and passed 19 or zero-byte files):
+     - builder coverage log: exactly ONE record per month
+       2021-07..2022-12, status == "ok", rows > 0, bytes > 0, no duplicate
+       or missing months;
+     - aggregator PROCESSING log (round-8/A9: the coverage log has no
+       parse-error field and the aggregator writes status="ok" even with
+       errors > 0): for every month, the LATEST comments record must have
+       status == "ok", lines > 0, output_bytes > 0, and **errors == 0** —
+       the registered zero-parse-errors rule, enforced mechanically.
   5. Daily panel (REQUIRED): every frozen numeric metric column PRESENT
      (no silent intersection); no duplicate keys; no negatives; EVERY
      calendar day 2021-07-01 .. 2022-12-31 present (boundary days through
@@ -124,8 +130,37 @@ def _check_coverage_log(path: str) -> None:
               f"{bad[['month', 'status', 'rows']].to_dict('records')}")
 
 
+def _check_processing_log(path: str) -> None:
+    """A9: zero parse errors, from the aggregator's own processing log
+    (`reddit_monthly_processing_log.csv`). The LATEST comments record per
+    month governs (re-runs append; the panel is built from the last run) —
+    it must be ok, nonempty, and have errors == 0."""
+    log = pd.read_csv(path, dtype={"month": str})
+    for col in ("record_type", "month", "status", "lines", "errors",
+                "output_bytes", "finished_at_utc"):
+        if col not in log.columns:
+            _fail(f"processing log lacks required column '{col}'")
+    sub = log[(log["record_type"] == "comments")
+              & log["month"].isin(set(MONTHS.astype(str)))].copy()
+    sub["_t"] = pd.to_datetime(sub["finished_at_utc"], errors="coerce")
+    if sub["_t"].isna().any():
+        _fail("processing log has unparseable finished_at_utc timestamps")
+    missing = sorted(set(MONTHS.astype(str)) - set(sub["month"]))
+    if missing:
+        _fail(f"processing log has no comments record for months {missing}")
+    latest = sub.sort_values("_t").groupby("month").tail(1)
+    bad = latest[(latest["status"] != "ok")
+                 | (pd.to_numeric(latest["lines"], errors="coerce").fillna(0) <= 0)
+                 | (pd.to_numeric(latest["output_bytes"], errors="coerce").fillna(0) <= 0)
+                 | (pd.to_numeric(latest["errors"], errors="coerce").fillna(1) != 0)]
+    if len(bad):
+        _fail(f"processing log: latest comments record violates the "
+              f"zero-parse-errors rule for "
+              f"{bad[['month', 'status', 'errors']].to_dict('records')}")
+
+
 def check(ext_weekly: str, frozen_weekly: str, ext_daily: str,
-          frozen_daily: str, coverage_log: str) -> None:
+          frozen_daily: str, coverage_log: str, processing_log: str) -> None:
     # [1] schema + frozen prefix
     verify_frozen_prefix(ext_weekly, frozen_weekly)
     print("  [1/6] schema equality + frozen-prefix equality: OK")
@@ -148,9 +183,11 @@ def check(ext_weekly: str, frozen_weekly: str, ext_daily: str,
     _basic_hygiene(ext, "extended weekly")
     print("  [3/6] weekly keys unique, all numerics non-negative: OK")
 
-    # [4] aggregation log (parse success is only observable here)
+    # [4] aggregation logs (parse success is only observable here)
     _check_coverage_log(coverage_log)
-    print("  [4/6] aggregation log: 18 months, one ok nonempty record each: OK")
+    _check_processing_log(processing_log)
+    print("  [4/6] aggregation logs: 18 months, one ok nonempty coverage "
+          "record each + latest processing record errors == 0: OK")
 
     # [5] daily panel: required metrics, hygiene, calendar coverage,
     #     aggregation equality with exact index-set equality
@@ -210,6 +247,6 @@ def check(ext_weekly: str, frozen_weekly: str, ext_daily: str,
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 6:
+    if len(sys.argv) != 7:
         raise SystemExit(__doc__)
-    check(*sys.argv[1:6])
+    check(*sys.argv[1:7])

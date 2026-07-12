@@ -2677,6 +2677,30 @@ end-to-end. Amendment A8 registered (supersedes A6.1's directory-glob
 clause with the strictly stronger log check; no scientific threshold or
 gate changed). Protocol = A1–A8. **Awaiting the owner's go.**
 
+## 2z-m. 2026-07-12 — Round-8 accepted (Amendment A9): zero parse errors now mechanically enforced from the aggregator's own processing log — the final intake defect. Reviewer's go-condition met
+
+Round 8 verified all of A8 (including the E5 ddof=0 freeze) and reproduced
+ONE remaining false PASS: the coverage log has no parse-error field, and
+`aggregate_reddit_monthly.py` writes status="ok" even with errors > 0 — so
+"ok and nonempty" never established the registered zero-parse-errors rule
+(their synthetic errors=123 month printed PASS).
+
+**Fix (A9, registered):** the gate's SIXTH required input is the
+aggregator's existing processing log (pipeline untouched — it already
+records `errors` per month). Rule: for every month, the LATEST comments
+record (by finished_at_utc; re-runs append, the panel comes from the last
+run — declared) must be ok, nonempty, and have **errors == 0**. No
+tolerance; an un-fixable month stops model contact. Adversarial tests:
+errors=123 → FAIL (the exact round-8 reproduction); missing month → FAIL;
+latest-record semantics locked in both directions (clean re-run after an
+errored one PASSES; an errored run after a clean one FAILS).
+
+Suite **110 green**; package 8 green; legacy guard unchanged; no extension
+data read. Protocol = **A1–A9**. Per the round-8 verdict ("once the
+parse-error field is mechanically enforced, I give the go"), the
+reviewer's final condition is now met. **E1–E5 executes on the owner's
+word, once, exactly as registered.**
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
