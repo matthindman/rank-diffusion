@@ -178,6 +178,24 @@ def top_share(ranksize: np.ndarray, k: int = 1) -> float:
     return float(np.mean(np.nansum(act[ok, :k], axis=1) / tot[ok]))
 
 
+def head_offset(rs_emp: np.ndarray, rs_sim: np.ndarray, lo: int = 1,
+                hi: int = 600, level_adjust: bool = False) -> float:
+    """E5 readout (protocol A2/A6.5): mean sim-emp time-mean log-value over
+    ranks lo..hi.  level_adjust=True removes each week's cross-sectional mean
+    over the common recorded top-M first -- the interpretable variant on
+    panels with an un-modeled level path (growing census: the raw offset is
+    level-contaminated, MODEL_STATUS 2z-a); the raw variant is reported for
+    registration fidelity."""
+    M = min(rs_emp.shape[1], rs_sim.shape[1])
+    e, s = rs_emp[:, :M].astype(float), rs_sim[:, :M].astype(float)
+    if level_adjust:
+        e = e - np.nanmean(e, axis=1, keepdims=True)
+        s = s - np.nanmean(s, axis=1, keepdims=True)
+    hi = min(hi, M)
+    return float(np.nanmean(np.nanmean(s, axis=0)[lo - 1:hi])
+                 - np.nanmean(np.nanmean(e, axis=0)[lo - 1:hi]))
+
+
 def share_curve(ranksize: np.ndarray, k_grid: np.ndarray) -> np.ndarray:
     """Concentration curve S(k) = mean over weeks of the top-k share of
     activity within the recorded top-M (activity = expm1(X), X = log1p)."""
@@ -421,7 +439,7 @@ def main() -> None:
                      md_vr_long=a.md_vr_long, stat_factor=a.stat_factor,
                      two_scale=a.two_scale, mix_hetero=a.mix_hetero)
 
-    sims, lad, shr, drf, ts1 = [], [], [], [], []
+    sims, lad, shr, drf, ts1, ts10, off_raw, off_adj = [], [], [], [], [], [], [], []
     for s in range(a.reps):
         sim = mrd.simulate(p, T, seed=s, kappa=None if a.md_lags else 0.15,
                            top_record=score_k)
@@ -431,6 +449,9 @@ def main() -> None:
         shr.append(share_distance(ers, rs)[0])
         drf.append(ladder_drift(rs))
         ts1.append(top_share(rs, 1))
+        ts10.append(top_share(rs, 10))
+        off_raw.append(head_offset(ers, rs, level_adjust=False))
+        off_adj.append(head_offset(ers, rs, level_adjust=True))
         print(f"  sim rep {s + 1}/{a.reps} done")
 
     def sim_ms(key):
@@ -471,6 +492,12 @@ def main() -> None:
           f"emp {ladder_drift(ers):.4f}   sim {np.nanmean(drf):.4f} ± {np.nanstd(drf):.4f}")
     print(f"    S(1) top-1 share within top-{M_rec} (stationary head law) : "
           f"emp {top_share(ers, 1):.4f}   sim {np.nanmean(ts1):.4f} ± {np.nanstd(ts1):.4f}")
+    print(f"    S(10) top-10 share within top-{M_rec} (E5 readout)        : "
+          f"emp {top_share(ers, 10):.4f}   sim {np.nanmean(ts10):.4f} ± {np.nanstd(ts10):.4f}")
+    print(f"    head offset ranks 1-600, RAW (level-contaminated on "
+          f"growth panels): {np.nanmean(off_raw):+.4f} ± {np.nanstd(off_raw):.4f}")
+    print(f"    head offset ranks 1-600, LEVEL-ADJUSTED (per-week demeaned) : "
+          f"{np.nanmean(off_adj):+.4f} ± {np.nanstd(off_adj):.4f}")
 
     print("\n  ROLLING-ORIGIN variants (mean over origins ± SD; committed "
           "single-origin card row in parens)")

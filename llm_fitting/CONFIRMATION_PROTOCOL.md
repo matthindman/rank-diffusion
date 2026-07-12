@@ -229,3 +229,159 @@ python llm_fitting/rankdiff_kalman.py reddit_comments_ext --oos --top-k 12500 \
     --origins 136 --test-len 34 \
     --member-ids-file llm_fitting/e2_members_t136.parquet
 ```
+_[E2 command superseded by the A6 form (adds frozen reps/boot and the
+pre-score panel/membership enforcement); design unchanged.]_
+
+## 11. AMENDMENT A6 (2026-07-12, BEFORE any data processing): final pre-run hardening — week-boundary leak closed, two invalid E1 comparisons corrected, E2 MC precision frozen, E4/E5 made executable, overall decision rule declared
+
+Registered after two independent final audits of this protocol (2026-07-12;
+one external, one internal — findings adjudicated in MODEL_STATUS §2z-j).
+No extension data has been read; only the already-frozen T=136 panels were
+inspected. Nothing below loosens any existing criterion; changes are error
+corrections, ambiguity pins, execution-path specifications, and declared
+non-gating readouts.
+
+### A6.1 Data boundary and intake stop rules (closes a REAL leak)
+
+MEASURED: the frozen weekly panel's final row (Monday 2021-06-28) is a
+3-day PARTIAL week (dailies end Wed 2021-06-30; 110,508 rows / 154.76M
+karma vs ~152k rows / ~334M for full weeks). A naive rebuild through
+2022-12 would fold July 1–4 — the first four EXTENSION days — into that
+row, which is E2 TRAINING period 135, and the period-135 date anchor would
+not detect it. Therefore:
+
+- The extended weekly panel PRESERVES the frozen T=136 prefix EXACTLY,
+  byte-equal on every key and value, INCLUDING the partial 2021-06-28 row
+  as frozen. July 1–4, 2021 are excluded from all weekly rows (aggregated
+  and reported as boundary days, never silently discarded).
+- Extension weekly rows are COMPLETE weeks only: 2021-07-05 .. 2022-12-19
+  inclusive (77 weeks; extended T = 213; period 136 = week of 2021-07-05).
+  The partial 2022-12-26 week is excluded (reported as boundary days).
+- Intake stop rules (ANY failure stops model contact): exactly 18 monthly
+  files RC_2021-07..RC_2022-12; zero missing months; zero parse errors;
+  zero duplicate (entity, date) keys; zero negative metrics; exact
+  weekly = Σ daily on every extension week; zero day-guard flags (census);
+  frozen-prefix equality as above; period-136 date check.
+- Enforcement is MECHANICAL: `llm_fitting/check_extension_panel.py` must
+  print PASS before any model code touches the extension; the E2 runner
+  independently re-verifies prefix equality and the membership-file
+  SHA-256 (f0b463ca…7562) before scoring.
+
+### A6.2 E1 corrections and pins
+
+- κ criterion CORRECTED (the registered "declining head→tail" contradicts
+  the registered reference itself — recorded md6 curves rise from the head:
+  comments 0.010→0.100, subs 0.005→0.04, FB 0.005→0.100). Dry-running the
+  frozen E1 reference under the A4 NNLS estimator (this amendment's own
+  discipline) showed the pooled thirds are 0.0050 / 0.0198 / 0.0191 —
+  head far below both, mid vs deep ordering WITHIN noise (Δ 0.0007 on
+  ~0.02) — so a strict nondecreasing rule would fail the reference itself.
+  REGISTERED RULE: E1's κ component passes if the HEAD third is strictly
+  the most persistent — pooled head κ < min(pooled mid κ, pooled deep κ) —
+  using head/mid/deep thirds (bands 1–4 / 5–8 / 9–12 of the 12-band
+  summary) as the fixed coordinates; no ordering is imposed between mid
+  and deep.
+- b horizon FROZEN at h = 8 for BOTH sides: the recorded 1.08 reference is
+  h*=13-specific, and `estimate_mix_b`'s rule (h* = longest of (13,8,4)
+  with T//h ≥ min_changes+1) selects h*=8 on a 77-week segment — the
+  registered comparison was horizon-mismatched. Reference recomputed at
+  h=8 from the recorded s(h) curve: b(8) = s(8)/s(1) = 0.703/0.692 ≈ 1.016.
+  Band UNCHANGED [0.95, 1.15].
+- Spec-B ±25%: compared at all 12 extension z-coordinates against the
+  frozen reference curve interpolated to those coordinates; every band
+  within ±25%.
+- E1 passes only if ALL FOUR components pass (s, b, κ orientation, Spec-B).
+- A4's "within 10% of a band edge" is defined as 10% OF THE BAND WIDTH.
+- A dedicated runner (`llm_fitting/e1_transport.py`) and a machine-readable
+  frozen reference (`llm_fitting/e1_reference.json`, computed from the
+  T=136 panel under the A4 NNLS estimator) are committed before extension
+  access. FROZEN 2026-07-12: s = 0.6922, b8 = 1.0163, κ thirds
+  0.0050/0.0198/0.0191, Spec-B 0.071..0.248; SHA-256
+  f78a6ee27434dc0a1ad2501cdc837b69ae86852c09b1b601e2954ce23dc8c298
+  (also in runs/2026-07-11_nnls_audit/MANIFEST.sha256).
+- NON-GATING context, registered now: comments train-subwindow s ranged
+  0.64–0.67 (§2g-X P3), i.e. the band's lower edge sits at observed
+  within-panel variation; the extension readout reports a block-bootstrap
+  CI alongside the point verdict. The band itself is unchanged.
+
+### A6.3 E2 Monte Carlo precision and criterion algebra
+
+- FROZEN: reps = 20 (seeds 0..19), boot = 2000 (bootstrap seed 0). The
+  registered command's previous implicit defaults (reps=3, boot=400) put
+  MC noise into scored collision moments; raising precision is neither a
+  criterion nor a target change.
+- Scored vector restated: dRank1/4/13, RACF1, coll1/5/20, MOM_FLOOR=0.02.
+  Calibration: the recorded nine-point sigma_obs_scale grid on the TRAIN
+  moment vector, unchanged.
+- Coverage clause, stated algebraically for the single block (this IS the
+  original criterion's letter — one split, so "≥60% of splits" means the
+  block must be in-CI): PASS requires the model dRank1 median to lie
+  inside the held-out 95% empirical-bootstrap CI of the empirical dRank1
+  median. DECLARED DESCRIPTIVE (reported, can never rescue a failure):
+  in-CI indicators at h=4 and h=13, CRPS/PIT/W1 (--dist-scores), and a
+  clustered entity/week-block interval sensitivity.
+- Registered command (supersedes the A5 form):
+```
+python llm_fitting/rankdiff_kalman.py reddit_comments_ext --oos --top-k 12500 \
+    --temperament --min-knot-entities 8 --md-lags 6 --t-tails --mix-hetero \
+    --conditional state --dist-scores \
+    --origins 136 --test-len 34 --reps 20 --boot 2000 \
+    --member-ids-file llm_fitting/e2_members_t136.parquet \
+    --expect-member-sha f0b463cab014855d72fd238a2b57a073f06cbe16eb65ff9287eb792d5c7f5562
+```
+
+### A6.4 E4 made executable (registered construction)
+
+Runner: `llm_fitting/e4_kappa_transport.py` (committed + synthetic-tested
+before extension access). Pins:
+- Populations: the scored complete-column population of each window
+  (train = periods 0..135; extension = periods 136..212), shared set =
+  intersection; n reported.
+- Cells: the 5×5 rank×volatility cell EDGES are computed on TRAIN and
+  REUSED on the extension (no extension-dependent recategorization).
+- Train statistic: κ̂_i = ρ̂ · r_i^train, where r_i^train is the
+  cell-demeaned per-entity log VR13 residual and ρ̂ is the split-half
+  signal share measured on train (EB shrinkage toward 0).
+- Extension statistic: r_i^ext = per-entity log VR13 residual on the
+  extension window, demeaned within the TRAIN-edge cells.
+- Test: Spearman(κ̂_i^train, r_i^ext) ≥ 0.20 AND concentration ratio
+  mean|r^ext| over (Q1 ∪ Q5 of κ̂_i^train) ÷ mean|r^ext| over Q3 ≥ 1.3.
+  Thresholds unchanged. Bootstrap CIs reported as secondary uncertainty,
+  never as gates. Shared-survivor conditioning declared (A5).
+
+### A6.5 E5 made executable
+
+- `community_metrics` reports S(1) AND S(10) (within recorded top-2,000,
+  A3) and the head offset over ranks 1–600 — RAW (as registered in A2) and
+  per-week LEVEL-ADJUSTED (declared clarification: the §2z-a measurement
+  lesson postdates A2 — raw log offsets are level-contaminated on a
+  growing census; the level-adjusted value is the interpretable one).
+- Seeds FROZEN at exactly 20 (0..19), replacing "≥10".
+- Trigger, algebraically: mean_seed(S1_sim) − S1_emp > 2 · SD_seed(S1_sim),
+  same direction as the recorded overshoot. S(10) and the offsets are
+  diagnostic readouts only; S(1) alone triggers the registered reading.
+
+### A6.6 E3 frozen workload
+
+- Card + bands: `scorecard_bands.py reddit_comments_ext --top-k 12500`
+  + LONG stack flags, reps = 20, boot = 500, bootstrap rng seed 0.
+- Surrogate-adjusted VR reading: 50 phase-random draws with the §2v
+  tooling's fixed seeds; descriptive.
+- Membership sensitivity (§2 registration): the trailing-60-week
+  invocation is run on the extended panel explicitly; reported, never used
+  for selection.
+
+### A6.7 Overall decision rule and reporting discipline (declared before outcomes exist)
+
+- CORE CONFIRMATION = E1 AND E2 both pass. MIXED EVIDENCE = exactly one
+  passes. CORE CONFIRMATION FAILURE = both fail. E3/E4/E5 are diagnostic
+  and can never rescue or upgrade the verdict.
+- All five evaluations run and are reported verbatim regardless of earlier
+  outcomes, in the order E1→E2→E3→E4→E5; no conditional stopping; the
+  confirmation report is written BEFORE any exploratory analysis touches
+  the extension.
+- NON-GATING outcome predictions, registered for interpretation only:
+  E2 model rel err expected in ~0.16–0.24 (recorded split range) with the
+  historical-mobility baseline itself regime-dependent (recorded 0.07–
+  0.24); s expected near the sub-window range 0.64–0.69; b(8) expected
+  near 1.02.

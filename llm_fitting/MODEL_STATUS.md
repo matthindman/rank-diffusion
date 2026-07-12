@@ -2509,6 +2509,82 @@ extended panel as registered; E2 runs the recorded command after the §2
 data build registers `reddit_comments_ext` and the period-135 anchor date
 is verified. No model or estimator work remains queued ahead of it.
 
+## 2z-j. 2026-07-12 — FINAL pre-run hardening of E1–E5 (two independent audits adjudicated → Amendment A6): a REAL week-boundary leak closed, two invalid E1 comparisons fixed, E2 MC precision frozen, E4/E5 execution paths built and synthetic-tested, E1 reference frozen — and the dry-run discipline caught a defect in A6's own first draft
+
+Two final audits of the protocol (one external, one internal — the owner's
+"last chance to change or improve" pass), adjudicated and merged into
+**Amendment A6** (registered pre-data; nothing loosened). Suite **94 green**
+(85 + 9 synthetic runner tests); package 8 green; legacy guard unchanged.
+No extension data read; only the frozen T=136 panels inspected.
+
+**(1) The week-boundary leak (external audit's catch — REAL, verified):**
+the frozen weekly panel's final row (2021-06-28) is a 3-day partial week
+(dailies end Wed 2021-06-30: 110,508 rows / 154.76M vs ~152k / ~334M for
+full weeks — verified this session). A naive rebuild through 2022-12 folds
+July 1–4 — extension days — into that row, which is E2 TRAINING period
+135, and the period-135 date anchor cannot see it. A6.1: frozen prefix
+preserved byte-equal (partial week INCLUDED as frozen), extension =
+complete weeks 2021-07-05..2022-12-19 only (77 wks; extended T=213),
+boundary days reported never folded, full intake stop-rule list, enforced
+mechanically by `check_extension_panel.py` (synthetic-tested: the leak
+signature — a changed frozen-week VALUE with matching dates — is caught)
+and re-verified inside the E2 runner (`--frozen-prefix`).
+
+**(2) E1's two invalid comparisons (mine + external, converged):**
+- κ "declining head→tail" contradicted the recorded md6 curves (they RISE
+  from the head). And the corrected first draft ("nondecreasing with a
+  strict increase") was ITSELF killed by the A6 dry-run discipline: the
+  frozen reference's pooled thirds are 0.0050/0.0198/0.0191 — mid vs deep
+  differ by 0.0007 (noise) — so strict monotonicity fails the reference.
+  REGISTERED RULE: head third strictly the most persistent
+  (head κ < min(mid, deep)); mid/deep unordered.
+- b horizon mismatch (external's catch): the 1.08 reference is h*=13-
+  specific; `estimate_mix_b` auto-selects h*=8 on a 77-week segment
+  (rule verified in code: longest of (13,8,4) with T//h ≥ min_changes+1).
+  FROZEN at h=8 both sides; reference b(8) = 1.0163; band unchanged.
+- Plus: all-four-components-must-pass made explicit; Spec-B ±25% at all 12
+  interpolated coordinates; A4's "10% of band edge" = 10% of band width;
+  s-band context registered non-gating (sub-window range 0.64–0.67).
+
+**(3) E2 precision + algebra (A6.3):** reps=20 (seeds 0..19), boot=2000
+(the registered command's implicit defaults were reps=3/boot=400 — MC
+noise in scored collision moments); coverage clause stated algebraically
+for the single block (model dRank1 median inside the held-out 95% CI —
+the original criterion's letter); h=4/13 in-CI, CRPS/PIT/W1, clustered
+intervals all declared descriptive-can-never-rescue; runner now enforces
+the membership sha (`--expect-member-sha`) and prefix equality before
+scoring.
+
+**(4) E4 made executable (external's catch — the registered statistic had
+no implementation):** `e4_kappa_transport.py` with every construction pin
+in A6.4 (train-edge cells reused on extension; EB shrinkage κ̂_i = ρ̂·r_i
+with ρ̂ = train split-half signal share; Q1∪Q5 vs Q3; shared-survivor n
+reported). Synthetic-tested both directions: persistent per-entity κ_i
+transports (passes), shuffled extension breaks it (fails).
+
+**(5) E5 made executable:** S(10) + head-offset readouts added to
+community_metrics; offset reported RAW (registration fidelity) AND
+per-week level-adjusted (the §2z-a level-contamination lesson, declared);
+seeds frozen at 20; trigger algebraic (mean_seed S1_sim − S1_emp >
+2·SD_seed). Level-adjustment behavior locked by test (kills a pure level
+shift, preserves a head-only distortion).
+
+**(6) E3 workload frozen** (reps=20, boot=500, seed 0; surrogate 50 draws;
+explicit extended-panel membership-sensitivity invocation) and the
+**overall decision rule declared before outcomes exist** (A6.7): core
+confirmation = E1 AND E2; mixed = exactly one; failure = both; E3/E4/E5
+diagnostic, can never rescue; fixed order, no conditional stopping,
+report before any exploratory contact; non-gating outcome predictions
+registered (E2 rel err ~0.16–0.24; s near 0.64–0.69; b(8) near 1.02).
+
+**E1 reference FROZEN (2026-07-12, T=136 panel, NNLS estimator):**
+s = 0.6922, b8 = 1.0163, κ thirds 0.0050/0.0198/0.0191, Spec-B
+0.071..0.248; `e1_reference.json` sha256 f78a6ee2…c298 (manifest-pinned).
+
+**State: E1–E5 executes under A1–A6 with every runner existing, every
+criterion dry-run-validated against its own reference, and every input
+hash-pinned. The remaining human action is the owner's go.**
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

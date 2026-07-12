@@ -795,7 +795,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  md_vr=False, two_scale=False, mix_hetero=False, mix_b_fix=None,
                  md_vr_long=False, dist_scores=False, nnls=True,
                  cond_home="state", member_ids_file=None,
-                 origins=None, test_len=None):
+                 origins=None, test_len=None, expect_member_sha=None,
+                 frozen_prefix=None):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -865,6 +866,18 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         print(f"  FIXED membership from {member_ids_file} "
               f"({ {t: len(v) for t, v in sorted(mids.items())} })")
         print(f"  member-ids sha256: {sha}")
+        if expect_member_sha is not None and sha != expect_member_sha:
+            raise SystemExit(f"member-ids sha mismatch: expected "
+                             f"{expect_member_sha}, got {sha} -- REFUSING to score "
+                             f"(A6.3 enforcement)")
+
+    if frozen_prefix is not None:
+        # A6.1: the extended panel's frozen prefix must be byte-equal to the
+        # registered T=136 panel (incl. the partial 2021-06-28 week) BEFORE
+        # any scoring -- re-verified here independently of the intake gate
+        from check_extension_panel import verify_frozen_prefix
+        verify_frozen_prefix(mrd.PLATFORMS[platform]["path"], frozen_prefix)
+        print(f"  frozen-prefix equality re-verified vs {frozen_prefix}")
 
     rows = []
     for T0 in origins:
@@ -1099,6 +1112,17 @@ if __name__ == "__main__":
     ap.add_argument("--test-len", type=int, default=None,
                     help="explicit held-out window length (E2: --test-len 34); "
                          "default = max(13, T//4)")
+    ap.add_argument("--reps", type=int, default=3,
+                    help="MC sim reps in the gate (E2 frozen: 20; A6.3)")
+    ap.add_argument("--boot", type=int, default=400,
+                    help="bootstrap draws for the held-out CI (E2 frozen: 2000)")
+    ap.add_argument("--expect-member-sha", default=None,
+                    help="refuse to score unless the member-ids file's sha256 "
+                         "matches (A6.3 enforcement)")
+    ap.add_argument("--frozen-prefix", default=None,
+                    help="path to the frozen T=136 weekly panel; re-verify "
+                         "byte-equality of the extended panel's prefix before "
+                         "scoring (A6.1 enforcement)")
     ap.add_argument("--dist-scores", action="store_true",
                     help="OOS gate: additionally report ensemble CRPS skill vs "
                          "persistence, predictive quantile coverage, and the "
@@ -1131,7 +1155,10 @@ if __name__ == "__main__":
                          nnls=not args.legacy_clip,
                          cond_home=args.cond_home,
                          member_ids_file=args.member_ids_file,
-                         origins=args.origins, test_len=args.test_len)
+                         origins=args.origins, test_len=args.test_len,
+                         reps=args.reps, boot=args.boot,
+                         expect_member_sha=args.expect_member_sha,
+                         frozen_prefix=args.frozen_prefix)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)
