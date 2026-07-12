@@ -2256,7 +2256,9 @@ python llm_fitting/ig_build_hm_panels.py --keep 200000 --suffix _k200 --variant 
 python llm_fitting/ig_trainsafe_check.py llm_fitting/ig_hm_totals_ts.parquet
 python llm_fitting/rankdiff_kalman.py instagram_hm_ts --oos --top-k 10000 \
     --temperament --min-knot-entities 8 --md-lags 6 --t-tails \
-    --conditional state --dist-scores        # leak-free IG gate
+    --conditional state --dist-scores        # [DO NOT USE -- §2z-f: NOT leak-free
+                                             #  without --member-ids-file; see 2z-f
+                                             #  reproduction block for the valid command]
 # full logs: llm_fitting/runs/2026-07-11_nnls_audit/
 ```
 
@@ -2390,6 +2392,10 @@ added this section; all other cells from the §2z-e audit).
 
 **Next step is E1–E5 exactly as registered** (A1–A4), on the mounted WD
 data — no further model or estimator work first (§2x item 1 stands).
+_[AMENDED same day by §2z-h: round-4 review found E2's registered
+membership rule leaked the extension window; Amendment A5 (E2 train-only
+frozen membership) was required and registered BEFORE starting. E1–E5 now
+runs under A1–A5.]_
 
 Reproduction:
 ```
@@ -2400,6 +2406,58 @@ python llm_fitting/minimal_rankdiff.py facebook_a --top-k 3500 --temperament \
 # pre-re-freeze reproduction arm:
 python llm_fitting/minimal_rankdiff.py facebook_a ... --legacy-clip   # 15/15, churn 0.018
 ```
+
+## 2z-h. 2026-07-11 — Round-4 review adjudicated: Option A verified externally; ONE blocking protocol defect found and fixed (E2 membership leaked the extension window — Amendment A5, train-only frozen membership); default-lock tests + manifest + CLI exclusivity added. E1–E5 now genuinely ready under A1–A5
+
+**External verification (round 4, no files changed by the reviewer):**
+Option A implementation CORRECT — headline numbers match archived logs;
+exact IG membership structurally valid (200,000 rows, 40,000/origin, no
+duplicates, fully contained); suites 77 + 8 green; live legacy guard
+14/15 / 0.013; no extension data read by anyone.
+
+**The blocking defect (accepted, fixed BEFORE any extension row read):
+E2's registered universe leaked the confirmation period.** Protocol §2
+computed membership "over the FULL extended window" while E2 estimates
+through 2021-06 and forecasts the first 34 extension weeks — extension
+activity would have selected the 50,000 endpoints entering the held-out
+forecast. Same error class as the IG pre-cut (§2z-f); pre-registration
+does not make a selection out-of-sample. **Amendment A5 registered:**
+E2 membership = absence-penalized permanent rank on the T=136 panel ONLY;
+the 50,000 ids FROZEN (SHA-256 recorded before scoring) and carried into
+the extension forecast via the §2z-f fixed-membership machinery
+(`--member-ids-file`); E1/E3/E5 keep full-window membership (descriptive/
+transport, as designed); E4 explicitly declared shared-survivor-
+conditioned; zero threshold/stack/criterion changes.
+
+**Other round-4 corrections applied:**
+1. *NNLS default regression-locked properly:* the prior lock compared
+   default-vs-NNLS on a case where the solvers coincide (would not catch a
+   reversion). Added: API-default inspection across all six entry points,
+   a hard-coded moment vector where legacy and NNLS provably diverge
+   (default must equal NNLS there), and a CLI mutual-exclusivity test.
+   `--nnls`/`--legacy-clip` are now an argparse mutually exclusive group
+   on both CLIs (previously legacy silently won when both were passed).
+   Suite 80 green.
+2. *§2z-e's stale "leak-free" IG reproduction command* annotated DO NOT
+   USE in place (attractive-nuisance removal; §2z-f's command is the
+   valid one).
+3. *Derived-artifact hashes recorded:*
+   `runs/2026-07-11_nnls_audit/MANIFEST.sha256` pins ig_hm_totals_ts
+   (5f37e3ab…), ig_trainsafe_members (130726eb…), and the two superseded
+   panels — the mutable untracked parquets are now integrity-checkable
+   against the archived results.
+
+**Round-4 scientific assessment, on the record (it matches the program's
+own claim set):** aggregate stationarity = reproduction/maintenance
+conditional on the empirical endpoint-home ladder, not ladder genesis;
+movement strongest on FB, at par on both Reddit panels, encouraging on IG
+pooled moments with proper scores at par; parsimony defensible at the
+component/mechanism level, not literally low-parameter; the FB stationary
+head-law overshoot remains the meaningful open residual (E5).
+
+**State: E1–E5 is now ready to execute once, under A1–A5, with no further
+model or estimator work first.** Owner go required to read the first
+extension row.
 
 ## 3. The three corrected estimation pitfalls (do not regress)
 

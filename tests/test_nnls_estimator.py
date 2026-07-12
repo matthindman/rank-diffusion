@@ -80,9 +80,60 @@ class TestMDPartitionNNLS(unittest.TestCase):
         # on exactly-generated moments the constraint is slack: legacy == NNLS
         a, phi, W, V, s_e2 = 0.93, 0.20, 0.25, 0.15, 0.02
         gk = _gamma_true(a, phi, W, V, s_e2, L=6)
-        out_leg = mrd._md_partition(gk)
+        out_leg = mrd._md_partition(gk, nnls=False)
         out_nn = mrd._md_partition(gk, nnls=True)
         np.testing.assert_allclose(out_leg, out_nn, atol=1e-8)
+
+
+def _diverging_pert():
+    """Perturbation (deterministic: default_rng(0), second N(0, 0.02) draw of
+    length 7) that makes the clip bind at the optimal grid point: legacy and
+    NNLS provably diverge on gk = _gamma_true(0.96,0.35,0.30,0.10,0.04) + pert
+    (found by search 2026-07-11; reconstructed exactly, not hard-coded, so no
+    rounding can silently defuse the discrimination assert below)."""
+    rng = np.random.default_rng(0)
+    rng.normal(0, 0.02, 7)          # trial 0 (non-diverging), discarded
+    return rng.normal(0, 0.02, 7)   # trial 1
+
+
+class TestNNLSDefaultLock(unittest.TestCase):
+    """Regression lock for the 2026-07-11 Option-A re-freeze (2z-g/A4):
+    the DEFAULT solve is exact NNLS.  Locks both the API defaults and the
+    default behavior on a case where the two solvers provably differ, so a
+    silent default reversion cannot pass the suite."""
+
+    def test_api_defaults_are_nnls(self):
+        import inspect
+        import rankdiff_kalman as rk
+        for fn, name in ((mrd._md_partition, "nnls"),
+                         (mrd._md_partition2, "nnls"),
+                         (mrd.estimate, "nnls"),
+                         (mrd.run_platform, "nnls"),
+                         (rk._estimate_fast, "nnls"),
+                         (rk.oos_movement, "nnls")):
+            default = inspect.signature(fn).parameters[name].default
+            self.assertIs(default, True,
+                          f"{fn.__module__}.{fn.__name__} default nnls != True")
+
+    def test_default_behavior_is_nnls_where_solvers_differ(self):
+        gk = _gamma_true(0.96, 0.35, 0.30, 0.10, 0.04, L=6) + _diverging_pert()
+        out_default = np.array(mrd._md_partition(gk))
+        out_nnls = np.array(mrd._md_partition(gk, nnls=True))
+        out_legacy = np.array(mrd._md_partition(gk, nnls=False))
+        # the case must actually discriminate, or this test proves nothing
+        self.assertFalse(np.allclose(out_nnls, out_legacy, atol=1e-6))
+        np.testing.assert_allclose(out_default, out_nnls, atol=1e-12)
+
+    def test_cli_flags_mutually_exclusive(self):
+        import subprocess
+        for mod in ("minimal_rankdiff.py", "rankdiff_kalman.py"):
+            r = subprocess.run(
+                [sys.executable, f"llm_fitting/{mod}", "facebook",
+                 "--nnls", "--legacy-clip"],
+                capture_output=True, text=True,
+                cwd=Path(__file__).resolve().parents[1])
+            self.assertNotEqual(r.returncode, 0)
+            self.assertIn("not allowed with", r.stderr)
 
 
 if __name__ == "__main__":

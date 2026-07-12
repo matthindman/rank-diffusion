@@ -180,3 +180,35 @@ owner's explicit adoption decision; full audit in MODEL_STATUS §2z-e/§2z-g.
   band edge — DECLARED here so it is not a post-hoc choice.
 - FB calibrated-scale language: "no calibration freedom used on 4–5 of 5
   splits across solver conventions" (NNLS selects 1.0 on 4/5).
+
+## 10. AMENDMENT A5 (2026-07-11, BEFORE any data processing): E2 membership must be TRAIN-ONLY (extension-leak fix); E4 conditioning made explicit
+
+No extension data has been read at the time of this amendment (WD mounted,
+untouched). Registered per the 2026-07-11 review round 4, which identified
+that §2's universe rule ("absence-penalized membership over the FULL
+extended window") would let extension-period activity select the 50,000
+endpoints entering E2's supposedly untouched forecast — the same selection
+error class as the Instagram pre-cut leak corrected in MODEL_STATUS §2z-f.
+Pre-registering a selection does not make it out-of-sample.
+
+- **E2 (frozen-parameter movement gate): membership is TRAIN-ONLY.** The
+  K = 12,500 / B = 50,000 universe is selected by absence-penalized
+  permanent rank computed on the EXISTING T=136 panel (2018-12..2021-06)
+  ONLY — no extension week may influence it. The 50,000 entity ids are
+  FROZEN (written to a members file whose SHA-256 is recorded in the run
+  archive BEFORE the forecast is scored) and carried into the 34-week
+  extension forecast via `restrict_universe(member_ids=...)` /
+  `rankdiff_kalman --member-ids-file` (the §2z-f machinery); weekly ranks
+  are recomputed within the fixed universe. Entities absent from the
+  extension remain members (their exits are part of the forecast target,
+  survivor-conditioning rules unchanged).
+- **E1 / E3 / E5 retain full-extended-window membership** — they are
+  parameter-transport and descriptive analyses of the extended panel, not
+  held-out forecasts; full-window membership is the standard in-sample
+  design there (§2's rule continues to govern them, including the
+  registered trailing-window membership-sensitivity report).
+- **E4 conditioning made explicit:** the "shared entity set" necessarily
+  conditions on extension presence; E4 is declared
+  SHARED-SURVIVOR-CONDITIONED and its pre-declared reading is unchanged.
+- **No threshold, tolerance, stack, band, or pass criterion changes.**
+  E2's criteria (§4) apply verbatim to the train-only-membership run.

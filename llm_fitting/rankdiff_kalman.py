@@ -1041,11 +1041,12 @@ if __name__ == "__main__":
                     help="extend D(h) moments to h=26,52 (long panels; see minimal_rankdiff)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
-    ap.add_argument("--nnls", action="store_true",
-                    help="exact NNLS in the MD moment solves -- the DEFAULT since "
-                         "the 2026-07-11 re-freeze (2z-g/A4); kept for compat")
-    ap.add_argument("--legacy-clip", action="store_true",
-                    help="REPRODUCTION ARM: pre-2026-07-11 clipped-OLS MD solves")
+    solver = ap.add_mutually_exclusive_group()
+    solver.add_argument("--nnls", action="store_true",
+                        help="exact NNLS in the MD moment solves -- the DEFAULT since "
+                             "the 2026-07-11 re-freeze (2z-g/A4); kept for compat")
+    solver.add_argument("--legacy-clip", action="store_true",
+                        help="REPRODUCTION ARM: pre-2026-07-11 clipped-OLS MD solves")
     ap.add_argument("--member-ids-file", default=None,
                     help="parquet (T0, entity_id): EXACT per-origin train-only "
                          "membership computed on the FULL population; required "

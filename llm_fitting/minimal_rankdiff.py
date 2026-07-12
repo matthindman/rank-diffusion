@@ -1447,13 +1447,14 @@ if __name__ == "__main__":
                          "(the b=1 restriction test; requires --mix-hetero)")
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
-    ap.add_argument("--nnls", action="store_true",
-                    help="exact NNLS in the MD moment solves -- the DEFAULT since "
-                         "the 2026-07-11 re-freeze (2z-g/A4); flag kept so recorded "
-                         "2z-e commands still run")
-    ap.add_argument("--legacy-clip", action="store_true",
-                    help="REPRODUCTION ARM: pre-2026-07-11 clipped-OLS MD solves "
-                         "(reproduces results recorded before the NNLS re-freeze)")
+    solver = ap.add_mutually_exclusive_group()
+    solver.add_argument("--nnls", action="store_true",
+                        help="exact NNLS in the MD moment solves -- the DEFAULT since "
+                             "the 2026-07-11 re-freeze (2z-g/A4); flag kept so recorded "
+                             "2z-e commands still run")
+    solver.add_argument("--legacy-clip", action="store_true",
+                        help="REPRODUCTION ARM: pre-2026-07-11 clipped-OLS MD solves "
+                             "(reproduces results recorded before the NNLS re-freeze)")
     ap.add_argument("--obs-frac", type=float, default=0.4, help="share of transitory variance treated as iid obs noise")
     ap.add_argument("--top-k", type=int, default=None,
                     help="top-coverage universe boundary K (applies to every platform listed)")
