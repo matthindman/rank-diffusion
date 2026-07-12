@@ -133,13 +133,24 @@ def main() -> None:
     ap.add_argument("t0", type=int)
     ap.add_argument("--top-k", type=int, required=True)
     ap.add_argument("--boot", type=int, default=500)
+    ap.add_argument("--ext-window", type=int, nargs=2, default=None,
+                    metavar=("LO", "HI"),
+                    help="EXPLORATORY subsample stability readout ONLY "
+                         "(never confirmatory): score extension residuals on "
+                         "periods [LO, HI) instead of [t0, T). Train stat "
+                         "unchanged (periods < t0). Default = registered E4.")
     a = ap.parse_args()
     df = mrd.load_panel(mrd.PLATFORMS[a.platform])
     df = mrd.restrict_universe(df, a.top_k, buffer_mult=4)
     score_k = df.attrs["score_k"]
     T = int(df["period"].max()) + 1
+    ext_lo, ext_hi = (a.t0, T) if a.ext_window is None else a.ext_window
+    if a.ext_window is not None:
+        print(f"EXPLORATORY ext-window [{ext_lo}, {ext_hi}) -- subsample "
+              f"stability readout, NOT the registered E4 (which scored "
+              f"[{a.t0}, {T}))")
     wtr = _window_panel(df, 0, a.t0, score_k)
-    wex = _window_panel(df, a.t0, T, score_k)
+    wex = _window_panel(df, ext_lo, ext_hi, score_k)
     shared = wtr.columns.intersection(wex.columns)
     print(f"train n={wtr.shape[1]:,}  ext n={wex.shape[1]:,}  "
           f"SHARED n={len(shared):,} (shared-survivor-conditioned, A5)")

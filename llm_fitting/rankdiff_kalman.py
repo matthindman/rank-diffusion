@@ -784,12 +784,13 @@ def _build_params_on(df_tr):
 def _estimate_fast(df_tr, obs_frac=0.5, temper=False, min_knot_n=None,
                    md_lags=None, t_tails=False, sigma_obs_fix=None, md_vr=False,
                    two_scale=False, mix_hetero=False, mix_b_fix=None, md_vr_long=False,
-                   nnls=True):
+                   nnls=True, eul_level=False):
     """Fast closed-form variance-partition estimator (per split, for rolling CV)."""
     return mrd.estimate(df_tr, obs_frac=obs_frac, temper=temper, min_knot_n=min_knot_n,
                         md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
                         md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero,
-                        mix_b_fix=mix_b_fix, md_vr_long=md_vr_long, nnls=nnls)
+                        mix_b_fix=mix_b_fix, md_vr_long=md_vr_long, nnls=nnls,
+                        eul_level=eul_level)
 
 
 def _gate_windows(T, n_splits, test_len=None, origins=None):
@@ -825,7 +826,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
                  md_vr=False, two_scale=False, mix_hetero=False, mix_b_fix=None,
                  md_vr_long=False, dist_scores=False, nnls=True,
-                 cond_home="state", member_ids_file=None,
+                 eul_level=False, cond_home="state", member_ids_file=None,
                  origins=None, test_len=None, expect_member_sha=None,
                  frozen_prefix=None):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
@@ -929,7 +930,8 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
         p = _estimate_fast(df_tr, obs_frac, temper=temper, min_knot_n=min_knot_n,
                            md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=so_fix,
                            md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero,
-                           mix_b_fix=mix_b_fix, md_vr_long=md_vr_long, nnls=nnls)
+                           mix_b_fix=mix_b_fix, md_vr_long=md_vr_long, nnls=nnls,
+                           eul_level=eul_level)
         scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
         p = replace_obs(p, scale)
         ed, erf, ec, ed_R = emp_dist(df_te, hor, return_R=True)  # held-out truth
@@ -1149,6 +1151,9 @@ if __name__ == "__main__":
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     solver = ap.add_mutually_exclusive_group()
+    ap.add_argument("--eul-level", action="store_true",
+                    help="Eulerian stationarity moment in the MD objective "
+                         "(A2 candidate fix; opt-in; see minimal_rankdiff)")
     solver.add_argument("--nnls", action="store_true",
                         help="exact NNLS in the MD moment solves -- the DEFAULT since "
                              "the 2026-07-11 re-freeze (2z-g/A4); kept for compat")
@@ -1205,7 +1210,7 @@ if __name__ == "__main__":
                          two_scale=args.two_scale, mix_hetero=args.mix_hetero,
                          mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
                          dist_scores=args.dist_scores,
-                         nnls=not args.legacy_clip,
+                         nnls=not args.legacy_clip, eul_level=args.eul_level,
                          cond_home=args.cond_home,
                          member_ids_file=args.member_ids_file,
                          origins=args.origins, test_len=args.test_len,

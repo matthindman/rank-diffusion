@@ -130,6 +130,16 @@ PLATFORMS = {
         max_rank=None,
         daily_path="data/ssd/derived/reddit_comments_2018-12_2022-12_daily.parquet",
         day_guard=False),
+    # EXPLORATORY ONLY (post-confirmation-report; protocol §5 §2z-q line):
+    # the extension era alone (T=77) for the E2 "oracle arm" — parameters
+    # estimated on extension-era data, later-block test. NOT a registered
+    # evaluation input; never cite against the registered E2.
+    "reddit_comments_ext_late": dict(
+        path="data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet",
+        id_col="endpoint_id", ts_col="date", metric_col="metric_value",
+        max_rank=None, date_min="2021-07-05",
+        daily_path="data/ssd/derived/reddit_comments_2018-12_2022-12_daily.parquet",
+        day_guard=False),
 }
 
 COLLISION_RANKS = [1, 2, 5, 10, 20, 50, 100]
@@ -422,10 +432,26 @@ def _solve_nonneg(X: np.ndarray, y: np.ndarray, nnls: bool) -> tuple[np.ndarray,
     return coef, float(np.sum((y - X @ coef) ** 2))
 
 
+def _samplevar_shrink(c: float, T: float) -> float:
+    """E[within-run sample variance (ddof=0) over T obs] of a unit-variance
+    stationary AR(1) with coefficient c is Var * (1 - S_T(c)/T^2), with
+    S_T(c) = T + 2 * sum_{k=1..T-1} (T-k) c^k.  This finite-window shrinkage
+    keeps the --eul-level stationary-variance moment row honest exactly where
+    it matters (slow-mixing head knots, c -> 1) and stays LINEAR in the
+    solver's (A, B, s_e^2) coefficients."""
+    T = max(float(T), 2.0)
+    n = int(T)
+    k = np.arange(1, n)
+    S = T + 2.0 * float(np.sum((T - k) * np.power(c, k)))
+    return max(1.0 - S / (T * T), 0.0)
+
+
 def _md_partition(gk: np.ndarray, s_e_fix: float | None = None,
                   d_mom: np.ndarray | None = None,
                   d_h: tuple = VR_MOM_H,
-                  nnls: bool = True) -> tuple[float, float, float, float, float]:
+                  nnls: bool = True,
+                  lev_mom: float | None = None,
+                  lev_T: float | None = None) -> tuple[float, float, float, float, float]:
     """Minimum-distance fit of the change-autocovariance function gamma_0..L
     (Chamberlain / Abowd-Card covariance-structure estimation) to
         X_it = h_it + xi_it + eps_it
@@ -450,12 +476,28 @@ def _md_partition(gk: np.ndarray, s_e_fix: float | None = None,
     (W-coef A = W(1-a)^2, V-coef B = V(1-phi)^2, as for the gammas).  These
     moments identify the home-reversion rate a where the gamma tail cannot
     (see VR_MOM_H note); the reversion grid extends to A_GRID_VR.
+
+    lev_mom / lev_T: the EULERIAN STATIONARITY MOMENT (--eul-level; the A2
+    candidate fix, activated by the E5 trigger, MODEL_STATUS §2z-q): the
+    empirical within-entity stationary LEVEL variance for the knot (measured
+    Lagrangian, by permanent rank — never by current rank), appended as one
+    more linear row.  Model value: W + V + s_e^2, each component shrunk by
+    its finite-window factor _samplevar_shrink(c, lev_T).  Change moments
+    leave the level split (W vs V at slow a) under-pinned; this row removes
+    that partition freedom with ZERO new components and no new knobs (row
+    unweighted, the objective's existing convention — declared).
     Returns (kappa, sigma_eta, phi, sigma_nu, sigma_e)."""
     L = len(gk) - 1
     if d_mom is not None:
         ok_d = np.isfinite(d_mom)
         d_mom = d_mom[ok_d]
         d_h = tuple(h for h, ok in zip(d_h, ok_d) if ok)
+    lev_target = None
+    if lev_mom is not None:
+        lev_T = float(lev_T if lev_T is not None else 100.0)
+        lev_target = float(lev_mom)
+        if s_e_fix is not None:
+            lev_target -= s_e_fix ** 2 * (1.0 - 1.0 / lev_T)
     if s_e_fix is not None:
         gk = gk.copy()
         gk[0] -= 2.0 * s_e_fix ** 2
@@ -463,6 +505,8 @@ def _md_partition(gk: np.ndarray, s_e_fix: float | None = None,
         if d_mom is not None:
             d_mom = d_mom - 2.0 * s_e_fix ** 2
     y = gk if d_mom is None or not len(d_mom) else np.concatenate([gk, d_mom])
+    if lev_target is not None:
+        y = np.concatenate([y, [lev_target]])
     best = (np.inf, None)
     for a in (A_GRID if d_mom is None else A_GRID_VR):
         for phi in PHI_GRID:
@@ -473,10 +517,16 @@ def _md_partition(gk: np.ndarray, s_e_fix: float | None = None,
             if d_mom is not None and len(d_mom):
                 rows += [[2.0 * (1 - a ** h) / (1 - a) ** 2,
                           2.0 * (1 - phi ** h) / (1 - phi) ** 2] for h in d_h]
+            n_gd = len(rows)
+            if lev_target is not None:
+                rows += [[_samplevar_shrink(a, lev_T) / (1 - a) ** 2,
+                          _samplevar_shrink(phi, lev_T) / (1 - phi) ** 2]]
             X = np.array(rows)
             if s_e_fix is None:
                 noise = np.array([[2.0], [-1.0]] + [[0.0]] * (n_g - 2)
-                                 + [[2.0]] * (len(rows) - n_g))
+                                 + [[2.0]] * (n_gd - n_g)
+                                 + ([[1.0 - 1.0 / lev_T]]
+                                    if lev_target is not None else []))
                 X = np.hstack([X, noise])
             coef, sse = _solve_nonneg(X, y, nnls)
             if sse < best[0]:
@@ -516,7 +566,9 @@ def _hstep_var(u: np.ndarray, same: np.ndarray, abar: np.ndarray, nk: int,
 
 def _md_partition2(gk: np.ndarray, s_e_fix: float | None = None,
                    d_mom: np.ndarray | None = None,
-                   d_h: tuple = VR_MOM_H, nnls: bool = True):
+                   d_h: tuple = VR_MOM_H, nnls: bool = True,
+                   lev_mom: float | None = None,
+                   lev_T: float | None = None):
     """Two-timescale minimum-distance fit (see A2_GRID note):
         X = h(OU slow, a in A2_GRID) + xi1(AR fast, phi1 in PHI_GRID)
           + xi2(AR medium, phi2 in PHI2_GRID) + eps(iid)
@@ -528,12 +580,20 @@ def _md_partition2(gk: np.ndarray, s_e_fix: float | None = None,
     ok_d = np.isfinite(d_mom)
     d_mom = d_mom[ok_d]
     d_h = tuple(h for h, ok in zip(d_h, ok_d) if ok)
+    lev_target = None
+    if lev_mom is not None:
+        lev_T = float(lev_T if lev_T is not None else 100.0)
+        lev_target = float(lev_mom)
+        if s_e_fix is not None:
+            lev_target -= s_e_fix ** 2 * (1.0 - 1.0 / lev_T)
     if s_e_fix is not None:
         gk = gk.copy()
         gk[0] -= 2.0 * s_e_fix ** 2
         gk[1] += s_e_fix ** 2
         d_mom = d_mom - 2.0 * s_e_fix ** 2
     y = np.concatenate([gk, d_mom])
+    if lev_target is not None:
+        y = np.concatenate([y, [lev_target]])
     best = (np.inf, None)
     for a in A2_GRID:
         for p2 in PHI2_GRID:
@@ -545,10 +605,15 @@ def _md_partition2(gk: np.ndarray, s_e_fix: float | None = None,
                 n_g = len(rows)
                 rows += [[2.0 * (1 - c ** h) / (1 - c) ** 2 for c in comps]
                          for h in d_h]
+                if lev_target is not None:
+                    rows += [[_samplevar_shrink(c, lev_T) / (1 - c) ** 2
+                              for c in comps]]
                 X = np.array(rows)
                 if s_e_fix is None:
                     noise = np.array([[2.0], [-1.0]] + [[0.0]] * (n_g - 2)
-                                     + [[2.0]] * len(d_h))
+                                     + [[2.0]] * len(d_h)
+                                     + ([[1.0 - 1.0 / lev_T]]
+                                        if lev_target is not None else []))
                     X = np.hstack([X, noise])
                 coef, sse = _solve_nonneg(X, y, nnls)
                 if sse < best[0]:
@@ -616,7 +681,7 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
              md_vr: bool = False, stat_factor: bool = False,
              two_scale: bool = False, mix_hetero: bool = False,
              mix_b_fix: float | None = None, md_vr_long: bool = False,
-             nnls: bool = True) -> RankParams:
+             nnls: bool = True, eul_level: bool = False) -> RankParams:
     """One-pass LAGRANGIAN estimator.
 
     Decompose X_i(t) = mu_i + xi_i(t) where mu_i is the entity's permanent level
@@ -651,7 +716,16 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
     lognormal renormalization is exactly 1 -- the factorized law).
     nnls: exact non-negative least squares in the MD moment solves instead of
     the legacy clipped-OLS convention (see _solve_nonneg; 2z-e audit).
+    eul_level: EULERIAN STATIONARITY MOMENT (--eul-level; the A2 candidate
+    fix activated by the §2z-q E5 trigger): append the per-knot empirical
+    within-entity stationary level variance (net of the common level path)
+    to the MD objective — pins W+V+s_e^2, the quantity the stationary head
+    law depends on and change moments under-identify.  Zero new components;
+    opt-in; adoption gated on cards holding and the frozen OOS gates not
+    degrading (A2).  Requires md_lags.
     """
+    if eul_level and not md_lags:
+        raise ValueError("eul_level requires md_lags (the MD partition)")
     if two_scale and not (md_lags and (md_vr or md_vr_long)):
         raise ValueError("two_scale requires md_lags and md_vr (the D(h) moments)")
     if mix_hetero and not temper:
@@ -709,6 +783,28 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
             good = np.isfinite(d).astype(float)
             d_list.append(_fill(good, np.where(np.isfinite(d), d, 0.0)))
 
+    lev_mom = lev_Tj = None
+    if eul_level:
+        # empirical stationary level variance, per knot: within-entity
+        # variance (ddof=0) of X net of the common LEVEL path (cumulative F),
+        # entity-weighted by run length; measured by PERMANENT rank (abar) —
+        # Lagrangian measurement of the Eulerian/stationary quantity.
+        lev_path = np.cumsum(F)
+        y_lev = X - lev_path[np.clip(per, 0, last_period)]
+        d_lev = pd.DataFrame({"e": eid, "a": abar, "y": y_lev})
+        ge = d_lev.groupby("e", sort=False)
+        var_i = ge["y"].var(ddof=0)
+        n_i = ge["y"].size()
+        a_i = ge["a"].first()
+        keep = n_i >= 8
+        wsum = np.bincount(a_i[keep], weights=n_i[keep], minlength=nk).astype(float)
+        lev_mom = np.divide(
+            np.bincount(a_i[keep], weights=(n_i[keep] * var_i[keep]), minlength=nk),
+            wsum, out=np.zeros(nk), where=wsum > 0)
+        lev_Tj = np.divide(
+            np.bincount(a_i[keep], weights=(n_i[keep] * n_i[keep]), minlength=nk),
+            wsum, out=np.full(nk, 8.0), where=wsum > 0)
+
     ent_per_knot = None
     if min_knot_n is not None:
         first = np.r_[True, eid[1:] != eid[:-1]]
@@ -716,6 +812,9 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
         gs = _pool_sparse(gs, ct, ent_per_knot, min_knot_n)
         if d_list:
             d_list = _pool_sparse(d_list, ct, ent_per_knot, min_knot_n)
+        if lev_mom is not None:
+            lev_mom, lev_Tj = _pool_sparse([lev_mom, lev_Tj], ct,
+                                           ent_per_knot, min_knot_n)
     g0, g1, g2 = gs[0], gs[1], gs[2]
 
     kappa_z = None
@@ -735,13 +834,17 @@ def estimate(df: pd.DataFrame, obs_frac: float = 0.5, temper: bool = False,
                 continue
             d_j = np.array([d[j] for d in d_list]) if d_list else None
             sef = None if so_fix is None else float(so_fix[j])
+            lm_j = float(lev_mom[j]) if lev_mom is not None else None
+            lt_j = float(lev_Tj[j]) if lev_Tj is not None else None
             if two_scale:
                 (kap, s_eta, ph, s_nu, ph2, s_nu2, s_e) = _md_partition2(
-                    gmat[j], s_e_fix=sef, d_mom=d_j, d_h=d_hs, nnls=nnls)
+                    gmat[j], s_e_fix=sef, d_mom=d_j, d_h=d_hs, nnls=nnls,
+                    lev_mom=lm_j, lev_T=lt_j)
                 phi2[j], sigma_trans2[j] = ph2, s_nu2
             else:
                 kap, s_eta, ph, s_nu, s_e = _md_partition(
-                    gmat[j], s_e_fix=sef, d_mom=d_j, d_h=d_hs, nnls=nnls)
+                    gmat[j], s_e_fix=sef, d_mom=d_j, d_h=d_hs, nnls=nnls,
+                    lev_mom=lm_j, lev_T=lt_j)
             kappa_z[j], sigma_perm[j], phi[j] = kap, s_eta, ph
             sigma_trans[j], sigma_obs[j] = s_nu, s_e
     else:
@@ -1297,7 +1400,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  spec_b: bool = False, md_vr: bool = False,
                  stat_factor: bool = False, two_scale: bool = False,
                  mix_hetero: bool = False, mix_b_fix: float | None = None,
-                 md_vr_long: bool = False, nnls: bool = True, **sim_kw) -> dict:
+                 md_vr_long: bool = False, nnls: bool = True,
+                 eul_level: bool = False, **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -1321,7 +1425,7 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
             + (" stat-factor" if stat_factor else "")
             + (" two-scale" if two_scale else "")
             + (" mix-b" if mix_hetero else "")
-            + (" NNLS" if nnls else ""))
+            + (" NNLS" if nnls else "") + (" eul-level" if eul_level else ""))
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
           f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}{opts}\n{'='*72}")
 
@@ -1344,7 +1448,7 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  md_lags=md_lags, t_tails=t_tails, sigma_obs_fix=sigma_obs_fix,
                  md_vr=md_vr, stat_factor=stat_factor, two_scale=two_scale,
                  mix_hetero=mix_hetero, mix_b_fix=mix_b_fix, md_vr_long=md_vr_long,
-                 nnls=nnls)
+                 nnls=nnls, eul_level=eul_level)
     if mix_hetero:
         tag = " (IMPOSED -- restriction test)" if mix_b_fix is not None else \
               " (s(h*)/s(1) horizon moment)"
@@ -1462,6 +1566,11 @@ if __name__ == "__main__":
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     solver = ap.add_mutually_exclusive_group()
+    ap.add_argument("--eul-level", action="store_true",
+                    help="Eulerian stationarity moment (A2 candidate fix, "
+                         "activated by the 2z-q E5 trigger): append the "
+                         "empirical per-knot stationary level variance to "
+                         "the MD objective; opt-in, zero new components")
     solver.add_argument("--nnls", action="store_true",
                         help="exact NNLS in the MD moment solves -- the DEFAULT since "
                              "the 2026-07-11 re-freeze (2z-g/A4); flag kept so recorded "
@@ -1494,6 +1603,6 @@ if __name__ == "__main__":
                      md_vr=args.md_vr, stat_factor=args.stat_factor,
                      two_scale=args.two_scale, mix_hetero=args.mix_hetero,
                      mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
-                     nnls=not args.legacy_clip,
+                     nnls=not args.legacy_clip, eul_level=args.eul_level,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
                      factor_head_damp=args.factor_head_damp)
