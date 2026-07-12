@@ -488,6 +488,36 @@ class TestE1Helpers(unittest.TestCase):
         self.assertIs(sig.parameters["daily_path"].default,
                       inspect.Parameter.empty)
 
+    def test_legacy_arm_default_locked_and_forwarded(self):
+        # A4 both-solves sensitivity arm: _quantities defaults to the A4
+        # NNLS estimator and forwards nnls verbatim to mrd.estimate --
+        # the legacy arm must not be reachable by accident
+        import inspect
+        import types
+        import minimal_rankdiff as mrd
+        import spec_b_sigma_obs as sb
+        self.assertIs(inspect.signature(e1._quantities)
+                      .parameters["nnls"].default, True)
+        captured = []
+        fake_p = types.SimpleNamespace(kappa_z=np.linspace(0.01, 0.1, 24),
+                                       temper_s=0.7)
+        orig = (mrd.estimate, mrd.estimate_temperament,
+                sb.load_daily, sb.spec_b_curve)
+        mrd.estimate = lambda df, **kw: (captured.append(kw), fake_p)[1]
+        mrd.estimate_temperament = lambda df, **kw: {"s": 0.7}
+        sb.load_daily = lambda ids, path, day_guard: None
+        sb.spec_b_curve = lambda df, daily: {"z": [0.0], "sigma_obs": [0.1]}
+        try:
+            df = pd.DataFrame({"entity_id": ["a"], "period": [0],
+                               "metric": [1.0]})
+            e1._quantities(df, "t", daily_path="X")
+            e1._quantities(df, "t", daily_path="X", nnls=False)
+        finally:
+            (mrd.estimate, mrd.estimate_temperament,
+             sb.load_daily, sb.spec_b_curve) = orig
+        self.assertIs(captured[0]["nnls"], True)     # default = A4 NNLS
+        self.assertIs(captured[1]["nnls"], False)    # arm forwards legacy
+
 
 class TestE5Trigger(unittest.TestCase):
     def test_registered_algebra(self):

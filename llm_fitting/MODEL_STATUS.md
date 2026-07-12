@@ -3144,6 +3144,47 @@ python3 -u llm_fitting/e4_kappa_transport.py reddit_comments_ext 136 --top-k 125
 python3 -u llm_fitting/e5_headlaw.py reddit_comments_ext --top-k 12500
 ```
 
+## 2z-r. 2026-07-12 — A4 both-solves sensitivity EXECUTED (declared pre-outcome, delayed by the §2z-q tooling gap): every E1 verdict component is SOLVER-ROBUST; s and b8 are bit-identical across solves (solver-invariant by construction, now verified); the κ head/mid inversion is PRESENT UNDER BOTH solves and larger under legacy
+
+**What and why.** A4 declared, before any outcome existed: "the E1 readout
+reports both solves if any transported parameter sits within 10% of a band
+edge." The contingency fired in §2z-q (b8 = 0.9699, 0.0199 from the 0.95
+edge; threshold 0.02 = 10% of band width) but the frozen runner had no
+legacy arm — recorded there as a tooling gap, not patched mid-battery.
+Executed now as the DECLARED-DELAYED SENSITIVITY (SI-grade; cannot alter
+the A6.7 verdict — s fails robustly regardless): `--legacy-clip` added to
+`e1_transport.py` (additive; `_quantities(nnls=True)` default locked +
+forwarding locked by test; `--make-reference --legacy-clip` fail-closed —
+the frozen NNLS reference is never rewritten, hash re-verified
+f78a6ee2…c298). Suite **120 green** (119 + 1); the NNLS score re-ran first
+and REPRODUCED §2z-q byte-identically (free reproduction check).
+
+**Readout (log `runs/2026-07-12_confirmation/restart/e1_transport_a4_sensitivity.log`):**
+
+| quantity | T=136 ref NNLS (frozen) | T=136 ref legacy | ext NNLS (§2z-q) | ext legacy |
+|---|---|---|---|---|
+| s | 0.6922 | **0.6922** | 0.8319 | **0.8319** |
+| b8 | 1.0163 | **1.0163** | 0.9699 | **0.9699** |
+| κ head/mid/deep | .0050/.0198/.0191 | .0061/.0173/.0191 | .0390/.0379/.0591 | .0410/.0364/.0591 |
+| Spec-B range | 0.071–0.248 | 0.071–0.248 | (max dev 7.3%) | 0.067–0.253 |
+
+**Conclusions (each mechanical):** (1) s and b8 are BIT-IDENTICAL across
+solves on both panels — they derive from the temperament moment, which
+never touches the MD solve; the b8 band-edge proximity that fired the
+contingency is itself solver-invariant, so the contingency closes with no
+caveat. (2) The κ head/mid inversion is NOT a solver artifact: legacy
+inverts by MORE (head−mid +0.0046 vs NNLS +0.0011), and the κ level shift
+(~4–8× the reference) appears under both solves. (3) Spec-B passes under
+both conventions. **Every E1 verdict component is solver-robust; the A4
+both-solves obligation is fully discharged.** Verdicts unchanged: E1 FAIL,
+A6.7 MIXED EVIDENCE.
+
+Reproduction:
+```
+python3 -u llm_fitting/e1_transport.py --score 136 \
+    --platform reddit_comments_ext --legacy-clip
+```
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

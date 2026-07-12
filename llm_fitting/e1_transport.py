@@ -82,13 +82,16 @@ def kappa_orientation_ok(bands12) -> bool:
     return min(m, d) > h + 1e-9
 
 
-def _quantities(df, tag: str, daily_path: str) -> dict:
+def _quantities(df, tag: str, daily_path: str, nnls: bool = True) -> dict:
     """daily_path is REQUIRED (round-6 review P0: a hardcoded
     reddit_comments daily path fed FROZEN-period dailies to the extension
-    Spec-B calculation; the caller must pass the platform's own path)."""
+    Spec-B calculation; the caller must pass the platform's own path).
+    nnls=True is the A4 frozen estimator; nnls=False is the legacy-clip
+    reproduction arm, used ONLY by the --legacy-clip sensitivity readout
+    (A4's declared both-solves contingency; never affects the verdict)."""
     import spec_b_sigma_obs as sb
     p = mrd.estimate(df, temper=True, min_knot_n=8, md_lags=6, t_tails=True,
-                     mix_hetero=True)
+                     mix_hetero=True, nnls=nnls)
     daily = sb.load_daily(set(df["entity_id"].unique()),
                           path=daily_path, day_guard=False)
     cur = sb.spec_b_curve(df, daily)
@@ -180,6 +183,44 @@ def score(platform: str, t0: int, boot: int = 100) -> None:
     print(f"  specb max band rel dev = {rel.max():.3f}  (tol {SPECB_TOL}) "
           f"-> {'PASS' if ok_f else 'FAIL'}")
     print(f"E1 VERDICT: {'PASS (all four)' if all([ok_s, ok_b, ok_k, ok_f]) else 'FAIL'}")
+    return seg
+
+
+def legacy_sensitivity(platform: str, t0: int, seg=None) -> None:
+    """A4 DECLARED-DELAYED BOTH-SOLVES SENSITIVITY (SI-grade; cannot alter
+    the registered E1 verdict). A4 declared: 'the E1 readout reports both
+    solves if any transported parameter sits within 10% of a band edge' —
+    triggered by b8 (0.9699, 0.0199 from the 0.95 edge, threshold 0.02 =
+    10% of band width). The frozen runner lacked this arm at battery time
+    (tooling gap recorded in §2z-q); executed late with disclosure.
+    Computes the four quantities under the legacy-clip solve on BOTH the
+    extension segment and the frozen T=136 panel (like-for-like), writes
+    NO files, changes NO verdict. s/b8 (temperament moment) and Spec-B
+    (daily replication floor) are solver-invariant by construction — their
+    equality across arms is itself a check the arm is wired correctly."""
+    print(f"\n=== A4 both-solves sensitivity (legacy-clip arm) — DECLARED "
+          f"pre-outcome in A4, executed late (tooling gap); SI-grade, "
+          f"non-gating ===")
+    if seg is None:
+        df = mrd.load_panel(mrd.PLATFORMS[platform])
+        df = mrd.restrict_universe(df, K, buffer_mult=BUF)
+        seg = df[df["period"] >= t0].copy()
+        seg["period"] -= t0
+    q_ext = _quantities(seg, f"extension_T0={t0}_legacy",
+                        daily_path=daily_path_for(platform), nnls=False)
+    ref_df = mrd.load_panel(mrd.PLATFORMS["reddit_comments"])
+    ref_df = mrd.restrict_universe(ref_df, K, buffer_mult=BUF)
+    q_ref = _quantities(ref_df, "reference_T136_legacy",
+                        daily_path=daily_path_for("reddit_comments"),
+                        nnls=False)
+    for q, what in ((q_ref, "T=136 reference (legacy)"),
+                    (q_ext, f"extension T0={t0} (legacy)")):
+        print(f"  {what}: s={q['s']:.4f}  b8={q['b8']:.4f}  "
+              f"kappa head/mid/deep={q['kappa_head']:.4f}/"
+              f"{q['kappa_mid']:.4f}/{q['kappa_deep']:.4f}  "
+              f"specb {q['specb_sigma'][0]:.3f}..{q['specb_sigma'][-1]:.3f}")
+    print("  (registered NNLS verdict unchanged; this readout is the A4 "
+          "sensitivity only)")
 
 
 if __name__ == "__main__":
@@ -188,8 +229,16 @@ if __name__ == "__main__":
     g.add_argument("--make-reference", action="store_true")
     g.add_argument("--score", type=int, metavar="T0")
     ap.add_argument("--platform", default="reddit_comments_ext")
+    ap.add_argument("--legacy-clip", action="store_true",
+                    help="ALSO run the A4 both-solves sensitivity readout "
+                         "(legacy-clip arm; SI-grade; verdict unchanged)")
     a = ap.parse_args()
     if a.make_reference:
+        if a.legacy_clip:
+            raise SystemExit("--legacy-clip is a --score sensitivity readout; "
+                             "the frozen reference is NNLS-only (A4)")
         make_reference()
     else:
-        score(a.platform, a.score)
+        seg = score(a.platform, a.score)
+        if a.legacy_clip:
+            legacy_sensitivity(a.platform, a.score, seg=seg)

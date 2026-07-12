@@ -160,6 +160,15 @@ E3. **Descriptive card + bands** on the extended panel with the §2s comments
   §2z-q; archive `llm_fitting/runs/2026-07-12_confirmation/restart/`
   (all logs + MANIFEST.sha256). Anything after this line touching the
   extension is EXPLORATORY and labeled so.
+- 2026-07-12: the **A4 both-solves E1 readout EXECUTED** (declared
+  pre-outcome in A4; fired on b8's band-edge proximity; delayed by the
+  §2z-q tooling gap, disclosed). Result: every E1 verdict component is
+  solver-robust — s and b8 bit-identical across solves (temperament
+  moment, solver-invariant); the κ head/mid inversion present under both
+  solves (legacy larger); Spec-B passes under both. Verdicts unchanged.
+  Record MODEL_STATUS §2z-r; log
+  `restart/e1_transport_a4_sensitivity.log`. The A4 contingency is fully
+  discharged.
 
 ## 6. AMENDMENT A1 (2026-07-05, same day, BEFORE any data processing): κ_i secondary diagnostic + surrogate-adjusted residual reference
 

@@ -1,0 +1,11 @@
+E1 transport, segment T0=136 (T_seg=77):
+  s   = 0.8319  band (0.64, 0.74)  -> FAIL   [block-boot CI 0.845, 0.897; sub-window ref 0.64-0.67 — non-gating]
+  b8  = 0.9699  band (0.95, 1.15)  -> PASS   (frozen h=8 both sides; ref 1.0163)
+  kappa head/mid/deep = 0.0390/0.0379/0.0591  (ref 0.0050/0.0198/0.0191)  head-most-persistent -> FAIL
+  specb max band rel dev = 0.073  (tol 0.25) -> PASS
+E1 VERDICT: FAIL
+
+=== A4 both-solves sensitivity (legacy-clip arm) — DECLARED pre-outcome in A4, executed late (tooling gap); SI-grade, non-gating ===
+  T=136 reference (legacy): s=0.6922  b8=1.0163  kappa head/mid/deep=0.0061/0.0173/0.0191  specb 0.071..0.248
+  extension T0=136 (legacy): s=0.8319  b8=0.9699  kappa head/mid/deep=0.0410/0.0364/0.0591  specb 0.067..0.253
+  (registered NNLS verdict unchanged; this readout is the A4 sensitivity only)

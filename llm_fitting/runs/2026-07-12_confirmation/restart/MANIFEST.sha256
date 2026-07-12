@@ -20,3 +20,5 @@ f8bed8397a40ee8f05c60c9720dd6db47e01695f76a011f2dfcbc405dca720ae  llm_fitting/ru
 cf0166f861c47472425de04e1cabd9847cdded25dc65467db93450390f0addcd  llm_fitting/runs/2026-07-12_confirmation/restart/e3_surrogate.log
 7207b1daa88fb151d3bf1cc84e087febe8efe78251bf2e2bf6d780d4d6f8e0dc  llm_fitting/runs/2026-07-12_confirmation/restart/e4_kappa_transport.log
 9461e19e58e9ad864219e283de9fd64642a4ed09ba518549966692da444c9c14  llm_fitting/runs/2026-07-12_confirmation/restart/e5_headlaw.log
+# addendum 2026-07-12 (A4 both-solves sensitivity, declared-delayed; MODEL_STATUS 2z-r)
+6a6572d6749b6768f207f79f90c135a91b6697e4fba378ee147f541149528c94  llm_fitting/runs/2026-07-12_confirmation/restart/e1_transport_a4_sensitivity.log
