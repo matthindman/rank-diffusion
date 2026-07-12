@@ -90,6 +90,12 @@ E3. **Descriptive card + bands** on the extended panel with the §2s comments
   `build_extension_weekly.py` from the frozen weekly + the extended daily,
   then gated. Frozen-baseline hashes pinned (manifest): weekly
   b00ee41f…0041, daily 19ea5eeb…2323.
+- 2026-07-12: **OWNER ACKNOWLEDGMENT RECORDED** — the owner explicitly
+  acknowledges the timeline construction above ("data processing" = analysis
+  contact for A6–A9 amendment validity; the mechanical aggregation preceded
+  those commits; no analysis has read an extension observation) **and gives
+  the GO for E1–E5**, to be executed once, exactly as registered under
+  A1–A9, by the §2z-n go-time sequence.
 
 ## 6. AMENDMENT A1 (2026-07-05, same day, BEFORE any data processing): κ_i secondary diagnostic + surrogate-adjusted residual reference
 
