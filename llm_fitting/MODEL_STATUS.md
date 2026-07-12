@@ -3185,7 +3185,7 @@ python3 -u llm_fitting/e1_transport.py --score 136 \
     --platform reddit_comments_ext --legacy-clip
 ```
 
-## 2z-s. 2026-07-12 — EXPLORATORY post-battery diagnostics (labeled per the §5 protocol line; nothing here amends E1–E5): the s failure is a SECULAR TREND, not composition; the E2 tail under-dispersion is parameter-vintage-consistent; the boundary excess is UNIVERSE-WIDE hazard, not a shell artifact; the E4 knife-edge resolves DOWNWARD
+## 2z-s. 2026-07-12 — EXPLORATORY post-battery diagnostics (labeled per the §5 protocol line; nothing here amends E1–E5): the s failure is a SECULAR TREND, not composition; _[LANGUAGE REFINED same-day, §2z-u: "ERA-DOMINANT rise, already visible inside the frozen period" is the binding phrasing — composition is small (+0.018 mean contrast; ~+0.04 within the extension window) but not irrelevant at 0.575 membership overlap]_ the E2 tail under-dispersion is parameter-vintage-consistent; the boundary excess is UNIVERSE-WIDE hazard, not a shell artifact; the E4 knife-edge resolves DOWNWARD
 
 All four diagnostics from the adjudicated post-battery plan, run on the
 extension AFTER the §2z-q report was committed, all EXPLORATORY. Logs +
@@ -3314,6 +3314,102 @@ remaining limitations; the first candidate head-law fix was implemented
 and refuted by its own pre-declared gates." One disclosed
 post-registration pre-outcome technical correction (A10); never "exactly
 as originally preregistered."
+
+## 2z-u. 2026-07-12 — Two independent external reviews of §2z-s/§2z-t adjudicated: all verdicts CONFIRMED (one reran the suite: 126 green); language refinements ADOPTED; the claim-set proposal SUPERSEDED by the reviewer's softer text; execution order re-sequenced (vintage-policy gates before head-law design); owner keystrokes pending on §6 adoption and execution go
+
+Both reviews verified the archived numbers independently; neither found a
+computational error; both endorse the variant-1 rejection and reject any
+rescue by the favorable FB gate/card. Adopted refinements (each now the
+binding phrasing of the record):
+
+1. **s (2a):** "era-dominant increase, consistent with a secular rise
+   already visible inside the frozen period" — NOT "secular trend, not
+   composition" (composition is small, ~+0.04 within the extension-window
+   contrast at 0.575 membership overlap, not zero; the matched windows
+   rule out the 77-week length effect specifically, not every window
+   effect). Registration-design lesson for the SI and ALL future
+   protocols (Wikipedia mini-protocol included): transport bands for
+   parameters require a PRIOR TREND TEST on the training panel; a
+   significant trend makes the band an extrapolation interval, not a
+   sample interval — the [0.64, 0.74] band averaged a quantity whose own
+   sub-windows already spanned 0.11 of drift.
+2. **Oracle arm (2b):** "tail calibration is parameter-vintage-CONSISTENT;
+   the oracle arm does not causally isolate s" (all parameters re-estimated,
+   different block/membership, scale 0.15, calmer era, loses rel-err to the
+   stabilized-era baseline). Placement: exploratory/Discussion, never near
+   the confirmatory E2 claim. The IDENTIFYING test is the declared
+   trailing-window vintage policy run through the EXISTING five-split
+   rolling gates on the frozen panels, scale pinned — same blocks, same
+   baselines, only the vintage rule varies.
+3. **Boundary (2c):** relative excess largest in the CORE (4.0×); ABSOLUTE
+   excess largest in the MID-BAND (~0.047 vs ~0.004 core); shell nearly
+   right (1.26×). "Deep-displacement tail / exit-hazard interaction" is a
+   HYPOTHESIS, not an identified mechanism. Discriminator adopted for the
+   next measurement: crossings vs absences, PLUS conditioning sim core-exit
+   events on the exiting entity's v_i quintile — v-concentrated exits
+   merge this with the E5 head-law family; v-flat exits point at the
+   hazard machinery.
+4. **E4 (2d):** the second half is an overlapping subset — a STABILITY
+   analysis, not an independent replication; it removes the
+   threshold-accident reading, no more.
+5. **§2z-t scope:** the refutation is of "the within-entity level-variance
+   IMPLEMENTATION of the Eulerian constraint" — never generalized to
+   Eulerian stationarity constraints as a class. The FB-gate/card
+   improvement under the head-wrecking constraint shows mid-band level
+   information and the head problem are SEPARABLE — the next anchor may
+   bind only where registered (head third), pre-declared, not
+   all-or-nothing across knots.
+6. **Paper evidence tiers (adopted):** registered confirmation (E1–E5) /
+   delayed registered sensitivity (A4 both-solves) / post-confirmation
+   exploratory diagnostics (§2z-s) / post-confirmation development
+   negative result (§2z-t) — labeled as four distinct classes throughout.
+
+**CLAIM-SET PROPOSAL, SUPERSEDING the §2z-t draft** (the §2z-t copy is now
+a superseded draft; on owner adoption this text moves to §6 as the single
+binding copy — the two-live-copies drift risk is declared):
+
+> A parsimonious permanent–transitory rank model trained through June 2021
+> transported the registered central conditional-movement moments into a
+> later era without recalibration: relative moment error was 0.032 versus
+> 0.171 for historical mobility, with median displacement reproduced at
+> h=1, 4, and 13. Proper-score performance remained approximately at par
+> with persistence, however, and upper movement tails were
+> under-dispersed. Parameter transport was mixed: amplitude heterogeneity
+> s failed its registered band and post-confirmation analyses showed an
+> era-dominant increase already visible in the frozen period; κ
+> orientation also failed and κ levels shifted, while the horizon-scaling
+> exponent and observation-noise shape transported. The model generated an
+> excessively concentrated stationary head, now confirmed on a third
+> instrument. An exploratory oracle analysis was consistent with a
+> parameter-vintage explanation for tail calibration, but did not isolate
+> its cause. The first candidate stationary-law correction — a
+> within-entity level-variance anchor — was rejected by its own adoption
+> gates.
+
+Presentation emphasis (the one inter-reviewer divergence, adjudicated):
+the s trend is presented as a titled finding with the 0.65→0.75→0.84
+figure — the confirmation design produced it — but the CLAIM text stays
+the qualified version above ("measured and decomposed", not
+"discovered"; the sub-window range was on record in §2g-X P3).
+
+**Execution order (re-sequenced per review 1, endorsed):** (1) owner
+adopts the claim set → §6 + outline edit with the four-tier labeling;
+(2) vintage-policy gates on the frozen panels (small, registered
+machinery, feeds the paper's limitation section); (3) head-law
+measure-and-design phase on DEV PANELS ONLY under the 8-point spec
+recorded from review 2 (permanent-rank bands; weekly common level
+removed; ladder curvature smoothed; home-dispersion vs within-entity
+drift separated; model-implied moment derived analytically — try the
+Gaussian order-statistic linearization BEFORE any indirect-inference
+machinery; weight fixed by sampling uncertainty or invariant
+normalization, never by head-law fit; directional predictions
+pre-declared; adoption gates unchanged) + the 2c crossings/absences/
+v-quintile discriminator; (4) Wikipedia pageviews mini-protocol
+(trend-aware bands) + acquisition — owner-gated, wall-clock-bound,
+start in parallel. Any model produced from step 3 CANNOT be confirmed
+on the 2021–22 comments extension (it now informs development);
+confirmation requires a new period, platform, or the submissions
+extension.
 
 ## 3. The three corrected estimation pitfalls (do not regress)
 
