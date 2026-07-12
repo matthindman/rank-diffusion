@@ -74,6 +74,22 @@ E3. **Descriptive card + bands** on the extended panel with the §2s comments
   NOT started; no extension data has been read. Owner action required:
   mount the WD drive and run the DATA_PHASE2_REPORT.md resume command, then
   execute §3 exactly.
+- 2026-07-12 (readiness check, MODEL_STATUS §2z-n): the owner-side
+  aggregation resume RAN 2026-07-11T22:48Z..2026-07-12T10:46Z (18/18
+  months ok, errors = 0 per the processing log). TIMELINE DISCLOSURE:
+  amendments A6–A9 were committed after that mechanical aggregation began
+  but derive exclusively from frozen-panel dry runs, code audits, and
+  synthetic tests — no extension observation has been read by any analysis
+  (verified: only log/manifest metadata inspected). "Data processing" in
+  §0 is construed as ANALYSIS CONTACT for amendment validity; the owner
+  must explicitly acknowledge this construction before E1–E5 runs.
+  WARNING: the pipeline also built
+  `reddit_comments_2018-12_2022-12_weekly.parquet` with the Monday-fold
+  builder — it is PRESUMED to contain the A6.1 boundary fold and is NOT a
+  registered input; the registered weekly panel is produced by
+  `build_extension_weekly.py` from the frozen weekly + the extended daily,
+  then gated. Frozen-baseline hashes pinned (manifest): weekly
+  b00ee41f…0041, daily 19ea5eeb…2323.
 
 ## 6. AMENDMENT A1 (2026-07-05, same day, BEFORE any data processing): κ_i secondary diagnostic + surrogate-adjusted residual reference
 

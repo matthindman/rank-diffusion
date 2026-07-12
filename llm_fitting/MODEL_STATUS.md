@@ -2701,6 +2701,61 @@ parse-error field is mechanically enforced, I give the go"), the
 reviewer's final condition is now met. **E1–E5 executes on the owner's
 word, once, exactly as registered.**
 
+## 2z-n. 2026-07-12 — T9 readiness check for the confirmation battery: 25/25 input checks pass (two initial flags adjudicated as check artifacts); DISCOVERED that the owner-side aggregation already ran (timeline disclosed, owner acknowledgment required); frozen baselines hash-pinned; the pipeline's naive extended weekly is quarantined
+
+**Checklist (read-only; no extension observation read — only log/manifest
+metadata and file sizes inspected):**
+- Mounts: T9 via `data/ssd` ✓; WD Passport ✓ (18/18 extension monthlies
+  present, none zero-byte).
+- Frozen registered artifacts: `e2_members_t136.parquet` and
+  `e1_reference.json` match their protocol pins and the manifest ✓;
+  members = 50,000 unique ids at T0=136 ✓; reference fields intact
+  (s=0.6922, b8=1.0163) ✓.
+- Frozen weekly panel (the E2 prefix baseline): T=136 ✓; last week
+  2021-06-28 partial with EXACTLY the recorded signature (110,508 rows /
+  154,761,599 metric total) ✓; schema = the 7 registered columns ✓; no
+  duplicate keys ✓. Adjudicated flag #1: the FIRST weekly row (2018-11-26)
+  is also partial — it covers Dec 1–2 only (daily data starts 2018-12-01);
+  frozen design, no leak possible (nothing earlier exists), my check's
+  expectation was wrong, not the panel.
+- Frozen daily panel: ends 2021-06-30 ✓; 943 days (recorded census) ✓;
+  carries ALL weekly numeric metrics (assembler + gate requirement) ✓.
+- Logs: processing log exists with all A9-required columns ✓; latest
+  comments records errors == 0 for every month on file ✓. Adjudicated flag
+  #2: the coverage-schema probe had grabbed the FB coverage file; the
+  comments coverage logs have exactly the required schema ✓.
+- **Frozen-baseline hashes now pinned in the manifest** (they are the E2
+  `--frozen-prefix` comparison baseline; integrity must be checkable):
+  weekly `b00ee41f7d2813e7…0041`, daily `19ea5eeb846cd775…2323`.
+
+**DISCOVERY (material, disclosed):** the extension aggregation ALREADY RAN
+— owner-side resume, 2026-07-11T22:48Z..2026-07-12T10:46Z, 18/18 months
+status ok with errors = 0 (processing log), and the pipeline built
+`reddit_comments_2018-12_2022-12_{daily,weekly}` this morning. Two
+consequences, both recorded in the protocol §5 status:
+1. *Timeline vs registration language:* amendments A6–A9 were committed
+   AFTER that mechanical aggregation began. They derive exclusively from
+   frozen-panel dry runs, code audits, and synthetic tests — no extension
+   observation has been read by any analysis session. §0's "before data
+   processing" is construed as ANALYSIS CONTACT for amendment validity;
+   this construction is disclosed rather than discovered, and the OWNER
+   MUST EXPLICITLY ACKNOWLEDGE it before E1–E5 runs. (The alternative —
+   voiding A6–A9 — would run the battery with a κ criterion its own frozen
+   reference fails, which is strictly worse than the disclosed reading.)
+2. *The pipeline's extended weekly is QUARANTINED:* it was built by the
+   Monday-fold builder and is presumed to contain the A6.1 boundary fold
+   (July 1–4 folded into E2 training period 135). It is NOT a registered
+   input and must not be opened; the registered path is
+   `build_extension_weekly.py` (frozen weekly + the extended DAILY, which
+   is fold-free at day level) → the 6-input intake gate. I did not open
+   either extended parquet.
+
+**Go-time sequence (unchanged, now with every input verified present):**
+(1) owner acknowledges the timeline construction; (2) assemble the
+registered weekly via `build_extension_weekly.py`; (3)
+`check_extension_panel.py` on the 6 inputs must print PASS; (4)
+E1→E2→E3→E4→E5 exactly as registered; (5) the confirmation report.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
