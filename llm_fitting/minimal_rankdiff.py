@@ -116,6 +116,20 @@ PLATFORMS = {
         path="data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet",
         id_col="endpoint_id", ts_col="date", metric_col="metric_value",
         max_rank=None, daily_path=_ERA_DAILY["reddit_comments"], day_guard=False),
+    # CONFIRMATION EXTENSION (protocol A1-A9; registered 2026-07-12, owner
+    # go in protocol §5).  path = the REGISTERED weekly assembled by
+    # build_extension_weekly.py (frozen prefix byte-identical + complete
+    # weeks 2021-07-05..2022-12-19) -- NEVER the pipeline's Monday-fold
+    # reddit_comments_2018-12_2022-12_weekly.parquet (quarantined, A6.1
+    # boundary fold).  daily_path REQUIRED (A7: E1 Spec-B uses the
+    # extension dailies).  This entry is inert until the execution session
+    # builds the file and the 6-input intake gate prints PASS.
+    "reddit_comments_ext": dict(
+        path="data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet",
+        id_col="endpoint_id", ts_col="date", metric_col="metric_value",
+        max_rank=None,
+        daily_path="data/ssd/derived/reddit_comments_2018-12_2022-12_daily.parquet",
+        day_guard=False),
 }
 
 COLLISION_RANKS = [1, 2, 5, 10, 20, 50, 100]
