@@ -1123,7 +1123,7 @@ def _tdraw(rng, df: float, n: int) -> np.ndarray:
 
 def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=True,
              factor_head_damp: float = 1.0, kappa: float | None = None, track: int = 4000,
-             top_record: int | None = None) -> dict:
+             top_record: int | None = None, track_ids: bool = False) -> dict:
     # kappa: None -> per-knot MD-estimated kappa_z when available, else p.kappa
     rng = np.random.default_rng(seed)
     N = p.N
@@ -1164,6 +1164,12 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
     tsel = np.sort(rng.choice(N, ntrack, replace=False))
     tvals = np.full((T, ntrack), np.nan)
     tranks = np.zeros((T, ntrack), dtype=np.int32)
+    # track_ids (2z-ab, sixth review): tranks follows fixed SLOTS -- on
+    # exit/rebirth the slot's id changes while ranks stay positive, so
+    # slot arrays alone cannot see death. tids records the occupant id per
+    # tracked slot per week (pure recording: no rng draws; flag-off output
+    # byte-identical).
+    tids = np.zeros((T, ntrack), dtype=np.int64) if track_ids else None
     # record occupant ids down to the boundary-flux depth when a universe is active
     topK = min(N, max(max(COLLISION_RANKS), top_record or 0))
     top_ids = np.full((T, topK), -1, dtype=np.int64)
@@ -1233,10 +1239,15 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
         rank[order] = np.arange(1, N + 1)
         tvals[t] = X[tsel]
         tranks[t] = rank[tsel]
+        if tids is not None:
+            tids[t] = ids[tsel]
         top_ids[t] = ids[order[:topK]]
         ranksize[t] = X[order[:ranksize.shape[1]]]
 
-    return dict(tvals=tvals, tranks=tranks, top_ids=top_ids, ranksize=ranksize)
+    out = dict(tvals=tvals, tranks=tranks, top_ids=top_ids, ranksize=ranksize)
+    if tids is not None:
+        out["tids"] = tids
+    return out
 
 
 def _extend(w0: np.ndarray, N: int) -> np.ndarray:

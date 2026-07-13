@@ -31,3 +31,6 @@ a108e7bd298772f3dc8625ab913d8e0164dfa2c3b87e71f31ddec45449307220  llm_fitting/ru
 # addendum 2026-07-13 (exit audit + hardened sign flip, MODEL_STATUS 2z-aa)
 52c64cbdea57c7262e889d1524e34c7bbb718c18866631f5378cee4d905120c4  llm_fitting/exit_audit.py
 ba51f4b5e6201044e7428a0daa2760522804a53ea74e702c48c8071dfa127972  llm_fitting/runs/2026-07-12_eul_level/exit_audit.log
+# addendum 2026-07-13 (identity-safe rerun, MODEL_STATUS 2z-ab)
+8d7d3adab0a8726ffa61c523ce1c138cee341821d93943cd2738b7ec94699ca7  llm_fitting/exit_audit.py
+36619a94d91e469420b03d77a7ed67c75a531db7891ccf65399c8d07bf5a3cc7  llm_fitting/runs/2026-07-12_eul_level/exit_audit_idsafe.log

@@ -1,0 +1,7 @@
+P1 self-test: PASS (spiker excluded; established counted once)
+
+identity-safe cohort comparison (train-defined 0..135, scored 136..212; 20 seeds; corrected entity + week-block bootstrap):
+  cut=K/4: emp 0.00282 ent-CI [0.00113,0.00472] wk-CI [0.00228,0.00345] (n=258)
+           sim 0.00060 ± 0.00026 (n_coh~276); death share of sim events 0.40; sign-flip vs ent-CI: True
+  cut=K/2: emp 0.01177 ent-CI [0.00852,0.01489] wk-CI [0.01033,0.01329] (n=514)
+           sim 0.00469 ± 0.00085 (n_coh~514); death share of sim events 0.10; sign-flip vs ent-CI: True

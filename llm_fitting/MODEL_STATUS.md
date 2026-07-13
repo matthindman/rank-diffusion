@@ -3786,6 +3786,12 @@ is marginal: 0.00104 vs lower bound 0.00103). Rates are higher than the
 extension removes survival conditioning — the design correction mattered
 in level, not in sign.
 
+_[WITHDRAWN 2026-07-13, §2z-ab: P4's sim side followed fixed SLOTS, not
+identities — `tranks` stays positive through rebirth, so "zero deaths"
+was guaranteed by the representation (sixth review). Identity-safe rerun:
+deaths are 10% (K/2) to 40% (K/4) of sim departure events, and the
+sign-flip STRENGTHENS (sim 0.00469 vs emp 0.01177 at K/2). The empirical
+half of this paragraph stands.]_
 **P4 — the exit/rebirth machinery is EXONERATED for the established
 deficit:** cohort exits are essentially ALL rank-crossings on BOTH sides
 (emp 441 crossings / 1 absence; sim ~245 crossings / 0 deaths). Real
@@ -3825,6 +3831,54 @@ knot-aligned audit + Spec-B-pinned re-attribution still required).
 Candidate registration remains DEFERRED per the branching rule; the
 remaining identification items are unchanged (§2z-z list) plus the
 knot-aligned exit audit. The binding claim set is untouched.
+
+## 2z-ab. 2026-07-13 — Sixth review adjudicated (slot-vs-identity flaw CONFIRMED in code and fixed with opt-in `track_ids`; 130 tests): the IDENTITY-SAFE rerun STRENGTHENS the sign flip (sim 0.00469 vs emp 0.01177 at K/2 — a 2.5× established-departure deficit, robust under corrected entity AND week-block bootstraps) and REVERSES "exit machinery exonerated" — deaths are 10–40% of the sim's rare departures
+
+**The flaw, confirmed and fixed.** `simulate()` replaces `ids[ex]` in
+place at rebirth; tracked slots keep emitting positive ranks under the
+new identity, so `tranks <= 0` can never observe death and my §2z-aa P4
+("zero deaths") was representational. Fix: `simulate(track_ids=True)`
+records the occupant id per tracked slot per week (pure recording, zero
+rng draws, flag-off output byte-identical — locked by test);
+`exit_audit.idsafe_cohort_events` scores frozen ORIGINAL identities
+(dead exactly once — locked by the reviewer's synthetic test: an
+established id dying into an inherited slot counts one death, not a
+crossing). Suite **130 green** (127 + 3). Also fixed per the review: the
+entity bootstrap now resamples events AND exposure together
+(ratio-of-sums) with a week-block variant; the presence grid is reported
+as what it was (two distinct cohorts, thresholds inactive over 0.6–0.8).
+
+**Identity-safe result (20 seeds; `exit_audit_idsafe.log`):**
+
+| cohort | empirical (ent-CI / wk-CI) | sim identity-safe | deficit | sim death share |
+|---|---|---|---|---|
+| K/4 (n=258) | 0.00282 [0.00113, 0.00472] / [0.00228, 0.00345] | 0.00060 ± 0.00026 | ~4.7× | **0.40** |
+| K/2 (n=514) | 0.01177 [0.00852, 0.01489] / [0.01033, 0.01329] | 0.00469 ± 0.00085 | ~2.5× | 0.10 |
+
+Sign flip TRUE at both cuts under both CI types — the slot conflation had
+been INFLATING the sim rate with post-rebirth newcomer collapses, so the
+honest deficit is larger than §2z-z/§2z-aa reported. And the exit
+machinery is a MATERIAL component of what few departures the sim does
+produce (40% at the deep-established cut) — "exonerated" is withdrawn;
+the corrected statement is: **the sim under-produces established
+departures 2.5–5×, with the missing events overwhelmingly the CROSSING
+type the empirical panel exhibits (emp: 441 crossings / 1 absence), while
+a substantial share of the sim's own few departures are permanent deaths
+the empirical cohort essentially never has.** Both the level AND the
+composition of established attrition are wrong, in the directions the
+fifth review anticipated.
+
+**Mechanism map, re-graded:** (1) established-departure deficit —
+HARDENED at 2.5–5×, identity-safe, both bootstraps; missing mass =
+large genuine displacements (the A2 thin-tails convergence stands as the
+named hypothesis); (2) the sim's departure COMPOSITION is wrong (deaths
+where reality has returnable crossings) — the temporary-absence-as-death
+estimand mismatch (P3: 95–98% of empirical absences return) is now
+implicated in BOTH the return deficit and the established-departure
+composition; the knot-aligned exit-estimand audit is the single highest-
+leverage next measurement; (3) transient-crossing excess and the FB head
+allocation story unchanged from §2z-y/§2z-z. Candidates remain DEFERRED;
+the branching rule stands; the binding claim set is untouched.
 
 ## 3. The three corrected estimation pitfalls (do not regress)
 

@@ -60,6 +60,96 @@ def exit_rate(ranks, coh, lo_t, hi_t, K=K):
     return ev, n_cw, (int(ev.sum()) / max(n_cw, 1))
 
 
+def idsafe_cohort_events(tranks, tids, t0, K, cut, ref_t=None):
+    """IDENTITY-SAFE simulated cohort scorer (sixth review): cohort =
+    tracked slots whose occupant id is CONSTANT over [0, t0) and whose
+    permanent rank (mean tranks over [0, t0)) <= cut. Scored on t0..T-2:
+    crossing = in top-K at t, present-below-K at t+1 (same id); death =
+    in top-K at t, id changes at t+1; a member leaves the risk set
+    permanently at its first id change (dead exactly once)."""
+    ref_t = t0 - 1 if ref_t is None else ref_t
+    T = tranks.shape[0]
+    ref = tids[ref_t]
+    stable = (tids[:t0] == ref).all(axis=0)
+    perm = tranks[:t0].astype(float).mean(axis=0)
+    coh = np.where(stable & (perm <= cut))[0]
+    deaths = crossings = risk = 0
+    for j in coh:
+        for t in range(t0, T - 1):
+            if tids[t, j] != ref[j]:
+                break                          # died earlier; out of risk
+            inK = 0 < tranks[t, j] <= K
+            if inK:
+                risk += 1
+            if tids[t + 1, j] != ref[j]:
+                if inK:
+                    deaths += 1
+                break
+            if inK and tranks[t + 1, j] > K:
+                crossings += 1
+    return dict(deaths=deaths, crossings=crossings, risk_weeks=risk,
+                n_cohort=len(coh),
+                rate=(deaths + crossings) / max(risk, 1))
+
+
+def boot_ci_ratio(ev, inK, n=500, seed=0):
+    """Corrected entity-cluster bootstrap (sixth review): resample each
+    entity's event count AND its in-K exposure together; p* = sum E / sum N.
+    Plus a moving-week block variant (block length 8)."""
+    rng = np.random.default_rng(seed)
+    E = ev.sum(axis=0).astype(float)
+    Nw = inK[:-1].sum(axis=0).astype(float)
+    idx = np.arange(len(E))
+    ent = [ev[:, c].sum() / max(inK[:-1][:, c].sum(), 1)
+           for c in (rng.choice(idx, len(idx), True) for _ in range(n))]
+    Tm = ev.shape[0]
+    L = 8
+    starts = np.arange(0, Tm - L + 1)
+    blk = []
+    for _ in range(n):
+        rows = np.concatenate([np.arange(s, s + L)
+                               for s in rng.choice(starts,
+                                                   int(np.ceil(Tm / L)), True)])[:Tm]
+        blk.append(ev[rows].sum() / max(inK[:-1][rows].sum(), 1))
+    return (np.percentile(ent, [2.5, 97.5]), np.percentile(blk, [2.5, 97.5]))
+
+
+def idsafe_main():
+    """--idsafe: the identity-safe rerun (20 seeds) + corrected empirical
+    bootstrap. NOTE (sixth review): the presence grid was inactive
+    (identical cohorts at 0.6/0.7/0.8) — only the two rank cuts are
+    distinct cohorts and only those are reported."""
+    self_test()
+    df = mrd.load_panel(mrd.PLATFORMS["reddit_comments_ext"])
+    df = mrd.restrict_universe(df, K, buffer_mult=4)
+    sk = df.attrs["score_k"]
+    _, er, _, _ = mrd.empirical_structures(df, 10, topid_k=sk)
+    p = mrd.estimate(df, **LONG)
+    print("\nidentity-safe cohort comparison (train-defined 0..135, scored "
+          "136..212; 20 seeds; corrected entity + week-block bootstrap):")
+    for cut, cname in ((K // 4, "K/4"), (K // 2, "K/2")):
+        coh = cohort_mask(er, 0, T0, cut, 0.7)
+        ev2, ncw, rate = exit_rate(er, coh, T0, T_FULL)
+        rr = er[T0:, coh].astype(float)
+        inK = (rr > 0) & (rr <= K)
+        (elo, ehi), (blo, bhi) = boot_ci_ratio(ev2, inK)
+        res = []
+        for s in range(20):
+            sim = mrd.simulate(p, T_FULL, seed=s, top_record=sk,
+                               track_ids=True)
+            res.append(idsafe_cohort_events(np.asarray(sim["tranks"]),
+                                            np.asarray(sim["tids"]),
+                                            t0=T0, K=sk, cut=cut))
+        rates = [r["rate"] for r in res]
+        dsh = [r["deaths"] / max(r["deaths"] + r["crossings"], 1) for r in res]
+        print(f"  cut={cname}: emp {rate:.5f} ent-CI [{elo:.5f},{ehi:.5f}] "
+              f"wk-CI [{blo:.5f},{bhi:.5f}] (n={int(coh.sum())})")
+        print(f"           sim {np.mean(rates):.5f} ± {np.std(rates):.5f} "
+              f"(n_coh~{int(np.mean([r['n_cohort'] for r in res]))}); "
+              f"death share of sim events {np.mean(dsh):.2f}; "
+              f"sign-flip vs ent-CI: {np.mean(rates) < elo}", flush=True)
+
+
 def self_test():
     T = 200
     spiker = np.tile([100, 20000], T // 2)
@@ -165,4 +255,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1 and sys.argv[1] == "--idsafe":
+        idsafe_main()
+    else:
+        main()
