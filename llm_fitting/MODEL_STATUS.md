@@ -3486,6 +3486,73 @@ duration, component attribution) on dev panels. Owner decision then:
 register the chosen candidate as a new pre-declared step (the A2 pattern)
 for confirmation on data this program has not consumed.
 
+## 2z-w. 2026-07-12 — Third external review adjudicated: §2z-v CORRECTED by appended note (three overstatements, one arithmetic error); the 20-paired-seed repeat PARTLY RETRACTS D3 — the amplitude tail (s) carries ~half the S(1) excess after all; the t-spike channel remains the largest single lever (66%); the mechanism is now JOINT, not single-channel
+
+**Corrections to §2z-v (appended per the append-only convention; the §2z-v
+text stands as the historical record with these notes superseding it):**
+
+1. _"The partition-anchor family is dead" is WITHDRAWN._ Binding
+   replacement: **the within-entity level-variance anchor is refuted, and
+   local s/κ interventions are insufficient over the tested range.** The
+   D3 grid tested two levers locally at 3 seeds; the eul-level arm itself
+   proved partition choices can move S(1) (strongly, wrong direction).
+2. _"~60% of the gap" was an arithmetic error_ (the correct 3-seed figure
+   was 75%); superseded by the 20-paired-seed estimate below.
+3. _"The fitted t reproduces the kurtosis; skew matches" was UNVERIFIED_ —
+   empirical-only measurements; identification-by-formula is not
+   demonstrated reproduction. Narrowed to: simple head-specific tail
+   thinning and simple iid skewed innovations are unsupported; matched
+   emp-vs-sim moment tables under identical construction are REQUIRED
+   before any statement about what the fitted model reproduces.
+4. _"From below the head" is a HYPOTHESIS_ pending event tracing (origin
+   rank, responsible component, duration, reversal; identical event
+   definitions both panels so conditioning-induced mean reversion cancels).
+5. _Vintage arms confound declared:_ the σ_obs scale recalibrates after
+   the s replacement, so the arms compare two complete policies, not s
+   alone — on top of the in-panel underpowering. Frozen-scale rerun
+   queued low-priority; "vintage-consistent, not isolated" is the ceiling
+   regardless.
+6. _Outcome grading (no aggregate "kills" tally):_ anchor = refuted;
+   κ_i layer = registered non-activation; df(z) and iid-skew = simple
+   forms unsupported; s/κ grid = locally insufficient; vintage policy =
+   underpowered, not refuted.
+
+**The 20-paired-seed interventions (CRN, FB, emp S(1) = 0.0170;
+`xsec_interventions_20seed.log`):**
+
+| arm | S(1), 20 seeds | paired diff | excess removed |
+|---|---|---|---|
+| baseline | 0.0474 ± 0.0101 | — | — |
+| t_df=inf | 0.0272 ± 0.0045 | −0.0202 ± 0.0083 | **66%** |
+| s ×0.5 | 0.0330 ± 0.0075 | −0.0144 ± 0.0089 | **47%** |
+| κ_head ×4 | 0.0423 ± 0.0118 | −0.0051 ± 0.0112 | 17% (within noise) |
+
+**PARTIAL RETRACTION of D3:** the 3-seed grid's "S(1) is insensitive to
+s" was an underpowered artifact — at 20 seeds the amplitude tail carries
+~half the excess. The corrected mechanism statement: **the FB S(1) excess
+is JOINTLY produced by the t-spike channel (largest single lever, 66%)
+and the temperament amplitude tail (47%), with head-κ weak; the channels
+overlap non-additively** (both act through the weekly max — the effective
+head spike distribution is the product v_i × t-draw, lognormal×t, whose
+tail is heavier than either marginal; each entity's own kurtosis moment
+can match while the cross-entity mixture at the head over-spikes). This
+interaction is the sharpest current hypothesis for "matched moments,
+overshooting order statistics" — it goes into the anatomy session as a
+named, testable target (contender-region strata, one-sided observable
+tails, matched construction, per the adopted estimand spec).
+
+**Also adopted from the review:** mechanism verdicts SEPARATED from
+model-adoption verdicts (the spike candidate is NOT required to repair
+outflux — separate mechanisms); the Gaussian scale mixture DEMOTED to
+one candidate among several (two shape parameters vs t's one — not more
+parsimonious by count; entity-iid vs common-week volatility distinction
+mandatory, common volatility being a previously dead hypothesis);
+confirmation targets re-ranked — **Wikipedia primary** (protocol frozen
+before contact, trend-aware bands), the 2018–22 submissions archive
+SECONDARY as an outcome-unseen temporal/cross-metric BACKTEST (the
+2024–25 submissions panel is already consumed; same metric family; era
+overlap declared — never described as a clean new-platform confirmation).
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

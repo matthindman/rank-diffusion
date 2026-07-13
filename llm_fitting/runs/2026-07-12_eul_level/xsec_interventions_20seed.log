@@ -1,0 +1,7 @@
+baseline       S(1) = 0.0474 ± 0.0101  (20 seeds)
+t_df=inf       S(1) = 0.0272 ± 0.0045  (20 seeds)
+s x0.5         S(1) = 0.0330 ± 0.0075  (20 seeds)
+kappa_head x4  S(1) = 0.0423 ± 0.0118  (20 seeds)
+paired t_df=inf      : mean diff -0.0202 ± 0.0083 (SD of paired diffs); removes 66% of the excess over emp 0.017
+paired s x0.5        : mean diff -0.0144 ± 0.0089 (SD of paired diffs); removes 47% of the excess over emp 0.017
+paired kappa_head x4 : mean diff -0.0051 ± 0.0112 (SD of paired diffs); removes 17% of the excess over emp 0.017
