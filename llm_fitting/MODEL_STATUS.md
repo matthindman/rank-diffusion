@@ -3298,8 +3298,10 @@ the level row is doing something right in the FB mid-band even while
 wrecking the head; the cross-sectional variant should be checked against
 both effects. Logs: `runs/2026-07-12_eul_level/`.
 
-**Claim-language PROPOSAL for the owner (Phase 4; §6/§2x edit is
-owner-gated, this is a proposal only):** "A parsimonious permanent–
+**Claim-language PROPOSAL for the owner** _[SUPERSEDED 2026-07-12 by the
+§2z-u revision, ADOPTED by the owner same day — the single binding copy is
+the §6 addendum 2026-07-12; this block is a historical draft]_ **(Phase 4;
+§6/§2x edit is owner-gated, this is a proposal only):** "A parsimonious permanent–
 transitory rank model trained through June 2021 transported central
 conditional movement into a later era without recalibration (moment error
 0.032 vs 0.171 for the historical-mobility baseline; medians exact at
@@ -3497,3 +3499,31 @@ as a pass/fail gate. σ_obs: identified in shape everywhere, identified in level
 at the FB head, bounded in level elsewhere. Lifecycle language: "excess
 low-frequency structure"; arcs are one plausible source, not uniquely
 established (spectrum-preserving surrogates, §2v).
+
+_Addendum 2026-07-12 (post confirmation battery §2z-q–§2z-u; OWNER-ADOPTED —
+the single binding copy; supersedes the 2026-07-05 addendum's claim set where
+they conflict):_ **The confirmation claim paragraph (verbatim, binding):**
+"A parsimonious permanent–transitory rank model trained through June 2021
+transported the registered central conditional-movement moments into a later
+era without recalibration: relative moment error was 0.032 versus 0.171 for
+historical mobility, with median displacement reproduced at h=1, 4, and 13.
+Proper-score performance remained approximately at par with persistence,
+however, and upper movement tails were under-dispersed. Parameter transport
+was mixed: amplitude heterogeneity s failed its registered band and
+post-confirmation analyses showed an era-dominant increase already visible
+in the frozen period; κ orientation also failed and κ levels shifted, while
+the horizon-scaling exponent and observation-noise shape transported. The
+model generated an excessively concentrated stationary head, now confirmed
+on a third instrument. An exploratory oracle analysis was consistent with a
+parameter-vintage explanation for tail calibration, but did not isolate its
+cause. The first candidate stationary-law correction — a within-entity
+level-variance anchor — was rejected by its own adoption gates."
+**Framing rules:** the battery is "a registered confirmatory evaluation with
+one disclosed post-registration, pre-outcome technical correction" (A10),
+never "exactly as originally preregistered" and never "a literally untouched
+holdout"; the A6.7 verdict (MIXED EVIDENCE) is stated plainly; the s trend
+(0.65→0.75→0.84, 2019→2022) is a titled finding with its own figure; four
+evidence tiers are labeled throughout (registered confirmation / delayed
+registered sensitivity / exploratory diagnostics / development negative
+result); the survivor-conditional scope line on the movement claim names the
+boundary-flux residual; S(k) stays "within recorded top-M".
