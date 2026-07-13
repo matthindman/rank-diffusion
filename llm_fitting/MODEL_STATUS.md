@@ -3568,6 +3568,12 @@ seed-SD is the runaway-dominant-entity signature). Comments: the
 empirical #1 is a stable monarch (3 distinct in 136 wks, modal share
 0.97) and the sim reproduces it (3.1, 0.94) — the head-anatomy problem is
 FB-SPECIFIC, consistent with §2z-v spacings.
+_[CORRECTED 2026-07-13, §2z-z: the ANATOMY (monarch/spacing/identity) is
+FB-specific; the S(1) CONCENTRATION residual is NOT — the registered E5
+result on the comments extension is emp 0.0901 vs sim 0.1363, FIRED.
+Comments is a control for the anatomy only, never for S(1); an
+FB-specific mechanism (quiet giants) cannot explain the cross-platform
+E5 residual by itself.]_
 
 **A2 — observable tails (one-sided, entity-standardized, identical
 construction): PREDICTION REFUTED, both platforms.** In every powered
@@ -3661,6 +3667,12 @@ RETURN DEFICIT is untouched.**
 | fast=0 | 0.105 | **0.0010** | 0.053 | 0.051 | 0.31 | 0.25 |
 | emp | 0.086 | **0.0011** | 0.041 | 0.044 | **0.40** | 0.16 |
 
+_[CORRECTED 2026-07-13, §2z-z: "core" here is CURRENT rank at the exit
+week (`ext_boundary_flux.flux_decomp` uses the dropper's position at t),
+not permanent rank or tenure — a transient spiker visiting rank 5,000
+counts as a core exit, which may be exactly why fast=0 removes the
+excess; "EXACTLY" is false precision (no bootstrap interval; "near the
+empirical point estimate"). The permanent-rank cohort rerun is §2z-z.]_
 Core lands EXACTLY on emp. Residuals after fast=0: mid +0.012, shell
 +0.007, and the return rate stays ~0.30 vs emp ~0.40 — droppers in the
 real system come back MORE (an iid-like, instantly-reverting signature),
@@ -3685,6 +3697,76 @@ constrained by the return-rate moment (a NEW identifying moment the
 current stack never uses — boundary-return rates are measured, cheap,
 and Lagrangian); (c) both. Confirmation of any adopted candidate:
 Wikipedia primary, submissions backtest secondary (§2z-w).
+
+## 2z-z. 2026-07-13 — Fourth review adjudicated (all corrections ACCEPTED; candidate selection DEFERRED) and its top question answered: under a PERMANENT-RANK cohort the sign FLIPS — the sim ejects established entities HALF as often as reality (0.00115 vs 0.00223/wk); the "core excess" was transient spikers visiting core ranks; the boundary residual is a WRONG MIX, not a wrong level
+
+**Adjudication (all accepted; §2z-x/§2z-y carry inline correction notes):**
+(1) "core" was CURRENT-rank at exit week — "established entities collapse
+too often" was unsupported wording; (2) "exactly" → "near the point
+estimate" (no bootstrap); (3) tails narrowed to "simple global thinning
+unsupported in every adequately measured stratum" — FB's contender
+stratum is still unmeasured; n≥500 counts dependent entity-weeks; thin
+per-entity tails and wrong cross-entity allocation are NOT mutually
+exclusive; (4) **comments is NOT a negative control for S(1)** — the
+registered E5 result on the extension is emp 0.0901 vs sim 0.1363
+(FIRED); comments controls the anatomy only, so an FB-specific
+quiet-giants mechanism cannot explain the cross-platform E5 residual by
+itself; (5) the boundary return rate is an EULERIAN boundary-event
+statistic with Lagrangian follow-up — usable only via indirect inference
+with identical selection, never appended to the MD objective as an
+identifying row; (6) return-horizon convention mismatch recorded
+(`flux_decomp` t+1+h vs card t+h) — unify + regression-test before any
+identification use; (7) the fast=0 attribution ran WITHOUT the Spec-B
+pin — repeat pinned before claiming a re-split fits the allowed noise
+range; (8) candidates (a)/(b)/(c) NOT selected; (c) would violate
+one-change-per-experiment; the branching rule and separated
+mechanism/adoption verdicts are adopted as written.
+
+**The permanent-rank cohort rerun (the review's top question;
+`qg_permrank_cohort.log`; cohort = absence-penalized perm rank ≤ K/2,
+presence ≥ 0.7, identical construction both sides, 5 paired seeds):**
+
+| | weekly exit rate (cohort in current top-K → out) |
+|---|---|
+| empirical (n=461, 97,321 cohort-wks) | **0.00223** |
+| sim baseline (n≈493/seed) | **0.00115 ± 0.00018** |
+| sim fast=0 | 0.00063 ± 0.00011 |
+
+**SIGN FLIP.** The sim UNDER-produces established-entity departures by
+~2×, and removing fast variance makes it worse. Combined with §2z-y: the
+boundary residual is a WRONG MIX — too many transient crossings (fast
+channel; the current-rank "core 4×" was spiker visits), too few genuine
+established-entity departures. Plausible suspect for the deficit
+(hypothesis, NOT measured): the rank-dependent exit hazard
+p_exit ∝ (r/N)^α protects high-permanent-rank entities too much — the
+program's own old IG-era observation. Any fast-variance-reduction
+candidate must now carry a mechanism prediction that it does NOT worsen
+the established-attrition deficit.
+
+**Defensible unified statement (supersedes §2z-y's phrasing):** fast
+transitory variance is the dominant source of simulated one-week
+boundary crossings among CURRENT top-half occupants; the sim
+simultaneously UNDER-produces established-entity attrition ~2×;
+cross-entity amplitude allocation is a plausible contributor to the
+FB-specific head anatomy; the cross-platform S(1) residual and the
+return deficit remain unattributed; no corrective parameterization is
+identified yet.
+
+**Recorded next phase (the review's hardening + identifiability round,
+adopted verbatim):** unify/lock the return-horizon convention; 20-seed
+paired boundary attribution with entity/block bootstrap intervals,
+current-rank AND permanent-rank decompositions reported separately,
+absolute (not only conditional) permanent-exit flow; Spec-B-pinned
+fast attribution; cross-fitted quiet-giants (half-panel rank / half-panel
+vol, swapped) + the comments-EXTENSION quiet-giants (exploratory); EB
+amplitude-residual decomposition (mean v vs s(z) vs rank–v correlation);
+declared response surface for the variance split (σ_trans, φ, σ_obs
+within Spec-B, s) tracking covariances, a permanent-rank reversal
+statistic, boundary return, outflux, S(1), and the OOS gate — if multiple
+reallocations produce the same return curve, return does not identify
+the split. THEN one candidate per residual by the branching rule;
+Wikipedia never used to choose between candidates. The binding paper
+claim set is UNCHANGED by all of this.
 
 ## 3. The three corrected estimation pitfalls (do not regress)
 

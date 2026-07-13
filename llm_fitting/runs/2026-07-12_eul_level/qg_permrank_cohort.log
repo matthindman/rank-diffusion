@@ -1,0 +1,3 @@
+emp: perm-rank cohort n=461, cohort-weeks=97,321, weekly exit rate = 0.00223
+sim baseline : weekly exit rate = 0.00115 ± 0.00018  (5 seeds; cohort n per seed ~493)
+sim fast=0   : weekly exit rate = 0.00063 ± 0.00011  (5 seeds; cohort n per seed ~506)
