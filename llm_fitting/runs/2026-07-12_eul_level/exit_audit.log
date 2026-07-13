@@ -1,0 +1,21 @@
+P1 self-test: PASS (spiker excluded; established counted once)
+
+P2 train-window cohort (defined on 0..135, scored 136..212), robustness grid — ALL cells:
+  cut=K/4 pres>=0.6: emp 0.00282 [0.00113,0.00470] (n=258)   sim 0.00104 ± 0.00039   sign-flip(sim<emp): True
+  cut=K/4 pres>=0.7: emp 0.00282 [0.00110,0.00493] (n=258)   sim 0.00104 ± 0.00039   sign-flip(sim<emp): True
+  cut=K/4 pres>=0.8: emp 0.00282 [0.00103,0.00490] (n=258)   sim 0.00104 ± 0.00039   sign-flip(sim<emp): False
+  cut=K/2 pres>=0.6: emp 0.01177 [0.00861,0.01514] (n=514)   sim 0.00608 ± 0.00088   sign-flip(sim<emp): True
+  cut=K/2 pres>=0.7: emp 0.01177 [0.00884,0.01523] (n=514)   sim 0.00608 ± 0.00088   sign-flip(sim<emp): True
+  cut=K/2 pres>=0.8: emp 0.01177 [0.00875,0.01495] (n=514)   sim 0.00608 ± 0.00088   sign-flip(sim<emp): True
+
+P3 exit-cause decomposition + estimator audit (empirical, by permanent-rank third of the universe):
+  fitted exit_rate(z) head/mid/tail thirds (knot means): 0.0000 / 0.0001 / 0.0144
+  head: P(absent next wk) 0.0008; of those — return<=13wk 0.95, return later 0.01, NEVER return 0.04   (events 222)
+  mid: P(absent next wk) 0.0146; of those — return<=13wk 0.97, return later 0.01, NEVER return 0.02   (events 3,917)
+  tail: P(absent next wk) 0.0732; of those — return<=13wk 0.98, return later 0.01, NEVER return 0.01   (events 17,635)
+
+P4 sim exit composition for the (K/2, 0.7) cohort, scored 136..212 (crossing = below-K, can return; death = tracked 0, permanent by construction):
+  emp: crossings 441, absences 1 (share absent 0.00)
+  sim s0: crossings 209, deaths 0 (share death 0.00)
+  sim s1: crossings 277, deaths 0 (share death 0.00)
+  sim s2: crossings 250, deaths 0 (share death 0.00)

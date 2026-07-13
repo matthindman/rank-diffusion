@@ -3768,6 +3768,64 @@ the split. THEN one candidate per residual by the branching rule;
 Wikipedia never used to choose between candidates. The binding paper
 claim set is UNCHANGED by all of this.
 
+## 2z-aa. 2026-07-13 — Exit audit + auditable sign-flip runner (`exit_audit.py`, self-tested, reproduction command in header): the SIGN FLIP SURVIVES the outcome-independent design (5/6 grid cells, 1 marginal); the established deficit is DYNAMICS (crossings, both sides — exit machinery inert for the cohort); empirical absences are 95–98% TEMPORARY everywhere, relocating the estimand-mismatch hypothesis to the tail/shell where it plausibly drives the RETURN deficit
+
+Fifth-review items 1/2/4 executed as committed, self-testing code
+(`exit_audit.py`: P1 hard-asserts a constructed spiker is excluded and an
+established departure counts once; log `runs/2026-07-12_eul_level/
+exit_audit.log`). All exploratory.
+
+**P2 — the sign flip HARDENS (train-window cohort: defined on periods
+0..135 only, scored 136..212 — outcome-independent by construction;
+pre-declared grid, ALL cells reported; entity bootstrap, 500 draws; 10
+sim seeds):** emp K/2 cohort rate **0.01177** [0.00861, 0.01514] vs sim
+**0.00608 ± 0.00088** — the ~2× established-attrition deficit holds in
+5/6 cells (sim below the empirical CI's lower bound; the K/4 × 0.8 cell
+is marginal: 0.00104 vs lower bound 0.00103). Rates are higher than the
+§2z-z quick version because the train-defined cohort scored on the
+extension removes survival conditioning — the design correction mattered
+in level, not in sign.
+
+**P4 — the exit/rebirth machinery is EXONERATED for the established
+deficit:** cohort exits are essentially ALL rank-crossings on BOTH sides
+(emp 441 crossings / 1 absence; sim ~245 crossings / 0 deaths). Real
+established entities are genuinely DISPLACED below K twice as often as
+simulated ones — the deficit is in the displacement dynamics, not the
+death apparatus. **Convergence note (hypothesis, labeled): this connects
+directly to the A2 inversion — the model's per-entity tails are too THIN
+(§2z-x), and the missing established-entity large displacements are
+plausibly the same missing tail mass.** "Tail-shape surgery is dead"
+(§2z-y) was scoped to THINNING for the head; the data now motivate the
+opposite sign — fatter per-entity displacement tails — jointly with the
+allocation story.
+
+**P3 — the estimand conflation is REAL but lives at the TAIL, and the
+fitted-vs-raw comparison as printed is MIS-ALIGNED (declared):**
+empirical absence events return within 13 weeks 95/97/98% of the time
+(head/mid/tail entity-terciles; never-return only 1–4%) — so the
+estimator's "absent next week = exit" estimand is ~97% temporary gaps,
+while the simulator implements exit as PERMANENT rebirth. This cannot
+drive the established deficit (P4: machinery inert there) but is the
+leading candidate for the RETURN deficit at the boundary/shell, where
+the raw absence rate is large (tail 7.3%/wk) and empirical droppers
+return ~0.40 vs sim ~0.29. CAVEAT: the printed fitted exit_rate(z)
+thirds (0.0000/0.0001/0.0144) are KNOT-third means and my empirical
+strata are ENTITY terciles — non-comparable coordinates; the
+knot-aligned estimator audit is still owed before any estimand-change
+candidate is designed.
+
+**The three-mechanism map as it now stands (each labeled by evidence
+grade):** (1) established-attrition deficit ×2 — HARDENED (P2 grid),
+mechanism = displacement dynamics, plausibly thin per-entity tails (A2
+convergence, hypothesis); (2) transient-crossing excess — fast-channel
+attribution (Q3/A4, current-rank), allocation/seating hypothesis (Q1
+directional, FB); (3) return deficit — temporary-absence-simulated-as-
+death at the tail (P3/P4 relocation of the fifth review's hypothesis;
+knot-aligned audit + Spec-B-pinned re-attribution still required).
+Candidate registration remains DEFERRED per the branching rule; the
+remaining identification items are unchanged (§2z-z list) plus the
+knot-aligned exit audit. The binding claim set is untouched.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

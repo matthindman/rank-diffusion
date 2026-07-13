@@ -28,3 +28,6 @@ a108e7bd298772f3dc8625ab913d8e0164dfa2c3b87e71f31ddec45449307220  llm_fitting/ru
 85e9e2d7b13c603bb545c9488dac7a0ebc2ce4a3ff6d94bacd21a9ce6e9d83c3  llm_fitting/runs/2026-07-12_eul_level/qg_ext_bands.log
 # addendum 2026-07-13 (fourth review adjudicated + permanent-rank cohort, MODEL_STATUS 2z-z)
 5a19bf78184cf875ea408d579726f6039e559b90ff7daf79db8beb73feca8428  llm_fitting/runs/2026-07-12_eul_level/qg_permrank_cohort.log
+# addendum 2026-07-13 (exit audit + hardened sign flip, MODEL_STATUS 2z-aa)
+52c64cbdea57c7262e889d1524e34c7bbb718c18866631f5378cee4d905120c4  llm_fitting/exit_audit.py
+ba51f4b5e6201044e7428a0daa2760522804a53ea74e702c48c8071dfa127972  llm_fitting/runs/2026-07-12_eul_level/exit_audit.log
