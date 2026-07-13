@@ -1,0 +1,8 @@
+== Q3 (EXPLORATORY, extension): fast=0 vs baseline, full boundary decomposition, 3 seeds ==
+  baseline s0    outflux 0.1481  ret h=1/2/4/8/13: 0.285/0.294/0.292/0.288/0.279  perm-exit 0.268  by-band core/mid/shell 0.0045/0.0876/0.0559
+  baseline s1    outflux 0.1478  ret h=1/2/4/8/13: 0.287/0.295/0.294/0.288/0.281  perm-exit 0.268  by-band core/mid/shell 0.0045/0.0872/0.0560
+  baseline s2    outflux 0.1492  ret h=1/2/4/8/13: 0.287/0.295/0.294/0.288/0.281  perm-exit 0.266  by-band core/mid/shell 0.0047/0.0885/0.0560
+  fast=0 s0      outflux 0.1046  ret h=1/2/4/8/13: 0.297/0.304/0.307/0.305/0.301  perm-exit 0.247  by-band core/mid/shell 0.0010/0.0527/0.0509
+  fast=0 s1      outflux 0.1045  ret h=1/2/4/8/13: 0.299/0.306/0.308/0.307/0.301  perm-exit 0.247  by-band core/mid/shell 0.0010/0.0525/0.0510
+  fast=0 s2      outflux 0.1054  ret h=1/2/4/8/13: 0.299/0.305/0.308/0.307/0.303  perm-exit 0.245  by-band core/mid/shell 0.0010/0.0534/0.0510
+  (emp: outflux 0.0861  ret4 0.395  perm 0.157  core/mid/shell 0.0011/0.0406/0.0444)

@@ -3621,6 +3621,71 @@ the head (the quiet-giants test; cheap); (2) fast=0 arm re-run with the
 band decomposition + returns; (3) head-targeted tracked sample, then the
 contender-stratum tails. Candidate selection only after these.
 
+## 2z-y. 2026-07-12 — Quiet-giants + powered-tails + fast-by-band (Q1–Q3, declared, scored): the CORE outflux excess is ENTIRELY the fast channel (core 0.0045→0.0010 vs emp 0.0011); empirical tails are fatter at EVERY powered stratum (tail surgery dead at all ranks); quiet-giants gets DIRECTIONAL support on FB (Spearman +0.333 vs +0.159) with a mixed bin profile; the return deficit is a distinct residual
+
+Measurement only (`quietgiants_measure.py`, predictions declared in the
+committed header; logs `runs/2026-07-12_eul_level/qg_*.log`). Head panels
+built DIRECTLY from the universe panels (perm rank ≤ 1000) — closes the
+§2z-x tracked-sample power gap for comments; FB's contender stratum
+remains under the one-sided n≥500 floor (19 head entities × 85 wks),
+declared.
+
+**Q1 — quiet giants: DIRECTIONAL SUPPORT on FB; comments = clean negative
+control.** FB within-top-100 Spearman(vol, perm rank): emp **+0.333**
+(n=42) vs sim +0.159 (n=186, pooled) — the empirical volatility decline
+toward #1 is twice as steep as what occupancy selection alone induces in
+the sim. Bin profile MIXED (11–40: emp 0.616 ≈ sim 0.636; 41–100: emp
+0.847 vs sim 0.676; 1–10 emp under the n≥5 floor) — the signal lives in
+the within-top-100 ordering, not the coarse bins; moderate evidence, not
+decisive. Comments (where the head is RIGHT): profiles and Spearman
+match (emp +0.164 vs sim +0.136) — exactly what the control should show,
+tying the amplitude-seating hypothesis specifically to the platform with
+the S(1) problem.
+
+**Q2 — tails at every powered stratum: the A2 inversion is universal.**
+Comments contender 2–20 (now powered, n=1,890 both sides): emp pos
+q99/q90 **1.990** vs sim 1.479. FB 21–100: 1.811 vs 1.600. Every powered
+stratum, both platforms, both sides: EMPIRICAL FATTER. **Tail-shape
+surgery (mixture/tempered/df changes) is dead at all ranks** — the
+model's per-entity standardized tails are uniformly too thin, yet its
+head is too concentrated and its boundary too hot: the pathology is
+cross-entity ALLOCATION, not per-entity shape.
+
+**Q3 — fast=0 by band (extension, 3 seeds): the CORE excess is ENTIRELY
+the fast channel; a smaller second residual remains in mid/shell and the
+RETURN DEFICIT is untouched.**
+
+| | outflux | core | mid | shell | ret(4) | perm-exit |
+|---|---|---|---|---|---|---|
+| baseline | 0.148 | 0.0045 | 0.088 | 0.056 | 0.29 | 0.27 |
+| fast=0 | 0.105 | **0.0010** | 0.053 | 0.051 | 0.31 | 0.25 |
+| emp | 0.086 | **0.0011** | 0.041 | 0.044 | **0.40** | 0.16 |
+
+Core lands EXACTLY on emp. Residuals after fast=0: mid +0.012, shell
++0.007, and the return rate stays ~0.30 vs emp ~0.40 — droppers in the
+real system come back MORE (an iid-like, instantly-reverting signature),
+which the fast-variance removal cannot produce.
+
+**The unified read (labeled hypothesis; this is now candidate-design
+territory):** every surviving symptom points at the fast layer's
+CROSS-ENTITY ALLOCATION and PERSISTENCE SPLIT, not its distributional
+shape: (i) FB head — v-scaled fast spikes seated too loud at the top
+(A3 interaction + Q1 Spearman gap); (ii) comments-ext core — fast
+variance large enough to eject established entities (Q3, exact core
+match); (iii) returns — empirical weekly movement is more
+instantly-reverting than the fitted AR split (emp ret1 0.39 vs sim 0.29),
+i.e. the σ_trans/σ_obs allocation the program has flagged since §4
+("more σ_obs helps RACF, less helps OOS displacement"). Candidate
+directions for the owner to choose among (each a REALLOCATION or
+rank-dependence of existing components, none a new component; each needs
+its own registered step with separated mechanism/adoption verdicts and
+Spec-B consistency): (a) rank-dependent amplitude at the head
+(quiet-giants correction to v-seating); (b) σ_trans/σ_obs re-split
+constrained by the return-rate moment (a NEW identifying moment the
+current stack never uses — boundary-return rates are measured, cheap,
+and Lagrangian); (c) both. Confirmation of any adopted candidate:
+Wikipedia primary, submissions backtest secondary (§2z-w).
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

@@ -1,0 +1,9 @@
+== facebook_a T=86 ==
+  emp vol profile (bin median SD / ref 301-1000): 1-10: n/a  11-40: 0.616 (n=14)  41-100: 0.847 (n=24)  101-300: 0.809 (n=110)
+  emp within-top-100 Spearman(vol, perm rank) = +0.333 (positive = quieter toward #1)  n=42
+  emp tails contender2-20 (n=680):
+  emp tails 21-100 (n=2801):  pos q99/q90 1.811  neg q99/q90 1.850
+  sim (10 seeds pooled) vol profile (bin median SD / ref 301-1000): 1-10: 0.579 (n=13)  11-40: 0.636 (n=75)  41-100: 0.676 (n=92)  101-300: 0.830 (n=504)
+  sim (10 seeds pooled) within-top-100 Spearman(vol, perm rank) = +0.159 (positive = quieter toward #1)  n=186
+  sim (10 seeds pooled) tails contender2-20 (n=2380):  pos q99/q90 1.578  neg q99/q90 1.600
+  sim (10 seeds pooled) tails 21-100 (n=13005):  pos q99/q90 1.600  neg q99/q90 1.642

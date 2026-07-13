@@ -1,0 +1,9 @@
+== reddit_comments T=136 ==
+  emp vol profile (bin median SD / ref 301-1000): 1-10: 0.834 (n=8)  11-40: 0.779 (n=17)  41-100: 0.857 (n=57)  101-300: 0.854 (n=149)
+  emp within-top-100 Spearman(vol, perm rank) = +0.164 (positive = quieter toward #1)  n=84
+  emp tails contender2-20 (n=1890):  pos q99/q90 1.990  neg q99/q90 1.817
+  emp tails 21-100 (n=9093):  pos q99/q90 1.820  neg q99/q90 1.696
+  sim (10 seeds pooled) vol profile (bin median SD / ref 301-1000): 1-10: 0.715 (n=11)  11-40: 0.827 (n=16)  41-100: 0.844 (n=53)  101-300: 0.967 (n=172)
+  sim (10 seeds pooled) within-top-100 Spearman(vol, perm rank) = +0.136 (positive = quieter toward #1)  n=84
+  sim (10 seeds pooled) tails contender2-20 (n=1890):  pos q99/q90 1.479  neg q99/q90 1.667
+  sim (10 seeds pooled) tails 21-100 (n=9180):  pos q99/q90 1.619  neg q99/q90 1.589

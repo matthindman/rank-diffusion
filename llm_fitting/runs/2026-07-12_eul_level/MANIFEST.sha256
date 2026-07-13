@@ -22,3 +22,7 @@ ef6448a0cecf06479c8f1ac576d74719df97911a74e5168327491de0958e1e42  llm_fitting/ru
 fdb21bd29fdd9a871826d69146fa610fd619cc9dce5f52f498ea43c007d15e2f  llm_fitting/runs/2026-07-12_eul_level/anatomy_fb.log
 60beb090be6f32280bfbaf9ab228560803f7f4038c7bb7ceb8504d029d5d88da  llm_fitting/runs/2026-07-12_eul_level/anatomy_comments.log
 a108e7bd298772f3dc8625ab913d8e0164dfa2c3b87e71f31ddec45449307220  llm_fitting/runs/2026-07-12_eul_level/anatomy_ext_components.log
+# addendum 2026-07-12 (quiet-giants/powered-tails/fast-by-band, MODEL_STATUS 2z-y)
+125572e01e453a6ba6b6e469043c275b6aad6c72459e0c89c4a9a57bad3a1387  llm_fitting/runs/2026-07-12_eul_level/qg_fb.log
+104ee9db8b88d768fdf3cf84cc5cb349aa7a455f01ee38ac85d4c088e8d95fc1  llm_fitting/runs/2026-07-12_eul_level/qg_comments.log
+85e9e2d7b13c603bb545c9488dac7a0ebc2ce4a3ff6d94bacd21a9ce6e9d83c3  llm_fitting/runs/2026-07-12_eul_level/qg_ext_bands.log
