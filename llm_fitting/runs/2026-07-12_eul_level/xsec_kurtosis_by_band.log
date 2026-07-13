@@ -1,0 +1,8 @@
+== facebook_a: median within-entity excess kurtosis of changes, by permanent-rank third ==
+  head: median excess kurt = 1.270  (n entities = 4,666)
+  mid: median excess kurt = 1.265  (n entities = 4,666)
+  tail: median excess kurt = 1.194  (n entities = 4,667)
+== reddit_comments: median within-entity excess kurtosis of changes, by permanent-rank third ==
+  head: median excess kurt = 0.960  (n entities = 16,666)
+  mid: median excess kurt = 0.808  (n entities = 16,667)
+  tail: median excess kurt = 0.098  (n entities = 16,667)

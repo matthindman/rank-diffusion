@@ -73,3 +73,13 @@ class TestCLIWiring(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SVintageDefaultLock(unittest.TestCase):
+    def test_s_vintage_default_none_and_signature(self):
+        # 2z-u vintage policy: opt-in only; default None must leave the gate
+        # byte-identical (the replace branch is unreachable at None)
+        import inspect
+        import rankdiff_kalman as rk
+        self.assertIs(inspect.signature(rk.oos_movement)
+                      .parameters["s_vintage"].default, None)

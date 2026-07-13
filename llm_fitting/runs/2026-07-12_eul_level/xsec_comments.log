@@ -1,0 +1,6 @@
+== reddit_comments T=136 ==
+  D1 emp spacings: {'X(1)-X(2)': 1.243610696320467, 'X(1)-X(10)': 2.368357550669496, 'X(10)-X(100)': 1.816236499844578}
+  D1 sim X(1)-X(2): 1.1506 ± 0.4216
+  D1 sim X(1)-X(10): 2.4640 ± 0.2814
+  D1 sim X(10)-X(100): 1.9925 ± 0.0627
+  D2 emp head(perm<=40): between-home var 0.5087  within-entity var 0.1989  | model head W 0.3756, implied around-home level see 2z-t (FB 0.19)

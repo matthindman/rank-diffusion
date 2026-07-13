@@ -1,0 +1,16 @@
+== facebook_a T=86 ==
+  D1 emp spacings: {'X(1)-X(2)': 0.21699120417836748, 'X(1)-X(10)': 0.8620515562412174, 'X(10)-X(100)': 1.409892969611561}
+  D1 sim X(1)-X(2): 0.5478 ± 0.1351
+  D1 sim X(1)-X(10): 1.3292 ± 0.1477
+  D1 sim X(10)-X(100): 1.5489 ± 0.0526
+  D2 emp head(perm<=40): between-home var 0.1826  within-entity var 0.2575  | model head W 0.0967, implied around-home level see 2z-t (FB 0.19)
+  D3 attribution grid: S(1) mean over 3 CRN seeds (emp 0.0170; flag-off sim ref 0.0463)
+    s x1.0   kappa_head x1:  S(1) 0.0451 ± 0.0078
+    s x1.0   kappa_head x2:  S(1) 0.0438 ± 0.0100
+    s x1.0   kappa_head x4:  S(1) 0.0360 ± 0.0035
+    s x0.75  kappa_head x1:  S(1) 0.0415 ± 0.0093
+    s x0.75  kappa_head x2:  S(1) 0.0448 ± 0.0042
+    s x0.75  kappa_head x4:  S(1) 0.0413 ± 0.0091
+    s x0.5   kappa_head x1:  S(1) 0.0368 ± 0.0056
+    s x0.5   kappa_head x2:  S(1) 0.0388 ± 0.0068
+    s x0.5   kappa_head x4:  S(1) 0.0424 ± 0.0120

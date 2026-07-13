@@ -1,0 +1,8 @@
+FB t_df = 4.3; sigma_trans head4 = [0.16328798 0.16328798 0.16328798 0.16328798]
+  FB baseline: S(1) 0.0451 ± 0.0078   X(1)-X(2) 0.480  X(1)-X(10) 1.224
+  FB M1 t_df=inf: S(1) 0.0241 ± 0.0012   X(1)-X(2) 0.319  X(1)-X(10) 1.052
+  FB M2 head sigma_trans=0: S(1) 0.0441 ± 0.0086   X(1)-X(2) 0.486  X(1)-X(10) 1.222
+  (emp: S(1) 0.0170, X(1)-X(2) 0.217, X(1)-X(10) 0.862)
+EXT t_df = 4.9
+  EXT baseline: outfluxK 0.1484 ± 0.0006  (emp 0.0861)
+  EXT M3 t_df=inf: outfluxK 0.1510 ± 0.0004  (emp 0.0861)

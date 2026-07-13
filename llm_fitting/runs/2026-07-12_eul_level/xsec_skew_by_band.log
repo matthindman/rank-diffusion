@@ -1,0 +1,8 @@
+== facebook_a: median within-entity SKEW of changes, by permanent-rank third ==
+  head: median skew = +0.042
+  mid: median skew = +0.044
+  tail: median skew = +0.048
+== reddit_comments: median within-entity SKEW of changes, by permanent-rank third ==
+  head: median skew = +0.140
+  mid: median skew = +0.080
+  tail: median skew = +0.052

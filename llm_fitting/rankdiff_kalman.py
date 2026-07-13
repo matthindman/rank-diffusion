@@ -826,7 +826,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
                  md_vr=False, two_scale=False, mix_hetero=False, mix_b_fix=None,
                  md_vr_long=False, dist_scores=False, nnls=True,
-                 eul_level=False, cond_home="state", member_ids_file=None,
+                 eul_level=False, s_vintage=None, cond_home="state", member_ids_file=None,
                  origins=None, test_len=None, expect_member_sha=None,
                  frozen_prefix=None):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
@@ -932,6 +932,21 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                            md_vr=md_vr, two_scale=two_scale, mix_hetero=mix_hetero,
                            mix_b_fix=mix_b_fix, md_vr_long=md_vr_long, nnls=nnls,
                            eul_level=eul_level)
+        if s_vintage:
+            # DECLARED VINTAGE POLICY (2z-u step 2; exploratory arm): replace
+            # ONLY the amplitude-spread VALUE with a trailing-window estimate
+            # (s is a measured era-dominant trend, 2z-s); all other parameters
+            # keep full-train vintage -- the minimal intervention that
+            # isolates s. Trailing window shorter than train => unchanged.
+            from dataclasses import replace as _dc_replace
+            lo = max(0, T0 - int(s_vintage))
+            if lo > 0:
+                tr_tail = df_tr[df_tr["period"] >= lo].copy()
+                tr_tail["period"] -= lo
+                s_v = mrd.estimate_temperament(tr_tail, min_changes=12)["s"]
+                print(f"    s-vintage(W={s_vintage}): trailing s = {s_v:.3f} "
+                      f"(full-train {p.temper_s:.3f})")
+                p = _dc_replace(p, temper_s=float(s_v))
         scale = _calibrate_scale(p, df_tr, hor, T0, reps=reps)
         p = replace_obs(p, scale)
         ed, erf, ec, ed_R = emp_dist(df_te, hor, return_R=True)  # held-out truth
@@ -1151,6 +1166,10 @@ if __name__ == "__main__":
     ap.add_argument("--spec-b", action="store_true",
                     help="pin sigma_obs to the Spec-B daily noise floor (reddit only)")
     solver = ap.add_mutually_exclusive_group()
+    ap.add_argument("--s-vintage", type=int, default=None, metavar="W",
+                    help="EXPLORATORY vintage policy (2z-u): re-estimate the "
+                         "amplitude spread s on the trailing W train weeks "
+                         "per split; all other parameters full-train vintage")
     ap.add_argument("--eul-level", action="store_true",
                     help="Eulerian stationarity moment in the MD objective "
                          "(A2 candidate fix; opt-in; see minimal_rankdiff)")
@@ -1211,6 +1230,7 @@ if __name__ == "__main__":
                          mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
                          dist_scores=args.dist_scores,
                          nnls=not args.legacy_clip, eul_level=args.eul_level,
+                         s_vintage=args.s_vintage,
                          cond_home=args.cond_home,
                          member_ids_file=args.member_ids_file,
                          origins=args.origins, test_len=args.test_len,

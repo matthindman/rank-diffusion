@@ -3413,6 +3413,79 @@ on the 2021–22 comments extension (it now informs development);
 confirmation requires a new period, platform, or the submissions
 extension.
 
+## 2z-v. 2026-07-12 — The 2z-u execution round: claim set ADOPTED into §6; vintage-policy gates run (harmless in-panel; the frozen panel CANNOT power the tail test); head-law measure-first session KILLS the partition-anchor family entirely and localizes the FB overshoot to the t-SPIKE CHANNEL (M1 closes ~60% of the gap); the deep-drop excess is a SECOND, t-exonerated mechanism; three candidate fixes refuted-by-measurement before any code
+
+All exploratory (dev panels for design; extension only in the labeled D4
+discriminator). Logs: `runs/2026-07-12_eul_level/` (gate_comments_baseline
+_distscores, gate_comments_svintage77, xsec_fb, xsec_comments,
+xsec_ext_discriminator, xsec_micro_interventions, xsec_kurtosis_by_band,
+xsec_skew_by_band). `--s-vintage W` added (opt-in, default-locked; suite
+127 green); `eul_xsec_measure.py` committed with its discriminations
+declared in the header before running.
+
+**(1) Claim set adopted (owner):** the §2z-u paragraph is the single
+binding copy — §6 addendum 2026-07-12; §2z-t draft marked superseded;
+paper outline R5 slot + SI-8 filled (executed results, four evidence
+tiers, A10 deviation-table spec, framing rules).
+
+**(2) Vintage-policy gates (identifying test, both arms, same blocks):**
+trailing-77 s differs from full-train by only +0.011/+0.026 at the
+in-panel origins — the s trend's in-panel increments are TOO SMALL to
+power the tail test (rel err 0.168 ± 0.066 vs 0.171 ± 0.046; coverage
+60% both; last-split p90 23 vs 24, emp 26). VERDICT: the policy is
+harmless in-panel; the Δs ≈ 0.15 vintage effect exists only across the
+frozen→extension boundary, so "parameter-vintage-CONSISTENT, not
+isolated" remains the paper's ceiling claim. Policy retained as a
+declared option.
+
+**(3) Head-law design phase — the partition-anchor family is DEAD, by
+measurement:**
+- D1 (spacings): the FB excess is concentrated at the very top —
+  X(1)−X(2) sim 0.548 ± 0.135 vs emp 0.217; X(10)−X(100) nearly right
+  (1.55 vs 1.41). Comments spacings are at par (2.46 ± 0.28 vs 2.37) —
+  FB is the offender.
+- D3 (attribution grid, the decisive one): S(1) is INSENSITIVE to the
+  partition levers — s×0.5 AND κ_head×4 leave S(1) at 0.036–0.045 vs emp
+  0.017. No Eulerian moment on the MD objective can fix what the
+  partition does not control. (With D2's tension — model around-home
+  level 0.19 vs emp within-entity 0.26, yet sim top spacing 2.5× too
+  wide — variant 1's failure is now over-determined.)
+- M1/M2 (micro-interventions): t_df=inf collapses FB S(1) 0.0451 →
+  **0.0241 ± 0.0012** (~60% of the gap; seed noise dies; spacings drop
+  toward emp), while head σ_trans=0 does NOTHING (0.0441). **The FB
+  overshoot is substantially the Student-t spike channel from BELOW the
+  head** (heavy-tailed transitory draws transiting the #1 slot; S(1) is
+  a time-mean of a max).
+- Kurtosis/skew by rank third (both REFUTE their fix candidates): head
+  kurtosis is flat-to-HIGHER (FB 1.27/1.27/1.19; comments
+  0.96/0.81/0.10) — rank-dependent df would thicken, not thin, the head;
+  skew is near-symmetric (head comments +0.14, FB +0.04) — asymmetric
+  innovations are not licensed. So the spike channel's OWN identification
+  moments match while its order-statistic output overshoots: the open
+  discriminators for the next session are tail shape BEYOND the 4th
+  moment (q99/q90 of head changes, emp vs t) and spike
+  duration/reversal asymmetry (head-conditional autocorrelation of
+  large positive vs negative moves).
+- D4 + M3 (deep-drop excess = a SECOND mechanism): sim core exits are
+  100% dynamics-driven CROSSINGS (not exit machinery), with the CORRECT
+  realized-vol gradient (top-quintile rel rate ≈ 4.5 both sides) but ~4×
+  the frequency, and t_df=inf does NOT reduce it (0.151 vs 0.148) — not
+  the spike channel, not the hazard machinery, not the vol profile;
+  candidate family = persistent-component / medium-timescale large moves.
+  Open, measured, named.
+
+**State:** three candidate fixes refuted by measurement before
+implementation (Eulerian time-variance anchor §2z-t; rank-dependent
+t-df; skewed innovations) — cheap kills, the method working. The E5
+trigger's fix obligation now points at a SPIKE-CHANNEL treatment whose
+design is constrained by: must preserve the matched kurtosis moment,
+must reduce top-1 transit mass, must not degrade the passing movement
+gates. Next-session measurement shortlist: q99/q90 tail-shape ratio and
+spike-reversal asymmetry at the head; deep-drop event anatomy (size,
+duration, component attribution) on dev panels. Owner decision then:
+register the chosen candidate as a new pre-declared step (the A2 pattern)
+for confirmation on data this program has not consumed.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

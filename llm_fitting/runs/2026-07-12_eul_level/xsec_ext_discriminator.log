@@ -1,0 +1,12 @@
+== D4 (EXPLORATORY, extension): core exits — absence vs crossing, by realized-vol quintile ==
+Python(32579) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+  emp: core-exit events 284  absence share 0.018  crossing share 0.982
+/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/numpy/lib/_nanfunctions_impl.py:2035: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+  emp: exit rate by vol quintile (rel to mean) [0.06 0.08 0.21 0.28 4.38]
+  sim seed 0: core-exit events 1,216  absence share 0.000  crossing share 1.000
+  sim seed 0: exit rate by vol quintile (rel to mean) [0.05 0.08 0.12 0.25 4.5 ]
+  sim seed 1: core-exit events 1,151  absence share 0.000  crossing share 1.000
+  sim seed 1: exit rate by vol quintile (rel to mean) [0.05 0.04 0.11 0.23 4.56]
+  sim seed 2: core-exit events 1,227  absence share 0.000  crossing share 1.000
+  sim seed 2: exit rate by vol quintile (rel to mean) [0.04 0.05 0.13 0.4  4.38]
