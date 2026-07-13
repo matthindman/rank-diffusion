@@ -34,3 +34,6 @@ ba51f4b5e6201044e7428a0daa2760522804a53ea74e702c48c8071dfa127972  llm_fitting/ru
 # addendum 2026-07-13 (identity-safe rerun, MODEL_STATUS 2z-ab)
 8d7d3adab0a8726ffa61c523ce1c138cee341821d93943cd2738b7ec94699ca7  llm_fitting/exit_audit.py
 36619a94d91e469420b03d77a7ed67c75a531db7891ccf65399c8d07bf5a3cc7  llm_fitting/runs/2026-07-12_eul_level/exit_audit_idsafe.log
+# addendum 2026-07-13 (aligned rerun, MODEL_STATUS 2z-ac)
+fff1b9b100ed9cbd3ac38a6947a0d3d0d6fead9bf5cd5a3c12339bb547bf5008  llm_fitting/exit_audit.py
+6ae25b6724750d46bc5f0f477785d8518a9e9e398333cc7d8071f1771072f2dc  llm_fitting/runs/2026-07-12_eul_level/exit_audit_aligned.log

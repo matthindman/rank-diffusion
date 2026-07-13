@@ -3832,7 +3832,7 @@ Candidate registration remains DEFERRED per the branching rule; the
 remaining identification items are unchanged (§2z-z list) plus the
 knot-aligned exit audit. The binding claim set is untouched.
 
-## 2z-ab. 2026-07-13 — Sixth review adjudicated (slot-vs-identity flaw CONFIRMED in code and fixed with opt-in `track_ids`; 130 tests): the IDENTITY-SAFE rerun STRENGTHENS the sign flip (sim 0.00469 vs emp 0.01177 at K/2 — a 2.5× established-departure deficit, robust under corrected entity AND week-block bootstraps) and REVERSES "exit machinery exonerated" — deaths are 10–40% of the sim's rare departures
+## 2z-ab. 2026-07-13 — _[PROVISIONAL, 2z-ac: the empirical side still carried two extension-conditioned selections — full-window universe membership (`restrict_universe` without `member_window=136`) and the tracked sample's ≥70% full-panel presence filter (suppresses extension absences; the 441/1 composition is provisional) — and the sim cohort required 100% train-window identity survival while the empirical permitted partial presence. Superseded by the aligned rerun in §2z-ac.]_ Sixth review adjudicated (slot-vs-identity flaw CONFIRMED in code and fixed with opt-in `track_ids`; 130 tests): the IDENTITY-SAFE rerun STRENGTHENS the sign flip (sim 0.00469 vs emp 0.01177 at K/2 — a 2.5× established-departure deficit, robust under corrected entity AND week-block bootstraps) and REVERSES "exit machinery exonerated" — deaths are 10–40% of the sim's rare departures
 
 **The flaw, confirmed and fixed.** `simulate()` replaces `ids[ex]` in
 place at rebirth; tracked slots keep emitting positive ranks under the
@@ -3879,6 +3879,49 @@ composition; the knot-aligned exit-estimand audit is the single highest-
 leverage next measurement; (3) transient-crossing excess and the FB head
 allocation story unchanged from §2z-y/§2z-z. Candidates remain DEFERRED;
 the branching rule stands; the binding claim set is untouched.
+
+## 2z-ac. 2026-07-13 — THE ALIGNED RERUN (seventh review's design, executed exactly): train-only universe, NO survivor filter, SYMMETRIC identity-level construction — the established-departure deficit SURVIVES its third adversarial hardening (2.3× at K/2, 3.4× at K/4) and the composition mismatch is now cleanly measured (empirical departures 98.6% crossings; sim departures 14–52% permanent deaths)
+
+`exit_audit.py --aligned` (committed; suite **131 green** incl. the
+identity-history reconstruction test); log `exit_audit_aligned.log`.
+Design per the seventh review, all four P1/P2 items fixed: universe
+membership frozen on periods 0–135 (`member_window=136`); the empirical
+side uses the FULL 50,000-entity identity matrix (no ≥70% full-panel
+tracked filter — extension disappearances can no longer be excluded);
+the simulated side reconstructs per-identity histories from
+`track_ids` (zeros before birth / after death) and applies the SAME
+absence-penalized cohort rule; composition from POOLED counts; 30 seeds
+with quantiles.
+
+| cohort (train-defined) | empirical rate (events) | sim rate [q10, q90] | deficit | sim pooled death share |
+|---|---|---|---|---|
+| K/4 (n=2,544) | 0.00172 (311 cross, 19 abs: 10 return≤13, 9 never) | 0.00050 [0.00028, 0.00077] | **3.4×** | **0.52** |
+| K/2 (n=5,138) | 0.00800 (3,000 cross, 43 abs: 22 return≤13, 19 never) | 0.00350 [0.00283, 0.00410] | **2.3×** | 0.14 |
+
+**Both findings now stand on a construction with no known selection
+defect:** (1) the sim under-produces established departures 2.3–3.4×,
+with the empirical q-range nowhere near the sim's; (2) the composition
+is inverted — empirical established departures are ~98.6% returnable
+rank-crossings (never-returning absences are 0.6% of events), while the
+sim's departures are 14% (K/2) to 52% (K/4) permanent deaths. The
+temporary-absence-as-death estimand mismatch and the missing
+large-displacement dynamics are BOTH required to explain this jointly.
+
+One structural note (so the axis is not re-run): the presence grid is
+inert BY CONSTRUCTION — an absence-penalized mean rank ≤ K/2 with the
+50,001 penalty mechanically forces ≳87% train presence; the only live
+robustness axis is the rank cut. Empirical rates differ from §2z-ab
+(0.0080 vs 0.0118 at K/2) because the cohort is now the full universe
+population, not the 4,000-slot tracked subsample — this construction
+supersedes.
+
+**Status:** the established-departure finding is, after three consecutive
+adversarial rounds (slot→identity, §2z-ab; selection→train-only and
+asymmetry→symmetric, this section), as hardened as dev-panel measurement
+can make it. Candidates remain DEFERRED; the knot-aligned exit-estimand
+audit is the next measurement; the three candidate branches (displacement
+tails / exit-estimand correction / fast-amplitude allocation) stay
+separate per the branching rule; the binding claim set is untouched.
 
 ## 3. The three corrected estimation pitfalls (do not regress)
 

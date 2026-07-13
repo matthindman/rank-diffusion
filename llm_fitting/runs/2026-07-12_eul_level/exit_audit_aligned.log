@@ -1,0 +1,8 @@
+P1 self-test: PASS (spiker excluded; established counted once)
+train-only universe: 50,000 entities, no survivor filter; score_k=12500
+  cut=K/4 pres>=0.6: emp rate 0.00172 (n=2544, cross 311, abs 19: ret13 10, never 9) | sim rate 0.00050 [q10 0.00028, q90 0.00077] pooled deaths/(d+c) 162/310 = 0.52
+  cut=K/4 pres>=0.7: emp rate 0.00172 (n=2544, cross 311, abs 19: ret13 10, never 9) | sim rate 0.00050 [q10 0.00028, q90 0.00077] pooled deaths/(d+c) 162/310 = 0.52
+  cut=K/4 pres>=0.8: emp rate 0.00172 (n=2544, cross 311, abs 19: ret13 10, never 9) | sim rate 0.00050 [q10 0.00028, q90 0.00077] pooled deaths/(d+c) 162/310 = 0.52
+  cut=K/2 pres>=0.6: emp rate 0.00800 (n=5138, cross 3000, abs 43: ret13 22, never 19) | sim rate 0.00350 [q10 0.00283, q90 0.00410] pooled deaths/(d+c) 558/4069 = 0.14
+  cut=K/2 pres>=0.7: emp rate 0.00800 (n=5138, cross 3000, abs 43: ret13 22, never 19) | sim rate 0.00350 [q10 0.00283, q90 0.00410] pooled deaths/(d+c) 558/4069 = 0.14
+  cut=K/2 pres>=0.8: emp rate 0.00800 (n=5138, cross 3000, abs 43: ret13 22, never 19) | sim rate 0.00350 [q10 0.00283, q90 0.00410] pooled deaths/(d+c) 558/4069 = 0.14

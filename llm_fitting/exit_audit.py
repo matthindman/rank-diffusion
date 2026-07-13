@@ -150,6 +150,92 @@ def idsafe_main():
               f"sign-flip vs ent-CI: {np.mean(rates) < elo}", flush=True)
 
 
+def identity_histories(tranks, tids):
+    """Reconstruct per-IDENTITY rank histories from slot arrays: each
+    identity's column has its ranks during its lifetime and 0 (absent =
+    dead/unborn) outside. Symmetric with an empirical rank matrix where
+    0 = absent week."""
+    T, n = tranks.shape
+    cols = []
+    for j in range(n):
+        col_ids = tids[:, j]
+        t = 0
+        while t < T:
+            e = t
+            while e + 1 < T and col_ids[e + 1] == col_ids[t]:
+                e += 1
+            h = np.zeros(T, dtype=np.int32)
+            h[t:e + 1] = tranks[t:e + 1, j]
+            cols.append(h)
+            t = e + 1
+    return np.stack(cols, axis=1)
+
+
+def score_matrix(R, t0, K, cut, pf, is_sim):
+    """Symmetric scorer on a rank matrix (0 = absent): cohort via
+    cohort_mask (absence-penalized perm rank + presence over [0, t0));
+    events on t0..T-2 from in-K weeks: crossing (present below K) vs
+    absence (0 next week). Empirical absences decomposed into
+    return<=13 / never-returns (right-censored, declared); simulated
+    absences are deaths by construction."""
+    coh = cohort_mask(R, 0, t0, cut, pf)
+    rr = R[t0:, coh]
+    inK = (rr > 0) & (rr <= K)
+    cross = inK[:-1] & (rr[1:] > K)
+    absent = inK[:-1] & (rr[1:] <= 0)
+    risk = int(inK[:-1].sum())
+    out = dict(n=int(coh.sum()), risk=risk,
+               crossings=int(cross.sum()), absences=int(absent.sum()),
+               rate=(int(cross.sum()) + int(absent.sum())) / max(risk, 1))
+    if not is_sim and out["absences"]:
+        t_i, e_i = np.where(absent)
+        pres = rr > 0
+        r13 = sum(1 for t, e in zip(t_i, e_i) if pres[t + 1:t + 14, e].any())
+        rev = sum(1 for t, e in zip(t_i, e_i) if pres[t + 1:, e].any())
+        out["abs_ret13"], out["abs_never"] = r13, out["absences"] - rev
+    return out
+
+
+def aligned_main(n_seeds=30):
+    """--aligned (seventh review): train-only universe
+    (member_window=136), NO survivor filter (full identity matrices both
+    sides), symmetric cohort construction, pooled composition counts,
+    quantiles. Presence thresholds are now ACTIVE (no pre-filter)."""
+    self_test()
+    df = mrd.load_panel(mrd.PLATFORMS["reddit_comments_ext"])
+    df = mrd.restrict_universe(df, K, buffer_mult=4, member_window=T0)
+    sk = df.attrs["score_k"]
+    piv = df.pivot_table(index="period", columns="entity_id", values="rank",
+                         fill_value=0).reindex(range(T_FULL), fill_value=0)
+    R_emp = piv.to_numpy().astype(np.int32)
+    print(f"train-only universe: {R_emp.shape[1]:,} entities, no survivor "
+          f"filter; score_k={sk}")
+    p = mrd.estimate(df, **LONG)
+    sims = []
+    for s in range(n_seeds):
+        sim = mrd.simulate(p, T_FULL, seed=s, top_record=sk, track_ids=True)
+        sims.append(identity_histories(np.asarray(sim["tranks"]),
+                                       np.asarray(sim["tids"])))
+    for cut, cname in ((K // 4, "K/4"), (K // 2, "K/2")):
+        for pf in (0.6, 0.7, 0.8):
+            e = score_matrix(R_emp, T0, sk, cut, pf, is_sim=False)
+            ss = [score_matrix(Rs, T0, sk, cut, pf, is_sim=True)
+                  for Rs in sims]
+            rates = np.array([x["rate"] for x in ss])
+            D = sum(x["absences"] for x in ss)
+            C = sum(x["crossings"] for x in ss)
+            print(f"  cut={cname} pres>={pf}: "
+                  f"emp rate {e['rate']:.5f} (n={e['n']}, cross {e['crossings']}, "
+                  f"abs {e['absences']}"
+                  + (f": ret13 {e.get('abs_ret13', 0)}, never "
+                     f"{e.get('abs_never', 0)}" if e["absences"] else "")
+                  + f") | sim rate {rates.mean():.5f} "
+                  f"[q10 {np.quantile(rates, .1):.5f}, "
+                  f"q90 {np.quantile(rates, .9):.5f}] "
+                  f"pooled deaths/(d+c) {D}/{D + C} = {D / max(D + C, 1):.2f}",
+                  flush=True)
+
+
 def self_test():
     T = 200
     spiker = np.tile([100, 20000], T // 2)
@@ -257,5 +343,7 @@ def main():
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--idsafe":
         idsafe_main()
+    elif len(sys.argv) > 1 and sys.argv[1] == "--aligned":
+        aligned_main()
     else:
         main()

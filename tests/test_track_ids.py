@@ -68,5 +68,16 @@ class TrackIdsTests(unittest.TestCase):
         self.assertGreater(ev["risk_weeks"], 0)
 
 
+class IdentityHistoryTests(unittest.TestCase):
+    def test_rebirth_splits_into_two_identities(self):
+        from exit_audit import identity_histories
+        tranks = np.array([[10], [12], [900], [15]], dtype=np.int32)
+        tids = np.array([[7], [7], [99], [99]], dtype=np.int64)
+        H = identity_histories(tranks, tids)
+        self.assertEqual(H.shape, (4, 2))
+        np.testing.assert_array_equal(H[:, 0], [10, 12, 0, 0])   # id 7 dies
+        np.testing.assert_array_equal(H[:, 1], [0, 0, 900, 15])  # id 99 born
+
+
 if __name__ == "__main__":
     unittest.main()
