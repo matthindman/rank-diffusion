@@ -1,0 +1,18 @@
+== facebook_a T=86 ==
+  A1 emp spike anatomy: {'events_per_wk': 0.5176470588235295, 'med_origin': 3.0, 'origin_gt10': 0.16666666666666666, 'origin_outside': 0.045454545454545456, 'med_spell': 1.0, 'modal_share': 0.23255813953488372, 'n_distinct': 19}
+  A2 emp tails: {'contender2-20': {'n_cols': 1, 'n_obs': 85}, '21-100': {'n_cols': 11, 'n_obs': 924}, '101-1000': {'n_cols': 157, 'n_obs': 13235, 'pos_q99/q90': 1.869, 'neg_q99/q90': 1.945}}
+  A1 sim spike anatomy (mean ± sd over 10 seeds):
+    events_per_wk: 0.545 ± 0.120
+    med_origin: 4.000 ± 2.098
+    origin_gt10: 0.329 ± 0.075
+    origin_outside: 0.060 ± 0.035
+    med_spell: 1.000 ± 0.000
+    modal_share: 0.467 ± 0.188
+    n_distinct: 23.500 ± 5.220
+  A2 sim tails (pooled 10 seeds): {'contender2-20': {'n_cols': 28, 'n_obs': 2380, 'pos_q99/q90': 1.585, 'neg_q99/q90': 1.552}, '21-100': {'n_cols': 153, 'n_obs': 13005, 'pos_q99/q90': 1.608, 'neg_q99/q90': 1.663}, '101-1000': {'n_cols': 2072, 'n_obs': 176120, 'pos_q99/q90': 1.618, 'pos_q999/q99': 1.349, 'neg_q99/q90': 1.604, 'neg_q999/q99': 1.374}}
+  A3 2x2 factorial (t on/off x s full/half), S(1), 20 paired seeds:
+    [t,s    ] S(1) 0.0474 ± 0.0101
+    [t,s/2  ] S(1) 0.0330 ± 0.0075
+    [inf,s  ] S(1) 0.0272 ± 0.0045
+    [inf,s/2] S(1) 0.0267 ± 0.0034
+    interaction (per-seed paired): +0.0139 ± 0.0104  (positive => product-tail hypothesis supported)

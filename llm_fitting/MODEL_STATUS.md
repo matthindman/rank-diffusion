@@ -3553,6 +3553,74 @@ SECONDARY as an outcome-unseen temporal/cross-metric BACKTEST (the
 2024–25 submissions panel is already consumed; same metric family; era
 overlap declared — never described as a clean new-platform confirmation).
 
+## 2z-x. 2026-07-12 — THE ANATOMY SESSION (declared predictions A1–A4, scored): A2 REFUTED — empirical per-entity tails are FATTER than the sim's, killing the "t power tail too fat" story; A4's named hypothesis REFUTED — the FAST-VARIANCE channel carries ~70% of the outflux excess; A3 supports the v×t product; the sharpened head hypothesis is RANK-DEPENDENT AMPLITUDE ("quiet giants")
+
+Measurement only (`anatomy_measure.py`, predictions in the committed
+header before running; logs `runs/2026-07-12_eul_level/anatomy_*.log`).
+Dev panels for A1–A3; extension (labeled exploratory) for A4.
+
+**A1 — spike anatomy (identical event definitions both sides): PARTIAL on
+FB; comments REPRODUCED.** FB emp: 0.52 incursions/wk, median origin rank
+3, 17% from beyond rank 10, modal #1 holds 23% of weeks (19 distinct).
+FB sim: frequency matches (0.55/wk) but origins are DEEPER (origin>10:
+33% ± 8) and the modal #1 holds TWICE the share (0.47 ± 0.19 — the high
+seed-SD is the runaway-dominant-entity signature). Comments: the
+empirical #1 is a stable monarch (3 distinct in 136 wks, modal share
+0.97) and the sim reproduces it (3.1, 0.94) — the head-anatomy problem is
+FB-SPECIFIC, consistent with §2z-v spacings.
+
+**A2 — observable tails (one-sided, entity-standardized, identical
+construction): PREDICTION REFUTED, both platforms.** In every powered
+stratum the EMPIRICAL standardized tails are FATTER than the sim's
+(FB 101–1000: pos q99/q90 1.87 vs 1.62; comments 101–1000: 1.93 vs 1.63;
+comments 21–100: 1.76 vs 1.61). The sim's standardized tail is nearly
+uniform across strata by construction (~1.59–1.66). **The per-entity
+innovation tail is not too fat — if anything too thin — yet empirical
+S(1) is lower.** The contender strata (perm 2–20) were UNPOWERED
+empirically (FB 1 tracked column, comments 0 — the random tracked sample
+misses the head; a head-targeted tracked sample is a recorded tooling
+item before any contender-stratum claim).
+
+**A3 — v×t product factorial (2×2, 20 paired seeds): DIRECTIONAL
+SUPPORT.** Interaction +0.0139 ± 0.0104; the t-removal effect on S(1) is
+3× larger at full s (0.0202) than at half s (0.0063). Combined with A2's
+inversion, the sharpened FB-head hypothesis is: **the problem is WHO
+occupies the head, not each entity's tail** — the sim draws v_i
+INDEPENDENT of rank, seating high-amplitude entities at the top where
+their v-scaled spikes transit #1; the empirical head may be populated by
+low-amplitude "quiet giants" (rank-dependent amplitude). MEASURABLE next:
+empirical amplitude residual (realized vol net of the band profile) vs
+permanent rank among the top ~100, against the sim's zero-by-construction
+correlation.
+
+**A4 — deep-drop component attribution (5 paired seeds; attribution
+probes, not candidate models; path-replay deferred as declared): the
+NAMED HYPOTHESIS (persistent/medium) IS REFUTED.**
+
+| arm | outfluxK | (emp 0.0861) |
+|---|---|---|
+| baseline | 0.1485 ± 0.0005 | — |
+| **fast σ_trans = 0** | **0.1050 ± 0.0004** | closes ~70% of the excess |
+| medium σ_trans2 = 0 | 0.1450 ± 0.0009 | ≈ nil |
+| factor off | 0.1481 ± 0.0009 | nil |
+| σ_perm × 0.5 | 0.1699 ± 0.0004 | BACKFIRES (packing-density effect: tighter stationary spread → more boundary crossings) |
+
+With M3 (t_df=inf leaves outflux unchanged) this pins the outflux excess
+on the fast channel's VARIANCE, not its tail shape. OPEN (recorded): the
+arm outputs total outflux only — whether fast=0 also normalizes the
+CORE-band excess and the return deficit is unmeasured; next session.
+
+**Emerging picture (labeled hypothesis, not conclusion):** both residuals
+implicate the FAST-TRANSITORY LAYER'S ALLOCATION — its variance drives
+boundary churn (A4), and its v-scaled spikes drive the FB head (A3 +
+§2z-w), while its per-entity standardized tail is if anything too thin
+(A2). This points the candidate search at the σ_trans/σ_obs allocation
+and the rank-dependence of amplitude — NOT at new components and NOT at
+tail-shape surgery. Next measurements, in order: (1) amplitude-vs-rank at
+the head (the quiet-giants test; cheap); (2) fast=0 arm re-run with the
+band decomposition + returns; (3) head-targeted tracked sample, then the
+contender-stratum tails. Candidate selection only after these.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

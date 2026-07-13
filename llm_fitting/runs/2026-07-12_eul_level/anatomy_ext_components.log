@@ -1,0 +1,6 @@
+== A4 (EXPLORATORY, extension): deep-drop component attribution, 5 paired seeds ==
+  baseline    outfluxK 0.1485 ± 0.0005   (emp 0.0861; baseline sim ~0.148)
+  fast=0      outfluxK 0.1050 ± 0.0004   (emp 0.0861; baseline sim ~0.148)
+  medium=0    outfluxK 0.1450 ± 0.0009   (emp 0.0861; baseline sim ~0.148)
+  factor off  outfluxK 0.1481 ± 0.0009   (emp 0.0861; baseline sim ~0.148)
+  perm x0.5   outfluxK 0.1699 ± 0.0004   (emp 0.0861; baseline sim ~0.148)

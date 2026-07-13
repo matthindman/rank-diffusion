@@ -1,0 +1,12 @@
+== reddit_comments T=136 ==
+  A1 emp spike anatomy: {'events_per_wk': 0.044444444444444446, 'med_origin': 2.0, 'origin_gt10': 0.0, 'origin_outside': 0.0, 'med_spell': 2.0, 'modal_share': 0.9705882352941176, 'n_distinct': 3}
+  A2 emp tails: {'contender2-20': {'n_cols': 0, 'n_obs': 0}, '21-100': {'n_cols': 10, 'n_obs': 1350, 'pos_q99/q90': 1.762, 'neg_q99/q90': 1.648}, '101-1000': {'n_cols': 56, 'n_obs': 7479, 'pos_q99/q90': 1.932, 'neg_q99/q90': 1.863}}
+  A1 sim spike anatomy (mean ± sd over 10 seeds):
+    events_per_wk: 0.057 ± 0.045
+    med_origin: 2.100 ± 0.300
+    origin_gt10: 0.008 ± 0.025
+    origin_outside: 0.271 ± 0.230
+    med_spell: 15.200 ± 14.819
+    modal_share: 0.940 ± 0.066
+    n_distinct: 3.100 ± 0.943
+  A2 sim tails (pooled 10 seeds): {'contender2-20': {'n_cols': 14, 'n_obs': 1890, 'pos_q99/q90': 1.492, 'neg_q99/q90': 1.661}, '21-100': {'n_cols': 68, 'n_obs': 9180, 'pos_q99/q90': 1.614, 'neg_q99/q90': 1.585}, '101-1000': {'n_cols': 815, 'n_obs': 110025, 'pos_q99/q90': 1.631, 'pos_q999/q99': 1.331, 'neg_q99/q90': 1.605, 'neg_q999/q99': 1.37}}
