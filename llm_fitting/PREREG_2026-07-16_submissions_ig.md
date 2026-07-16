@@ -444,3 +444,36 @@ modeled subset; P10's M-bands were built from unrelated quantiles and
   one partition's uniques) and REJECTS nonfinite, negative, or
   fractional interaction counts. P10's per-band M is vectorized
   (`band_M`, pure, tested).
+
+---
+
+## AMENDMENT 6 (2026-07-16, BEFORE Phase 0; no value-level contact): four closures from the tenth review — the dist-scores coverage crash, true two-pass external IG aggregation with raw_small-scoped scratch, P7 seeds locked at 30, and the A5.2 real-data "dry run" WITHDRAWN
+
+- **A6.1' gate coverage crash (reproduced in code)**: the `--dist-scores`
+  block reused the gate-coverage variable for predictive quantile
+  coverage, so the A5.2 return raised TypeError after the full run — on
+  BOTH registered movement commands. Fixed by separating
+  `gate_coverage` from predictive coverage; locked by a SYNTHETIC
+  full-path test that executes `oos_movement(..., dist_scores=True)` end
+  to end and asserts the returned coverage is scalar. **Verdict wiring**:
+  registered wrapper runners (`gate_verdicts.py p6|p10iv`) call
+  `oos_movement` with EXACTLY the frozen A1.4/A2.2 parameters and print
+  the pure-verdict PASS/FAIL; the frozen command texts stand as the
+  parameter registration.
+- **A6.2' IG builder, truly bounded + scratch scope**: pass 2 no longer
+  accumulates all partitions — account-day partials are REPARTITIONED to
+  disk by user-hash (16 partitions) and pass 3 merges each user-partition
+  independently, appending through a streaming Parquet writer (peak = one
+  partition at every stage). ALL url-bearing scratch lives under
+  `data/ssd/raw_small/instagram/_build_tmp/` (the registered raw_small
+  scope; never the system temp) with failure-safe cleanup.
+- **A6.3' P7 seeds**: the `--p7` CLI has NO seed flag — 30 is hardcoded
+  (the registration's "exactly 30"); adjustable seeds remain only in the
+  Python function (tests) and `--aligned` (reproduction). A subprocess
+  SUCCESS path is tested (argparse dispatch through a real child
+  process on a synthetic platform).
+- **A6.4' the A5.2 real-data pinned-gate "dry run" is WITHDRAWN** — it
+  would have been model contact consuming the one-pass Phase-3
+  evaluation. Replaced by the synthetic end-to-end preflight of A6.1';
+  the real P10(iv) gate runs exactly once, in Phase 3, after
+  reconciliation passes.
