@@ -197,14 +197,26 @@ def score_matrix(R, t0, K, cut, pf, is_sim):
     return out
 
 
-def aligned_main(n_seeds=30):
-    """--aligned (seventh review): train-only universe
-    (member_window=136), NO survivor filter (full identity matrices both
-    sides), symmetric cohort construction, pooled composition counts,
-    quantiles. Presence thresholds are now ACTIVE (no pre-filter)."""
+def aligned_main(n_seeds=30, platform="reddit_comments_ext", t0=T0,
+                 top_k=K, anchor_date=None):
+    """--aligned (seventh review design; generalized per PREREG A4.10-11
+    for the P7 replication; defaults reproduce the committed §2z-ac run):
+    train-only universe (member_window=t0), NO survivor filter, symmetric
+    identity construction, pooled composition, quantiles. anchor_date:
+    the runner verifies period t0 = that Monday BEFORE any estimation
+    (frozen DATE, derived index — the P7 load-bearing check)."""
     self_test()
-    df = mrd.load_panel(mrd.PLATFORMS["reddit_comments_ext"])
-    df = mrd.restrict_universe(df, K, buffer_mult=4, member_window=T0)
+    df = mrd.load_panel(mrd.PLATFORMS[platform])
+    if anchor_date is not None:
+        anchor = df[["period", "ts"]].drop_duplicates().set_index("period")["ts"]
+        if t0 not in anchor.index:
+            raise SystemExit(f"P7 ANCHOR FAIL: period {t0} not in panel")
+        got = pd.Timestamp(anchor.loc[t0]).date()
+        if str(got) != str(anchor_date):
+            raise SystemExit(f"P7 ANCHOR FAIL: period {t0} = {got}, "
+                             f"expected {anchor_date}")
+        print(f"anchor verified BEFORE estimation: period {t0} = {got}")
+    df = mrd.restrict_universe(df, top_k, buffer_mult=4, member_window=t0)
     sk = df.attrs["score_k"]
     T_full = int(df["period"].max()) + 1
     piv = df.pivot_table(index="period", columns="entity_id", values="rank",

@@ -31,25 +31,53 @@ DAILY_OUT = "data/ssd/derived/ig_daily_2023.parquet"
 WEEKS_2023 = pd.date_range("2023-01-02", "2023-12-25", freq="7D")  # 52 complete
 
 
+def _merge_uniques(parts):
+    """Exact-URL merge (A4.5): concat per-batch unique-url aggregates and
+    re-reduce. Keeps max interactions; tracks user/date min & max so
+    conflicting duplicates FAIL at the end."""
+    cat = pd.concat(parts, ignore_index=True)
+    return cat.groupby("url", as_index=False).agg(
+        ti=("ti", "max"), u_min=("u_min", "min"), u_max=("u_max", "max"),
+        d_min=("d_min", "min"), d_max=("d_max", "max"))
+
+
 def build(raw=RAW, out=DAILY_OUT):
     import pyarrow.parquet as pq
     pf = pq.ParquetFile(raw)
-    best = {}                     # url-hash -> (interactions, user, date)
+    parts, n_rows = [], 0
     for batch in pf.iter_batches(
             batch_size=2_000_000,
             columns=["user_name", "post_created_date", "total_interactions",
                      "url"]):
         df = batch.to_pandas()
-        h = pd.util.hash_array(df["url"].to_numpy(dtype=object))
-        ti = pd.to_numeric(df["total_interactions"], errors="coerce").fillna(0)
-        for hh, t, u, d in zip(h, ti, df["user_name"],
-                               df["post_created_date"]):
-            cur = best.get(hh)
-            if cur is None or t > cur[0]:
-                best[hh] = (float(t), u, d)
-    agg = pd.DataFrame(best.values(),
-                       columns=["metric_value", "user_name", "date"])
-    agg["date"] = pd.to_datetime(agg["date"])
+        n_rows += len(df)
+        if df["url"].isna().any() or (df["url"].astype(str) == "").any():
+            raise SystemExit("BUILD FAIL: null/empty url (A4.5 anomaly)")
+        ti = pd.to_numeric(df["total_interactions"], errors="coerce")
+        if ti.isna().any():
+            raise SystemExit("BUILD FAIL: null/non-numeric "
+                             "total_interactions (A4.5: no silent zero-fill)")
+        if df["user_name"].isna().any() or df["post_created_date"].isna().any():
+            raise SystemExit("BUILD FAIL: null user_name/post_created_date")
+        b = pd.DataFrame({"url": df["url"].astype(str),
+                          "ti": ti.astype(float),
+                          "u_min": df["user_name"].astype(str),
+                          "u_max": df["user_name"].astype(str),
+                          "d_min": pd.to_datetime(df["post_created_date"]),
+                          "d_max": pd.to_datetime(df["post_created_date"])})
+        parts.append(b.groupby("url", as_index=False).agg(
+            ti=("ti", "max"), u_min=("u_min", "min"), u_max=("u_max", "max"),
+            d_min=("d_min", "min"), d_max=("d_max", "max")))
+        if len(parts) >= 8:
+            parts = [_merge_uniques(parts)]
+    agg = _merge_uniques(parts)
+    if (agg["u_min"] != agg["u_max"]).any() or (agg["d_min"] != agg["d_max"]).any():
+        n = int(((agg["u_min"] != agg["u_max"])
+                 | (agg["d_min"] != agg["d_max"])).sum())
+        raise SystemExit(f"BUILD FAIL: {n} duplicate urls with conflicting "
+                         f"(user_name, date) (A4.5 anomaly)")
+    agg = agg.rename(columns={"u_min": "user_name", "d_min": "date",
+                              "ti": "metric_value"})
     daily = (agg.groupby(["user_name", agg["date"].dt.normalize()])
              .agg(metric_value=("metric_value", "sum"),
                   n_posts=("metric_value", "size")).reset_index())
@@ -58,7 +86,8 @@ def build(raw=RAW, out=DAILY_OUT):
     print(f"wrote {out}: {len(daily):,} account-days, "
           f"{daily['user_name'].nunique():,} accounts, "
           f"{daily['date'].min().date()}..{daily['date'].max().date()}; "
-          f"posts kept {len(agg):,} (url-dedup keep-max)")
+          f"{n_rows:,} post rows -> {len(agg):,} unique urls "
+          f"(exact-url dedup keep-max)")
 
 
 def dedup_posts(df):
@@ -98,10 +127,12 @@ def reconcile(daily_df, analyzed_weekly, modeled_ids):
                  != m_aw["metric_value"].sort_index().to_numpy()).sum())
         raise SystemExit(f"RECONCILE FAIL: {n} modeled metric_value cells "
                          f"differ (integer sums admit no tolerance)")
-    if "n_posts" in aw.columns:
-        if not np.array_equal(m_dw["n_posts"].sort_index().to_numpy(),
-                              m_aw["n_posts"].sort_index().to_numpy()):
-            raise SystemExit("RECONCILE FAIL: modeled n_posts cells differ")
+    if "n_posts" not in aw.columns:
+        raise SystemExit("RECONCILE FAIL: analyzed weekly panel has no "
+                         "n_posts column (A4.6: required; data finding)")
+    if not np.array_equal(m_dw["n_posts"].sort_index().to_numpy(),
+                          m_aw["n_posts"].sort_index().to_numpy()):
+        raise SystemExit("RECONCILE FAIL: modeled n_posts cells differ")
     o_dw, o_aw = dw.drop(m_dw.index), aw.drop(m_aw.index, errors="ignore")
     only_d = o_dw.index.difference(o_aw.index)
     only_a = o_aw.index.difference(o_dw.index)
@@ -171,7 +202,31 @@ def p11(daily, cohort_n=10_000, draws=500, seed=0):
     return t_obs > q975
 
 
-# ---------------- P10 i–iii (A1.8/A2.2) ---------------- #
+# ---------------- P10 i–iii (A1.8/A2.2/A4.7/A4.8) ---------------- #
+def p10_verdicts(sig, M_band, recorded_sigma, n_bands=12):
+    """PURE P10 logic (testable both directions). sig: centered-floor
+    sigma_obs per band; M_band: mean weekly n_posts per band ALIGNED to
+    the same band membership; recorded_sigma: the recorded instagram_hm
+    sigma_obs interpolated at the same 12 z coordinates.
+    STRUCTURAL (A4.8): exactly n_bands bands must exist in all three."""
+    from scipy.stats import spearmanr
+    out = {}
+    if not (len(sig) == len(M_band) == len(recorded_sigma) == n_bands):
+        out["structural"] = False
+        out["i"] = out["ii"] = out["iii"] = False
+        return out
+    out["structural"] = True
+    rho = float(spearmanr(np.asarray(sig) ** 2, 1.0 / np.asarray(M_band)).statistic)
+    slope = float(np.polyfit(np.log(1.0 / np.asarray(M_band)),
+                             np.log(np.asarray(sig) ** 2), 1)[0])
+    out["rho"], out["slope"] = rho, slope
+    out["i"] = (rho > 0) and (0.5 <= slope <= 1.5)
+    third = n_bands // 3
+    out["ii"] = float(np.mean(sig[:third])) < float(np.mean(sig[-third:]))
+    out["iii"] = bool(np.all(np.asarray(recorded_sigma) >= np.asarray(sig) - 1e-12))
+    return out
+
+
 def p10_specb(top_k=10_000):
     import minimal_rankdiff as mrd
     import spec_b_sigma_obs as sb
@@ -179,49 +234,51 @@ def p10_specb(top_k=10_000):
     df = mrd.restrict_universe(df, top_k, buffer_mult=4)
     daily_all = pd.read_parquet(DAILY_OUT).rename(
         columns={"user_name": "endpoint_id"})
-    ids = set(df["entity_id"].unique())
-    daily = daily_all[daily_all["endpoint_id"].isin(ids)]
-    # guard convention (A2.2): drop weeks containing flagged days from the
-    # floor estimation
-    counts = daily.groupby("date")["endpoint_id"].size().sort_index()
+    # A4.7: day guard from PLATFORM-WIDE daily row counts, BEFORE any
+    # modeled-account restriction
+    counts = daily_all.groupby("date")["endpoint_id"].size().sort_index()
     med = counts.shift(1).rolling(28, min_periods=14).median()
     flagged = counts[(med.notna()) & (counts < 0.6 * med)].index
+    ids = set(df["entity_id"].unique())
+    daily = daily_all[daily_all["endpoint_id"].isin(ids)]
     if len(flagged):
         bad_wk = set(pd.to_datetime(flagged)
-                     - pd.to_timedelta(pd.to_datetime(flagged).weekday, unit="D"))
+                     - pd.to_timedelta(pd.to_datetime(flagged).weekday,
+                                       unit="D"))
         wk = daily["date"] - pd.to_timedelta(
             pd.to_datetime(daily["date"]).dt.weekday, unit="D")
         daily = daily[~wk.isin(bad_wk)]
-        print(f"  guard: {len(flagged)} flagged days -> "
+        print(f"  guard (platform-wide): {len(flagged)} flagged days -> "
               f"{len(bad_wk)} weeks dropped from floor estimation")
-    cur = sb.spec_b_curve(df, daily[["date", "endpoint_id", "metric_value"]])
+    cur = sb.spec_b_curve(df, daily[["date", "endpoint_id", "metric_value"]],
+                          return_members=True)
     z, sig = np.asarray(cur["z"]), np.asarray(cur["sigma_obs"])
-    # per-band mean weekly n_posts (M) at matched z coordinates
-    wk = weekly_from_daily(daily.rename(columns={"endpoint_id": "user_name"}))
-    m_by_e = wk.groupby("user_name")["n_posts"].mean()
-    pr = df.groupby("entity_id")[["z"]].mean()
-    pr["M"] = pr.index.map(m_by_e)
-    pr = pr.dropna()
-    bands = np.digitize(pr["z"], np.quantile(z, np.linspace(0, 1, 13)[1:-1]))
-    M_band = pr.groupby(bands)["M"].mean().to_numpy()[:12]
-    from scipy.stats import spearmanr
-    n = min(len(M_band), len(sig))
-    rho = spearmanr(sig[:n] ** 2, 1.0 / M_band[:n]).statistic
-    slope = np.polyfit(np.log(1.0 / M_band[:n]), np.log(sig[:n] ** 2), 1)[0]
-    ok_i = (rho > 0) and (0.5 <= slope <= 1.5)
-    print(f"P10(i) 1/M law: Spearman {rho:+.3f}, log-log slope {slope:.3f} "
-          f"-> {'PASS' if ok_i else 'FAIL'}")
-    third = max(1, len(sig) // 3)
-    ok_ii = sig[:third].mean() < sig[-third:].mean()
-    print(f"P10(ii) orientation head {sig[:third].mean():.4f} < tail "
-          f"{sig[-third:].mean():.4f} -> {'PASS' if ok_ii else 'FAIL'}")
+    # A4.8: per-band M over spec_b_curve's OWN band membership
+    npost = daily.set_index(["endpoint_id", "date"])["n_posts"]
+    M_band = []
+    for mem in cur["members"]:
+        # mem = (entity, week) MultiIndex of the band's entity-weeks; M =
+        # mean weekly posts over exactly those cells
+        ents = mem.get_level_values(0)
+        wks = pd.to_datetime(mem.get_level_values(1))
+        vals = []
+        for e, w in zip(ents, wks):
+            days = pd.date_range(w, periods=7, freq="D")
+            v = npost.reindex([(e, d) for d in days]).sum()
+            vals.append(float(v))
+        M_band.append(float(np.mean(vals)))
     p = mrd.estimate(df, temper=True, min_knot_n=8, md_lags=6, t_tails=True,
                      stat_factor=True)
     rec = np.interp(z, p.z_knots, p.sigma_obs)
-    ok_iii = bool(np.all(rec >= sig - 1e-12))
-    print(f"P10(iii) envelope: recorded sigma_obs >= centered floor at "
-          f"{int((rec >= sig - 1e-12).sum())}/12 bands (12/12 required) "
-          f"-> {'PASS' if ok_iii else 'FAIL'}")
+    v = p10_verdicts(sig, np.asarray(M_band), rec)
+    print(f"P10 structural 12 bands: "
+          f"{'PASS' if v['structural'] else 'FAIL (skipped/short bands)'}")
+    if v["structural"]:
+        print(f"P10(i) 1/M: Spearman {v['rho']:+.3f}, slope {v['slope']:.3f} "
+              f"-> {'PASS' if v['i'] else 'FAIL'}")
+        print(f"P10(ii) orientation -> {'PASS' if v['ii'] else 'FAIL'}")
+        print(f"P10(iii) envelope 12/12 -> {'PASS' if v['iii'] else 'FAIL'}")
+    return v
 
 
 if __name__ == "__main__":
@@ -236,6 +293,13 @@ if __name__ == "__main__":
     if a.what == "build":
         build()
     elif a.what == "reconcile":
+        import hashlib
+        want = ("130726eb194597fcbba67ca3eced29a5f8e5e20d34dcc8e3ae186e455"
+                "ac75aac")
+        got = hashlib.sha256(Path(a.members).read_bytes()).hexdigest()
+        if got != want:
+            raise SystemExit(f"RECONCILE FAIL: member file sha256 {got[:12]}"
+                             f"... != registered {want[:12]}... (A4.6)")
         daily = pd.read_parquet(DAILY_OUT)
         aw = pd.read_parquet(a.analyzed_weekly)
         ids = set(pd.read_parquet(a.members)["entity_id"].unique())

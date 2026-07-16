@@ -158,3 +158,111 @@ class P11Tests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class VerdictBothDirectionsTests(unittest.TestCase):
+    """A4.11: both verdict directions for P4/P5/P9 + P3 STOP branch."""
+
+    def test_p4_verdict(self):
+        self.assertTrue(sb.p4_verdict(0.6, 0.7, 0.8))
+        self.assertFalse(sb.p4_verdict(0.8, 0.7, 0.6))
+        self.assertFalse(sb.p4_verdict(0.6, 0.6, 0.8))   # non-strict
+
+    def test_p5_verdict(self):
+        self.assertTrue(sb.p5_verdict(1.0, 1.02))
+        self.assertFalse(sb.p5_verdict(0.90, 1.02))       # b4 out
+        self.assertFalse(sb.p5_verdict(1.0, 1.20))        # b8 out
+
+    def test_p9_verdict(self):
+        v = sb.p9_verdict(F=0.6, excess=0.05)
+        self.assertTrue(v["p9a"] and v["p9b"])
+        self.assertFalse(sb.p9_verdict(F=0.77, excess=0.05)["p9b"])  # comments knife-edge
+        self.assertFalse(sb.p9_verdict(F=0.45, excess=0.05)["p9b"])
+        self.assertFalse(sb.p9_verdict(F=0.6, excess=-0.01)["p9a"])
+
+    def test_p3_stop_branch(self):
+        # dispersed panel: even K=20,000 holds < 90% of the mass
+        rows = []
+        for t in range(3):
+            for i in range(40_000):
+                rows.append((f"e{i}", t, 1.0, i + 1))
+        df = pd.DataFrame(rows, columns=["entity_id", "period",
+                                         "metric", "rank"])
+        with self.assertRaises(SystemExit):
+            sb.p3_k(df)
+
+
+class P10PureTests(unittest.TestCase):
+    """A4.11: P10 i-iii piecewise logic, both directions + structural."""
+
+    def test_pass_construction(self):
+        M = np.geomspace(100, 2, 12)                 # head posts a lot
+        sig = np.sqrt(0.5 / M)                       # exact 1/M law
+        rec = sig * 1.2                              # recorded above floor
+        v = ig.p10_verdicts(sig, M, rec)
+        self.assertTrue(v["structural"] and v["i"] and v["ii"] and v["iii"])
+
+    def test_fail_directions(self):
+        M = np.geomspace(100, 2, 12)
+        sig = np.sqrt(0.5 / M)
+        rec = sig * 1.2
+        # (i) slope out of band: sigma^2 ~ 1/M^3
+        v = ig.p10_verdicts(np.sqrt(0.5 / M**3), M, np.sqrt(0.5 / M**3) * 1.2)
+        self.assertFalse(v["i"])
+        # (ii) orientation inverted
+        v = ig.p10_verdicts(sig[::-1], M, rec[::-1] * 10)
+        self.assertFalse(v["ii"])
+        # (iii) one band below the floor
+        rec_bad = rec.copy(); rec_bad[5] = sig[5] * 0.5
+        self.assertFalse(ig.p10_verdicts(sig, M, rec_bad)["iii"])
+
+    def test_structural_short_bands_fail(self):
+        # the eighth review's case: 10 bands must FAIL, not truncate-pass
+        M = np.geomspace(100, 2, 10)
+        sig = np.sqrt(0.5 / M)
+        v = ig.p10_verdicts(sig, M, sig * 1.2)
+        self.assertFalse(v["structural"])
+        self.assertFalse(v["i"] or v["ii"] or v["iii"])
+
+
+class P7CLITests(unittest.TestCase):
+    """A4.10/A4.11: the P7 execution path incl. anchor enforcement."""
+
+    @classmethod
+    def setUpClass(cls):
+        import minimal_rankdiff as mrd
+        rng = np.random.default_rng(0)
+        n, T = 220, 48
+        rows = []
+        dates = pd.date_range("2020-01-06", periods=T, freq="7D")
+        base = np.sort(rng.lognormal(3, 1.5, n))[::-1]
+        for t, d in enumerate(dates):
+            vals = base * np.exp(rng.normal(0, 0.3, n))
+            for i in range(n):
+                rows.append((f"e{i:03d}", d, float(vals[i])))
+        df = pd.DataFrame(rows, columns=["endpoint_id", "date",
+                                         "metric_value"])
+        cls.pq = "/tmp/p7_cli_test.parquet"
+        df.to_parquet(cls.pq, index=False)
+        mrd.PLATFORMS["_p7_test"] = dict(
+            path=cls.pq, id_col="endpoint_id", ts_col="date",
+            metric_col="metric_value", max_rank=None)
+
+    @classmethod
+    def tearDownClass(cls):
+        import minimal_rankdiff as mrd
+        del mrd.PLATFORMS["_p7_test"]
+
+    def test_anchor_fail_before_estimation(self):
+        from exit_audit import aligned_main
+        with self.assertRaisesRegex(SystemExit, "ANCHOR FAIL"):
+            aligned_main(n_seeds=1, platform="_p7_test", t0=30,
+                         top_k=100, anchor_date="1999-01-04")
+
+    def test_anchor_pass_and_full_dry_run(self):
+        from exit_audit import aligned_main
+        # period 30 = 2020-01-06 + 30 weeks
+        want = str((pd.Timestamp("2020-01-06")
+                    + pd.Timedelta(weeks=30)).date())
+        aligned_main(n_seeds=1, platform="_p7_test", t0=30,
+                     top_k=100, anchor_date=want)   # completes end-to-end

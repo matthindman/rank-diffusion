@@ -118,7 +118,8 @@ def _toeplitz_floor(R: np.ndarray, p_sh: np.ndarray) -> tuple[float, float, floa
 
 def spec_b_curve(uni: pd.DataFrame, daily: pd.DataFrame, n_bands: int = 12,
                  max_period: int | None = None, method: str = "toeplitz",
-                 floor: str = "centered") -> dict:
+                 floor: str = "centered",
+                 return_members: bool = False) -> dict:
     """sigma_obs,B(z) on the universe's rank coordinate.
 
     uni: weekly universe panel (restrict_universe output); daily: load_daily
@@ -162,10 +163,13 @@ def spec_b_curve(uni: pd.DataFrame, daily: pd.DataFrame, n_bands: int = 12,
         edges = np.quantile(pr, np.linspace(0, 1, n_bands + 1))
         band = np.clip(np.searchsorted(edges, pr, side="right") - 1, 0, n_bands - 1)
         z_out, s_out, rows = [], [], []
+        members = []          # per-band (entity, week) index (A4.8, additive)
         for b in range(n_bands):
             m = band == b
             if m.sum() < 300:
                 continue
+            if return_members:
+                members.append(idx[full][keep][m])
             sig_d, fl_leg, fl_cent = _toeplitz_floor(R[m], p_sh[m])
             r_med = float(np.median(pr[m]))
             z_out.append(np.log(np.clip((r_med - 0.5) / N, mrd.Z_CLIP, 1.0)))
@@ -173,10 +177,13 @@ def spec_b_curve(uni: pd.DataFrame, daily: pd.DataFrame, n_bands: int = 12,
             rows.append((r_med, sig_d, float((p_sh[m] ** 2).sum(1).mean()),
                          float(np.sqrt(fl_leg)), float(np.sqrt(fl_cent)),
                          int(pd.unique(ent_f[m]).size)))
-        return dict(z=np.array(z_out), sigma_obs=np.array(s_out), N=N,
-                    table=pd.DataFrame(rows, columns=["rank", "sigma_d", "sum_p2",
-                                                      "sigma_obsB", "sigma_obsB_cent",
-                                                      "n_ent"]))
+        out = dict(z=np.array(z_out), sigma_obs=np.array(s_out), N=N,
+                   table=pd.DataFrame(rows, columns=["rank", "sigma_d", "sum_p2",
+                                                     "sigma_obsB", "sigma_obsB_cent",
+                                                     "n_ent"]))
+        if return_members:
+            out["members"] = members
+        return out
 
     if method == "splithalf":
         Sa, Sb = K[:, HALF_A].sum(1), K[:, HALF_B].sum(1)

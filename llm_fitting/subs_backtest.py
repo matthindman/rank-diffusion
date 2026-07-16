@@ -58,6 +58,43 @@ def ids_of(df, span, top_k):
     return set(u["entity_id"].unique())
 
 
+def p4_verdict(s1, s2, s3):
+    return bool(s1 < s2 < s3)
+
+
+def p5_verdict(b4, b8):
+    return bool(B_BAND[0] <= b4 <= B_BAND[1]
+                and B_BAND[0] <= b8 <= B_BAND[1])
+
+
+def p9_verdict(F, excess):
+    return dict(p9a=bool(excess > 0), p9b=bool(0.5 <= F <= 0.75))
+
+
+def mbb_ci(seg, boot=100, L=8, seed=0, min_changes=12):
+    """A4.9 non-gating MBB CI for a window's s (gapped relabel; e1
+    convention)."""
+    import minimal_rankdiff as mrd
+    rng = np.random.default_rng(seed)
+    T = int(seg["period"].max()) + 1
+    n_blocks = int(np.ceil(T / L))
+    vals = []
+    for _ in range(boot):
+        parts = []
+        for j, s0 in enumerate(rng.integers(0, max(T - L + 1, 1), n_blocks)):
+            blk = seg[(seg["period"] >= s0) & (seg["period"] < s0 + L)].copy()
+            blk["period"] = blk["period"] - s0 + j * (L + 1)
+            parts.append(blk)
+        try:
+            import pandas as pd
+            vals.append(mrd.estimate_temperament(
+                pd.concat(parts, ignore_index=True),
+                min_changes=min_changes)["s"])
+        except Exception:
+            continue
+    return (np.percentile(vals, [2.5, 97.5]) if vals else (np.nan, np.nan))
+
+
 def four_cell(sA, sB, sC, sD):
     """era = window effect at fixed membership; comp = membership effect at
     fixed window (means of the two one-factor contrasts; §2z-s design).
@@ -72,10 +109,16 @@ def p4p5(df, top_k):
     print("P4 windows (own-window universe):", flush=True)
     ss = []
     for lo, hi in WINDOWS:
-        s = s_of(df, lo, hi, member_span=(lo, hi), top_k=top_k)
+        u = mrd.restrict_universe(df, top_k, buffer_mult=4,
+                                  member_span=(lo, hi))
+        seg = u[(u["period"] >= lo) & (u["period"] < hi)].copy()
+        seg["period"] -= lo
+        s = float(mrd.estimate_temperament(seg, min_changes=12)["s"])
+        lo_ci, hi_ci = mbb_ci(seg)                    # A4.9, non-gating
         ss.append(s)
-        print(f"  W[{lo},{hi}): s = {s:.4f}", flush=True)
-    p4a = ss[0] < ss[1] < ss[2]
+        print(f"  W[{lo},{hi}): s = {s:.4f}  [MBB CI {lo_ci:.3f}, "
+              f"{hi_ci:.3f}; non-gating]", flush=True)
+    p4a = p4_verdict(*ss)
     print(f"P4a strict monotone: {'PASS' if p4a else 'FAIL'}")
     m1 = ids_of(df, WINDOWS[0], top_k)
     m3 = ids_of(df, WINDOWS[2], top_k)
@@ -92,12 +135,11 @@ def p4p5(df, top_k):
     s1 = float(mrd.estimate_temperament(u, min_changes=12)["s"])
     b4 = b_at_h(u, s1, h=4)
     b8 = b_at_h(u, s1, h=8)
-    ok4 = B_BAND[0] <= b4 <= B_BAND[1]
-    ok8 = B_BAND[0] <= b8 <= B_BAND[1]
-    print(f"P5: s(1)={s1:.4f}  b(4)={b4:.4f} "
-          f"{'PASS' if ok4 else 'FAIL'}  b(8)={b8:.4f} "
-          f"{'PASS' if ok8 else 'FAIL'}  -> P5 "
-          f"{'PASS' if ok4 and ok8 else 'FAIL'}")
+    ok5 = p5_verdict(b4, b8)
+    print(f"P5: s(1)={s1:.4f}  b(4)={b4:.4f}  b(8)={b8:.4f}  -> P5 "
+          f"{'PASS' if ok5 else 'FAIL'}")
+    return dict(p4a=p4a, p4b=p4b, p5=ok5, ss=ss, era=era, comp=comp,
+                b4=b4, b8=b8)
 
 
 def f_ratio(vrsc13_surr_mean, vrsc13_emp, vr13_sim, vr13_emp):
@@ -125,13 +167,14 @@ def p9(df, top_k):
     surr = float(np.mean([st.stats(st.surrogate(X, rng))["VRsc13"]
                           for _ in range(50)]))
     F = f_ratio(surr, emp_sc, vr13_sim, vr13_emp)
-    p9a = vr13_sim - vr13_emp > 0
-    p9b = 0.5 <= F <= 0.75
+    v = p9_verdict(F, vr13_sim - vr13_emp)
     print(f"P9: VR13 emp {vr13_emp:.4f} sim {vr13_sim:.4f} "
           f"(excess {vr13_sim - vr13_emp:+.4f}) -> P9a "
-          f"{'PASS' if p9a else 'FAIL'}")
+          f"{'PASS' if v['p9a'] else 'FAIL'}")
     print(f"    VRsc13 emp {emp_sc:.4f} surrogate mean {surr:.4f}  "
-          f"F = {F:.3f}  in [0.5, 0.75] -> P9b {'PASS' if p9b else 'FAIL'}")
+          f"F = {F:.3f}  in [0.5, 0.75] -> P9b "
+          f"{'PASS' if v['p9b'] else 'FAIL'}")
+    return dict(**v, F=F, vr13_emp=vr13_emp, vr13_sim=vr13_sim)
 
 
 if __name__ == "__main__":

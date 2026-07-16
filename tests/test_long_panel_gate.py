@@ -22,7 +22,7 @@ def build_fixture(tmp=TMP):
     tmp.mkdir(parents=True)
     rng = np.random.default_rng(0)
     ids = [f"s{i:03d}" for i in range(25)]
-    days = pd.date_range("2019-01-04", "2019-03-28", freq="D")  # boundary days both ends
+    days = pd.date_range("2019-01-04", "2019-03-31", freq="D")  # boundary + full final week
     rows = []
     for d in days:
         for e in ids:
@@ -49,8 +49,9 @@ def build_fixture(tmp=TMP):
     return daily, weekly, log, str(d_p), str(w_p), str(l_p)
 
 
-def run_gate(d_p, w_p, l_p):
-    clp.check(d_p, w_p, l_p, FIRST_W, LAST_W, MONTHS, "submissions")
+def run_gate(d_p, w_p, l_p, first_day="2019-01-04", last_day="2019-03-31"):
+    clp.check(d_p, w_p, l_p, FIRST_W, LAST_W, MONTHS, "submissions",
+              first_day, last_day)
 
 
 class LongPanelGateTests(unittest.TestCase):
@@ -112,6 +113,66 @@ class LongPanelGateTests(unittest.TestCase):
                 l_p = str(TMP / "bad_log.csv"); ll.to_csv(l_p, index=False)
                 with self.assertRaises(SystemExit, msg=name):
                     run_gate(d_p, w_p, l_p)
+
+    def test_short_final_week_fails(self):
+        # A4.1/eighth review: the original fixture ended 4 days into its
+        # final complete week and PASSED -- the week-span structural check
+        # must now FAIL that construction
+        d2 = self.daily[self.daily["date"] <= pd.Timestamp("2019-03-28")]
+        wk = d2["date"] - pd.to_timedelta(d2["date"].dt.weekday, unit="D")
+        complete = pd.date_range(FIRST_W, LAST_W, freq="7D")
+        w2 = (d2.assign(date=wk).groupby(["endpoint_id", "date"],
+                                         as_index=False)[clp.COLS[2:]].sum())
+        w2 = w2[w2["date"].isin(complete)]
+        with self.assertRaises(SystemExit):
+            run_gate(self._rw(d2, "sf_d.parquet"),
+                     self._rw(w2, "sf_w.parquet"), self.l_p,
+                     last_day="2019-03-28")
+
+    def test_cross_batch_duplicate_fails(self):
+        # duplicate (entity, date) split across parquet row groups: the
+        # within-batch check cannot see it; the A4.2 bitmask rule must
+        d = self.daily
+        dup_row = d.iloc[[10]]
+        d2 = pd.concat([d, dup_row], ignore_index=True)
+        p = str(TMP / "cb_d.parquet")
+        d2.to_parquet(p, index=False, row_group_size=len(d))  # dup in RG 2
+        # weekly rebuilt CONSISTENTLY from the duplicated dailies so the
+        # sum check alone cannot catch it
+        wk = d2["date"] - pd.to_timedelta(d2["date"].dt.weekday, unit="D")
+        complete = pd.date_range(FIRST_W, LAST_W, freq="7D")
+        w2 = (d2.assign(date=wk).groupby(["endpoint_id", "date"],
+                                         as_index=False)[clp.COLS[2:]].sum())
+        w2 = w2[w2["date"].isin(complete)]
+        with self.assertRaises(SystemExit):
+            run_gate(p, self._rw(w2, "cb_w.parquet"), self.l_p)
+
+    def test_a9_timestamp_ordering(self):
+        # A4.3: with finished_at_utc present, latest = max timestamp --
+        # a NEWER errored record after an older clean one must FAIL, and
+        # the reverse must PASS even in reversed file order
+        base = self.log.assign(finished_at_utc="2026-07-01T00:00:00Z",
+                               output_bytes=999)
+        newer_bad = base.iloc[[1]].assign(errors=7,
+                                          finished_at_utc="2026-08-01T00:00:00Z")
+        bad_after = pd.concat([base, newer_bad], ignore_index=True)
+        l1 = str(TMP / "a9_bad.csv"); bad_after.to_csv(l1, index=False)
+        with self.assertRaises(SystemExit):
+            run_gate(self.d_p, self.w_p, l1)
+        # clean row is NEWER but appears FIRST in the file: must PASS
+        older_bad = base.iloc[[1]].assign(errors=7,
+                                          finished_at_utc="2026-06-01T00:00:00Z")
+        ok = pd.concat([base, older_bad], ignore_index=True)  # bad last in file
+        l2 = str(TMP / "a9_ok.csv"); ok.to_csv(l2, index=False)
+        run_gate(self.d_p, self.w_p, l2)
+
+    def test_a9_zero_rows_fails(self):
+        # no output_bytes column -> rows must be > 0
+        log = self.log.copy()
+        log.loc[0, "rows"] = 0
+        l = str(TMP / "a9_rows.csv"); log.to_csv(l, index=False)
+        with self.assertRaises(SystemExit):
+            run_gate(self.d_p, self.w_p, l)
 
     def test_day_guard_collapse_fails(self):
         # 90% row collapse on one day, weekly rebuilt consistently -- only
