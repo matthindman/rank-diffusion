@@ -172,7 +172,7 @@ def identity_histories(tranks, tids):
     return np.stack(cols, axis=1)
 
 
-def score_matrix(R, t0, K, cut, pf, is_sim):
+def score_matrix(R, t0, K, cut, pf, is_sim, return_arrays=False):
     """Symmetric scorer on a rank matrix (0 = absent): cohort via
     cohort_mask (absence-penalized perm rank + presence over [0, t0));
     events on t0..T-2 from in-K weeks: crossing (present below K) vs
@@ -188,6 +188,9 @@ def score_matrix(R, t0, K, cut, pf, is_sim):
     out = dict(n=int(coh.sum()), risk=risk,
                crossings=int(cross.sum()), absences=int(absent.sum()),
                rate=(int(cross.sum()) + int(absent.sum())) / max(risk, 1))
+    if return_arrays:
+        out["ev"] = cross | absent          # (T-t0-1, n_coh) event matrix
+        out["inK"] = inK                    # (T-t0, n_coh) exposure matrix
     if not is_sim and out["absences"]:
         t_i, e_i = np.where(absent)
         pres = rr > 0
@@ -248,6 +251,88 @@ def aligned_main(n_seeds=30, platform="reddit_comments_ext", t0=T0,
                   f"q90 {np.quantile(rates, .9):.5f}] "
                   f"pooled deaths/(d+c) {D}/{D + C} = {D / max(D + C, 1):.2f}",
                   flush=True)
+
+
+P7_ANCHOR = "2021-07-05"      # FROZEN (A5.1); t0 is DERIVED, never trusted
+
+
+def p7_verdict(sim_mean, emp_ci_low, emp_rate, emp_cross_share):
+    """A1.5/A5.1 hard verdict at K/2 (pure, dual-direction tested)."""
+    ratio = emp_rate / sim_mean if sim_mean > 0 else float("inf")
+    return dict(deficit=bool(sim_mean < emp_ci_low and ratio >= 1.5),
+                composition=bool(emp_cross_share >= 0.90),
+                ratio=float(ratio))
+
+
+def p7_main(platform, top_k, n_seeds=30):
+    """The REGISTERED P7 runner (A1.5 + A5.1): frozen anchor date, derived
+    t0, both empirical bootstraps, full hard verdict at K/2, descriptive
+    train-only-parameter arm, structured return."""
+    self_test()
+    df = mrd.load_panel(mrd.PLATFORMS[platform])
+    anchor = df[["period", "ts"]].drop_duplicates().set_index("ts")["period"]
+    key = pd.Timestamp(P7_ANCHOR)
+    if key not in anchor.index:
+        raise SystemExit(f"P7 ANCHOR FAIL: week {P7_ANCHOR} not in the "
+                         f"panel -- t0 cannot be derived")
+    t0 = int(anchor.loc[key])
+    print(f"anchor {P7_ANCHOR} -> derived t0 = {t0}")
+    df = mrd.restrict_universe(df, top_k, buffer_mult=4, member_window=t0)
+    sk = df.attrs["score_k"]
+    T_full = int(df["period"].max()) + 1
+    piv = df.pivot_table(index="period", columns="entity_id", values="rank",
+                         fill_value=0).reindex(range(T_full), fill_value=0)
+    R_emp = piv.to_numpy().astype(np.int32)
+    out = {"t0": t0, "arms": {}}
+    for arm, est_df in (("primary_fullfit", df),
+                        ("descriptive_trainfit",
+                         df[df["period"] < t0])):
+        p = mrd.estimate(est_df, **LONG)
+        sims_h = []
+        for s_ in range(n_seeds):
+            sim = mrd.simulate(p, T_full, seed=s_, top_record=sk,
+                               track_ids=True)
+            sims_h.append(identity_histories(np.asarray(sim["tranks"]),
+                                             np.asarray(sim["tids"])))
+        arm_res = {}
+        for cut, cname in ((top_k // 4, "K/4"), (top_k // 2, "K/2")):
+            e = score_matrix(R_emp, t0, sk, cut, 0.7, is_sim=False,
+                             return_arrays=True)
+            (elo, ehi), (blo, bhi) = boot_ci_ratio(e["ev"], e["inK"])
+            ss = [score_matrix(Rs, t0, sk, cut, 0.7, is_sim=True)
+                  for Rs in sims_h]
+            rates = np.array([x["rate"] for x in ss])
+            D = sum(x["absences"] for x in ss)
+            C = sum(x["crossings"] for x in ss)
+            cross_share = e["crossings"] / max(e["crossings"]
+                                               + e["absences"], 1)
+            cell = dict(emp_rate=e["rate"], ent_ci=(float(elo), float(ehi)),
+                        wk_ci=(float(blo), float(bhi)),
+                        sim_mean=float(rates.mean()),
+                        sim_q10=float(np.quantile(rates, .1)),
+                        sim_q90=float(np.quantile(rates, .9)),
+                        emp_cross=e["crossings"], emp_abs=e["absences"],
+                        sim_death_share=D / max(D + C, 1))
+            if cname == "K/2":
+                cell["verdict"] = p7_verdict(cell["sim_mean"], float(elo),
+                                             e["rate"], cross_share)
+            arm_res[cname] = cell
+            tag = ("" if arm == "primary_fullfit"
+                   else " [DESCRIPTIVE, never gates]")
+            print(f"  {arm} {cname}: emp {e['rate']:.5f} "
+                  f"ent-CI [{elo:.5f},{ehi:.5f}] wk-CI [{blo:.5f},{bhi:.5f}] "
+                  f"| sim {rates.mean():.5f} "
+                  f"[q10 {np.quantile(rates, .1):.5f}, "
+                  f"q90 {np.quantile(rates, .9):.5f}]{tag}", flush=True)
+        out["arms"][arm] = arm_res
+    v = out["arms"]["primary_fullfit"]["K/2"]["verdict"]
+    ok = v["deficit"] and v["composition"]
+    print(f"P7 HARD VERDICT (primary, K/2): deficit "
+          f"{'PASS' if v['deficit'] else 'FAIL'} (ratio {v['ratio']:.2f}), "
+          f"composition {'PASS' if v['composition'] else 'FAIL'} -> P7 "
+          f"{'PASS' if ok else 'FAIL'}")
+    out["p7_pass"] = bool(ok)
+    return out
 
 
 def self_test():
@@ -357,6 +442,14 @@ def main():
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--idsafe":
         idsafe_main()
+    elif len(sys.argv) > 1 and sys.argv[1] == "--p7":
+        import argparse
+        ap = argparse.ArgumentParser()
+        ap.add_argument("--platform", required=True)
+        ap.add_argument("--top-k", type=int, required=True)
+        ap.add_argument("--seeds", type=int, default=30)
+        a = ap.parse_args(sys.argv[2:])
+        p7_main(a.platform, a.top_k, a.seeds)
     elif len(sys.argv) > 1 and sys.argv[1] == "--aligned":
         import argparse
         ap = argparse.ArgumentParser()

@@ -1058,6 +1058,15 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                   if np.isfinite(wl) else "")
             print(f"      T0={r['T0']:>3}  " + "  ".join(parts) + wb)
 
+    # A5.2 (PREREG 2026-07-16): the gate RETURNS its summary so P6/P10(iv)
+    # verdicts are adjudicable in code (additive; nothing upstream reads it)
+    return dict(model_rel=float(np.mean(me_all)),
+                model_rel_sd=float(np.std(me_all)),
+                base_rel=float(np.mean(be_all)),
+                base_rel_sd=float(np.std(be_all)),
+                coverage=float(cov), scales=list(scales),
+                n_splits=len(rows))
+
 
 def scorecard(platform, reps=4, top_k=None, buffer_mult=4):
     """Wire the drifting-home Kalman band params into the generative simulator

@@ -94,7 +94,11 @@ PLATFORMS = {
     #   python llm_fitting/ig_trainsafe_members.py            # builds ids
     #   rankdiff_kalman instagram_hm_ts --oos ... \
     #       --member-ids-file llm_fitting/ig_trainsafe_members.parquet
-    "instagram_hm_ts": dict(path="llm_fitting/ig_hm_totals_ts.parquet",
+    "instagram_hm_ts": dict(
+        daily_path="data/ssd/derived/ig_daily_2023_guarded.parquet",  # A5.2:
+        # the A4.7 platform-wide-guarded daily (ig_daily_2023.py guard);
+        # enables the registered P10(iv) --spec-b pinned gate
+path="llm_fitting/ig_hm_totals_ts.parquet",
                             id_col="user_name", ts_col="date", metric_col="metric_value",
                             max_rank=None),
     "instagram_pp": dict(path="llm_fitting/ig_hm_perpost.parquet",

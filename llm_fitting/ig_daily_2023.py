@@ -41,53 +41,94 @@ def _merge_uniques(parts):
         d_min=("d_min", "min"), d_max=("d_max", "max"))
 
 
-def build(raw=RAW, out=DAILY_OUT):
+N_PARTS = 16     # A5.3: each url lives in exactly one partition
+
+
+def _validate_batch(df):
+    """A4.5/A5.3 strict validation: FAIL on null/empty urls, null ids or
+    dates, and nonfinite/negative/fractional interaction counts."""
+    if df["url"].isna().any() or (df["url"].astype(str) == "").any():
+        raise SystemExit("BUILD FAIL: null/empty url (A4.5 anomaly)")
+    ti = pd.to_numeric(df["total_interactions"], errors="coerce")
+    a = ti.to_numpy(dtype=float)
+    if ti.isna().any() or not np.isfinite(a).all():
+        raise SystemExit("BUILD FAIL: null/non-numeric/non-finite "
+                         "total_interactions (A4.5: no silent zero-fill)")
+    if (a < 0).any():
+        raise SystemExit("BUILD FAIL: negative total_interactions")
+    if (a != np.floor(a)).any():
+        raise SystemExit("BUILD FAIL: fractional total_interactions")
+    if df["user_name"].isna().any() or df["post_created_date"].isna().any():
+        raise SystemExit("BUILD FAIL: null user_name/post_created_date")
+    return ti
+
+
+def build(raw=RAW, out=DAILY_OUT, tmp_dir=None):
+    """A5.3 hash-partitioned EXTERNAL aggregation: pass 1 streams batches
+    into N_PARTS on-disk partitions by url-hash; pass 2 dedups each
+    partition independently (exact url string key; a url lives in exactly
+    one partition) and aggregates to account-days. Peak memory = one
+    partition."""
+    import tempfile
     import pyarrow.parquet as pq
+    tmp = Path(tmp_dir or tempfile.mkdtemp(prefix="ig_build_"))
+    tmp.mkdir(parents=True, exist_ok=True)
     pf = pq.ParquetFile(raw)
-    parts, n_rows = [], 0
+    counters = {i: 0 for i in range(N_PARTS)}
+    n_rows = 0
     for batch in pf.iter_batches(
             batch_size=2_000_000,
             columns=["user_name", "post_created_date", "total_interactions",
                      "url"]):
         df = batch.to_pandas()
         n_rows += len(df)
-        if df["url"].isna().any() or (df["url"].astype(str) == "").any():
-            raise SystemExit("BUILD FAIL: null/empty url (A4.5 anomaly)")
-        ti = pd.to_numeric(df["total_interactions"], errors="coerce")
-        if ti.isna().any():
-            raise SystemExit("BUILD FAIL: null/non-numeric "
-                             "total_interactions (A4.5: no silent zero-fill)")
-        if df["user_name"].isna().any() or df["post_created_date"].isna().any():
-            raise SystemExit("BUILD FAIL: null user_name/post_created_date")
+        ti = _validate_batch(df)
         b = pd.DataFrame({"url": df["url"].astype(str),
-                          "ti": ti.astype(float),
-                          "u_min": df["user_name"].astype(str),
-                          "u_max": df["user_name"].astype(str),
-                          "d_min": pd.to_datetime(df["post_created_date"]),
-                          "d_max": pd.to_datetime(df["post_created_date"])})
-        parts.append(b.groupby("url", as_index=False).agg(
-            ti=("ti", "max"), u_min=("u_min", "min"), u_max=("u_max", "max"),
-            d_min=("d_min", "min"), d_max=("d_max", "max")))
-        if len(parts) >= 8:
-            parts = [_merge_uniques(parts)]
-    agg = _merge_uniques(parts)
-    if (agg["u_min"] != agg["u_max"]).any() or (agg["d_min"] != agg["d_max"]).any():
-        n = int(((agg["u_min"] != agg["u_max"])
-                 | (agg["d_min"] != agg["d_max"])).sum())
-        raise SystemExit(f"BUILD FAIL: {n} duplicate urls with conflicting "
-                         f"(user_name, date) (A4.5 anomaly)")
-    agg = agg.rename(columns={"u_min": "user_name", "d_min": "date",
-                              "ti": "metric_value"})
-    daily = (agg.groupby(["user_name", agg["date"].dt.normalize()])
+                          "ti": ti.astype("int64"),
+                          "user_name": df["user_name"].astype(str),
+                          "date": pd.to_datetime(df["post_created_date"])})
+        part = pd.util.hash_array(b["url"].to_numpy(dtype=object)) % N_PARTS
+        for i, chunk in b.groupby(part):
+            chunk.to_parquet(tmp / f"p{i:02d}_{counters[i]:04d}.parquet",
+                             index=False)
+            counters[i] += 1
+    dailies, n_urls = [], 0
+    for i in range(N_PARTS):
+        files = sorted(tmp.glob(f"p{i:02d}_*.parquet"))
+        if not files:
+            continue
+        part = pd.concat([pd.read_parquet(f) for f in files],
+                         ignore_index=True)
+        agg = part.groupby("url", as_index=False).agg(
+            ti=("ti", "max"), u_min=("user_name", "min"),
+            u_max=("user_name", "max"),
+            d_min=("date", "min"), d_max=("date", "max"))
+        bad = (agg["u_min"] != agg["u_max"]) | (agg["d_min"] != agg["d_max"])
+        if bad.any():
+            raise SystemExit(f"BUILD FAIL: {int(bad.sum())} duplicate urls "
+                             f"with conflicting (user_name, date) "
+                             f"(A4.5 anomaly)")
+        n_urls += len(agg)
+        d = (agg.rename(columns={"u_min": "user_name", "d_min": "date",
+                                 "ti": "metric_value"})
+             .groupby(["user_name",
+                       agg["d_min"].dt.normalize().rename("date")])
              .agg(metric_value=("metric_value", "sum"),
                   n_posts=("metric_value", "size")).reset_index())
-    daily["metric_value"] = daily["metric_value"].round().astype("int64")
+        dailies.append(d)
+        del part, agg
+    daily = (pd.concat(dailies, ignore_index=True)
+             .groupby(["user_name", "date"], as_index=False).sum())
+    daily["metric_value"] = daily["metric_value"].astype("int64")
+    daily["n_posts"] = daily["n_posts"].astype("int64")
     daily.to_parquet(out, index=False)
+    for f in tmp.glob("p*.parquet"):
+        f.unlink()
     print(f"wrote {out}: {len(daily):,} account-days, "
           f"{daily['user_name'].nunique():,} accounts, "
           f"{daily['date'].min().date()}..{daily['date'].max().date()}; "
-          f"{n_rows:,} post rows -> {len(agg):,} unique urls "
-          f"(exact-url dedup keep-max)")
+          f"{n_rows:,} post rows -> {n_urls:,} unique urls "
+          f"(exact-url, {N_PARTS}-partition external dedup keep-max)")
 
 
 def dedup_posts(df):
@@ -146,6 +187,58 @@ def reconcile(daily_df, analyzed_weekly, modeled_ids):
         raise SystemExit(f"RECONCILE FAIL: activity-weighted discrepancy "
                          f"{num / den:.5f} > 0.001 outside the modeled set")
     print("RECONCILE PASS")
+
+
+GUARDED_OUT = "data/ssd/derived/ig_daily_2023_guarded.parquet"
+
+
+def apply_guard(daily):
+    """A4.7 PLATFORM-WIDE day guard as a pure function: flag days with row
+    count < 60% of the trailing prior-28-day median; drop every week
+    containing a flagged day. Returns (filtered, flagged_days)."""
+    counts = daily.groupby("date")["user_name"].size().sort_index()
+    med = counts.shift(1).rolling(28, min_periods=14).median()
+    flagged = counts[(med.notna()) & (counts < 0.6 * med)].index
+    if not len(flagged):
+        return daily, flagged
+    fl = pd.to_datetime(flagged)
+    bad_wk = set(fl - pd.to_timedelta(fl.weekday, unit="D"))
+    wk = (pd.to_datetime(daily["date"])
+          - pd.to_timedelta(pd.to_datetime(daily["date"]).dt.weekday,
+                            unit="D"))
+    return daily[~wk.isin(bad_wk)], flagged
+
+
+def guard(inp=DAILY_OUT, out=GUARDED_OUT):
+    daily = pd.read_parquet(inp)
+    filtered, flagged = apply_guard(daily)
+    filtered = filtered.rename(columns={"user_name": "endpoint_id"})
+    filtered.to_parquet(out, index=False)
+    print(f"guard: {len(flagged)} flagged days; wrote {out} "
+          f"({len(filtered):,} of {len(daily):,} account-days)")
+
+
+def band_M(members, weekly_nposts):
+    """A5.3 vectorized per-band mean weekly n_posts over spec_b_curve's
+    OWN band membership. weekly_nposts: Series indexed by
+    (user_name, week-Monday)."""
+    out = []
+    for mem in members:
+        vals = weekly_nposts.reindex(mem)
+        out.append(float(vals.mean()))
+    return np.array(out)
+
+
+def p6_verdict(model_rel, base_rel, coverage):
+    """A5.2 pure P6 rule."""
+    return bool(model_rel <= base_rel + 0.05 and coverage >= 0.60)
+
+
+def p10iv_verdict(model_rel, base_rel, coverage):
+    """A5.2 pure P10(iv) rule (A2.2: P6 conditions + the restored
+    |model - 0.320| <= 0.15 prediction)."""
+    return bool(p6_verdict(model_rel, base_rel, coverage)
+                and abs(model_rel - 0.320) <= 0.15)
 
 
 # ---------------- P11 (A3.1) ---------------- #
@@ -232,41 +325,18 @@ def p10_specb(top_k=10_000):
     import spec_b_sigma_obs as sb
     df = mrd.load_panel(mrd.PLATFORMS["instagram_hm"])
     df = mrd.restrict_universe(df, top_k, buffer_mult=4)
-    daily_all = pd.read_parquet(DAILY_OUT).rename(
-        columns={"user_name": "endpoint_id"})
-    # A4.7: day guard from PLATFORM-WIDE daily row counts, BEFORE any
-    # modeled-account restriction
-    counts = daily_all.groupby("date")["endpoint_id"].size().sort_index()
-    med = counts.shift(1).rolling(28, min_periods=14).median()
-    flagged = counts[(med.notna()) & (counts < 0.6 * med)].index
+    daily_all = pd.read_parquet(GUARDED_OUT)   # A5.2: pre-guarded
+    # (platform-wide, ig_daily_2023.py guard; A4.7)
     ids = set(df["entity_id"].unique())
     daily = daily_all[daily_all["endpoint_id"].isin(ids)]
-    if len(flagged):
-        bad_wk = set(pd.to_datetime(flagged)
-                     - pd.to_timedelta(pd.to_datetime(flagged).weekday,
-                                       unit="D"))
-        wk = daily["date"] - pd.to_timedelta(
-            pd.to_datetime(daily["date"]).dt.weekday, unit="D")
-        daily = daily[~wk.isin(bad_wk)]
-        print(f"  guard (platform-wide): {len(flagged)} flagged days -> "
-              f"{len(bad_wk)} weeks dropped from floor estimation")
     cur = sb.spec_b_curve(df, daily[["date", "endpoint_id", "metric_value"]],
                           return_members=True)
     z, sig = np.asarray(cur["z"]), np.asarray(cur["sigma_obs"])
     # A4.8: per-band M over spec_b_curve's OWN band membership
-    npost = daily.set_index(["endpoint_id", "date"])["n_posts"]
-    M_band = []
-    for mem in cur["members"]:
-        # mem = (entity, week) MultiIndex of the band's entity-weeks; M =
-        # mean weekly posts over exactly those cells
-        ents = mem.get_level_values(0)
-        wks = pd.to_datetime(mem.get_level_values(1))
-        vals = []
-        for e, w in zip(ents, wks):
-            days = pd.date_range(w, periods=7, freq="D")
-            v = npost.reindex([(e, d) for d in days]).sum()
-            vals.append(float(v))
-        M_band.append(float(np.mean(vals)))
+    wknp = weekly_from_daily(daily.rename(columns={"endpoint_id":
+                                                   "user_name"}))
+    weekly_nposts = wknp.set_index(["user_name", "date"])["n_posts"]
+    M_band = band_M(cur["members"], weekly_nposts)   # A5.3 vectorized
     p = mrd.estimate(df, temper=True, min_knot_n=8, md_lags=6, t_tails=True,
                      stat_factor=True)
     rec = np.interp(z, p.z_knots, p.sigma_obs)
@@ -283,7 +353,8 @@ def p10_specb(top_k=10_000):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=("build", "reconcile", "p10", "p11"))
+    ap.add_argument("what", choices=("build", "guard", "reconcile",
+                                     "p10", "p11"))
     ap.add_argument("--top-k", type=int, default=10_000)
     ap.add_argument("--analyzed-weekly",
                     default="llm_fitting/ig_hm_totals_ts.parquet")
@@ -292,6 +363,8 @@ if __name__ == "__main__":
     a = ap.parse_args()
     if a.what == "build":
         build()
+    elif a.what == "guard":
+        guard()
     elif a.what == "reconcile":
         import hashlib
         want = ("130726eb194597fcbba67ca3eced29a5f8e5e20d34dcc8e3ae186e455"

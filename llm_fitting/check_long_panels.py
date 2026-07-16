@@ -203,7 +203,6 @@ def check(daily_path, weekly_path, log_path, first_week, last_week,
     if set(wf.schema_arrow.names) != set(COLS):
         _fail(f"weekly schema {wf.schema_arrow.names} != registered")
     want = pd.date_range(fw, lw, freq="7D")
-    ds_all = daily_sums[daily_sums.index.get_level_values(1).isin(want)]
     weeks_seen = []
     n_weekly_rows = 0
     import pyarrow.compute as pc
@@ -226,7 +225,9 @@ def check(daily_path, weekly_path, log_path, first_week, last_week,
         ws = weekly.set_index(["endpoint_id", "date"]).sort_index()
         yr_weeks = want[(want >= pd.Timestamp(f"{yr}-01-01"))
                         & (want < pd.Timestamp(f"{yr + 1}-01-01"))]
-        ds = ds_all[ds_all.index.get_level_values(1).isin(yr_weeks)].sort_index()
+        ds = daily_sums[daily_sums.index.get_level_values(1)
+                        .isin(yr_weeks)].sort_index()   # A5.3: year slice
+        # directly from the sums table (the declared peak); no near-full copy
         ds.index.names = ws.index.names
         only_d = ds.index.difference(ws.index)
         only_w = ws.index.difference(ds.index)
@@ -254,8 +255,7 @@ def check(daily_path, weekly_path, log_path, first_week, last_week,
           f"rows): OK")
 
     # ---- boundary days excluded ----
-    outside = daily_sums.index.get_level_values(1)
-    n_boundary = int((~outside.isin(want)).sum())
+    n_boundary = int((~daily_sums.index.get_level_values(1).isin(want)).sum())
     print(f"  [5/6] boundary/partial-week cells excluded from weekly: OK "
           f"({n_boundary:,} boundary (entity,week) cells outside "
           f"{fw.date()}..{lw.date()})")

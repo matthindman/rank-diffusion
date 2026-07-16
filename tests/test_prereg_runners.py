@@ -266,3 +266,151 @@ class P7CLITests(unittest.TestCase):
                     + pd.Timedelta(weeks=30)).date())
         aligned_main(n_seeds=1, platform="_p7_test", t0=30,
                      top_k=100, anchor_date=want)   # completes end-to-end
+
+
+class A5Tests(unittest.TestCase):
+    """Amendment 5: P7 completion, P6/P10(iv) verdicts, guard, band_M,
+    externalized builder — both directions."""
+
+    def test_p7_verdict_both_directions(self):
+        from exit_audit import p7_verdict
+        v = p7_verdict(sim_mean=0.004, emp_ci_low=0.008, emp_rate=0.012,
+                       emp_cross_share=0.95)
+        self.assertTrue(v["deficit"] and v["composition"])
+        # sim inside the CI -> no deficit
+        self.assertFalse(p7_verdict(0.009, 0.008, 0.012, 0.95)["deficit"])
+        # ratio below 1.5 -> no deficit even below CI
+        self.assertFalse(p7_verdict(0.009, 0.010, 0.012, 0.95)["deficit"])
+        # death-dominated composition -> composition FAIL
+        self.assertFalse(p7_verdict(0.004, 0.008, 0.012, 0.5)["composition"])
+
+    def test_p7_anchor_derivation_fail_and_run(self):
+        import minimal_rankdiff as mrd
+        from exit_audit import p7_main
+        rng = np.random.default_rng(0)
+        n = 200
+        base = np.sort(rng.lognormal(3, 1.5, n))[::-1]
+
+        def panel(start):
+            rows = []
+            for t, d in enumerate(pd.date_range(start, periods=60,
+                                                freq="7D")):
+                vals = base * np.exp(rng.normal(0, 0.3, n))
+                rows.extend((f"e{i:03d}", d, float(vals[i]))
+                            for i in range(n))
+            return pd.DataFrame(rows, columns=["endpoint_id", "date",
+                                               "metric_value"])
+        # panel WITHOUT the frozen anchor week -> derivation FAILS
+        panel("2019-01-07").to_parquet("/tmp/p7_noanchor.parquet",
+                                       index=False)
+        mrd.PLATFORMS["_p7a"] = dict(path="/tmp/p7_noanchor.parquet",
+                                     id_col="endpoint_id", ts_col="date",
+                                     metric_col="metric_value",
+                                     max_rank=None)
+        try:
+            with self.assertRaisesRegex(SystemExit, "ANCHOR FAIL"):
+                p7_main("_p7a", top_k=100, n_seeds=1)
+            # panel CONTAINING 2021-07-05 -> derives t0 and runs end-to-end
+            panel("2021-01-04").to_parquet("/tmp/p7_anchor.parquet",
+                                           index=False)
+            mrd.PLATFORMS["_p7a"]["path"] = "/tmp/p7_anchor.parquet"
+            out = p7_main("_p7a", top_k=100, n_seeds=1)
+            self.assertIn("p7_pass", out)
+            self.assertIn("descriptive_trainfit", out["arms"])
+            self.assertIn("verdict", out["arms"]["primary_fullfit"]["K/2"])
+        finally:
+            del mrd.PLATFORMS["_p7a"]
+
+    def test_p7_subprocess_cli(self):
+        import subprocess
+        r = subprocess.run(
+            [sys.executable, "llm_fitting/exit_audit.py", "--p7",
+             "--platform", "_no_such_platform", "--top-k", "100"],
+            capture_output=True, text=True, timeout=120)
+        self.assertNotEqual(r.returncode, 0)     # wiring reaches p7_main
+        r2 = subprocess.run(
+            [sys.executable, "llm_fitting/exit_audit.py", "--p7"],
+            capture_output=True, text=True, timeout=120)
+        self.assertNotEqual(r2.returncode, 0)    # required flags enforced
+
+    def test_p6_p10iv_verdicts(self):
+        self.assertTrue(ig.p6_verdict(0.30, 0.30, 0.60))
+        self.assertFalse(ig.p6_verdict(0.40, 0.30, 0.60))   # rel err out
+        self.assertFalse(ig.p6_verdict(0.30, 0.30, 0.40))   # coverage out
+        self.assertTrue(ig.p10iv_verdict(0.32, 0.50, 0.60))
+        self.assertFalse(ig.p10iv_verdict(0.50, 0.60, 0.80))  # |.5-.32|>.15
+        self.assertFalse(ig.p10iv_verdict(0.32, 0.20, 0.80))  # loses to base
+
+    def test_guard_platform_wide(self):
+        days = pd.date_range("2023-01-02", periods=60, freq="D")
+        rows = [(f"u{i}", d, 5, 1) for d in days for i in range(50)]
+        daily = pd.DataFrame(rows, columns=["user_name", "date",
+                                            "metric_value", "n_posts"])
+        collapse = pd.Timestamp("2023-02-15")
+        daily = daily[~((daily["date"] == collapse)
+                        & (daily["user_name"] != "u0"))]   # 98% collapse
+        filtered, flagged = ig.apply_guard(daily)
+        self.assertEqual(len(flagged), 1)
+        wk = collapse - pd.Timedelta(days=collapse.weekday())
+        self.assertFalse(((pd.to_datetime(filtered["date"])
+                           - pd.to_timedelta(pd.to_datetime(filtered["date"])
+                                             .dt.weekday, unit="D"))
+                          == wk).any())          # whole week dropped
+        # clean panel: nothing flagged, nothing dropped
+        clean = pd.DataFrame(rows, columns=["user_name", "date",
+                                            "metric_value", "n_posts"])
+        f2, fl2 = ig.apply_guard(clean)
+        self.assertEqual(len(fl2), 0)
+        self.assertEqual(len(f2), len(clean))
+
+    def test_band_m_vectorized(self):
+        wk = pd.Timestamp("2023-01-02")
+        npost = pd.Series({("a", wk): 10, ("b", wk): 20, ("c", wk): 40})
+        npost.index = pd.MultiIndex.from_tuples(npost.index)
+        m1 = pd.MultiIndex.from_tuples([("a", wk), ("b", wk)])
+        m2 = pd.MultiIndex.from_tuples([("c", wk)])
+        np.testing.assert_allclose(ig.band_M([m1, m2], npost), [15.0, 40.0])
+
+    def test_external_builder_dedup_and_anomalies(self):
+        import shutil
+        tmp = Path("/tmp/ig_build_test"); shutil.rmtree(tmp, ignore_errors=True)
+        posts = pd.DataFrame({
+            "user_name": ["a", "a", "b", "b", "b"],
+            "post_created_date": ["2023-03-01", "2023-03-01", "2023-03-01",
+                                  "2023-03-02", "2023-03-02"],
+            "total_interactions": [5, 9, 3, 4, 4],
+            "url": ["u1", "u1", "u2", "u3", "u4"]})   # u1 duplicated
+        raw = "/tmp/ig_build_raw.parquet"; posts.to_parquet(raw, index=False)
+        out = "/tmp/ig_build_daily.parquet"
+        ig.build(raw=raw, out=out, tmp_dir=str(tmp))
+        d = pd.read_parquet(out).set_index(["user_name", "date"])
+        self.assertEqual(int(d.loc[("a", pd.Timestamp("2023-03-01")),
+                                   "metric_value"]), 9)    # keep-max
+        self.assertEqual(int(d.loc[("a", pd.Timestamp("2023-03-01")),
+                                   "n_posts"]), 1)          # deduped
+        self.assertEqual(int(d.loc[("b", pd.Timestamp("2023-03-02")),
+                                   "n_posts"]), 2)
+        # anomalies FAIL
+        for col, val in (("total_interactions", -1),
+                         ("total_interactions", 2.5),
+                         ("url", None)):
+            bad = posts.copy(); bad.loc[0, col] = val
+            bad.to_parquet(raw, index=False)
+            with self.assertRaises(SystemExit):
+                ig.build(raw=raw, out=out, tmp_dir=str(tmp))
+        # conflicting duplicate url (different user) FAILS
+        conf = posts.copy(); conf.loc[1, "user_name"] = "zzz"
+        conf.to_parquet(raw, index=False)
+        with self.assertRaises(SystemExit):
+            ig.build(raw=raw, out=out, tmp_dir=str(tmp))
+
+    def test_pinned_command_flags_parse(self):
+        import subprocess
+        r = subprocess.run(
+            [sys.executable, "llm_fitting/rankdiff_kalman.py", "--help"],
+            capture_output=True, text=True, timeout=120)
+        self.assertEqual(r.returncode, 0)
+        for flag in ("--oos", "--spec-b", "--member-ids-file",
+                     "--expect-member-sha", "--reps", "--boot",
+                     "--conditional", "--dist-scores"):
+            self.assertIn(flag, r.stdout)
