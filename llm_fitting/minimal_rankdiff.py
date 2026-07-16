@@ -130,6 +130,15 @@ PLATFORMS = {
         max_rank=None,
         daily_path="data/ssd/derived/reddit_comments_2018-12_2022-12_daily.parquet",
         day_guard=False),
+    # PREREG_2026-07-16 registered backtest panel (submissions long;
+    # metric_value = positive-part daily net SUBMISSION karma). Inert until
+    # check_long_panels.py prints PASS (Phase 0).
+    "reddit_submissions_long": dict(
+        path="data/ssd/derived/reddit_weekly_long.parquet",
+        id_col="endpoint_id", ts_col="date", metric_col="metric_value",
+        max_rank=None,
+        daily_path="data/ssd/derived/reddit_daily_long.parquet",
+        day_guard=False),
     # EXPLORATORY ONLY (post-confirmation-report; protocol §5 §2z-q line):
     # the extension era alone (T=77) for the E2 "oracle arm" — parameters
     # estimated on extension-era data, later-block test. NOT a registered

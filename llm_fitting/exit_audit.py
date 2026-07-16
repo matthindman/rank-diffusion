@@ -34,6 +34,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import minimal_rankdiff as mrd  # noqa: E402
@@ -205,22 +206,23 @@ def aligned_main(n_seeds=30):
     df = mrd.load_panel(mrd.PLATFORMS["reddit_comments_ext"])
     df = mrd.restrict_universe(df, K, buffer_mult=4, member_window=T0)
     sk = df.attrs["score_k"]
+    T_full = int(df["period"].max()) + 1
     piv = df.pivot_table(index="period", columns="entity_id", values="rank",
-                         fill_value=0).reindex(range(T_FULL), fill_value=0)
+                         fill_value=0).reindex(range(T_full), fill_value=0)
     R_emp = piv.to_numpy().astype(np.int32)
     print(f"train-only universe: {R_emp.shape[1]:,} entities, no survivor "
           f"filter; score_k={sk}")
     p = mrd.estimate(df, **LONG)
-    sims = []
-    for s in range(n_seeds):
-        sim = mrd.simulate(p, T_FULL, seed=s, top_record=sk, track_ids=True)
-        sims.append(identity_histories(np.asarray(sim["tranks"]),
-                                       np.asarray(sim["tids"])))
-    for cut, cname in ((K // 4, "K/4"), (K // 2, "K/2")):
+    sims_h = []
+    for s_ in range(n_seeds):
+        sim = mrd.simulate(p, T_full, seed=s_, top_record=sk, track_ids=True)
+        sims_h.append(identity_histories(np.asarray(sim["tranks"]),
+                                         np.asarray(sim["tids"])))
+    for cut, cname in ((top_k // 4, "K/4"), (top_k // 2, "K/2")):
         for pf in (0.6, 0.7, 0.8):
-            e = score_matrix(R_emp, T0, sk, cut, pf, is_sim=False)
-            ss = [score_matrix(Rs, T0, sk, cut, pf, is_sim=True)
-                  for Rs in sims]
+            e = score_matrix(R_emp, t0, sk, cut, pf, is_sim=False)
+            ss = [score_matrix(Rs, t0, sk, cut, pf, is_sim=True)
+                  for Rs in sims_h]
             rates = np.array([x["rate"] for x in ss])
             D = sum(x["absences"] for x in ss)
             C = sum(x["crossings"] for x in ss)
@@ -344,6 +346,15 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--idsafe":
         idsafe_main()
     elif len(sys.argv) > 1 and sys.argv[1] == "--aligned":
-        aligned_main()
+        import argparse
+        ap = argparse.ArgumentParser()
+        ap.add_argument("--platform", default="reddit_comments_ext")
+        ap.add_argument("--t0", type=int, default=T0)
+        ap.add_argument("--top-k", type=int, default=K)
+        ap.add_argument("--seeds", type=int, default=30)
+        ap.add_argument("--anchor-date", default=None)
+        a = ap.parse_args(sys.argv[2:])
+        aligned_main(n_seeds=a.seeds, platform=a.platform, t0=a.t0,
+                     top_k=a.top_k, anchor_date=a.anchor_date)
     else:
         main()
