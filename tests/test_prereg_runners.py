@@ -514,12 +514,97 @@ pd.DataFrame(rows, columns=["endpoint_id", "date", "metric_value"]) \\
 mrd.PLATFORMS["_p7sub"] = dict(path="/tmp/p7_sub.parquet",
     id_col="endpoint_id", ts_col="date", metric_col="metric_value",
     max_rank=None)
-import exit_audit
-out = exit_audit.p7_main("_p7sub", top_k=80, n_seeds=1)
-assert "p7_pass" in out
+# REAL CLI: argparse dispatch incl. the hardcoded n_seeds=30 (eleventh
+# review -- the previous version called p7_main directly)
+import runpy
+sys.argv = ["exit_audit.py", "--p7", "--platform", "_p7sub",
+            "--top-k", "80"]
+runpy.run_path("llm_fitting/exit_audit.py", run_name="__main__")
 print("SUBPROCESS_P7_OK")
 """
         r = subprocess.run([sys.executable, "-c", script],
                            capture_output=True, text=True, timeout=600)
         self.assertEqual(r.returncode, 0, r.stderr[-2000:])
         self.assertIn("SUBPROCESS_P7_OK", r.stdout)
+
+
+class A6PrimeTests(unittest.TestCase):
+    """Eleventh review: interruption safety + genuine Spec-B preflight."""
+
+    def _posts(self):
+        return pd.DataFrame({
+            "user_name": ["a", "b"],
+            "post_created_date": ["2023-03-01", "2023-03-02"],
+            "total_interactions": [5, 7], "url": ["u1", "u2"]})
+
+    def test_stale_scratch_refused(self):
+        import shutil
+        tmp = Path("/tmp/ig_stale_tmp")
+        shutil.rmtree(tmp, ignore_errors=True)
+        tmp.mkdir(parents=True)
+        (tmp / "u00_0000.parquet").write_bytes(b"ghost")
+        self._posts().to_parquet("/tmp/ig_stale_raw.parquet", index=False)
+        with self.assertRaisesRegex(SystemExit, "stale"):
+            ig.build(raw="/tmp/ig_stale_raw.parquet",
+                     out="/tmp/ig_stale_out.parquet", tmp_dir=str(tmp))
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_interrupted_pass3_preserves_prior_output(self):
+        from unittest.mock import patch
+        import shutil
+        out = Path("/tmp/ig_atomic_out.parquet")
+        prior = pd.DataFrame({"user_name": ["old"],
+                              "date": [pd.Timestamp("2023-01-02")],
+                              "metric_value": [1], "n_posts": [1]})
+        prior.to_parquet(out, index=False)
+        before = out.read_bytes()
+        self._posts().to_parquet("/tmp/ig_atomic_raw.parquet", index=False)
+        tmp = Path("/tmp/ig_atomic_tmp")
+        shutil.rmtree(tmp, ignore_errors=True)
+        with patch("pyarrow.parquet.ParquetWriter",
+                   side_effect=RuntimeError("simulated pass-3 kill")):
+            with self.assertRaises(RuntimeError):
+                ig.build(raw="/tmp/ig_atomic_raw.parquet", out=str(out),
+                         tmp_dir=str(tmp))
+        self.assertEqual(out.read_bytes(), before)   # prior output intact
+        self.assertFalse(Path(str(out) + ".staging").exists())
+        self.assertFalse(tmp.exists())               # scratch cleaned
+
+    def test_specb_oos_full_path(self):
+        # genuine Spec-B gate execution: weekly + consistent full-week
+        # dailies through oos_movement(spec_b=True, dist_scores=True)
+        import minimal_rankdiff as mrd
+        import rankdiff_kalman as rk
+        rng = np.random.default_rng(1)
+        n, T = 250, 60
+        base = np.sort(rng.lognormal(3, 1.2, n))[::-1]
+        wrows, drows = [], []
+        for t, d in enumerate(pd.date_range("2020-01-06", periods=T,
+                                            freq="7D")):
+            vals = base * np.exp(rng.normal(0, 0.25, n))
+            for i in range(n):
+                wv = float(vals[i])
+                wrows.append((f"e{i:03d}", d, wv))
+                # 7 noisy dailies summing exactly to the weekly value
+                parts = np.maximum(rng.normal(wv / 7, wv / 28, 7), 0.01)
+                parts = parts * (wv / parts.sum())
+                for k in range(7):
+                    drows.append((d + pd.Timedelta(days=k), f"e{i:03d}",
+                                  float(parts[k])))
+        pd.DataFrame(wrows, columns=["endpoint_id", "date", "metric_value"]) \
+            .to_parquet("/tmp/a6p_w.parquet", index=False)
+        pd.DataFrame(drows, columns=["date", "endpoint_id", "metric_value"]) \
+            .to_parquet("/tmp/a6p_d.parquet", index=False)
+        mrd.PLATFORMS["_a6p_specb"] = dict(
+            path="/tmp/a6p_w.parquet", id_col="endpoint_id", ts_col="date",
+            metric_col="metric_value", max_rank=None,
+            daily_path="/tmp/a6p_d.parquet", day_guard=False)
+        try:
+            res = rk.oos_movement("_a6p_specb", top_k=100, temper=True,
+                                  min_knot_n=8, md_lags=6, t_tails=True,
+                                  conditional="state", spec_b=True,
+                                  dist_scores=True, reps=2, boot=100)
+        finally:
+            del mrd.PLATFORMS["_a6p_specb"]
+        self.assertIsInstance(res["coverage"], float)
+        self.assertIn("model_rel", res)

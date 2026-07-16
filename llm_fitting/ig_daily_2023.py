@@ -80,6 +80,15 @@ def build(raw=RAW, out=DAILY_OUT, tmp_dir=None):
     import pyarrow as pa
     import pyarrow.parquet as pq
     tmp = Path(tmp_dir or BUILD_TMP)
+    # A6.2''/eleventh review: interruption safety -- REFUSE stale scratch
+    # (a SIGKILLed run leaves partitions; silently reusing them corrupts
+    # the aggregation), stage the output, atomically rename on success.
+    if tmp.exists() and any(tmp.iterdir()):
+        raise SystemExit(f"BUILD FAIL: scratch {tmp} exists and is "
+                         f"non-empty -- stale interrupted run; inspect "
+                         f"and remove it explicitly before rebuilding")
+    staging = Path(str(out) + ".staging")
+    writer = None
     try:
         tmp.mkdir(parents=True, exist_ok=True)
         pf = pq.ParquetFile(raw)
@@ -135,7 +144,6 @@ def build(raw=RAW, out=DAILY_OUT, tmp_dir=None):
             for f in files:
                 f.unlink()
             del part, agg, d
-        writer = None
         n_days = n_accounts = 0
         dmin = dmax = None
         for j in range(N_PARTS):
@@ -149,7 +157,7 @@ def build(raw=RAW, out=DAILY_OUT, tmp_dir=None):
             d["n_posts"] = d["n_posts"].astype("int64")
             tbl = pa.Table.from_pandas(d, preserve_index=False)
             if writer is None:
-                writer = pq.ParquetWriter(out, tbl.schema)
+                writer = pq.ParquetWriter(str(staging), tbl.schema)
             writer.write_table(tbl)
             n_days += len(d)
             n_accounts += d["user_name"].nunique()
@@ -160,12 +168,19 @@ def build(raw=RAW, out=DAILY_OUT, tmp_dir=None):
             del d
         if writer is not None:
             writer.close()
+            writer = None
+        import os
+        os.replace(staging, out)         # atomic: official path is only
+        # ever a COMPLETE file; an interrupted run leaves the prior output
         print(f"wrote {out}: {n_days:,} account-days, {n_accounts:,} "
               f"accounts (partition-disjoint), "
               f"{dmin.date()}..{dmax.date()}; {n_rows:,} post rows -> "
               f"{n_urls:,} unique urls (exact-url, {N_PARTS}x{N_PARTS} "
               f"three-pass external)")
     finally:
+        if writer is not None:
+            writer.close()
+        staging.unlink(missing_ok=True)          # never leave a partial
         shutil.rmtree(tmp, ignore_errors=True)   # failure-safe: url-bearing
         # scratch never outlives the build
 

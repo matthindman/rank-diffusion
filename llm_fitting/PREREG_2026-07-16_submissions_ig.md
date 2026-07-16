@@ -477,3 +477,24 @@ modeled subset; P10's M-bands were built from unrelated quantiles and
   evaluation. Replaced by the synthetic end-to-end preflight of A6.1';
   the real P10(iv) gate runs exactly once, in Phase 3, after
   reconciliation passes.
+
+---
+
+## AMENDMENT 7 (2026-07-16, BEFORE Phase 0; no value-level contact): interruption-safe IG build + two preflights made genuine (eleventh review)
+
+- **A7.1' atomic, interruption-safe build**: stale scratch is REFUSED
+  (non-empty scratch = SystemExit naming it for explicit inspection —
+  SIGKILL leaves partitions; silent reuse would corrupt aggregation);
+  output goes to a `.staging` sibling with the writer closed in
+  `finally`; the official path is only ever written by an ATOMIC rename
+  after success, so an interrupted run leaves the prior official output
+  byte-intact. Locked by tests: ghost-partition refusal; a forced pass-3
+  failure preserving the prior output, removing the staging file, and
+  cleaning scratch.
+- **A7.2' the two preflights are now genuine**: the P7 subprocess test
+  executes the REAL CLI dispatch (argparse path incl. the hardcoded 30
+  seeds, via runpy in a child process); a synthetic Spec-B gate run
+  executes `oos_movement(spec_b=True, dist_scores=True)` end-to-end
+  through the platform daily_path machinery (weekly + consistent
+  full-week dailies) and asserts the scalar return. The prior tests'
+  claims are corrected in place.
