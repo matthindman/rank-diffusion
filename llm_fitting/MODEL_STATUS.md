@@ -3923,6 +3923,38 @@ audit is the next measurement; the three candidate branches (displacement
 tails / exit-estimand correction / fast-amplitude allocation) stay
 separate per the branching rule; the binding claim set is untouched.
 
+## 2z-ad. 2026-07-16 — NEW DATA REGISTERED, NOT YET ANALYZED: Reddit submissions long panels (2018-12..2022-12, owner-built, validator NOT yet run) + Instagram 2023 post-level dailies. **PREREGISTRATION COMMITTED FIRST — read `llm_fitting/PREREG_2026-07-16_submissions_ig.md` BEFORE any contact with these files** (binding for every agent: Claude, Codex, Gemini)
+
+Owner added to T9: (1) 49/49 submissions monthly aggregates
+(RS 2018-12..2022-12, all ok/errors=0 per the processing log) and combined
+panels `reddit_daily_long.parquet` (142.4M rows) /
+`reddit_weekly_long.parquet` (53.7M rows; 212/214 complete weeks;
+metric_value = max(submission_karma, 0) daily — the submissions mirror of
+the comments convention, established from builder CODE);
+(2) `raw_small/instagram/full_ig.parquet` — 53.5M POST-LEVEL rows,
+calendar 2023, the daily complement of the existing weekly IG year
+(enables IG Spec-B for the first time). Also present: a new `wikipedia/`
+T9 tree (owner acquisition started 2026-07-14; contains a suspicious
+`2099-01` raw month directory — flagged, not investigated).
+
+**Intake state:** aggregation logs clean; the finalizer's own validation
+step did NOT complete (`reddit_full_validation.json` is 0 bytes) — the
+output validator is Phase 0 of the registered plan and MUST print PASS
+before any model contact. **No value-level contact has occurred**: only
+listings, logs, schemas/row counts, parquet metadata statistics, and
+builder source were read (exact disclosure in the prereg §0).
+
+**The prereg registers 11 scored predictions** — headline items: P4, the
+s-secular-trend replication on a second metric (monotone rise 2019→2022);
+P7, the §2z-ac established-departure deficit replicated on outcome-unseen
+data (≥1.5× with ≥90%-crossing composition); P10, IG Spec-B (thinning
+law, floor orientation, §2z-c σ_obs inside the identified envelope,
+pinned gate at-or-above baseline). Binding rules restated there:
+submissions = outcome-unseen BACKTEST (never "new-platform
+confirmation"); IG never calibrated to; trend test before any transport
+band; one pass per item; failures are findings. Analysis is PLANNED, not
+executed; amendments legal only before Phase 0.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —
