@@ -324,3 +324,41 @@ prediction, which is what preregistration is for.)
 
 No other A1 item is modified. Runner construction may begin after this
 commit; further amendments remain legal only before Phase 0.
+
+---
+
+## AMENDMENT 3 (2026-07-16, BEFORE runner construction and Phase 0; no value-level contact): P11 statistic corrected to test SYNCHRONIZATION, not within-account clustering
+
+Registered per a third external review, accepted as stated: the A2.3
+statistic (pooled within-week absent-day variance vs independent
+Bernoulli days) rejects under ANY within-account temporal dependence —
+posting bursts, day-of-week rhythm, ordinary breaks, serial correlation —
+none of which is the registered mechanism. Week-correlated instrument
+dropout's defining signature is MANY ACCOUNTS ABSENT IN THE SAME CALENDAR
+WEEKS (the §2z-c evidence: cohort-wide weekly absence-rate SD 0.047 vs
+iid benchmark 0.0042). The entity-specific first/last-active-day spans
+also created changing risk sets and could censor edge collection
+failures.
+
+### A3.1 P11 hard rule (supersedes A2.3's test; cohort unchanged)
+
+- Window: the common 52 complete Monday–Sunday weeks of 2023, identical
+  for every cohort member (no entity-specific spans).
+- Statistic: for each calendar week w, x_w = mean over the frozen
+  top-10,000 cohort of (absent days in week w) / 7; T_obs = Var across
+  the 52 values of x_w.
+- Null: each account's full 364-day sequence independently CIRCULAR-
+  SHIFTED by a uniform random number of WHOLE WEEKS (0..51) — preserving
+  its total absence, day-of-week pattern, burstiness, run lengths, and
+  serial dependence; destroying only cross-account synchronization.
+  500 draws, rng seed 0.
+- **Hard:** T_obs > the null's 97.5th percentile.
+- The A2.3 within-account absent-day-count statistic is retained as a
+  DESCRIPTIVE readout (within-account clustering), never the P11 gate.
+- Claim language on PASS: "synchronized missingness consistent with
+  instrument dropout" — common behavioral/seasonal shocks cannot be
+  excluded from presence data alone, and the report must say so.
+
+No other item is modified. Per the review: runner construction +
+adversarial dry tests may begin after this commit; further amendments
+remain legal only before Phase 0.
