@@ -3955,6 +3955,24 @@ confirmation"); IG never calibrated to; trend test before any transport
 band; one pass per item; failures are findings. Analysis is PLANNED, not
 executed; amendments legal only before Phase 0.
 
+_Addendum same-day:_ **AMENDMENT 1 registered** (external review of the
+prereg, all findings code-verified: the named Phase-0 validator loads both
+full panels into pandas and exits 0 regardless of failed invariants; gate
+CLI defaults reps=3/boot=400; the IG gate without `--member-ids-file`
+reproduces §2z-f leakage; P3 carried a fuller-universe escape route).
+A1.1–A1.11 freeze: a fail-closed streaming intake gate
+(`check_long_panels.py`, to be committed + adversarially tested before
+Phase 0); exact P4 windows [0,71)/[71,142)/[142,212) + the era-vs-
+composition four-cell guard as P4b; b(4) AND b(8) bands for P5; the P6
+command verbatim with reps=20/boot=2000 AND the ≥60% in-CI coverage
+clause; P7 primary arm = the §2z-ac structural-residual design (30 seeds,
+T0 = week of 2021-07-05, transport arm descriptive); P8/P9 algebra; the
+P10 daily↔weekly RECONCILIATION GATE (mismatch > 0.1% STOPS P10) + 1/M
+slope ∈ [0.5, 1.5] + envelope ≥ 10/12 bands + the pinned gate command
+with the member-file hash 130726eb…; P11 clustering algebra; K = smallest
+grid value reaching 90% share, NO post-observation override; every hard
+test requires a dry-tested runner before Phase 0.
+
 ## 3. The three corrected estimation pitfalls (do not regress)
 
 1. **Band-alignment bug (fixed, committed):** `mean_rank` is sorted but entity columns were not —

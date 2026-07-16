@@ -119,3 +119,148 @@ run — it runs as Phase 0 below, after this document is committed.
 
 Amendments to this document are legal only as dated commits strictly
 before Phase 0 begins.
+
+---
+
+## AMENDMENT 1 (2026-07-16, BEFORE Phase 0; no value-level contact has occurred): operational freeze — fail-closed intake, exact runners/commands/seeds, algebraic criteria, IG reconciliation gate, K discretion removed
+
+Registered per external review of the original document (all findings
+verified against code: the named validator fully loads both panels into
+pandas, prints JSON, and exits 0 regardless of failed invariants; the gate
+CLI defaults are reps=3/boot=400; `instagram_hm_ts` without
+`--member-ids-file` reproduces the §2z-f leakage). Nothing below loosens
+any §3 prediction; it makes each one executable and uniquely adjudicable.
+
+### A1.1 Intake gate (replaces the P1 validator as the Phase-0 gate)
+
+A NEW fail-closed checker `llm_fitting/check_long_panels.py` (committed +
+adversarially tested BEFORE Phase 0; prints PASS only if every invariant
+holds, nonzero exit otherwise; STREAMING/chunked — never loads the full
+panels into memory): schema = the 7 registered columns; A10 semantics
+with roles swapped (daily identity `metric_value == max(submission_karma,
+0)`; `submission_karma`/`comment_karma` signed integral; counts ≥ 0
+integral; `metric_value` ≥ 0; nulls/nonfinite/unregistered numeric
+columns FAIL); weekly = Σ daily on every column with exact (entity, week)
+index-set equality both directions; the 212 complete weeks CONSECUTIVE
+(2018-12-03..2022-12-19) and the two partial weeks boundary-only and
+excluded from weekly rows; A9 latest-record processing-log semantics
+(status ok, lines > 0, bytes > 0, errors == 0 for all 49 RS months);
+calendar-day coverage 2018-12-01..2022-12-31; day-guard (prior-days
+trailing median) flags = 0 extension of the census expectation. Top-5
+eyeball and smoke-load run ONLY after PASS. Adversarial tests: ghost
+daily cell, broken daily identity, negative count, null, missing month,
+errors>0, non-consecutive complete weeks — each FAILS.
+
+### A1.2 P4 exact design
+
+Panel loaded via a new additive `reddit_submissions_long` PLATFORMS entry
+(path = `reddit_weekly_long.parquet`, daily_path =
+`reddit_daily_long.parquet`, day_guard False). Windows = consecutive
+non-overlapping period-index thirds [0, 71), [71, 142), [142, 212) of the
+complete-week panel. Per window: own-window universe
+(`restrict_universe(K, buffer_mult=4, member_span=window)`), slice
+re-indexed, s = `estimate_temperament(min_changes=12)`. **P4a (hard):**
+s(W1) < s(W2) < s(W3) strictly. **P4b (hard):** four-cell era ×
+membership decomposition between W1 and W3 (fixed membership via
+`member_ids`, the §2z-s design): |era effect| > |composition effect|.
+Block-bootstrap CIs reported non-gating.
+
+### A1.3 P5 exact rule
+
+Full-window universe/panel; b(h) = s(h)/s(1) at FROZEN h via the
+`e1_transport.b_at_h` machinery (min_changes=8). **Hard:** b(4) ∈ [0.95,
+1.15] AND b(8) ∈ [0.95, 1.15]. b(13) descriptive. P5 passes only if both
+bands pass.
+
+### A1.4 P6 exact command and rule
+
+```
+python3 -u llm_fitting/rankdiff_kalman.py reddit_submissions_long --oos \
+    --top-k <K from P3> --temperament --min-knot-entities 8 --md-lags 6 \
+    --t-tails --conditional state --dist-scores --reps 20 --boot 2000
+```
+Origins/test_len = the committed auto-derivation `_gate_windows(T=212,
+n_splits=5)`, printed in the header and recorded BEFORE any score;
+per-origin train-only membership (the gate's standard `member_window=T0`
+path); seeds 0..19, bootstrap seed 0. **Hard (both):** pooled model rel
+err ≤ pooled baseline + 0.05 AND model dRank1-median-in-CI on ≥ 60% of
+splits. CRPS/PIT/W1 descriptive.
+
+### A1.5 P7 exact design (primary arm frozen)
+
+**PRIMARY = exact §2z-ac replication** (`exit_audit.py --aligned`
+generalized to take a platform + T0): universe `member_window=T0`;
+parameters estimated on the FULL restricted panel (the §2z-ac
+convention — structural-residual arm); cohort defined on [0, T0) by
+absence-penalized permanent rank, scored on [T0, T); T0 = the period
+index of the week 2021-07-05, date-anchor-verified in the runner before
+scoring. Cuts K/4 and K/2 (presence 0.7, inert-by-construction, stated);
+seeds = exactly 30; pooled composition; entity ratio-of-sums AND
+week-block bootstraps; sim quantiles. **Hard (both, at K/2):** sim mean
+rate < the empirical entity-CI lower bound with emp/sim ratio ≥ 1.5; AND
+empirical crossing share ≥ 90% (absences labeled "no return observed by
+panel end", never "permanent"). **SECONDARY (descriptive, never gates):**
+same design with parameters estimated on [0, T0) only (predictive-
+transport arm).
+
+### A1.6 P8 exact rule
+
+LONG structure stack (temper pool8 md6 t md-vr-long stat-factor two-scale
+mix, NNLS default); 20 seeds 0..19; shares within recorded top-M
+(M = min(2000, recorded width), stated); trigger algebra = `e5_headlaw`
+(mean_sim − emp > 2·SD, ddof=0). Non-gating directional, as registered.
+
+### A1.7 P9 exact rule
+
+Card VR13 from the LONG stack (reps 20, seed set 0..19); surrogates =
+`surrogate_test` 50 draws, rng seed 0, same K universe, complete-column
+population. **P9a (hard):** sim VR13 − emp VR13 > 0. **P9b (hard):**
+(VRsc13_surrogate_mean − VRsc13_emp) > 0.5 × (sim VR13 − emp VR13) — the
+§2z-q convention, functional-vs-card mismatch declared.
+
+### A1.8 P10 reconciliation gate + exact algebra
+
+**Gate (before any P10 science; failure STOPS P10 — recorded as a data
+finding, no post-hoc tolerance decision):** the daily IG panel is built
+from `full_ig.parquet` with frozen conventions — id = `user_name`;
+post dedup on `url` keeping max `total_interactions`; engagement =
+`total_interactions`; date = `post_created_date` as exported (timezone
+convention declared, not corrected); weeks Monday-anchored; boundary
+partial weeks excluded; derived schema keeps per-account-week
+`metric_value` AND `n_posts`; text/url columns never leave raw_small.
+The daily-derived weekly panel must match the analyzed weekly IG panel
+on shared (user_name, week) cells with mismatches ≤ 0.1% (integer
+rounding tolerance).
+**P10 hard tests (ALL must pass):** (i) 1/M law — log-log OLS of
+per-band centered-floor σ_obs² on 1/(mean weekly n_posts): slope ∈
+[0.5, 1.5] AND Spearman > 0; (ii) orientation — head-third mean σ_obs <
+tail-third mean (12-band curve); (iii) envelope — the §2z-c-recorded
+instagram_hm σ_obs(z) ∈ [centered floor, Spec-A] at ≥ 10 of 12
+interpolated bands; (iv) pinned gate — the §2z-f command VERBATIM plus
+`--spec-b --reps 20 --boot 2000` and
+`--member-ids-file llm_fitting/ig_trainsafe_members.parquet` with
+`--expect-member-sha 130726eb194597fcbba67ca3eced29a5f8e5e20d34dcc8e3ae186e455ac75aac`;
+PASS = pooled model rel err ≤ pooled baseline + 0.05. The "±0.15 of
+0.320" comparison is DESCRIPTIVE only.
+
+### A1.9 P11 exact rule
+
+Flag statistic = days with platform-wide row count < 60% of the trailing
+28-day median (the registered guard). **Hard:** P(≥ 2 flagged days in
+the same Monday-week | ≥ 1 flagged day) > 2 × the binomial expectation
+under independent flagging at the observed marginal rate.
+
+### A1.10 P3 discretion removed
+
+K = the SMALLEST value on the fixed grid {2,500, 5,000, 7,500, 10,000,
+12,500, 15,000, 20,000} whose mean weekly share of `metric_value` ≥
+0.90. NO fuller-universe override after concentration is observed. Grid
+max < 0.90 → STOP (owner decision required, recorded as such).
+
+### A1.11 Runner precondition
+
+Every hard test above must have an executable runner with synthetic dry
+tests in BOTH directions (pass construction passes; each failure mode
+fails) committed before Phase 0 begins. Intake failure stops everything
+(protocol §2 discipline). This amendment closes the review's findings;
+further amendments remain legal only before Phase 0.
