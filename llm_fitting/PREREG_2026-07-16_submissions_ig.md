@@ -362,3 +362,53 @@ failures.
 No other item is modified. Per the review: runner construction +
 adversarial dry tests may begin after this commit; further amendments
 remain legal only before Phase 0.
+
+---
+
+## AMENDMENT 4 (2026-07-16, BEFORE Phase 0; no value-level contact): execution-truthing of the runner tranche (eighth review; all findings reproduced) — conventions frozen for the fixes
+
+Reproduced and accepted: the P7 CLI raised TypeError (a patch had silently
+no-opped) and never ran the anchor check; the intake gate derived coverage
+from observed dmin..dmax (its own fixture's 4-day final week PASSED),
+never compared cross-batch duplicates, used file order for A9 "latest",
+and never checked output_bytes; reconciliation let a missing n_posts
+column PASS and skipped the member-hash check; the day guard ran on the
+modeled subset; P10's M-bands were built from unrelated quantiles and
+"12/12" was not structural; the IG builder was unbounded-memory with
+64-bit-hash dedup and silent zero-fill. Frozen conventions for the fixes:
+
+- **A4.1 gate coverage**: required `--first-day 2018-12-01 --last-day
+  2022-12-31`; both endpoints and every day between must be present.
+- **A4.2 cross-batch duplicates (exact, mergeable)**: per (entity, week)
+  accumulate row count AND a 7-bit weekday-presence mask; rows >
+  popcount(mask) ⇔ duplicate (entity, date) — FAIL.
+- **A4.3 A9 ordering**: latest = max finished_at_utc when the column
+  exists; otherwise FILE ORDER, declared as append order. Numeric rule:
+  errors == 0 AND lines > 0 AND (output_bytes > 0 if the column exists,
+  else a rows column must exist and be > 0).
+- **A4.4 gate memory**: incremental aggregate merging (every 8 batches),
+  categorical entity ids; weekly loaded and compared YEAR-BY-YEAR via
+  row-group filtering; declared peak = the aggregate sums table only.
+- **A4.5 IG builder (exact, bounded)**: Arrow group_by on the exact URL
+  string; null/empty url → FAIL; duplicate url with conflicting
+  (user_name, post_created_date) → FAIL; null/non-numeric
+  total_interactions → FAIL (never silent zero-fill); keep max
+  interactions on consistent duplicates.
+- **A4.6 reconciliation**: `n_posts` REQUIRED in the analyzed weekly
+  (missing column = FAIL, recorded as a data finding); the member file's
+  sha256 must equal 130726eb194597fcbba67ca3eced29a5f8e5e20d34dcc8e3ae186e455ac75aac
+  before use.
+- **A4.7 day guard**: computed from PLATFORM-WIDE daily row counts
+  (before any modeled-account restriction).
+- **A4.8 P10 band alignment**: per-band M computed over spec_b_curve's
+  OWN band membership (additive `return_members`); STRUCTURAL rule:
+  exactly 12 bands must exist (a skipped/<300-row band = P10 FAIL).
+- **A4.9 P4 bootstrap readout**: per-window moving-block bootstrap CI for
+  s (L = 8, 100 draws, rng seed 0) — reported, non-gating.
+- **A4.10 P7 anchor**: the runner verifies period t0 = Monday 2021-07-05
+  BEFORE any estimation; the DATE is frozen, the index is derived (the
+  submissions panel's index differs from the comments 136).
+- **A4.11**: runners return verdict structures (testable both directions);
+  the A1.11 dry-test requirement extends to P10 i–iii piecewise logic,
+  the P7 CLI path incl. anchor failure, P3's STOP branch, and both
+  verdict directions for P4/P5/P9.
