@@ -264,3 +264,63 @@ tests in BOTH directions (pass construction passes; each failure mode
 fails) committed before Phase 0 begins. Intake failure stops everything
 (protocol §2 discipline). This amendment closes the review's findings;
 further amendments remain legal only before Phase 0.
+
+---
+
+## AMENDMENT 2 (2026-07-16, BEFORE Phase 0 and before any runner is built; no value-level contact): four corrections — A1's OWN loosening of P10 is acknowledged and REVERSED; the IG reconciliation gate made bidirectional-exact; P11 re-aimed at the registered mechanism; P9's upper bound restored
+
+Registered per a second external review. Finding 2 is accepted as stated:
+A1.8 DID loosen the original §3 P10 (band-by-band → 10/12; the ±0.15
+prediction demoted to descriptive; the coverage clause omitted) while
+A1's preamble claimed nothing was loosened — that claim was inaccurate.
+This amendment RESTORES the original prediction strength rather than
+disclosing a relaxation.
+
+### A2.1 IG reconciliation gate (supersedes the A1.8 gate rule)
+
+The daily-derived weekly panel vs the analyzed weekly IG panel must
+satisfy, on the MODELED population (the registered K=10,000/B=40,000
+train-safe universe, every origin's member set): (i) EXACT bidirectional
+(user_name, week) index-set equality — a daily-only or weekly-only cell
+is a FAIL, not an exclusion; (ii) EXACT equality of `metric_value` and
+weekly `n_posts` (integer sums admit no rounding tolerance). Outside the
+modeled population: index equality both directions and an
+activity-weighted discrepancy bound — Σ|Δmetric| / Σmetric ≤ 0.001 —
+reported per band. ANY failure STOPS P10. Schema correction: the derived
+IG panel is PER-ACCOUNT-DAY (`date`, `user_name`, `metric_value`,
+`n_posts`); the weekly is derived from it (Spec-B consumes the daily).
+
+### A2.2 P10 hard rule (supersedes A1.8's tests iii–iv; RESTORES §3)
+
+(iii) envelope containment at **12/12** interpolated bands; (iv) the
+pinned gate must satisfy ALL of: pooled model rel err ≤ pooled baseline
++ 0.05; dRank1 model-median-in-CI on ≥ 60% of splits; AND
+|pooled model rel err − 0.320| ≤ 0.15 (the original registered
+prediction, hard). Spec-B daily estimation applies the standard guard
+convention: weeks containing flagged days are DROPPED from daily/floor
+estimation and KEPT in weekly fits (declared here so the new floor
+cannot absorb collection failures).
+
+### A2.3 P11 statistic (supersedes A1.9; re-aimed at the registered mechanism)
+
+Cohort = the 10,000 `user_name`s with the largest total 2023 `n_posts`
+(fixed before the test). For each cohort account-week, count absent days
+(0-post days within the account's first-to-last active-day span).
+NULL = entity-preserving independence: each account's marginal daily
+absence rate held fixed, days independent (500 simulation draws, rng
+seed 0). **Hard:** the observed variance of within-week absent-day
+counts exceeds the null's 97.5th percentile (week-correlated dropout =
+overdispersion of within-week absences). The 60%-of-trailing-median day
+guard remains data HYGIENE only, never the scientific statistic.
+
+### A2.4 P9 rule (supersedes A1.7's P9b; RESTORES §3's two-sided band)
+
+F = (VRsc13_surrogate_mean − VRsc13_emp) / (VR13_sim − VR13_emp), at the
+matched populations and with the §2z-q functional-vs-card convention
+declared. **Hard:** P9a sim VR13 − emp VR13 > 0; P9b **0.5 ≤ F ≤ 0.75**.
+(The comments-extension measured F ≈ 0.77 — if submissions lands there
+too, P9b FAILS and the miss is reported as a finding about the
+prediction, which is what preregistration is for.)
+
+No other A1 item is modified. Runner construction may begin after this
+commit; further amendments remain legal only before Phase 0.
