@@ -412,3 +412,35 @@ modeled subset; P10's M-bands were built from unrelated quantiles and
   the A1.11 dry-test requirement extends to P10 i–iii piecewise logic,
   the P7 CLI path incl. anchor failure, P3's STOP branch, and both
   verdict directions for P4/P5/P9.
+
+---
+
+## AMENDMENT 5 (2026-07-16, BEFORE Phase 0; no value-level contact): execution-truthing + scale-safety (ninth review) — P7 completed to its registration, P6/P10(iv) made adjudicable, memory paths made genuinely bounded. No scientific expectation, threshold, or universe rule changes.
+
+- **A5.1 P7 runner**: the anchor DATE 2021-07-05 is FROZEN in the runner
+  (`p7_main`); t0 is DERIVED from it (absent date = FAIL; no bypassable
+  default). The runner computes the registered entity ratio-of-sums AND
+  week-block bootstraps, the full K/2 hard verdict (sim mean < empirical
+  entity-CI lower bound AND emp/sim ratio ≥ 1.5 AND empirical crossing
+  share ≥ 0.90), runs the train-only-parameter arm labeled DESCRIPTIVE,
+  and returns a structured verdict. `p7_verdict` is pure; tests cover
+  both directions AND the actual subprocess CLI with omitted and
+  mismatched anchors.
+- **A5.2 P6/P10(iv)**: `oos_movement` RETURNS its summary (additive);
+  pure verdicts `p6_verdict(model, base, cov)` = model ≤ base + 0.05 AND
+  cov ≥ 0.60, and `p10iv_verdict` = those two AND |model − 0.320| ≤
+  0.15, tested both directions. `instagram_hm_ts` gains
+  `daily_path = data/ssd/derived/ig_daily_2023_guarded.parquet` — a
+  panel produced by a new `guard` subcommand that applies the A4.7
+  PLATFORM-WIDE day guard and writes the filtered daily (so the Spec-B
+  path consumes pre-guarded input deterministically; guard behavior
+  locked by synthetic test). The pinned command's full flag set is
+  parse-tested; execution dry-run on real data is impossible pre-Phase-0
+  and is DECLARED as the first Phase-0 action after the intake gate.
+- **A5.3 memory**: the Reddit gate filters per-year slices directly from
+  the sums table (no near-full `ds_all` copy); the sums table itself is
+  the DECLARED peak. The IG builder uses hash-partitioned EXTERNAL
+  aggregation (16 disk partitions; each url lives in exactly one; peak =
+  one partition's uniques) and REJECTS nonfinite, negative, or
+  fractional interaction counts. P10's per-band M is vectorized
+  (`band_M`, pure, tested).
