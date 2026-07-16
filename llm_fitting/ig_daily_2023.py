@@ -63,72 +63,111 @@ def _validate_batch(df):
     return ti
 
 
+BUILD_TMP = str(Path(RAW).parent / "_build_tmp")   # A6.2': url-bearing
+# scratch stays under raw_small (the registered scope), never system temp
+
+
 def build(raw=RAW, out=DAILY_OUT, tmp_dir=None):
-    """A5.3 hash-partitioned EXTERNAL aggregation: pass 1 streams batches
-    into N_PARTS on-disk partitions by url-hash; pass 2 dedups each
-    partition independently (exact url string key; a url lives in exactly
-    one partition) and aggregates to account-days. Peak memory = one
-    partition."""
-    import tempfile
+    """A6.2' THREE-PASS truly-bounded external aggregation:
+      pass 1  stream batches -> url-hash partitions (disk)
+      pass 2  per url-partition: exact-url dedup keep-max + conflict FAIL,
+              aggregate to account-day partials, REPARTITION by user-hash
+              to disk (an account-day may span url-partitions)
+      pass 3  per user-partition: merge partials, append through a
+              streaming Parquet writer
+    Peak memory = one partition at every stage. Failure-safe cleanup."""
+    import shutil
+    import pyarrow as pa
     import pyarrow.parquet as pq
-    tmp = Path(tmp_dir or tempfile.mkdtemp(prefix="ig_build_"))
-    tmp.mkdir(parents=True, exist_ok=True)
-    pf = pq.ParquetFile(raw)
-    counters = {i: 0 for i in range(N_PARTS)}
-    n_rows = 0
-    for batch in pf.iter_batches(
-            batch_size=2_000_000,
-            columns=["user_name", "post_created_date", "total_interactions",
-                     "url"]):
-        df = batch.to_pandas()
-        n_rows += len(df)
-        ti = _validate_batch(df)
-        b = pd.DataFrame({"url": df["url"].astype(str),
-                          "ti": ti.astype("int64"),
-                          "user_name": df["user_name"].astype(str),
-                          "date": pd.to_datetime(df["post_created_date"])})
-        part = pd.util.hash_array(b["url"].to_numpy(dtype=object)) % N_PARTS
-        for i, chunk in b.groupby(part):
-            chunk.to_parquet(tmp / f"p{i:02d}_{counters[i]:04d}.parquet",
-                             index=False)
-            counters[i] += 1
-    dailies, n_urls = [], 0
-    for i in range(N_PARTS):
-        files = sorted(tmp.glob(f"p{i:02d}_*.parquet"))
-        if not files:
-            continue
-        part = pd.concat([pd.read_parquet(f) for f in files],
-                         ignore_index=True)
-        agg = part.groupby("url", as_index=False).agg(
-            ti=("ti", "max"), u_min=("user_name", "min"),
-            u_max=("user_name", "max"),
-            d_min=("date", "min"), d_max=("date", "max"))
-        bad = (agg["u_min"] != agg["u_max"]) | (agg["d_min"] != agg["d_max"])
-        if bad.any():
-            raise SystemExit(f"BUILD FAIL: {int(bad.sum())} duplicate urls "
-                             f"with conflicting (user_name, date) "
-                             f"(A4.5 anomaly)")
-        n_urls += len(agg)
-        d = (agg.rename(columns={"u_min": "user_name", "d_min": "date",
-                                 "ti": "metric_value"})
-             .groupby(["user_name",
-                       agg["d_min"].dt.normalize().rename("date")])
-             .agg(metric_value=("metric_value", "sum"),
-                  n_posts=("metric_value", "size")).reset_index())
-        dailies.append(d)
-        del part, agg
-    daily = (pd.concat(dailies, ignore_index=True)
-             .groupby(["user_name", "date"], as_index=False).sum())
-    daily["metric_value"] = daily["metric_value"].astype("int64")
-    daily["n_posts"] = daily["n_posts"].astype("int64")
-    daily.to_parquet(out, index=False)
-    for f in tmp.glob("p*.parquet"):
-        f.unlink()
-    print(f"wrote {out}: {len(daily):,} account-days, "
-          f"{daily['user_name'].nunique():,} accounts, "
-          f"{daily['date'].min().date()}..{daily['date'].max().date()}; "
-          f"{n_rows:,} post rows -> {n_urls:,} unique urls "
-          f"(exact-url, {N_PARTS}-partition external dedup keep-max)")
+    tmp = Path(tmp_dir or BUILD_TMP)
+    try:
+        tmp.mkdir(parents=True, exist_ok=True)
+        pf = pq.ParquetFile(raw)
+        counters = {i: 0 for i in range(N_PARTS)}
+        n_rows = 0
+        for batch in pf.iter_batches(
+                batch_size=2_000_000,
+                columns=["user_name", "post_created_date",
+                         "total_interactions", "url"]):
+            df = batch.to_pandas()
+            n_rows += len(df)
+            ti = _validate_batch(df)
+            b = pd.DataFrame({"url": df["url"].astype(str),
+                              "ti": ti.astype("int64"),
+                              "user_name": df["user_name"].astype(str),
+                              "date": pd.to_datetime(df["post_created_date"])})
+            part = pd.util.hash_array(b["url"].to_numpy(dtype=object)) % N_PARTS
+            for i, chunk in b.groupby(part):
+                chunk.to_parquet(tmp / f"u{i:02d}_{counters[i]:04d}.parquet",
+                                 index=False)
+                counters[i] += 1
+        n_urls = 0
+        ctr2 = {j: 0 for j in range(N_PARTS)}
+        for i in range(N_PARTS):
+            files = sorted(tmp.glob(f"u{i:02d}_*.parquet"))
+            if not files:
+                continue
+            part = pd.concat([pd.read_parquet(f) for f in files],
+                             ignore_index=True)
+            agg = part.groupby("url", as_index=False).agg(
+                ti=("ti", "max"), u_min=("user_name", "min"),
+                u_max=("user_name", "max"),
+                d_min=("date", "min"), d_max=("date", "max"))
+            bad = ((agg["u_min"] != agg["u_max"])
+                   | (agg["d_min"] != agg["d_max"]))
+            if bad.any():
+                raise SystemExit(f"BUILD FAIL: {int(bad.sum())} duplicate "
+                                 f"urls with conflicting (user_name, date) "
+                                 f"(A4.5 anomaly)")
+            n_urls += len(agg)
+            d = (agg.rename(columns={"u_min": "user_name",
+                                     "ti": "metric_value"})
+                 .assign(date=agg["d_min"].dt.normalize())
+                 .groupby(["user_name", "date"], as_index=False)
+                 .agg(metric_value=("metric_value", "sum"),
+                      n_posts=("metric_value", "size")))
+            upart = (pd.util.hash_array(d["user_name"].to_numpy(dtype=object))
+                     % N_PARTS)
+            for j, chunk in d.groupby(upart):
+                chunk.drop(columns=[]).to_parquet(
+                    tmp / f"d{j:02d}_{ctr2[j]:04d}.parquet", index=False)
+                ctr2[j] += 1
+            for f in files:
+                f.unlink()
+            del part, agg, d
+        writer = None
+        n_days = n_accounts = 0
+        dmin = dmax = None
+        for j in range(N_PARTS):
+            files = sorted(tmp.glob(f"d{j:02d}_*.parquet"))
+            if not files:
+                continue
+            d = (pd.concat([pd.read_parquet(f) for f in files],
+                           ignore_index=True)
+                 .groupby(["user_name", "date"], as_index=False).sum())
+            d["metric_value"] = d["metric_value"].astype("int64")
+            d["n_posts"] = d["n_posts"].astype("int64")
+            tbl = pa.Table.from_pandas(d, preserve_index=False)
+            if writer is None:
+                writer = pq.ParquetWriter(out, tbl.schema)
+            writer.write_table(tbl)
+            n_days += len(d)
+            n_accounts += d["user_name"].nunique()
+            dmin = d["date"].min() if dmin is None else min(dmin, d["date"].min())
+            dmax = d["date"].max() if dmax is None else max(dmax, d["date"].max())
+            for f in files:
+                f.unlink()
+            del d
+        if writer is not None:
+            writer.close()
+        print(f"wrote {out}: {n_days:,} account-days, {n_accounts:,} "
+              f"accounts (partition-disjoint), "
+              f"{dmin.date()}..{dmax.date()}; {n_rows:,} post rows -> "
+              f"{n_urls:,} unique urls (exact-url, {N_PARTS}x{N_PARTS} "
+              f"three-pass external)")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)   # failure-safe: url-bearing
+        # scratch never outlives the build
 
 
 def dedup_posts(df):

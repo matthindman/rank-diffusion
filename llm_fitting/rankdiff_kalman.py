@@ -1021,7 +1021,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             cmod, cper = cm.crps_mean(s, e), cm.crps_mean(t, e)
             w1m = wasserstein_distance(e, s)
             w1p = wasserstein_distance(e, t)
-            cov = cm.quantile_coverage(s, e)
+            pcov = cm.quantile_coverage(s, e)
             for h in hor:
                 if r["ed"][h].size and r["sd"][h].size and r["td"][h].size:
                     cp = cm.crps_mean(r["td"][h], r["ed"][h])
@@ -1030,7 +1030,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             sk = 1.0 - cmod / cper if cper > 0 else np.nan
             print(f"    T0={r['T0']:>3}  {cmod:>7.2f} | {cper:>7.2f}  | {sk:>+5.2f} | "
                   f"{w1m:>7.1f}  {w1p:>7.1f}  | "
-                  f"{cov[0.1]:.2f}/{cov[0.5]:.2f}/{cov[0.9]:.2f}")
+                  f"{pcov[0.1]:.2f}/{pcov[0.5]:.2f}/{pcov[0.9]:.2f}")
         for h in hor:
             if skills[h]:
                 v = np.array(skills[h])

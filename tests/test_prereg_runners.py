@@ -414,3 +414,112 @@ class A5Tests(unittest.TestCase):
                      "--expect-member-sha", "--reps", "--boot",
                      "--conditional", "--dist-scores"):
             self.assertIn(flag, r.stdout)
+
+
+class A6Tests(unittest.TestCase):
+    """Amendment 6: dist-scores full-path preflight, wrapper wiring,
+    three-pass builder scratch scope, P7 seed lock."""
+
+    def test_oos_movement_dist_scores_returns_scalar_coverage(self):
+        # the tenth review's crash: quantile_coverage overwrote the gate
+        # coverage scalar; this executes the FULL return path
+        import minimal_rankdiff as mrd
+        import rankdiff_kalman as rk
+        rng = np.random.default_rng(0)
+        n, T = 250, 60
+        base = np.sort(rng.lognormal(3, 1.2, n))[::-1]
+        rows = []
+        for t, d in enumerate(pd.date_range("2020-01-06", periods=T,
+                                            freq="7D")):
+            vals = base * np.exp(rng.normal(0, 0.25, n))
+            rows.extend((f"e{i:03d}", d, float(vals[i])) for i in range(n))
+        pd.DataFrame(rows, columns=["endpoint_id", "date", "metric_value"]) \
+            .to_parquet("/tmp/a6_gate.parquet", index=False)
+        mrd.PLATFORMS["_a6_gate"] = dict(
+            path="/tmp/a6_gate.parquet", id_col="endpoint_id",
+            ts_col="date", metric_col="metric_value", max_rank=None)
+        try:
+            res = rk.oos_movement("_a6_gate", top_k=100, temper=True,
+                                  min_knot_n=8, md_lags=6, t_tails=True,
+                                  conditional="state", dist_scores=True,
+                                  reps=2, boot=100)
+        finally:
+            del mrd.PLATFORMS["_a6_gate"]
+        self.assertIsInstance(res["coverage"], float)   # scalar, not dict
+        for k in ("model_rel", "base_rel", "n_splits"):
+            self.assertIn(k, res)
+
+    def test_wrapper_uses_frozen_parameters(self):
+        # gate_verdicts must call oos_movement with the registered params
+        import gate_verdicts as gv
+        import rankdiff_kalman as rk
+        captured = {}
+        orig = rk.oos_movement
+        rk.oos_movement = lambda *a, **kw: (captured.update(kw),
+                                            dict(model_rel=0.3,
+                                                 base_rel=0.3,
+                                                 coverage=0.6))[1]
+        try:
+            out = gv.run_p6(top_k=5000)
+            self.assertEqual(captured["reps"], 20)
+            self.assertEqual(captured["boot"], 2000)
+            self.assertTrue(captured["dist_scores"])
+            self.assertTrue(out["p6_pass"])
+            captured.clear()
+            out = gv.run_p10iv()
+            self.assertTrue(captured["spec_b"])
+            self.assertEqual(captured["expect_member_sha"], gv.MEMBER_SHA)
+            self.assertTrue(out["p10iv_pass"])   # 0.3 within .15 of .320
+        finally:
+            rk.oos_movement = orig
+
+    def test_builder_scratch_under_raw_small_and_cleanup(self):
+        self.assertIn("raw_small", ig.BUILD_TMP)
+        # cleanup even on failure: run an anomalous build, tmp must vanish
+        tmp = Path("/tmp/ig_a6_tmp")
+        posts = pd.DataFrame({
+            "user_name": ["a"], "post_created_date": ["2023-03-01"],
+            "total_interactions": [-5], "url": ["u1"]})
+        posts.to_parquet("/tmp/ig_a6_raw.parquet", index=False)
+        with self.assertRaises(SystemExit):
+            ig.build(raw="/tmp/ig_a6_raw.parquet",
+                     out="/tmp/ig_a6_out.parquet", tmp_dir=str(tmp))
+        self.assertFalse(tmp.exists())           # failure-safe cleanup
+
+    def test_p7_cli_has_no_seed_flag(self):
+        import subprocess
+        r = subprocess.run(
+            [sys.executable, "llm_fitting/exit_audit.py", "--p7",
+             "--platform", "x", "--top-k", "10", "--seeds", "5"],
+            capture_output=True, text=True, timeout=120)
+        self.assertNotEqual(r.returncode, 0)     # unknown flag rejected
+        self.assertIn("unrecognized", r.stderr)
+
+    def test_p7_subprocess_success_path(self):
+        import subprocess
+        script = """
+import sys
+sys.path.insert(0, "llm_fitting")
+import numpy as np, pandas as pd
+import minimal_rankdiff as mrd
+rng = np.random.default_rng(0)
+n = 150
+base = np.sort(rng.lognormal(3, 1.5, n))[::-1]
+rows = []
+for t, d in enumerate(pd.date_range("2021-01-04", periods=50, freq="7D")):
+    vals = base * np.exp(rng.normal(0, 0.3, n))
+    rows.extend((f"e{i:03d}", d, float(vals[i])) for i in range(n))
+pd.DataFrame(rows, columns=["endpoint_id", "date", "metric_value"]) \\
+    .to_parquet("/tmp/p7_sub.parquet", index=False)
+mrd.PLATFORMS["_p7sub"] = dict(path="/tmp/p7_sub.parquet",
+    id_col="endpoint_id", ts_col="date", metric_col="metric_value",
+    max_rank=None)
+import exit_audit
+out = exit_audit.p7_main("_p7sub", top_k=80, n_seeds=1)
+assert "p7_pass" in out
+print("SUBPROCESS_P7_OK")
+"""
+        r = subprocess.run([sys.executable, "-c", script],
+                           capture_output=True, text=True, timeout=600)
+        self.assertEqual(r.returncode, 0, r.stderr[-2000:])
+        self.assertIn("SUBPROCESS_P7_OK", r.stdout)

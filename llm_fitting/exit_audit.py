@@ -447,9 +447,9 @@ if __name__ == "__main__":
         ap = argparse.ArgumentParser()
         ap.add_argument("--platform", required=True)
         ap.add_argument("--top-k", type=int, required=True)
-        ap.add_argument("--seeds", type=int, default=30)
         a = ap.parse_args(sys.argv[2:])
-        p7_main(a.platform, a.top_k, a.seeds)
+        p7_main(a.platform, a.top_k, n_seeds=30)   # A6.3': exactly 30,
+        # not overrideable from the registered CLI
     elif len(sys.argv) > 1 and sys.argv[1] == "--aligned":
         import argparse
         ap = argparse.ArgumentParser()
