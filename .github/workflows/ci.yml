@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    name: Python (regression suite + package)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # pandas is held below 3: the research-line suite is validated on
+      # pandas 2.x, and under 3.0 the registered intake-gate tests fail
+      # (new default string dtype). Checked 2026-10-08: 22 failures on
+      # pandas 3.0.6, green on 2.3.3. The rankdiff package itself passes on
+      # both. Lift the pin only together with a research-track fix.
+      - name: Install dependencies
+        run: python -m pip install numpy "pandas<3" scipy matplotlib pyarrow zstandard pytest
+      - name: Research-line regression suite
+        run: python -m pytest tests/ -q
+      - name: rankdiff package tests
+        run: python -m pytest Python/rankdiff/tests -q
+      - name: rankdiff package builds
+        run: python -m pip wheel --no-deps -w dist Python/rankdiff
+
+  r-package:
+    name: R (R CMD check rankdiff)
+    runs-on: ubuntu-latest
+    env:
+      _R_CHECK_FORCE_SUGGESTS_: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: R/rankdiff
+          extra-packages: any::rcmdcheck
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          working-directory: R/rankdiff
+          args: 'c("--no-manual", "--as-cran")'
