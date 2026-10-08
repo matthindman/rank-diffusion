@@ -59,6 +59,14 @@ def basic_checks(df: pd.DataFrame, label: str) -> dict[str, object]:
 def exact_weekly_sum_check(daily: pd.DataFrame, weekly: pd.DataFrame) -> dict[str, object]:
     d = daily[["endpoint_id", "date", *SUM_COLS]].copy()
     d["date"] = week_start(d["date"])
+    day_coverage = (
+        pd.DataFrame({"date": pd.to_datetime(daily["date"]).drop_duplicates()})
+        .assign(week=lambda x: week_start(x["date"]))
+        .groupby("week")["date"]
+        .nunique()
+    )
+    complete_weeks = set(day_coverage[day_coverage.eq(7)].index)
+    d = d[d["date"].isin(complete_weeks)]
     daily_week = d.groupby(["endpoint_id", "date"], as_index=False, sort=False)[SUM_COLS].sum()
     compare = weekly[["endpoint_id", "date", *SUM_COLS]].merge(
         daily_week,
@@ -71,6 +79,9 @@ def exact_weekly_sum_check(daily: pd.DataFrame, weekly: pd.DataFrame) -> dict[st
         "weekly_sum_compare_rows": int(len(compare)),
         "weekly_sum_left_only": int((compare["_merge"] == "left_only").sum()),
         "weekly_sum_right_only": int((compare["_merge"] == "right_only").sum()),
+        "daily_calendar_weeks": int(len(day_coverage)),
+        "daily_complete_weeks": int(day_coverage.eq(7).sum()),
+        "daily_incomplete_weeks": int(day_coverage.ne(7).sum()),
     }
     both = compare["_merge"] == "both"
     for col in SUM_COLS:

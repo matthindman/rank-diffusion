@@ -1,8 +1,8 @@
 # Phase 2 Data Migration Report
 
-Status: paused at a clean travel checkpoint. Facebook raw copy, aggregation, validation, and smoke-load are complete. Reddit comment aggregation is complete through 2021-06, the comments-only daily/weekly panels are built, and a draft comments model run has completed.
+Status: Facebook processing is complete. Reddit comments and submissions are fully aggregated for every available WD month (2018-12 through 2022-12), and the combined model-ready daily/weekly panels have passed validation and smoke loading. The 2023-01 through 2024-06 Reddit bridge is not present on the WD and remains an owner acquisition decision.
 
-Run date: 2026-07-03
+Run dates: 2026-07-03 through 2026-07-16
 
 ## Travel Pause Plan
 
@@ -338,3 +338,97 @@ return4K emp=0.409 sim=0.420 diff=+0.011
 ```
 
 Interpretation for next model run: comments are analyzable with the current draft machinery over the 2018-12..2021-06 short panel. Churn and persistence are usable in a first pass, but the variance-ratio block remains too persistent in simulation relative to empirical comments. The short panel is enough to iterate on comments-specific tuning without waiting for the full 2018-12..2022-12 run.
+
+## Reddit Full Completion - 2026-07-16
+
+This section supersedes the operational status in the earlier travel-pause section. The comments-only short panels remain preserved as historical analysis inputs.
+
+Monthly aggregation completed for all WD Pushshift archives:
+
+| type | months | coverage | monthly aggregate size |
+|---|---:|---|---:|
+| submissions | 49 | 2018-12 through 2022-12 | approximately 3.0 GB |
+| comments | 49 | 2018-12 through 2022-12 | approximately 2.5 GB |
+
+Submission processing log summary:
+
+```text
+source rows:       1,360,306,176
+aggregate pairs:     118,585,558
+successful months:            49
+parse errors:                  0
+months requiring retry:        0
+```
+
+The raw `RS_*.zst` and `RC_*.zst` files remain only on the WD. They were streamed directly and were never copied or decompressed onto T9.
+
+Final combined panels:
+
+| file | rows | bytes | date range |
+|---|---:|---:|---|
+| `/Volumes/T9/rank-diffusion-data/derived/reddit_daily_long.parquet` | 142,438,022 | 2,483,250,581 | 2018-12-01 through 2022-12-31 |
+| `/Volumes/T9/rank-diffusion-data/derived/reddit_weekly_long.parquet` | 53,723,472 | 923,586,541 | 2018-12-03 through 2022-12-19 |
+| `/Volumes/T9/rank-diffusion-data/derived/reddit_week_completeness.csv` | 214 weeks | 8.4 KB | 2018-11-26 through 2022-12-26 |
+
+The daily panel retains all 1,492 recovered calendar days. The weekly panel contains the 212 complete Monday-through-Sunday weeks. Two boundary weeks were excluded: 2018-11-26 has only December 1-2, and 2022-12-26 has only December 26-31.
+
+Validation results:
+
+```text
+schema matches existing daily:  true
+schema matches existing weekly: true
+daily duplicate keys:           0
+weekly duplicate keys:          0
+daily negative metric rows:     0
+weekly negative metric rows:    0
+daily timezone:                 None
+weekly timezone:                None
+weekly dates all Monday:        true
+
+weekly sum left-only keys:      0
+weekly sum right-only keys:     0
+metric_value mismatches:        0
+submission_karma mismatches:    0
+comment_karma mismatches:       0
+submission_count mismatches:    0
+comment_count mismatches:       0
+```
+
+Both files smoke-loaded through `minimal_rankdiff.load_panel`:
+
+```text
+daily:  1,492 periods; mean 95,467.84 entities/period
+weekly:   212 periods; mean 253,412.60 entities/period
+```
+
+Sample weekly leaders for 2020-01-06 were `memes`, `dankmemes`, `PewdiepieSubmissions`, `aww`, and `funny`. This is plausible for a submissions-karma activity metric; comments remain populated as separate insurance/model columns.
+
+Manifest and regression verification:
+
+```text
+submission monthly manifest entries: 49
+derived Reddit manifest entries:      3
+files independently rehashed:        52
+bytes independently rehashed:        6,744,720,699
+SHA-256 mismatches:                   0
+temporary files remaining:           0
+pytest:                               133 passed in 6.69s
+```
+
+Final T9 capacity check:
+
+```text
+/Volumes/T9: 931 GiB total, 289 GiB used, 643 GiB available, 32% used
+/Volumes/T9/rank-diffusion-data: 289 GB
+Reddit aggregate directory: 5.5 GB
+derived directory: 6.7 GB
+```
+
+The project remains below the 600 GB ceiling and T9 remains approximately 68% free. The only Reddit continuity gap between this panel and the existing 2024-07 through 2025-01 repository panel is 2023-01 through 2024-06; those 18 months are not present on the WD and were not downloaded during this phase.
+
+Completion logs:
+
+- `/Volumes/T9/rank-diffusion-data/logs/reddit_monthly_processing_log.csv`
+- `/Volumes/T9/rank-diffusion-data/logs/reddit_monthly_aggregation.stdout.log`
+- `/Volumes/T9/rank-diffusion-data/logs/reddit_full_validation.json`
+- `/Volumes/T9/rank-diffusion-data/logs/reddit_full_pytest.log`

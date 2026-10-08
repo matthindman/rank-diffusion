@@ -52,6 +52,19 @@ def week_start(s: pd.Series) -> pd.Series:
     return d - pd.to_timedelta(d.dt.weekday, unit="D")
 
 
+def week_completeness(observed_days: set[pd.Timestamp]) -> pd.DataFrame:
+    days = pd.Series(sorted(observed_days), name="date", dtype="datetime64[ns]")
+    coverage = pd.DataFrame({"date": days})
+    coverage["week"] = week_start(coverage["date"])
+    coverage = coverage.groupby("week", as_index=False).agg(
+        days_present=("date", "nunique"),
+        first_day=("date", "min"),
+        last_day=("date", "max"),
+    )
+    coverage["complete"] = coverage["days_present"].eq(7)
+    return coverage
+
+
 def load_side(path: Path | None, kind: str) -> pd.DataFrame:
     if path is None:
         return pd.DataFrame(columns=["endpoint_id", "date", f"{kind}_karma", f"{kind}_count"])
@@ -136,29 +149,35 @@ def main() -> None:
     sub_by_month = map_months(sorted((monthly / "submissions").glob("submissions_*.parquet")))
     com_by_month = map_months(sorted((monthly / "comments").glob("comments_*.parquet")))
     months = month_range(args.start, args.end)
-    missing = [m for m in months if m not in sub_by_month and m not in com_by_month]
+    missing_submissions = [m for m in months if m not in sub_by_month]
+    missing_comments = [m for m in months if m not in com_by_month]
     print(f"Months requested: {len(months)}")
     print(f"Submission months available: {len([m for m in months if m in sub_by_month])}")
     print(f"Comment months available: {len([m for m in months if m in com_by_month])}")
-    if missing:
-        print(f"Missing months with neither type: {', '.join(missing)}")
-        if args.require_complete:
-            raise SystemExit("missing required Reddit monthly aggregates")
+    if missing_submissions:
+        print(f"Missing submission months: {', '.join(missing_submissions)}")
+    if missing_comments:
+        print(f"Missing comment months: {', '.join(missing_comments)}")
+    if args.require_complete and (missing_submissions or missing_comments):
+        raise SystemExit("missing required Reddit monthly aggregates")
     if args.dry_run:
         return
 
     derived_dir = args.ssd_root / "derived"
     daily_path = derived_dir / "reddit_daily_long.parquet"
     weekly_path = derived_dir / "reddit_weekly_long.parquet"
+    coverage_path = derived_dir / "reddit_week_completeness.csv"
     daily_tmp = daily_path.with_suffix(".parquet.tmp")
     weekly_tmp = weekly_path.with_suffix(".parquet.tmp")
-    for path in [daily_tmp, weekly_tmp]:
+    coverage_tmp = coverage_path.with_suffix(".csv.tmp")
+    for path in [daily_tmp, weekly_tmp, coverage_tmp]:
         if path.exists():
             path.unlink()
 
     writer: pq.ParquetWriter | None = None
     weekly_parts = []
     source_paths: list[str] = []
+    observed_days: set[pd.Timestamp] = set()
     daily_rows = 0
     for i, month in enumerate(months, 1):
         sub_path = sub_by_month.get(month)
@@ -172,6 +191,7 @@ def main() -> None:
         print(f"[{i}/{len(months)}] building {month}", flush=True)
         daily = build_month(sub_path, com_path)
         daily_rows += len(daily)
+        observed_days.update(pd.to_datetime(daily["date"]).dt.normalize().unique())
         writer = append_parquet(writer, daily_tmp, daily)
         w = daily.copy()
         w["date"] = week_start(w["date"])
@@ -185,16 +205,22 @@ def main() -> None:
     if not weekly_parts:
         raise SystemExit("no Reddit monthly aggregates available to build panels")
 
+    coverage = week_completeness(observed_days)
+    complete_weeks = set(coverage.loc[coverage["complete"], "week"])
     weekly = finalize_weekly(weekly_parts)
+    weekly = weekly[weekly["date"].isin(complete_weeks)].reset_index(drop=True)
     pq.write_table(pa.Table.from_pandas(weekly, preserve_index=False), weekly_tmp, compression="snappy")
+    coverage.to_csv(coverage_tmp, index=False)
     os.replace(daily_tmp, daily_path)
     os.replace(weekly_tmp, weekly_path)
+    os.replace(coverage_tmp, coverage_path)
 
     # Exact sum check from the just-written daily file.
     daily_check = pd.read_parquet(daily_path)
     daily_min = daily_check["date"].min()
     daily_max = daily_check["date"].max()
     daily_check["date"] = week_start(daily_check["date"])
+    daily_check = daily_check[daily_check["date"].isin(complete_weeks)]
     chk = daily_check.groupby(["endpoint_id", "date"], as_index=False)["metric_value"].sum()
     merged = chk.merge(
         weekly[["endpoint_id", "date", "metric_value"]].rename(columns={"metric_value": "weekly_metric"}),
@@ -204,7 +230,15 @@ def main() -> None:
     if len(merged) != len(weekly) or not (merged["metric_value"].fillna(-1).to_numpy() == merged["weekly_metric"].fillna(-2).to_numpy()).all():
         raise AssertionError("Reddit weekly metric_value != sum of daily metric_value")
 
-    params = json.dumps({"ssd_root": str(args.ssd_root), "start": args.start, "end": args.end}, sort_keys=True)
+    params = json.dumps(
+        {
+            "ssd_root": str(args.ssd_root),
+            "start": args.start,
+            "end": args.end,
+            "weekly_policy": "Monday-anchored sums over weeks with all 7 calendar days present",
+        },
+        sort_keys=True,
+    )
     rows = [
         file_manifest_row(
             daily_path,
@@ -228,10 +262,25 @@ def main() -> None:
             parameters=params,
             status="ok",
         ),
+        file_manifest_row(
+            coverage_path,
+            role="derived/reddit/week_completeness",
+            sha256=sha256_file(coverage_path),
+            source_paths=source_paths,
+            source_bytes="",
+            source_sha256="",
+            script=SCRIPT_NAME,
+            parameters=params,
+            status="ok",
+        ),
     ]
     upsert_manifest(args.ssd_root / "manifest" / "MANIFEST.csv", rows)
     print(f"Wrote daily: {daily_path} rows={daily_rows:,}")
     print(f"Wrote weekly: {weekly_path} rows={len(weekly):,}")
+    print(
+        f"Complete weeks: {int(coverage['complete'].sum()):,}/{len(coverage):,}; "
+        f"coverage table: {coverage_path}"
+    )
     print(f"Date range daily: {daily_min.date()} to {daily_max.date()}")
     print(f"Date range weekly: {weekly['date'].min().date()} to {weekly['date'].max().date()}")
 
