@@ -149,7 +149,8 @@ compute_empirical_targets <- function(panel, balanced_ids, tracked_ids,
                   log_metric[1:(n_periods - k), , drop = FALSE]
         numer <- apply(diff_k, 2, var, na.rm = TRUE)
         ratios <- numer / (k * var_1)
-        vr_emp[[as.character(k)]] <- median(ratios, na.rm = TRUE)
+        ratios <- ratios[is.finite(ratios)]
+        vr_emp[[as.character(k)]] <- if (length(ratios) > 0L) median(ratios) else NA_real_
       }
     }
   }

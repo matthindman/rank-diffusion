@@ -173,6 +173,18 @@
   )
 }
 
+#' Split exiting entities into burst and normal entrants
+#'
+#' @param n_exits Integer number of exiting entities.
+#' @param burst_frac Probability an entrant is a burst entrant.
+#' @return Integer vector with \code{burst} and \code{normal} counts.
+#' @keywords internal
+.split_entry_counts <- function(n_exits, burst_frac) {
+  burst_prob <- min(max(as.double(burst_frac), 0.0), 1.0)
+  n_burst <- as.integer(rbinom(1L, as.integer(n_exits), burst_prob))
+  c(burst = n_burst, normal = as.integer(n_exits) - n_burst)
+}
+
 #' Resolve effective simulation parameters given feature flags
 #'
 #' Modifies parameters for ablation studies by disabling or overriding
@@ -475,13 +487,13 @@ simulate_one <- function(seed, params, n_periods, cfg, features = NULL) {
           observed_positions - 0.5
         )
       }
-      tracked_ranks[t_rec, ] <- tracked_rank
 
       # Record tracked values, masking unobserved and dead entities
       tracked_obs <- obs[tracked]
       tracked_obs[tracked_rank == 0L] <- NA_real_
       tracked_obs[!tracked_alive] <- NA_real_
       tracked_rank[!tracked_alive] <- 0L
+      tracked_ranks[t_rec, ] <- tracked_rank
       tracked_values[t_rec, ] <- tracked_obs
 
       # Record top entity IDs
@@ -508,14 +520,16 @@ simulate_one <- function(seed, params, n_periods, cfg, features = NULL) {
 
       if (n_ex > 0L) {
         exi <- which(exit_mask)
-        n_burst <- max(1L, as.integer(n_ex * burst_frac))
-        n_norm  <- n_ex - n_burst
+        entry_counts <- .split_entry_counts(n_ex, burst_frac)
+        n_burst <- entry_counts[["burst"]]
+        n_norm  <- entry_counts[["normal"]]
 
         # Variance-neutral entry: normal entries replace near departing
         # entities' values to preserve cross-sectional distribution
         departing_vals <- sample(tau[exi])  # shuffle
-        bstd <- sd(tau[tau < median(tau)]) * 0.4
-        bstd <- max(bstd, 1e-6)
+        lower_tail <- tau[tau < median(tau)]
+        bstd <- if (length(lower_tail) > 1L) sd(lower_tail) * 0.4 else 0.0
+        bstd <- max(if (is.finite(bstd)) bstd else 0.0, 1e-6)
 
         if (n_norm > 0L) {
           new_tau <- departing_vals[seq_len(n_norm)] + rnorm(n_norm, 0, bstd)
@@ -525,9 +539,10 @@ simulate_one <- function(seed, params, n_periods, cfg, features = NULL) {
 
         if (n_burst > 0L) {
           surviving <- !exit_mask
-          buq <- quantile(tau[surviving], 0.90, names = FALSE)
+          burst_source <- if (any(surviving)) tau[surviving] else tau
+          buq <- quantile(burst_source, 0.90, names = FALSE)
           bust <- sd(tau) * 0.25
-          bust <- max(bust, 1e-6)
+          bust <- max(if (is.finite(bust)) bust else 0.0, 1e-6)
           burst_tau <- rnorm(n_burst, buq, bust)
           new_tau <- c(new_tau, burst_tau)
         }

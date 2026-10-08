@@ -260,8 +260,7 @@ build_data_bundle <- function(cfg) {
     as.character()
 
   # --- Tracked IDs ---
-  track_count <- min(cfg$track_entity_count,
-                     max(cfg$max_dense_entities, cfg$track_entity_count))
+  track_count <- min(cfg$track_entity_count, cfg$max_dense_entities)
   tracked_ids <- .select_tracked_ids(panel, balanced_ids, track_count,
                                      cfg$random_seed)
 

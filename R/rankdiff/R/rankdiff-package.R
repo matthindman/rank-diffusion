@@ -5,7 +5,7 @@
 
 ## usethis namespace: start
 #' @importFrom stats approx cor dt median optim optimize pt quantile rnorm
-#' @importFrom stats rt runif sd var rchisq setNames lm coef
+#' @importFrom stats rt runif sd var rbinom rchisq setNames lm coef
 ## usethis namespace: end
 NULL
 
