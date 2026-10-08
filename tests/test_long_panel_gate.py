@@ -192,5 +192,84 @@ class LongPanelGateTests(unittest.TestCase):
                      self._rw(w2, "cg_w.parquet"), self.l_p)
 
 
+def build_multiweek(tmp, n_weeks, row_group_size, seed=1):
+    """All-complete-weeks fixture (starts Monday, ends Sunday, no boundary
+    days) written with a SMALL row_group_size so weeks straddle parquet row
+    groups -- exercises the one-week merge frontier across group boundaries."""
+    import shutil
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp.mkdir(parents=True)
+    rng = np.random.default_rng(seed)
+    ids = [f"s{i:03d}" for i in range(20)]
+    first_w = pd.Timestamp("2019-01-07")                 # Monday
+    last_w = first_w + pd.Timedelta(weeks=n_weeks - 1)
+    days = pd.date_range(first_w, last_w + pd.Timedelta(days=6), freq="D")
+    rows = []
+    for d in days:
+        for e in ids:
+            sk = int(rng.integers(-5, 60)); ck = int(rng.integers(-5, 40))
+            rows.append((d, e, max(sk, 0), sk, ck,
+                         int(rng.integers(0, 9)), int(rng.integers(0, 9))))
+    daily = pd.DataFrame(rows, columns=["date", "endpoint_id"] + clp.COLS[2:])
+    wk = daily["date"] - pd.to_timedelta(daily["date"].dt.weekday, unit="D")
+    complete = pd.date_range(first_w, last_w, freq="7D")
+    weekly = (daily.assign(date=wk).groupby(["endpoint_id", "date"],
+                                            as_index=False)[clp.COLS[2:]].sum())
+    weekly = weekly[weekly["date"].isin(complete)]
+    months = sorted({f"{d.year}-{d.month:02d}" for d in days})
+    log = pd.DataFrame({
+        "source": "x", "record_type": ["submissions"] * len(months),
+        "month": months, "status": "ok", "ok_flag": 1,
+        "lines": 1000, "errors": 0, "error_rate": 0.0, "rows": 10,
+        "out_dir": "y"})
+    d_p, w_p, l_p = tmp / "d.parquet", tmp / "w.parquet", tmp / "log.csv"
+    daily.to_parquet(d_p, index=False, row_group_size=row_group_size)
+    weekly.to_parquet(w_p, index=False)
+    log.to_csv(l_p, index=False)
+    return (daily, weekly, str(d_p), str(w_p), str(l_p),
+            first_w.strftime("%Y-%m-%d"), last_w.strftime("%Y-%m-%d"), months,
+            days[0].strftime("%Y-%m-%d"), days[-1].strftime("%Y-%m-%d"))
+
+
+class BoundedMergeTests(unittest.TestCase):
+    def test_multi_row_group_week_boundary_passes(self):
+        tmp = Path("/tmp/long_panel_gate_mrg")
+        (daily, weekly, d_p, w_p, l_p, fw, lw, months,
+         fday, lday) = build_multiweek(tmp, n_weeks=6, row_group_size=60)
+        pf = __import__("pyarrow.parquet", fromlist=["ParquetFile"]) \
+            .ParquetFile(d_p)
+        self.assertGreater(pf.num_row_groups, 6)          # weeks straddle RGs
+        clp.check(d_p, w_p, l_p, fw, lw, months, "submissions", fday, lday)
+        self.assertEqual(clp.LAST_RUN_STATS["boundary_cells"], 0)
+
+    def test_straddling_value_mismatch_fails(self):
+        # corrupt a single weekly cell in a middle week; the daily rows for
+        # that week span >1 row group, so only a correct cross-group merge
+        # catches it
+        tmp = Path("/tmp/long_panel_gate_mrg2")
+        (daily, weekly, d_p, w_p, l_p, fw, lw, months,
+         fday, lday) = build_multiweek(tmp, n_weeks=6, row_group_size=60)
+        bad = weekly.copy()
+        mid = bad.index[len(bad) // 2]
+        bad.loc[mid, "submission_count"] += 7
+        bad.to_parquet(w_p, index=False)
+        with self.assertRaises(SystemExit):
+            clp.check(d_p, w_p, l_p, fw, lw, months, "submissions", fday, lday)
+
+    def test_retained_state_independent_of_n_weeks(self):
+        # structural guarantee: peak open-week count is bounded by the
+        # row-group day span, NOT by the number of weeks
+        peaks = {}
+        for n in (8, 40):
+            tmp = Path(f"/tmp/long_panel_gate_bound_{n}")
+            (daily, weekly, d_p, w_p, l_p, fw, lw, months,
+             fday, lday) = build_multiweek(tmp, n_weeks=n, row_group_size=80)
+            clp.check(d_p, w_p, l_p, fw, lw, months, "submissions", fday, lday)
+            peaks[n] = clp.LAST_RUN_STATS["max_open_weeks"]
+            self.assertEqual(clp.LAST_RUN_STATS["n_weeks"], n)
+        self.assertEqual(peaks[8], peaks[40])             # does not grow
+        self.assertLessEqual(peaks[40], 4)                # and stays tiny
+
+
 if __name__ == "__main__":
     unittest.main()

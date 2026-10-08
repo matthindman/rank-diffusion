@@ -1,17 +1,26 @@
 #!/usr/bin/env python3
-"""A1.1 fail-closed STREAMING intake gate for the submissions long panels
-(PREREG_2026-07-16 Amendment 1). Prints PASS only if every invariant
-holds; any failure => nonzero exit. Never loads the daily panel whole:
-daily is processed by parquet row-group batches (hygiene + identity +
-day-coverage + guard counts + weekly-sum accumulation), then compared
-against the weekly panel with exact index-set equality both directions.
+"""A1.1 fail-closed BOUNDED-MEMORY intake gate for the submissions long
+panels (PREREG_2026-07-16 Amendment 1). Prints PASS only if every invariant
+holds; any failure => nonzero exit.
+
+Memory contract (2026-07-16 execution correction, disclosed): the daily
+panel is streamed ONE ROW GROUP at a time; per-(entity, week) aggregates are
+finalized and compared against the weekly panel AS SOON AS the read frontier
+passes a week, then discarded. Retained state is bounded by the row-group
+span (a couple of weeks), NEVER by the number of weeks -- the previous
+implementation materialised the full ~53.7M-row entity-week aggregate, which
+both violated this "never loads the full panel" contract and drove an
+O(N^2/8) incremental re-merge. Invariants, thresholds, inputs, and hashes are
+UNCHANGED; only the execution is corrected. Both long parquets are
+date-ordered by row group (non-overlapping ascending), which makes the
+one-week merge exact; the weekly side is read per-week and is order-robust.
 
 Usage:
   python3 llm_fitting/check_long_panels.py DAILY WEEKLY PROCESSING_LOG \
       [--first-week 2018-12-03] [--last-week 2022-12-19] \
       [--months 2018-12:2022-12] [--record-type submissions]
 
-Invariants (ANY failure stops model contact — protocol §2 discipline):
+Invariants (ANY failure stops model contact -- protocol §2 discipline):
  1. schema = the 7 registered columns, both panels.
  2. A10 semantics, submissions roles: metric_value >= 0;
     submission_karma / comment_karma signed; counts >= 0; all numerics
@@ -47,6 +56,14 @@ COLS = ["endpoint_id", "date", "metric_value", "submission_karma",
 NONNEG = {"metric_value", "submission_count", "comment_count"}
 SIGNED = {"submission_karma", "comment_karma"}
 
+# weekday bit masks are 0..127; vectorised popcount by lookup
+_POPCOUNT_LUT = np.array([bin(i).count("1") for i in range(128)],
+                         dtype=np.int64)
+
+# structural probe: populated at the end of a successful check() so tests can
+# assert retained state is bounded and INDEPENDENT of the number of weeks.
+LAST_RUN_STATS: dict = {}
+
 
 def _fail(msg):
     raise SystemExit(f"INTAKE FAIL: {msg}")
@@ -74,6 +91,204 @@ def _hygiene(df, what, daily):
                 == df["submission_karma"].clip(lower=0)).all():
             _fail(f"daily identity violated in {what}: "
                   f"metric_value != max(submission_karma, 0)")
+
+
+def _mask_agg(frame, metrics_cols):
+    """frame is indexed by [endpoint_id, wk] with per-row (or per-chunk)
+    columns metrics + '_rows' + '_mask'; possibly with repeated index rows.
+    Return ONE row per (endpoint_id, wk): metric sums, '_rows' summed, and
+    '_mask' = bitwise-OR of the weekday masks -- computed by per-bit max so
+    the OR is fully vectorised (no Python-per-group lambda) and mergeable
+    across row groups."""
+    out = frame.groupby(level=[0, 1])[metrics_cols + ["_rows"]].sum()
+    m = frame["_mask"].to_numpy()
+    bit_df = pd.DataFrame({f"_b{b}": ((m >> b) & 1) for b in range(7)},
+                          index=frame.index)
+    bit_max = bit_df.groupby(level=[0, 1]).max().reindex(out.index)
+    mask = np.zeros(len(out), dtype=np.int64)
+    for b in range(7):
+        mask |= bit_max[f"_b{b}"].to_numpy().astype(np.int64) << b
+    out["_mask"] = mask
+    return out
+
+
+def _compare_week(w, dcells, weekly_path, metrics_cols, stats):
+    """dcells: one row per entity for complete week w (index [endpoint_id,
+    wk==w]) with the daily-summed metric columns. Read week w from the weekly
+    panel and enforce exact (entity) index equality + per-column equality."""
+    tbl = pq.read_table(weekly_path,
+                        filters=[("date", "==", pd.Timestamp(w))])
+    ww = tbl.to_pandas()
+    if len(ww):
+        ww["date"] = pd.to_datetime(ww["date"])
+        _hygiene(ww, f"weekly[{w.date()}]", daily=False)
+        if ww.duplicated(["endpoint_id", "date"]).any():
+            _fail(f"duplicate (entity, week) keys in weekly {w.date()}")
+        if (ww["date"].dt.weekday != 0).any():
+            _fail(f"non-Monday weekly date in weekly {w.date()}")
+    ws = ww.set_index("endpoint_id").sort_index()
+    d = dcells.droplevel(1).sort_index()
+    only_d = d.index.difference(ws.index)
+    only_w = ws.index.difference(d.index)
+    if len(only_d) or len(only_w):
+        _fail(f"(entity, week) index sets differ in week {w.date()}: "
+              f"{len(only_d)} daily-only, {len(only_w)} weekly-only")
+    ws = ws.reindex(d.index)
+    for c in metrics_cols:
+        if not np.array_equal(d[c].to_numpy(), ws[c].to_numpy()):
+            n = int((d[c].to_numpy() != ws[c].to_numpy()).sum())
+            _fail(f"weekly != sum(daily) on '{c}' in week {w.date()} "
+                  f"({n:,} cells)")
+    stats["weekly_rows_matched"] += len(ws)
+    stats["want_weeks_seen"].add(w)
+
+
+def _finalize_week(w, parts, want_set, weekly_path, metrics_cols, stats):
+    agg = _mask_agg(pd.concat(parts), metrics_cols)
+    pc = _POPCOUNT_LUT[agg["_mask"].to_numpy()]
+    dup = agg["_rows"].to_numpy() > pc
+    if dup.any():
+        _fail(f"{int(dup.sum())} (entity, week={w.date()}) cells with more "
+              f"rows than distinct weekdays -- duplicate (entity, date) keys")
+    cells = agg[metrics_cols]
+    if w in want_set:
+        _compare_week(w, cells, weekly_path, metrics_cols, stats)
+    else:
+        stats["boundary_cells"] += len(cells)
+
+
+def check(daily_path, weekly_path, log_path, first_week, last_week,
+          months, record_type="submissions",
+          first_day="2018-12-01", last_day="2022-12-31"):
+    fw, lw = pd.Timestamp(first_week), pd.Timestamp(last_week)
+    fd, ld = pd.Timestamp(first_day), pd.Timestamp(last_day)
+    if fw < fd or lw + pd.Timedelta(days=6) > ld:
+        _fail(f"complete-week range {fw.date()}..{lw.date()} does not fit "
+              f"inside the required day span {fd.date()}..{ld.date()} "
+              f"(the final week needs all 7 days)")
+    want = pd.date_range(fw, lw, freq="7D")
+    want_set = set(want)
+    metrics_cols = [c for c in COLS if c not in ("endpoint_id", "date")]
+
+    # ---- schema ----
+    pf = pq.ParquetFile(daily_path)
+    if set(pf.schema_arrow.names) != set(COLS):
+        _fail(f"daily schema {pf.schema_arrow.names} != registered")
+    wf = pq.ParquetFile(weekly_path)
+    if set(wf.schema_arrow.names) != set(COLS):
+        _fail(f"weekly schema {wf.schema_arrow.names} != registered")
+
+    # ---- per-row-group daily statistics for the merge frontier (A5.3:
+    #      row groups are date-non-overlapping ascending; next group's min
+    #      date is a hard lower bound on all remaining rows) ----
+    dcol = pf.schema_arrow.names.index("date")
+    rg_min = []
+    for i in range(pf.num_row_groups):
+        st = pf.metadata.row_group(i).column(dcol).statistics
+        rg_min.append(pd.Timestamp(st.min) if st is not None else None)
+
+    # ---- BOUNDED streaming pass over the DAILY panel ----
+    open_weeks: dict = {}          # week_ts -> list of per-group partials
+    day_counts, seen_keys = {}, 0
+    dmin = dmax = None
+    stats = {"boundary_cells": 0, "weekly_rows_matched": 0,
+             "want_weeks_seen": set(), "max_open_weeks": 0}
+
+    for i in range(pf.num_row_groups):
+        df = pf.read_row_group(i).to_pandas()
+        df["date"] = pd.to_datetime(df["date"])
+        _hygiene(df, "daily", daily=True)
+        if df.duplicated(["endpoint_id", "date"]).any():
+            _fail("duplicate (entity, date) keys within a daily row group")
+        seen_keys += len(df)
+        for d, n in df.groupby(df["date"].dt.normalize()).size().items():
+            day_counts[d] = day_counts.get(d, 0) + int(n)
+        dmin = df["date"].min() if dmin is None else min(dmin, df["date"].min())
+        dmax = df["date"].max() if dmax is None else max(dmax, df["date"].max())
+
+        wk = df["date"] - pd.to_timedelta(df["date"].dt.weekday, unit="D")
+        raw = df[["endpoint_id"] + metrics_cols].copy()
+        raw["wk"] = wk
+        raw["_rows"] = 1
+        raw["_mask"] = np.left_shift(
+            1, df["date"].dt.weekday.to_numpy()).astype(np.int64)
+        part = _mask_agg(raw.set_index(["endpoint_id", "wk"]), metrics_cols)
+        for w, sub in part.groupby(level=1):
+            open_weeks.setdefault(w, []).append(sub)
+
+        # finalize every week whose last day is strictly behind the frontier
+        next_min = rg_min[i + 1] if i + 1 < pf.num_row_groups else None
+        if next_min is not None:
+            for w in sorted(open_weeks):
+                if w + pd.Timedelta(days=6) < next_min:
+                    _finalize_week(w, open_weeks.pop(w), want_set,
+                                   weekly_path, metrics_cols, stats)
+        stats["max_open_weeks"] = max(stats["max_open_weeks"],
+                                      len(open_weeks))
+        if pf.num_row_groups > 16 and (i % 16 == 0
+                                       or i == pf.num_row_groups - 1):
+            print(f"  ... daily row-group {i + 1}/{pf.num_row_groups} "
+                  f"@ {dmax.date()}, open weeks={len(open_weeks)}, "
+                  f"rows so far={seen_keys:,}", file=sys.stderr, flush=True)
+
+    for w in sorted(open_weeks):    # end of stream: nothing more can arrive
+        _finalize_week(w, open_weeks.pop(w), want_set, weekly_path,
+                       metrics_cols, stats)
+
+    if dmin is None:
+        _fail("daily panel is empty")
+    print(f"  [1/6] daily hygiene + identity + schema + per-week dup rule: "
+          f"OK ({seen_keys:,} rows, {dmin.date()}..{dmax.date()})")
+
+    # ---- calendar coverage (A4.1: REQUIRED endpoints, not observed range) ----
+    if dmin.normalize() != fd or dmax.normalize() != ld:
+        _fail(f"daily coverage {dmin.date()}..{dmax.date()} != required "
+              f"{fd.date()}..{ld.date()}")
+    days = pd.date_range(fd, ld, freq="D")
+    missing = [d for d in days if d not in day_counts]
+    if missing:
+        _fail(f"{len(missing)} missing calendar days (first {missing[:3]})")
+    counts = pd.Series(day_counts).sort_index()
+    med = counts.shift(1).rolling(28, min_periods=14).median()
+    flagged = counts[(med.notna()) & (counts < 0.6 * med)]
+    if len(flagged):
+        _fail(f"day-guard flagged {len(flagged)} days "
+              f"(first {list(flagged.index[:3])}) -- census violated")
+    print(f"  [2/6] calendar coverage {days[0].date()}..{days[-1].date()} "
+          f"+ day-guard 0 flags: OK")
+
+    # ---- weekly week-set == consecutive complete weeks, exactly ----
+    missing_want = want_set - stats["want_weeks_seen"]
+    if missing_want:
+        _fail(f"weekly panel missing {len(missing_want)} complete weeks "
+              f"(first {sorted(w.date() for w in missing_want)[:3]})")
+    n_weekly_rows = wf.metadata.num_rows
+    if n_weekly_rows != stats["weekly_rows_matched"]:
+        _fail(f"weekly has {n_weekly_rows:,} rows but only "
+              f"{stats['weekly_rows_matched']:,} matched complete-week "
+              f"(entity, week) cells -- extra weekly rows/weeks outside "
+              f"{fw.date()}..{lw.date()}")
+    print(f"  [3/6] weekly hygiene + {len(want)} consecutive complete "
+          f"weeks (one-week merge): OK")
+    print(f"  [4/6] weekly = SUM(daily), exact index equality both "
+          f"directions, every column, every week ({n_weekly_rows:,} weekly "
+          f"rows): OK")
+
+    print(f"  [5/6] boundary/partial-week cells excluded from weekly: OK "
+          f"({stats['boundary_cells']:,} boundary (entity,week) cells "
+          f"outside {fw.date()}..{lw.date()})")
+
+    _check_processing_log(log_path, months, record_type)
+    print(f"  [6/6] processing log: latest {record_type} record ok/errors==0 "
+          f"for all {len(months)} months: OK")
+
+    LAST_RUN_STATS.clear()
+    LAST_RUN_STATS.update(
+        max_open_weeks=stats["max_open_weeks"],
+        weekly_rows_matched=stats["weekly_rows_matched"],
+        boundary_cells=stats["boundary_cells"],
+        n_row_groups=pf.num_row_groups, n_weeks=len(want))
+    print("PASS")
 
 
 def _check_processing_log(path, months, record_type):
@@ -116,155 +331,6 @@ def _headerless(path):
     with open(path) as f:
         first = f.readline()
     return "record_type" not in first and "month" not in first
-
-
-def check(daily_path, weekly_path, log_path, first_week, last_week,
-          months, record_type="submissions",
-          first_day="2018-12-01", last_day="2022-12-31"):
-    fw, lw = pd.Timestamp(first_week), pd.Timestamp(last_week)
-    fd, ld = pd.Timestamp(first_day), pd.Timestamp(last_day)
-    if fw < fd or lw + pd.Timedelta(days=6) > ld:
-        _fail(f"complete-week range {fw.date()}..{lw.date()} does not fit "
-              f"inside the required day span {fd.date()}..{ld.date()} "
-              f"(the final week needs all 7 days)")
-
-    # ---- streaming pass over the DAILY panel ----
-    pf = pq.ParquetFile(daily_path)
-    if set(pf.schema_arrow.names) != set(COLS):
-        _fail(f"daily schema {pf.schema_arrow.names} != registered")
-    metrics_cols = [c for c in COLS if c not in ("endpoint_id", "date")]
-    sums, day_counts, seen_keys = [], {}, 0
-    dmin = dmax = None
-    n_batch = 0
-    for batch in pf.iter_batches(batch_size=2_000_000):
-        df = batch.to_pandas()
-        df["date"] = pd.to_datetime(df["date"])
-        _hygiene(df, "daily", daily=True)
-        if df.duplicated(["endpoint_id", "date"]).any():
-            _fail("duplicate (entity, date) keys within a daily batch")
-        seen_keys += len(df)
-        for d, n in df.groupby(df["date"].dt.normalize()).size().items():
-            day_counts[d] = day_counts.get(d, 0) + int(n)
-        dmin = df["date"].min() if dmin is None else min(dmin, df["date"].min())
-        dmax = df["date"].max() if dmax is None else max(dmax, df["date"].max())
-        wk = df["date"] - pd.to_timedelta(df["date"].dt.weekday, unit="D")
-        # A4.2: rows-per-cell + weekday-presence BITMASK (OR-mergeable);
-        # rows > popcount(mask) <=> a duplicate (entity, date) key,
-        # detectable across batches
-        g = (df.assign(wk=wk,
-                       _rows=1,
-                       _mask=np.left_shift(1, df["date"].dt.weekday
-                                           .to_numpy()).astype("int64"))
-             .groupby(["endpoint_id", "wk"])
-             .agg({**{c: "sum" for c in metrics_cols},
-                   "_rows": "sum",
-                   "_mask": lambda x: int(np.bitwise_or.reduce(x))}))
-        sums.append(g)
-        n_batch += 1
-        if n_batch % 8 == 0:                    # A4.4 incremental merge
-            merged = pd.concat(sums).groupby(level=[0, 1]).agg(
-                {**{c: "sum" for c in metrics_cols}, "_rows": "sum",
-                 "_mask": lambda x: int(np.bitwise_or.reduce(x))})
-            sums = [merged]
-    daily_sums = pd.concat(sums).groupby(level=[0, 1]).agg(
-        {**{c: "sum" for c in metrics_cols}, "_rows": "sum",
-         "_mask": lambda x: int(np.bitwise_or.reduce(x))})
-    del sums
-    popcount = daily_sums["_mask"].map(lambda m: bin(int(m)).count("1"))
-    dup = daily_sums["_rows"] > popcount
-    if dup.any():
-        _fail(f"{int(dup.sum())} (entity, week) cells with more rows than "
-              f"distinct weekdays -- cross-batch duplicate (entity, date) "
-              f"keys")
-    daily_sums = daily_sums.drop(columns=["_rows", "_mask"])
-    print(f"  [1/6] daily hygiene + identity + schema + cross-batch dup "
-          f"rule: OK ({seen_keys:,} rows, {dmin.date()}..{dmax.date()})")
-
-    # calendar coverage (A4.1: REQUIRED endpoints, not observed range)
-    if dmin.normalize() != fd or dmax.normalize() != ld:
-        _fail(f"daily coverage {dmin.date()}..{dmax.date()} != required "
-              f"{fd.date()}..{ld.date()}")
-    days = pd.date_range(fd, ld, freq="D")
-    missing = [d for d in days if d not in day_counts]
-    if missing:
-        _fail(f"{len(missing)} missing calendar days (first {missing[:3]})")
-    counts = pd.Series(day_counts).sort_index()
-    med = counts.shift(1).rolling(28, min_periods=14).median()
-    flagged = counts[(med.notna()) & (counts < 0.6 * med)]
-    if len(flagged):
-        _fail(f"day-guard flagged {len(flagged)} days "
-              f"(first {list(flagged.index[:3])}) -- census violated")
-    print(f"  [2/6] calendar coverage {days[0].date()}..{days[-1].date()} "
-          f"+ day-guard 0 flags: OK")
-
-    # ---- weekly panel, YEAR-CHUNKED (A4.4: the daily-sums table is the
-    #      declared memory peak; the weekly never loads whole) ----
-    wf = pq.ParquetFile(weekly_path)
-    if set(wf.schema_arrow.names) != set(COLS):
-        _fail(f"weekly schema {wf.schema_arrow.names} != registered")
-    want = pd.date_range(fw, lw, freq="7D")
-    weeks_seen = []
-    n_weekly_rows = 0
-    import pyarrow.compute as pc
-    for yr in range(fw.year, lw.year + 1):
-        tbl = pq.read_table(
-            weekly_path,
-            filters=[("date", ">=", pd.Timestamp(f"{yr}-01-01")),
-                     ("date", "<", pd.Timestamp(f"{yr + 1}-01-01"))])
-        if tbl.num_rows == 0:
-            continue
-        weekly = tbl.to_pandas()
-        weekly["date"] = pd.to_datetime(weekly["date"])
-        _hygiene(weekly, f"weekly[{yr}]", daily=False)
-        if weekly.duplicated(["endpoint_id", "date"]).any():
-            _fail(f"duplicate (entity, week) keys in weekly[{yr}]")
-        if (weekly["date"].dt.weekday != 0).any():
-            _fail(f"non-Monday weekly dates in weekly[{yr}]")
-        weeks_seen.append(pd.DatetimeIndex(np.sort(weekly["date"].unique())))
-        n_weekly_rows += len(weekly)
-        ws = weekly.set_index(["endpoint_id", "date"]).sort_index()
-        yr_weeks = want[(want >= pd.Timestamp(f"{yr}-01-01"))
-                        & (want < pd.Timestamp(f"{yr + 1}-01-01"))]
-        ds = daily_sums[daily_sums.index.get_level_values(1)
-                        .isin(yr_weeks)].sort_index()   # A5.3: year slice
-        # directly from the sums table (the declared peak); no near-full copy
-        ds.index.names = ws.index.names
-        only_d = ds.index.difference(ws.index)
-        only_w = ws.index.difference(ds.index)
-        if len(only_d) or len(only_w):
-            _fail(f"(entity, week) index sets differ in {yr}: "
-                  f"{len(only_d)} daily-only, {len(only_w)} weekly-only")
-        for c in ds.columns:
-            if not np.array_equal(ds[c].to_numpy(), ws[c].to_numpy()):
-                n = int((ds[c].to_numpy() != ws[c].to_numpy()).sum())
-                _fail(f"weekly != sum(daily) on '{c}' in {yr} ({n:,} cells)")
-        del weekly, ws, ds
-    wset = weeks_seen[0]
-    for w in weeks_seen[1:]:
-        wset = wset.append(w)
-    wset = pd.DatetimeIndex(np.sort(np.unique(wset)))
-    if not wset.equals(want):
-        _fail(f"weekly week-set != consecutive complete weeks "
-              f"{fw.date()}..{lw.date()}: extra="
-              f"{list(wset.difference(want).date)[:3]} missing="
-              f"{list(want.difference(wset).date)[:3]}")
-    print(f"  [3/6] weekly hygiene + {len(want)} consecutive complete "
-          f"weeks (year-chunked): OK")
-    print(f"  [4/6] weekly = SUM(daily), exact index equality both "
-          f"directions, every column, every year ({n_weekly_rows:,} weekly "
-          f"rows): OK")
-
-    # ---- boundary days excluded ----
-    n_boundary = int((~daily_sums.index.get_level_values(1).isin(want)).sum())
-    print(f"  [5/6] boundary/partial-week cells excluded from weekly: OK "
-          f"({n_boundary:,} boundary (entity,week) cells outside "
-          f"{fw.date()}..{lw.date()})")
-
-    # ---- A9 processing log ----
-    _check_processing_log(log_path, months, record_type)
-    print(f"  [6/6] processing log: latest {record_type} record ok/errors==0 "
-          f"for all {len(months)} months: OK")
-    print("PASS")
 
 
 def month_range(spec):
