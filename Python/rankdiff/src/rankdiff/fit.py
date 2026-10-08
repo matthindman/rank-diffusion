@@ -24,6 +24,7 @@ def _estimate_exit_params(bundle: DataBundle, cfg: Config) -> tuple[float, float
 
 
 def fit_parameter_curves(bundle: DataBundle, init: InitialParams, cfg: Config) -> EstimatedParams:
+    """Fit parameter curves from initial estimates."""
     z_knots = np.asarray(init.z_knots, dtype=float)
     order = np.argsort(z_knots)
     z_knots = z_knots[order]
@@ -77,6 +78,7 @@ def fit_parameter_curves(bundle: DataBundle, init: InitialParams, cfg: Config) -
 
 
 def resolve_burnin(kappa_base: float, alpha_kappa: float, cfg: Config) -> int:
+    """Resolve the burn-in period count."""
     if cfg.burnin_periods is not None:
         return int(cfg.burnin_periods)
 
@@ -157,6 +159,7 @@ def _evaluate_kappa_factor(
 
 
 def estimate_alpha_kappa(params: EstimatedParams, bundle: DataBundle, cfg: Config) -> EstimatedParams:
+    """Estimate the alpha_kappa exponent via grid search."""
     emp = bundle.empirical
     cal_cfg = _calibration_cfg(bundle, cfg)
     best = params
@@ -173,6 +176,7 @@ def estimate_alpha_kappa(params: EstimatedParams, bundle: DataBundle, cfg: Confi
 
 
 def calibrate_kappa_stab(params: EstimatedParams, bundle: DataBundle, cfg: Config) -> EstimatedParams:
+    """Calibrate the kappa stabilisation factor via grid search."""
     emp = bundle.empirical
     cal_cfg = _calibration_cfg(bundle, cfg)
     best = params
@@ -223,6 +227,7 @@ def _compute_sim_band_kurtosis(
 
 
 def calibrate_kurtosis(params: EstimatedParams, bundle: DataBundle, cfg: Config) -> EstimatedParams:
+    """Calibrate t-distribution degrees-of-freedom curves via kurtosis matching."""
     from .simulator import simulate_one
 
     init_meta = params.metadata.get("initial_metadata", {})

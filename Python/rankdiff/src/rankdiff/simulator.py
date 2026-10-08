@@ -159,6 +159,7 @@ def simulate_one(
     cfg: Config,
     features: SimFeatures | None = None,
 ) -> dict[str, object]:
+    """Run a single Monte Carlo simulation."""
     params, use_exit, use_obs, use_heavy = _resolve_effective_params(params, cfg, features)
 
     rng = np.random.default_rng(seed)
@@ -384,6 +385,7 @@ def simulate_many(
     cfg: Config,
     features: SimFeatures | None = None,
 ) -> list[dict[str, object]]:
+    """Run multiple Monte Carlo simulations."""
     n_rep = cfg.resolved_mc_reps
     seeds = [cfg.random_seed + i * 7919 for i in range(n_rep)]
     n_periods = bundle.n_periods

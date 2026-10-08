@@ -138,6 +138,7 @@ def run_ablation(
     cfg: Config,
     levels: list[dict] | None = None,
 ) -> list[dict]:
+    """Run an ablation study across incremental model levels."""
     if levels is None:
         levels = ABLATION_LEVELS
 
@@ -182,6 +183,7 @@ def run_ablation(
 
 
 def format_ablation_summary(results: list[dict]) -> str:
+    """Format ablation results as a text summary table."""
     lines = []
     hdr = f"{'Level':<24s} {'Score':>5s}"
     for dn in DIAG_NAMES:

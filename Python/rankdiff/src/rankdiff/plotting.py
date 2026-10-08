@@ -11,6 +11,7 @@ from matplotlib.colors import ListedColormap
 
 
 def plot_core_diagnostics(bundle, score: dict[str, object], out_dir: str | Path, prefix: str) -> Path:
+    """Plot core diagnostic comparison (empirical vs simulated)."""
     out_path = Path(out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 
@@ -63,6 +64,7 @@ def plot_core_diagnostics(bundle, score: dict[str, object], out_dir: str | Path,
 
 
 def plot_ablation(results: list[dict], out_dir: str | Path, prefix: str) -> Path:
+    """Plot ablation study results."""
     from .ablation import DIAG_KEYS, DIAG_NAMES
 
     out_path = Path(out_dir)
@@ -124,6 +126,7 @@ def plot_sensitivity(
     out_dir: str | Path,
     prefix: str,
 ) -> Path:
+    """Plot sensitivity analysis results."""
     out_path = Path(out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 

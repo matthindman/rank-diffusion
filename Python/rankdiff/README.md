@@ -38,10 +38,10 @@ python
 2. Run:
 
 ```python
-from rankdiff import Config, run_pipeline
+from rankdiff import Config, run_pipeline, toy_data_path
 
 cfg = Config(
-    data_path="data/toy_rank_data.parquet",
+    data_path=str(toy_data_path()),
     id_col="entity_id",
     timestamp_col="timestamp",
     metric_col="metric_value",
@@ -131,7 +131,7 @@ plot_sensitivity(sens, cfg.sensitivity_deltas, "outputs", "run")
 
 ## Quick Start
 
-Of note, as used above, the package comes pre-loaded with a synthetic toy parquet dataset (which users can follow re: data structure, format, etc), located: `data/toy_rank_data.parquet`. Using this sample data, users can run the example workflow end to end via:
+Of note, as used above, the package comes pre-loaded with a synthetic toy parquet dataset (which users can follow re: data structure, format, etc), bundled with the package and located via `rankdiff.toy_data_path()`. Using this sample data, users can run the example workflow end to end via:
 
 ```bash
 python examples/quickstart.py

@@ -9,6 +9,7 @@ from .types import Config
 
 
 def load_panel(cfg: Config) -> pd.DataFrame:
+    """Load a panel dataset from a parquet file."""
     data_path = Path(cfg.data_path)
     if not data_path.exists():
         raise FileNotFoundError(f"Data file not found: {data_path}")
@@ -18,6 +19,7 @@ def load_panel(cfg: Config) -> pd.DataFrame:
 
 
 def canonicalize_panel(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
+    """Canonicalize a panel to the standard entity/timestamp/metric schema."""
     rename_map = {
         cfg.id_col: "entity_id",
         cfg.timestamp_col: "timestamp",
@@ -72,6 +74,7 @@ def canonicalize_panel(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
 
 
 def infer_cadence(ts: pd.Series, requested: str) -> str:
+    """Infer cadence from timestamps."""
     if requested != "auto":
         return requested
 
@@ -87,6 +90,7 @@ def infer_cadence(ts: pd.Series, requested: str) -> str:
 
 
 def add_period_index(df: pd.DataFrame, cadence: str) -> pd.DataFrame:
+    """Add period index columns to a panel."""
     panel = df.copy()
     if cadence == "daily":
         panel["period_start"] = panel["timestamp"].dt.floor("D")

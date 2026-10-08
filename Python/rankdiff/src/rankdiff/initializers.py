@@ -14,6 +14,7 @@ def _adaptive_bin_count(mean_n: float, cfg: Config) -> int:
 
 
 def build_anchor_bins(bundle: DataBundle, cfg: Config) -> pd.DataFrame:
+    """Build log-spaced anchor bins from empirical moments."""
     emp = bundle.empirical
     mean_rank = np.asarray(emp["mean_rank"], dtype=float)
     if mean_rank.size == 0:
@@ -135,6 +136,7 @@ def _fit_centered_t(x: np.ndarray, bounds: tuple[float, float]) -> tuple[float, 
 
 
 def estimate_initial_params(bundle: DataBundle, cfg: Config) -> InitialParams:
+    """Estimate initial parameters from empirical moments."""
     emp = bundle.empirical
     anchors = build_anchor_bins(bundle, cfg)
 

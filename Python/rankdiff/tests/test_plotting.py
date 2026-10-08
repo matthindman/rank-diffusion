@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from rankdiff import Config, run_pipeline
+from rankdiff import Config, run_pipeline, toy_data_path
 from rankdiff.ablation import run_ablation
 from rankdiff.sensitivity import run_sensitivity
 from rankdiff.diagnostics import score_diagnostics
@@ -10,7 +10,7 @@ from rankdiff.simulator import simulate_many
 
 def test_plotting_smoke(tmp_path):
     cfg = Config(
-        data_path="data/toy_rank_data.parquet",
+        data_path=str(toy_data_path()),
         id_col="entity_id",
         timestamp_col="timestamp",
         metric_col="metric_value",

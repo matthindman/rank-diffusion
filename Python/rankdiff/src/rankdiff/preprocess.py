@@ -10,6 +10,7 @@ from .types import Config, DataBundle, ThresholdModel
 
 
 def estimate_threshold_model(panel: pd.DataFrame, cfg: Config) -> ThresholdModel:
+    """Estimate the threshold model for entry/exit."""
     per_period = panel.groupby("period_index")["metric_value"].min().sort_index()
 
     if cfg.threshold_mode == "provided":
@@ -28,11 +29,13 @@ def estimate_threshold_model(panel: pd.DataFrame, cfg: Config) -> ThresholdModel
 
 
 def compute_log_rank_coord(rank: np.ndarray, n_t: np.ndarray, eps: float = 1e-6) -> np.ndarray:
+    """Compute the log-rank coordinate (z_rank)."""
     normalized = (rank.astype(float) - 0.5) / n_t.astype(float)
     return np.log(np.clip(normalized, eps, 1.0))
 
 
 def compute_local_slope(panel: pd.DataFrame) -> pd.DataFrame:
+    """Compute the local slope of the log-metric vs log-rank curve."""
     out = panel.copy()
     log_rank = np.log(np.clip(out["rank"].to_numpy(dtype=float), 1.0, None))
     log_metric = np.log1p(np.clip(out["metric_value"].to_numpy(dtype=float), 0.0, None))
@@ -83,6 +86,7 @@ def _select_tracked_ids(
 
 
 def build_data_bundle(cfg: Config) -> DataBundle:
+    """Build the full data bundle from a configuration."""
     raw = load_panel(cfg)
 
     panel = canonicalize_panel(raw, cfg)

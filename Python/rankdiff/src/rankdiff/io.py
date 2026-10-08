@@ -31,6 +31,7 @@ def _to_jsonable(value):
 
 
 def save_fit_result(result: FitResult, out_dir: str | Path | None = None) -> Path:
+    """Save a fit result to disk."""
     target = Path(out_dir or result.config.output_dir or Path("output") / "rankdiff")
     target.mkdir(parents=True, exist_ok=True)
 
@@ -129,6 +130,7 @@ def _restore_empirical_keys(empirical: dict) -> dict:
 
 
 def load_fit_result(path: str | Path) -> FitResult:
+    """Load a fit result from disk."""
     root = Path(path)
     if root.is_dir():
         json_path = root / "fit_result.json"

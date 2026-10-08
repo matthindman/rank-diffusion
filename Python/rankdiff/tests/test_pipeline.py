@@ -1,6 +1,6 @@
 import numpy as np
 
-from rankdiff import Config
+from rankdiff import Config, toy_data_path
 from rankdiff.preprocess import build_data_bundle
 from rankdiff.initializers import estimate_initial_params
 from rankdiff.fit import (
@@ -13,7 +13,7 @@ from rankdiff import run_pipeline
 # end to end
 def test_end_to_end_pipeline():
     cfg = Config(
-        data_path="data/toy_rank_data.parquet",
+        data_path=str(toy_data_path()),
         id_col="entity_id",
         timestamp_col="timestamp",
         metric_col="metric_value",
@@ -65,7 +65,7 @@ def test_end_to_end_pipeline():
 # single run // public facing version
 def test_public_run_pipeline():
     cfg = Config(
-        data_path="data/toy_rank_data.parquet",
+        data_path=str(toy_data_path()),
         id_col="entity_id",
         timestamp_col="timestamp",
         metric_col="metric_value",

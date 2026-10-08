@@ -51,6 +51,7 @@ def compute_empirical_targets(
     threshold: ThresholdModel,
     cfg: Config,
 ) -> dict[str, object]:
+    """Compute empirical diagnostic targets from panel data."""
     tracked_balanced = np.array([eid for eid in tracked_ids if eid in set(balanced_ids)], dtype=str)
     metric_wide = _make_wide(panel, tracked_balanced, "metric_value")
     rank_wide = _make_wide(panel, tracked_balanced, "rank")
@@ -207,6 +208,7 @@ def compute_empirical_targets(
 
 
 def compute_sim_diagnostics(sim: dict[str, object], cfg: Config) -> dict[str, float]:
+    """Compute diagnostics from a single simulation run."""
     tracked_values = np.asarray(sim["tracked_values"], dtype=float)
     tracked_ranks = np.asarray(sim["tracked_ranks"], dtype=float)
 
@@ -274,6 +276,7 @@ def compute_sim_diagnostics(sim: dict[str, object], cfg: Config) -> dict[str, fl
 
 
 def score_diagnostics(emp: dict[str, object], sim_diags: Sequence[dict[str, float]], cfg: Config) -> dict[str, object]:
+    """Score simulation diagnostics against empirical targets."""
     mc_stats: dict[str, dict[str, float]] = {}
     keys = sorted({key for diag in sim_diags for key in diag.keys()})
     for key in keys:

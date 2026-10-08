@@ -47,6 +47,7 @@ def run_sensitivity(
     param_list: list[tuple[str, str]] | None = None,
     deltas: tuple[float, ...] | None = None,
 ) -> dict[str, dict[float, dict]]:
+    """Run sensitivity analysis across parameter perturbations."""
     if param_list is None:
         param_list = SENSITIVITY_PARAMS
     if deltas is None:
@@ -95,6 +96,7 @@ def format_sensitivity_summary(
     params: EstimatedParams,
     deltas: tuple[float, ...] = (-0.20, -0.10, 0.0, 0.10, 0.20),
 ) -> str:
+    """Format sensitivity analysis results as a text summary."""
     lines = []
     hdr = f"{'Parameter':<14s}"
     for d in deltas:

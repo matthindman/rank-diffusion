@@ -100,6 +100,7 @@ class Config:
 
 @dataclass
 class ThresholdModel:
+    """Entry/exit threshold model."""
     threshold_by_period: np.ndarray
     max_missing_value_by_period: np.ndarray
     effectively_exact_above_threshold: bool = True
@@ -107,6 +108,7 @@ class ThresholdModel:
 
 @dataclass
 class DataBundle:
+    """Preprocessed panel data and empirical targets."""
     panel: pd.DataFrame
     platform: str
     cadence: str
@@ -123,6 +125,7 @@ class DataBundle:
 
 @dataclass
 class InitialParams:
+    """Initial parameter estimates from empirical moments."""
     sigma_obs: float
     sigma_het: float
     alpha_arch: float
@@ -143,6 +146,7 @@ class InitialParams:
 
 @dataclass
 class EstimatedParams:
+    """Estimated model parameters."""
     sigma_obs: float
     sigma_het: float
     alpha_arch: float
@@ -173,6 +177,7 @@ class EstimatedParams:
 
 @dataclass(frozen=True)
 class SimFeatures:
+    """Feature flags controlling simulation components (ablation control)."""
     burn_in: bool = True
     kappa: bool = True
     rank_dep_kappa: bool = True
@@ -186,6 +191,7 @@ class SimFeatures:
 
 @dataclass
 class FitResult:
+    """Full pipeline result: config, data, parameters, and diagnostics."""
     config: Config
     data: DataBundle
     initial: InitialParams

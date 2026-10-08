@@ -1,9 +1,9 @@
-from rankdiff import Config, load_panel, canonicalize_panel, infer_cadence, add_period_index
+from rankdiff import Config, load_panel, canonicalize_panel, infer_cadence, add_period_index, toy_data_path
 
 
 def test_toy_pipeline_smoke():
     cfg = Config(
-        data_path="data/toy_rank_data.parquet",
+        data_path=str(toy_data_path()),
         id_col="entity_id",
         timestamp_col="timestamp",
         metric_col="metric_value",

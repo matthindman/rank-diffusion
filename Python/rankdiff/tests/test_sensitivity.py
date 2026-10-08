@@ -1,10 +1,10 @@
-from rankdiff import Config, run_pipeline
+from rankdiff import Config, run_pipeline, toy_data_path
 from rankdiff.sensitivity import run_sensitivity
 
 
 def test_sensitivity_smoke():
     cfg = Config(
-        data_path="data/toy_rank_data.parquet",
+        data_path=str(toy_data_path()),
         id_col="entity_id",
         timestamp_col="timestamp",
         metric_col="metric_value",
