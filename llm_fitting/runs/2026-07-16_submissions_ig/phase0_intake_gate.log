@@ -1,0 +1,18 @@
+  ... daily row-group 1/157 @ 2018-12-21, open weeks=1, rows so far=1,048,576
+  ... daily row-group 17/157 @ 2019-08-16, open weeks=1, rows so far=15,424,733
+  ... daily row-group 33/157 @ 2020-02-28, open weeks=1, rows so far=29,124,492
+  ... daily row-group 49/157 @ 2020-07-31, open weeks=1, rows so far=42,374,204
+  ... daily row-group 65/157 @ 2021-01-11, open weeks=1, rows so far=57,610,340
+  ... daily row-group 81/157 @ 2021-05-19, open weeks=1, rows so far=71,742,700
+  ... daily row-group 97/157 @ 2021-09-30, open weeks=1, rows so far=86,285,313
+  ... daily row-group 113/157 @ 2022-01-31, open weeks=1, rows so far=100,495,861
+  ... daily row-group 129/157 @ 2022-05-31, open weeks=1, rows so far=115,322,702
+  ... daily row-group 145/157 @ 2022-09-30, open weeks=1, rows so far=130,932,150
+  ... daily row-group 157/157 @ 2022-12-31, open weeks=1, rows so far=142,438,022
+  [1/6] daily hygiene + identity + schema + per-week dup rule: OK (142,438,022 rows, 2018-12-01..2022-12-31)
+  [2/6] calendar coverage 2018-12-01..2022-12-31 + day-guard 0 flags: OK
+  [3/6] weekly hygiene + 212 consecutive complete weeks (one-week merge): OK
+  [4/6] weekly = SUM(daily), exact index equality both directions, every column, every week (53,723,472 weekly rows): OK
+  [5/6] boundary/partial-week cells excluded from weekly: OK (380,306 boundary (entity,week) cells outside 2018-12-03..2022-12-19)
+  [6/6] processing log: latest submissions record ok/errors==0 for all 49 months: OK
+PASS

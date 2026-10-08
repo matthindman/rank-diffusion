@@ -1,0 +1,7 @@
+P4 windows (own-window universe):
+  W[0,71): s = 1.1131  [MBB CI 1.109, 1.162; non-gating]
+  W[71,142): s = 1.0824  [MBB CI 1.064, 1.127; non-gating]
+  W[142,212): s = 1.1303  [MBB CI 1.120, 1.160; non-gating]
+P4a strict monotone: FAIL
+P4b four-cell: A=1.1131 B=1.1303 C=1.0884 D=1.6199  era +0.2744 comp -0.2572  era-dominant: PASS
+P5: s(1)=1.1185  b(4)=0.9766  b(8)=0.9650  -> P5 PASS

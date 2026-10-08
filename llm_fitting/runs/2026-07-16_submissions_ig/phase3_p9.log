@@ -1,0 +1,2 @@
+P9: VR13 emp 0.2031 sim 0.2500 (excess +0.0469) -> P9a PASS
+    VRsc13 emp 0.2006 surrogate mean 0.2128  F = 0.260  in [0.5, 0.75] -> P9b FAIL

@@ -1,0 +1,7 @@
+P1 self-test: PASS (spiker excluded; established counted once)
+anchor 2021-07-05 -> derived t0 = 135
+  primary_fullfit K/4: emp 0.00302 ent-CI [0.00214,0.00411] wk-CI [0.00223,0.00401] | sim 0.00092 [q10 0.00033, q90 0.00169]
+  primary_fullfit K/2: emp 0.00851 ent-CI [0.00728,0.00982] wk-CI [0.00746,0.00968] | sim 0.00311 [q10 0.00214, q90 0.00408]
+  descriptive_trainfit K/4: emp 0.00302 ent-CI [0.00214,0.00411] wk-CI [0.00223,0.00401] | sim 0.00106 [q10 0.00040, q90 0.00184] [DESCRIPTIVE, never gates]
+  descriptive_trainfit K/2: emp 0.00851 ent-CI [0.00728,0.00982] wk-CI [0.00746,0.00968] | sim 0.00439 [q10 0.00339, q90 0.00564] [DESCRIPTIVE, never gates]
+P7 HARD VERDICT (primary, K/2): deficit PASS (ratio 2.74), composition PASS -> P7 PASS

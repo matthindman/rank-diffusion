@@ -1,0 +1,13 @@
+reddit_submissions_long: 53,723,472 (entity,week) rows, T=212 weeks, 11,876,520 distinct entities
+
+entities/week: min 126,204 median 257,008 max 357,402
+
+new-ids/week (weeks 1..211): min 34,474 median 57,352 mean 55643 max 86,483
+  CV 0.206; largest wk/wk inflow ratio 1.39 (smooth census => no order-of-magnitude enrollment spikes)
+  first 6 weeks new-ids: [59058, 48443, 41046, 42680, 43664, 41458]
+  last 6 weeks new-ids:  [62048, 59153, 62834, 67430, 62116, 56430]
+
+top-5 by metric (eyeball; expect recognizable subreddits):
+  week  11 (2019-02-18): memes, dankmemes, aww, funny, PewdiepieSubmissions
+  week 106 (2020-12-14): memes, dankmemes, aww, politics, interestingasfuck
+  week 200 (2022-10-03): memes, shitposting, MadeMeSmile, 196, WhitePeopleTwitter

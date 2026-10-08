@@ -4087,3 +4087,102 @@ evidence tiers are labeled throughout (registered confirmation / delayed
 registered sensitivity / exploratory diagnostics / development negative
 result); the survivor-conditional scope line on the movement claim names the
 boundary-flux residual; S(k) stays "within recorded top-M".
+
+## 2z-ae. 2026-07-16/17 — THE SUBMISSIONS BACKTEST EXECUTED (PREREG_2026-07-16, one pass, outcome-unseen cross-metric replication per §2z-w — NOT confirmation; Wikipedia remains the primary target): MIXED, but the headline hardened finding TRANSPORTS — the §2z-ac established-departure deficit REPLICATES on a second, outcome-unseen metric (P7 sim/emp ratio 2.74 at K/2, squarely in the pre-registered 2–3× point range) and amplitude collapse (b≈1) + era-dominance carry over; the monotone s-trend (P4a) and the functional VR share (P9b) do NOT replicate; IG P10/P11 are NOT ADJUDICATED (build fail-closed on the wrong observational unit + an infeasible registered reconciliation target)
+
+Panel: `reddit_submissions_long` (2018-12..2022-12, 142,438,022 daily /
+53,723,472 weekly rows, metric_value = max(submission_karma,0) daily). Frame:
+this run is a BACKTEST / cross-metric replication (§2z-w), scored one pass per
+registered item, failures reported as findings, no refits. Run archive:
+`llm_fitting/runs/2026-07-16_submissions_ig/` (per-item logs, input SHAs in
+`PHASE0_MANIFEST.csv`).
+
+**Two disclosed execution corrections (neither changes any threshold, universe
+rule, or expectation):**
+1. The A1.1 intake gate (`check_long_panels.py`) was rewritten to bounded
+   one-week streaming after two terminations with no verdict — the original
+   materialised the full 53.7M-row entity-week aggregate (violating its own
+   registered "never loads the full panel" description). Byte-identical
+   invariants; all 7 adversarial fixtures + 3 new scale/boundary tests green;
+   full suite 177+13. See `PHASE0_EXECUTION_CORRECTION.md`.
+2. The heavy movement evaluations were repeatedly SIGKILL-class terminated as
+   agent-managed background tasks (no crash, no jetsam; a 150+-process Codex
+   session ran concurrently). P6–P9 were run to completion (exit 0) from a
+   user-owned Terminal via `run_submissions_p6_p9.sh`. Results unaffected.
+
+**Registered scorecard (equal prominence, pass or fail):**
+- **P0/P1 intake gate — PASS.** 142,438,022 daily reconcile to 53,723,472
+  weekly EXACTLY (both directions, every column, all 212 consecutive complete
+  weeks); day-guard 0 flags; full calendar coverage 2018-12-01..2022-12-31;
+  49/49 RS months log-clean; 380,306 boundary cells excluded.
+- **P2 census — PASS.** entities/week 126k–357k (median 257k); new-ids/week
+  ~55k, CV 0.206, largest wk/wk ratio 1.39 (smooth organic inflow, no frozen-
+  panel collapse); top ladder plausible (memes, dankmemes, aww, politics,
+  WhitePeopleTwitter…).
+- **P3 universe — K = 5,000** (smallest grid value with mean weekly share
+  ≥ 0.90: K=2,500→0.856, K=5,000→0.918; frozen, no override, A1.10).
+- **P4a s-trend (HEADLINE, hard) — FAIL.** s = 1.113 → 1.082 → 1.130 across
+  windows [0,71)/[71,142)/[142,212): NON-monotone (W2 dips below W1), MBB CIs
+  overlapping. The predicted monotone 2019→2022 rise does not replicate on
+  submissions.
+- **P4b era-vs-composition (hard) — PASS.** four-cell A=1.113 B=1.130 C=1.088
+  D=1.620; era effect +0.274 dominates composition −0.257 (era-dominant,
+  consistent with §2z-s) — the trend is era-driven but not monotone.
+- **P5 amplitude collapse (hard) — PASS.** s(1)=1.119; b(4)=0.977,
+  b(8)=0.965, both inside [0.95,1.15]. The b≈1 law transports to a second
+  metric.
+- **P6 movement gate (hard) — PASS.** model rel err 0.194 ± 0.061 ≤ baseline
+  0.163 + 0.05 = 0.213; dRank1 median-in-CI on 80% of splits (≥60%). NUANCE:
+  the model is AT-PAR-within-0.05, it does NOT beat persistence (0.194 vs
+  0.163) and CRPS skill vs persistence ≈ +0.000 — no distributional edge on
+  this metric (cf. old subs gate 0.164 vs 0.168).
+- **P7 established-departure deficit (HEADLINE hardened finding, hard) —
+  PASS.** anchor 2021-07-05 → derived t0=135. K/2: empirical 0.00851
+  [entity-CI 0.00728,0.00982; week-block 0.00746,0.00968] vs sim 0.00311 [q10
+  0.00214,q90 0.00408] → sim below the empirical entity-CI lower bound, ratio
+  2.74 (inside the pre-registered 2–3× point expectation); composition PASS
+  (empirical departures ≥90% returnable crossings). K/4: 0.00302 vs 0.00092
+  (~3.3×). **The §2z-ac deficit — the current research frontier — replicates
+  on outcome-unseen, cross-metric data.** This is the run's strongest result.
+- **P8 head law (non-gating directional) — NOT fired.** S(1) emp 0.0724, sim
+  0.0541 ± 0.0111 → excess −0.0183 (sim UNDER-produces the head share, the
+  OPPOSITE sign to the FB overshoot), vs 2·SD 0.0222. The FB head-law
+  overshoot does not appear on submissions — consistent with it being an
+  FB-measurement-regime artifact, not a universal model failure.
+- **P9a VR13 excess (hard) — PASS.** VR13 emp 0.2031, sim 0.2500, excess
+  +0.0469 > 0.
+- **P9b functional share (hard) — FAIL.** F = 0.260, outside the registered
+  [0.5,0.75] (comments measured F ≈ 0.77). On submissions most of the VR
+  excess is card/compositional, not functional — the functional-vs-card
+  mismatch is much smaller here; reported as a finding about the prediction.
+- **P10 Spec-B for IG / P11 instrument dropout — NOT ADJUDICATED** (not
+  scientific failures). The IG daily build failed FAIL-CLOSED: 659,028 urls
+  (1.27%; full-file Codex census — the builder's 41,256 was one of 16 hash
+  partitions) carry conflicting identity, essentially all username-only,
+  same url/date/title, near-identical interactions — one content item
+  attributed to 2–4 accounts (Instagram Collab structure). Two issues:
+  (a) the registered global-`url` dedup encodes the WRONG observational unit
+  (it conflates repeated extraction snapshots with multi-endpoint
+  attributions; the endpoint unit is `(user_name,url,date)`); (b) the A2.1
+  EXACT-reconciliation target (`ig_hm_totals_ts.parquet`) was itself built by
+  no-dedup raw aggregation, so a correct dedup'd build could never match it —
+  the gate was infeasible regardless. A corrected build (endpoint key,
+  collapse snapshots keep-max, preserve same-url/different-user, never merge
+  on display `account`, preserve zero-interaction presence, quarantine the
+  lone date anomaly) is chosen from data semantics — never from whether it
+  improves P10/P11 — is EXPLORATORY/sensitivity for 2023, and needs fresh
+  preregistration on an untouched period (2024) for confirmatory status.
+  OWNER decision; not executed. See `PHASE1_IG_BUILD_FINDING.md`; Codex audit
+  artifacts on T9 `raw_small/instagram/_conflict_audit_20260716/`.
+
+**Reading.** The generative core transports to an independent metric where it
+counts most: the hardened established-departure deficit (P7, the frontier
+finding), the b≈1 amplitude law (P5), era-dominant movement (P4b), and the
+at-par movement gate (P6) all hold. The narrower shape predictions do not —
+the s-trend is era-driven but non-monotone (P4a), and the VR excess is
+card-dominated not functional (P9b). The FB head-law overshoot is absent
+(P8), reinforcing it as FB-measurement-specific. Nothing here is confirmation
+(Wikipedia remains that); it is consistent cross-metric replication of the
+mechanism with two clean prediction misses recorded as findings. The IG 2023
+capability is deferred pending an owner decision on the corrected endpoint-
+level construction.
