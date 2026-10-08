@@ -20,7 +20,7 @@ jobs:
       # pandas 3.0.6, green on 2.3.3. The rankdiff package itself passes on
       # both. Lift the pin only together with a research-track fix.
       - name: Install dependencies
-        run: python -m pip install numpy "pandas<3" scipy matplotlib pyarrow zstandard pytest
+        run: python -m pip install numpy "pandas<3" scipy matplotlib pyarrow zstandard duckdb certifi psutil pytest
       - name: Research-line regression suite
         run: python -m pytest tests/ -q
       - name: rankdiff package tests
