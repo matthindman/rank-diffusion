@@ -22,3 +22,10 @@ Quick rules (full contract in the skill):
 - Head-churn metrics need bands (seed SD ±0.15); reps ≥ 20 for head claims.
 - Append dated sections to MODEL_STATUS.md; never rewrite history.
 - Frozen specs/thresholds/protocols are owner-gated — ask before changing.
+- Package track (`Python/rankdiff`, `R/rankdiff`): governed by
+  `PACKAGING_ROADMAP.md`. The packages ship stabilized model generations and
+  lag the research line BY DESIGN — never edit them to chase a research
+  result, never let packaging work touch `llm_fitting/` or frozen specs, and
+  preserve their existing structure, README text, and authorship metadata.
+- Repo upkeep (moving files, tests/CI, packaging trees, docs, git surgery):
+  read `.claude/skills/repo-maintenance/SKILL.md` first.

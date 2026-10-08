@@ -9,9 +9,12 @@ intake, or paper work, read these in order:**
    in full, every session.** It encodes the working method, the frozen
    per-platform specs, the pitfall catalogue, and the current agenda.
    Companions in the same directory: `data-intake` (raw-data → validated
-   panel procedure) and `model-status-authoring` (how to write the canonical
-   record). The same three skills are mirrored at `.agents/skills/` for
-   tools that read that path — the `.claude/skills/` copies are canonical.
+   panel procedure), `model-status-authoring` (how to write the canonical
+   record), and `repo-maintenance` (repository layout, tests/CI, packaging
+   trees, git hygiene — read before restructuring files, editing
+   packaging/CI/docs, or any git surgery). The same skills are mirrored at
+   `.agents/skills/` for tools that read that path — the `.claude/skills/`
+   copies are canonical.
 2. `llm_fitting/MODEL_STATUS.md` — the canonical record of results. Newest
    dated §2 subsections supersede older ones. All numbers live here, not in
    your memory.
@@ -46,6 +49,27 @@ intake, or paper work, read these in order:**
   reproduction commands). Never rewrite history; supersede explicitly.
 - Frozen specs, thresholds, defaults, and the confirmation protocol are
   owner-gated. If a task seems to require changing them, stop and ask.
+
+## The package track (`Python/rankdiff`, `R/rankdiff`)
+
+The production packages are a separate track from the research line, with
+their own rules — read `PACKAGING_ROADMAP.md` before touching them. Digest:
+
+- The packages ship **stabilized model generations** (currently the v4.3
+  permanent-transitory model) and lag the research line **by design**. Flow
+  is one-way, research → package, in owner-declared "graduations" — never
+  edit package internals to match a research result, and never let packaging
+  work modify `llm_fitting/`, `tests/` defaults, or frozen specs.
+- Preserve the packages' existing structure, naming, README text, and API
+  conventions — they are deliberate design choices; extend and correct
+  rather than rewrite.
+- Authorship/attribution metadata (DESCRIPTION `Authors@R`, pyproject
+  `authors`, LICENSE) is load-bearing — never drop or placeholder an author
+  when copying or consolidating trees.
+- `R/rankdiff` is the canonical R tree; the old `rankdiffR/` snapshot was
+  merged back and now lives in `archive/rankdiffR/` (reference only).
+- The legacy guard and the full pytest suite must stay green at every
+  commit on this track too.
 
 ## Environment notes
 
