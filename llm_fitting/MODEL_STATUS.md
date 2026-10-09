@@ -4266,3 +4266,100 @@ files used. Software checks executed from repo root:
 /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m pytest tests/ -q
 /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m pytest Python/rankdiff/tests -q
 ```
+
+
+## 2z-ag. 2026-10-08 — WD/T9 preservation audit: transfer IN PROGRESS; no scientific evaluation or model change
+
+**Question.** Owner requested a careful project-record review and preservation
+on the SSD of useful data still confined to the spinning WD drive. The data
+intake, stochastic-modeling, record-authoring and maintenance contracts were
+read, together with the relevant frozen protocols and newer IG/research plans.
+
+**Measured storage state.** Both drives are mounted and `data/ssd` resolves to
+T9. A non-hidden-file inventory found 4,131 WD files / 4,166,925,464,679 bytes
+and 3,173 SSD files / 312,263,013,442 bytes, with no scan errors. The 98 Reddit
+monthly aggregates (49 comments, 49 submissions, December 2018–December 2022)
+are present; latest processing records are all `ok`, errors zero. Both
+registered comments weekly/boundary files independently match the hashes in
+`runs/2026-07-12_confirmation/restart/MANIFEST.sha256`; these two files were
+missing from the main SSD manifest, not from the disk.
+
+**Preservation decision.** The owner's broader preservation request now includes
+remaining CrowdTangle CSV/TSV/consolidated/helper/backup exports whose overlap
+has not been proven, plus the one unpaired backfill TSV and debug log. The
+frozen plan copies 842 files / 199,032,451,889 bytes and then verifies previously
+manifested SSD files. Existing raw-copy sources account for 1,178 files /
+242,076,327,863 bytes. The remainder stays on WD under the established archive
+policy (Reddit raw/fallbacks, paired backfill TSVs, images, installers). Raw
+Reddit still matters for future fields absent from aggregates; WD is not
+made disposable. Projected storage stays below 600 GB with over 40% free.
+
+**Contact and scope.** New exports are copied as opaque bytes, not parsed or
+scored. Their export dates are not asserted to be observation dates. Preserved
+`exclude/bad_data` files retain that source label and are not validated inputs.
+No new scientific analysis, aggregation, universe selection, allocation, or
+model evaluation occurred. IG P10/P11 remain NOT ADJUDICATED, and the July 18
+allocation plan remains unimplemented. Wikipedia's January 2025 raw/hourly,
+tail-sample and scratch files were inventoried only; no final daily/weekly
+panel is present. Its `2099-01` directories contain no ordinary files; the
+existing tail samples still require a separate exposure audit before an
+untouched-data claim.
+
+**Execution.** Added an additive preservation runner with source-stream SHA-256,
+flushed staging writes, independent destination rereads, refusal to overwrite
+conflicts, per-file manifest updates and an append-only verification log.
+Original files remain intact. Audit artifacts and the pre-run manifest are
+under T9 `manifest/drive_audit_20261008/`; new raw copies preserve their WD
+paths under `raw_small/wd_preserved_20261008/`. macOS identifies the current
+T9 USB link as 480 Mb/s (WD: 5 Gb/s), explaining the initial 10–15 MB/s
+verified-copy throughput. A safe stop for a cable change has been offered.
+
+**Validation and verdict.** Pre-transfer research + package suites: 185 passed,
+13 subtests passed, one existing fixture dtype warning. Synthetic preservation
+checks passed: exact byte copy, source retained, hash recording, resume, and
+conflicting destination refusal. Empirical legacy guard not rerun (no model
+changes). No scientific predictions were tested; no OOS or adoption verdict
+is claimed. Defaults, protocols, thresholds and historical results unchanged.
+**TRANSFER IN PROGRESS, NOT COMPLETE** at this entry; later completion or
+failure must be reported explicitly. Existing unrelated working-tree changes
+were preserved and no commit was made.
+
+**Reproduction / operational detail.** See the dated preservation section in
+`DATA_PHASE2_REPORT.md`, including all dispositions, storage budget, transfer
+log and invocation:
+
+```sh
+/usr/bin/caffeinate -dims /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u scripts/data_wrangling/preserve_wd_sources_20261008.py /private/tmp/rankdiff-drive-audit-20261008 --execute
+```
+
+
+**§2z-ag operational addendum, 2026-10-08 — cable disconnect recovered;
+transfer still IN PROGRESS.** Owner reseated the partly disconnected T9 cord.
+The initial worker stopped on a staging-write I/O error; 43 verified records
+survived remount. The interrupted staging file was preserved separately,
+completed files were rehashed, and the copy resumed successfully with
+`--recheck-completed`. T9 now negotiates 10 Gb/s rather than 480 Mb/s; initial
+resumed throughput: 6.31 GB in about 1.6 minutes. No source/canonical-file
+overwrite, new-data analysis, protocol change or completion claim. Exact
+recovery details and current command/log are appended to DATA_PHASE2_REPORT.
+
+
+**§2z-ag completion addendum, 2026-10-08 — PRESERVATION COMPLETE; supersedes
+this section's IN PROGRESS status.** The resumed worker completed at 18:49:43
+Japan time (09:49:43 UTC), exit 0. All 842 new files (199,032,451,889 bytes)
+passed source-stream/destination-reread SHA-256 verification. All 1,293 original
+main-manifest files (255,340,648,275 bytes) independently matched their recorded
+hashes; no post-restart checksum failures. Final audit: 2,135 manifest entries
+agree with completed verification records, 2,020 selected WD sources retain
+their inventoried existence/size/mtime, and the two registered comments inputs
+match the confirmation archive separately. T9 has 487.86 GB free (48.78%);
+both storage limits pass. The single interrupted 250.5 MB staging artifact is
+preserved separately and is not a scientific input. No source deletion,
+scientific evaluation, default change or protocol amendment. Raw Reddit and
+other documented exclusions remain WD-only; the drive is not disposable.
+Exact scope, evidence, failures and reproduction remain in the dated completion
+section of DATA_PHASE2_REPORT and T9 `manifest/drive_audit_20261008/`.
+
+Final post-recovery regression check: 185 tests and 13 subtests passed in
+72.93 seconds; the same preexisting fixture dtype warning remains. No commit
+was made; unrelated working-tree changes were preserved.
