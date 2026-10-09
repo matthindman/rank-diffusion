@@ -4186,3 +4186,83 @@ card-dominated not functional (P9b). The FB head-law overshoot is absent
 mechanism with two clean prediction misses recorded as findings. The IG 2023
 capability is deferred pending an owner decision on the corrected endpoint-
 level construction.
+
+## 2z-af. 2026-10-08 — Project re-entry and literature-based research agenda: PLANNING ONLY; no model change adopted
+
+**Diagnosis.** Owner requested an assessment against joint structural stability,
+individual movement prediction, and simplicity, plus extensive methodological
+research and a next-step plan. Read the canonical skills, this record, the
+confirmation protocol, relevant implementation paths, the July 18 IG design,
+and the October 7 reply-tree/x-collection review. The latest substantive
+measurements remain §§2z-q/ac/ae; this session produced no new empirical fit,
+scorecard, OOS result, or data-intake result.
+
+**Evidence synthesis (historical results, not reruns).** The architecture has
+substantial pooled-mobility and conditional ladder-maintenance support. It
+does not yet establish endpoint-specific probabilistic forecasting skill or
+minimal effective complexity. The §2z-q confirmation verdict remains MIXED
+EVIDENCE: E2 passed on the registered single future block, E1 parameter
+transport failed. The long submissions P6 passed within tolerance while its
+point error was worse than the historical-mobility baseline. The established
+departure deficit in §§2z-ac/ae remains the strongest replicated dynamical
+target. Simulated medians lying in bootstrap CIs are not predictive-interval
+coverage, and the current pooled proper scores do not establish individual
+conditional skill.
+
+**Interpretation clarification, superseding only the stronger causal reading
+at the end of §2z-ae.** Head-share excess was recorded on FB AND on the
+comments extension (§2z-q E5); its absence/opposite point-estimate sign on
+submissions demonstrates heterogeneity, not identification of a uniquely
+Facebook measurement cause. All historical measurements and verdicts remain
+unchanged. Likewise, a returnable rank crossing is not necessarily an
+observed return, and finite nonreturn alone does not identify permanent death.
+
+**Change.** Added two planning documents:
+
+- [RESEARCH_AGENDA_2026-10-08.md](RESEARCH_AGENDA_2026-10-08.md): assessment,
+  evidence table, ordered experiments, decision rules, validation design,
+  and analytical checks.
+- [LITERATURE_REVIEW_2026-10-08.md](LITERATURE_REVIEW_2026-10-08.md): 31
+  annotated primary research/methods sources, search scope, access limits,
+  and explicit distinctions between source findings and proposed applications.
+
+The proposed order is own-model recovery and forecast-state coherence;
+knot-aligned identity/exit/return audit; refitted compression and ablations;
+a bounded comparison of mechanisms and baselines; explicit structural
+stationarity tests; then reserved distinct-platform transport. Earnings-panel
+identification, state-space recovery, capture–recapture observation distinctions,
+and proper predictive scoring are the main additions to the existing rank-law
+inspirations. The x-collection review supplies selection/ablation discipline,
+not its branching-process architecture.
+
+**Pre-registered predictions scored:** NONE. Proposed recovery and forecasting
+comparisons are unexecuted; numerical tolerances and any new acceptance rule
+must be specified before those experiments. The agenda is not a frozen
+protocol, owner adoption, or permission to change defaults. The current
+movement gate remains the adoption criterion. Extra endpoint scores are
+proposed diagnostics and claim checks until separately registered otherwise.
+
+**Validation for this documentation session:**
+
+| check | result |
+|---|---|
+| Research regression suite, registered Python 3.11, repo root | 177 passed, 13 subtests passed; one existing fixture dtype FutureWarning |
+| Python package suite, same interpreter/root | 8 passed |
+| Legacy empirical guard | Not rerun; no simulator/default changes made in this session |
+| New empirical evaluation / new-data analysis | Not run |
+| Frozen protocol, estimator, model defaults, packages | Unchanged by this session |
+
+**Verdict: PLANNING ONLY.** No new mechanism adopted and no scientific pass
+claimed from software tests. Existing unrelated staged/unstaged work was
+preserved; the new documents and this appended entry are left for review in
+the mixed working tree. No active-spec or skill table was changed, because
+the agenda remains a proposal rather than an adopted re-freeze.
+
+**Reproduction / source trail.** The two documents identify the status
+sections, implementation functions, external papers, and cross-project review
+files used. Software checks executed from repo root:
+
+```sh
+/Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m pytest tests/ -q
+/Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m pytest Python/rankdiff/tests -q
+```
