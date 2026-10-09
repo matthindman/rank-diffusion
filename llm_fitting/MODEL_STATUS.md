@@ -4363,3 +4363,117 @@ section of DATA_PHASE2_REPORT and T9 `manifest/drive_audit_20261008/`.
 Final post-recovery regression check: 185 tests and 13 subtests passed in
 72.93 seconds; the same preexisting fixture dtype warning remains. No commit
 was made; unrelated working-tree changes were preserved.
+
+
+## 2z-ai. 2026-10-08/09 — Second, independent research agenda with literature notes (PROPOSED, not adopted); the uncommitted July record, package-track Phase 1 and July scripts COMMITTED; the research suite found NOT pandas-3 compatible (CI pinned below 3). PLANNING + REPOSITORY RECORD ONLY — no model change, no fit, no new-data contact
+
+**Question.** The owner's re-entry request recorded in §2z-af was also given
+to a second model (Claude Opus 5.5) in a concurrent session. The owner then
+directed that session to commit the outstanding July work, the package-track
+batch, and the 2026-10-08 planning and preservation records.
+
+**Planning output (nothing adopted).**
+- `RESEARCH_AGENDA_CLAUDE_2026-10-08.md`, prepared independently of §2z-af's
+  agenda; its Part F lists where the two agree and differ. Neither is
+  adopted. §2x remains the binding agenda until the owner records otherwise.
+- `lit_review/research_notes/Rank dynamics modeling best practices/`: six
+  commissioned literature notes and the fact sheet used to brief them.
+  Citations carry verification tags; several searches ran out of budget, so
+  primary sources must be re-read before anything is cited in the paper. A
+  consolidated report and a memo on the x-collection review are held out of
+  this commit (public repository; owner's decision).
+
+The agenda's proposals are hypotheses. Its central ones — that the slow layer
+is too stationary, that the FB head-share overshoot follows from unbounded
+log-scale t shocks, that the band profiles compress to a few scaling
+exponents — are CONJECTURES with named discriminating measurements, none run.
+
+**Clarifications of the record (no historical number changes).**
+1. Departure events (§2z-ac, §2z-ae P7): the cohort is train-window
+   absence-penalized permanent rank ≤ K/2 (or K/4); the event is an exit from
+   the current top-K at t+1; a "crossing" is an entity still observed below
+   K. No duration or return-time distribution for crossings is on record
+   (agrees with §2z-af). The literature brief first written in this session
+   said departures "come back"; a researcher caught it, and the fact sheet
+   carries the dated correction.
+2. FB Era A is 86 complete weeks (`instrument_eras.py`); 88 is the legacy
+   cutdown panel.
+
+**Code readings that bear on interpretation (verified in source 2026-10-08;
+not new measurements).**
+- `--dist-scores` scores the POOLED simulated displacement law against the
+  pooled train law (declared in the `rankdiff_kalman.py` comment). Recorded
+  "CRPS skill ≈ 0" values are therefore statements about pooled displacement
+  distributions. No recorded evaluation scores endpoint-level predictive
+  skill.
+- v_i scales σ_perm only when `--mix-hetero` is on, in `simulate` and in
+  both cohort simulators; the frozen FB and submissions movement stacks do
+  not list that flag.
+- Fast innovations are unit-variance Student-t with no bound (`_tdraw`),
+  while S(k) is computed on `expm1(X)`. §2z-v's note that seed noise "dies"
+  under Gaussian innovations is what an ill-conditioned exponential moment
+  would produce — conjecture until the agenda's head-law two-by-two is run.
+
+**Finding — the research suite is not pandas-3 compatible.** In a fresh
+environment built from the CI workflow's dependency list (pandas 3.0.6,
+numpy 2.4.6, pyarrow 25.0.1, pytest 9.1.1): 22 failed, 153 passed — 21 in
+`tests/test_a6_runners.py`, 1 in `tests/test_prereg_runners.py`; first error
+`TypeError: Cannot interpret '<StringDtype(na_value=nan)>' as a data type`
+at `check_extension_panel.py:108`. The same environment with pandas 2.3.3:
+175 passed + 13 subtests. The package suite passes on both (8). No recorded
+result is implicated: the failures are exceptions under pandas 3, and the
+registered interpreter has pandas 2.2.2 / numpy 2.0.1. Consequences:
+`.github/workflows/ci.yml` pins `pandas<3` (bdd1042); the analysis
+interpreter must stay on pandas 2.x; the fix touches registered intake
+tooling and is OWNER-GATED (flagged, not done).
+
+**Change.** No model, estimator, default, threshold or protocol change.
+Repository record only, all owner-directed, on main:
+- July record: f6d8c91 (bounded intake-gate rewrite + 3 tests), ce9d84f
+  (§2z-ae, run archive, `subs_forensics.py`).
+- Package track Phase 1 as executed 2026-07-07: 0383785 (Python), 25ff0a2
+  (R; `rankdiffR/` → `archive/`), 0d709b8 (roadmap, repo-maintenance skill,
+  CLAUDE/AGENTS pointers), bdd1042 (CI + ignore rules).
+- July scripts and plan: 6560d4b (Reddit long-panel builder provenance and
+  the DATA_PHASE2_REPORT section of 2026-07-16), b1f6ce3 (Wikipedia pilot
+  tooling — no modeling contact; protocol still to be frozen), 3e55e22 (IG
+  allocation plan, unimplemented).
+- 2026-10-09: §2z-af with its two planning documents; §2z-ag with the
+  preservation runner and report sections; both package LICENSE files now
+  name both authors (owner instruction); this entry with the agenda and
+  notes.
+
+Dating notes were added to `PACKAGING_ROADMAP.md` and the IG plan at commit
+time. §2z-ah (the Reddit bridge acquisition, IN PROGRESS in another session,
+together with the compression work it records) precedes this entry in the
+working copy and is committed when that acquisition completes — hence the
+gap in lettering in the committed file.
+
+**Pre-registered predictions scored:** NONE. The agenda lists directional
+predictions for its proposed measurement round; they are unregistered until
+a dated measurement plan exists.
+
+**Validation.**
+
+| check | result |
+|---|---|
+| Each of the nine 2026-10-08 commits, clean checkout of its own tree | research suite 175 passed + 13 subtests (177 once the Wikipedia pilot tests are in); package suite 8 passed from 0383785 on |
+| 2026-10-09 commits (documents, one runner script, licence text) | both suites re-run on a clean checkout before commit: 177 + 13 and 8 |
+| R package | `R CMD check --no-manual` Status OK; with `--as-cran`, NOTEs only; testthat 75 passed (re-run 2026-10-09 with the two-holder LICENSE) |
+| Python package | wheel builds and contains the toy parquet and LICENSE |
+| CI workflow | not yet run on GitHub when this was written; its Python steps reproduced locally in a fresh environment (green with the pin); R job arguments run locally |
+| Legacy guard (`minimal_rankdiff.py facebook`, defaults) | 14/15, churn 0.013 (2026-10-08, twice) |
+| New empirical evaluation / new-data contact | none |
+
+**Verdict: PLANNING + REPOSITORY RECORD ONLY.** Nothing adopted; frozen
+specs, protocols and the binding claim set are unchanged.
+
+**Reproduction.**
+
+```sh
+python -m pytest tests/ -q
+python -m pytest Python/rankdiff/tests -q
+# pandas-3 failure, in a scratch venv outside the repo:
+python -m venv /tmp/v && /tmp/v/bin/python -m pip install numpy pandas scipy matplotlib pyarrow zstandard duckdb certifi psutil pytest
+/tmp/v/bin/python -m pytest tests/ -q    # 22 failures on pandas 3.0.6; green after: pip install "pandas<3"
+```
