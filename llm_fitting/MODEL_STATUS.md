@@ -4365,6 +4365,79 @@ Final post-recovery regression check: 185 tests and 13 subtests passed in
 was made; unrelated working-tree changes were preserved.
 
 
+## 2z-ah. 2026-10-08 — Missing Reddit bridge located; raw acquisition IN PROGRESS, no analytical contact
+
+Owner requested January 2023–June 2024 comments/submissions be found and
+downloaded onto WD. The maintainers' combined Pushshift/Arctic Shift release
+was located on Academic Torrents (infohash
+`ba051999301b109eab37d16f027b3f49ade2de13`), with 36 selected month/type files
+and exact lengths from the torrent metadata. Comments: 542,245,694,286 bytes;
+submissions: 276,592,887,959 bytes; combined: 818,838,582,245 bytes. Initial WD
+free space: 807,083,687,936 bytes, insufficient for the full request.
+
+Comments-only acquisition started in the new WD directory
+`pushshift/bridge_2023-01_2024-06/`, with checksummed, resumable torrent
+transfer; approximately 1.8 GiB of payload was observed after startup.
+Submissions await the owner's storage choice. A specific 88.32 GB folder of
+WD Facebook CSV copies already verified on T9 was proposed for removal;
+**no deletion authorized or performed at this entry**. Existing raw sources
+are untouched. The download request authorizes adding files to WD, not
+changing frozen scientific specifications or retrospectively classifying the
+bridge as confirmation evidence.
+
+Source provenance is material: Pushshift through March 2023, Arctic Shift
+from April 2023, and a documented 36-hour second retrieval/score update from
+November 2023. Raw preservation is not scientific continuity. Source and
+score-timing forensics must precede use in a karma panel. Only web/source
+metadata, archive listings/lengths, and opaque transfer bytes were accessed;
+no rows were interpreted, no aggregation/fitting/evaluation occurred, and no
+predictions or adoption gate were scored. Defaults/protocols unchanged.
+
+The former PullPush HTTP webseed returned 403; the maintained torrent is
+receiving data. Its initial absent-file integrity warning and missing fresh
+DHT-state file are recorded in the operational report, not suppressed or
+misreported as verified downloads. Status: **IN PROGRESS; not acquired in
+full and not validated for modeling**. DATA_PHASE2_REPORT records the exact
+source URLs, torrent SHA-256, selection indices, configuration, command,
+provenance cautions and storage decision. Acquisition manifests/logs and
+upstream documentation snapshots are saved beside the WD download. No commit
+or code changes in this acquisition step; earlier 185-test/13-subtest green
+regression result remains the last software check, not a data-validation result.
+
+**§2z-ah storage addendum, 2026-10-08 — owner requested compression first.**
+The pending storage choice above is superseded by authorized lossless
+compression of WD `reddit-uncompressed/RS_2022-12.json` (139,650,513,046 bytes).
+The torrent paused cleanly at 21:18:19 Japan time with resumable state saved.
+Compression is IN PROGRESS; no saving is yet claimed. Full decoded SHA-256
+and byte-count agreement and unchanged source metadata are required before
+replacing this single original with its `.json.zst` representation. No Facebook
+CSV removal is authorized/performed. Pre-change checks: 185 tests/13 subtests
+passed; four compression safety checks passed. This is opaque byte storage
+maintenance only, with no new analytical contact or scientific changes.
+DATA_PHASE2_REPORT and the beside-source compression log retain the procedure.
+
+**§2z-ah compression completion addendum, 2026-10-08, 22:11:02 Japan time.**
+Compression and independent full decode verification passed, exit 0:
+139,650,513,046 bytes became 15,147,456,307 bytes, saving 124,503,056,739 bytes.
+Decoded count and SHA-256 equal the original source stream; source metadata
+remained unchanged throughout. The verified `.json.zst` and audit sidecar
+replace the single uncompressed JSON, preserving every decoded byte. No
+Facebook CSV removal. Exact checksum, paths and command are in
+DATA_PHASE2_REPORT, with evidence on WD and a copied verification record in
+T9's preservation audit. This supersedes IN PROGRESS for compression only.
+
+Post-compression WD free space was 713,161,048,064 bytes. Accounting for
+218,347,704,451 bytes already allocated to selected files and conservatively
+allowing 45,075,407,792 additional boundary bytes leaves a projected
+67,594,762,478 bytes free after the entire requested bridge. Both comments
+and submissions (36 files, indices 206–223 and 441–458) were therefore
+resumed with persistent state and integrity checking. Acquisition remains
+IN PROGRESS; no completed-download or scientific-continuity claim. Final
+software checks: 189 tests and 13 subtests passed; the preexisting dtype
+warning remains. No rows interpreted, no panels changed, no fitting or
+evaluation, no frozen-default/protocol changes, and no commit.
+
+
 ## 2z-ai. 2026-10-08/09 — Second, independent research agenda with literature notes (PROPOSED, not adopted); the uncommitted July record, package-track Phase 1 and July scripts COMMITTED; the research suite found NOT pandas-3 compatible (CI pinned below 3). PLANNING + REPOSITORY RECORD ONLY — no model change, no fit, no new-data contact
 
 **Question.** The owner's re-entry request recorded in §2z-af was also given
@@ -4477,6 +4550,69 @@ python -m pytest Python/rankdiff/tests -q
 python -m venv /tmp/v && /tmp/v/bin/python -m pip install numpy pandas scipy matplotlib pyarrow zstandard duckdb certifi psutil pytest
 /tmp/v/bin/python -m pytest tests/ -q    # 22 failures on pandas 3.0.6; green after: pip install "pandas<3"
 ```
+
+## 2z-aj. 2026-10-11 — Reddit bridge restarted after owner stop; acquisition IN PROGRESS, no analytical contact
+
+The owner requested a status update, restart and completion estimate for
+§2z-ah's 36-file January 2023–June 2024 raw bridge. Both drives were mounted;
+no downloader was active. The October 9 log ended at 09:41:52 Japan time
+with an emergency shutdown, reporting 307/762 GiB (40%). About 489 GB of the
+818,838,582,245-byte selected corpus remains, subject to rechecking saved
+pieces. File allocation is not downloaded content.
+
+The torrent hash and saved state were checked; state backups and a fresh
+allocation-aware budget were saved under the existing acquisition directory.
+WD had 146,578,333,696 bytes free; accounting for remaining selected-file
+allocation and conservative boundary overhead leaves a projected
+67,837,713,976 bytes free at completion. The exact same full selection,
+resume configuration and integrity check were restarted, with a new stdout
+log and `caffeinate` attached. No original sources were removed.
+
+Prior-run sustained rates were 9.18/11.58/10.82 MB/s over its final
+1/3/6-hour windows, or 7.70 MB/s over the entire session including startup.
+The owner-facing estimate is provisional: 14–22 hours including startup
+checks, late October 11 to the morning of October 12 Japan time, assuming
+similar connectivity and uninterrupted operation. It is not a new-session
+speed measurement or a completion claim. Exact logs, budget and commands
+are in DATA_PHASE2_REPORT and WD `acquisition/restart_20261011*.json`.
+
+Validation before restart: 189 tests and 13 subtests passed; existing fixture
+dtype warning only. No model code, scientific defaults, protocol or panel
+changes; no record parsing, aggregation, fitting, or evaluation. Predictions
+and adoption gates: not applicable to opaque raw transfer. Source-transition
+caveats in §2z-ah continue to bind. Verdict: **acquisition IN PROGRESS**.
+
+Restart confirmation: launched at 09:29:47 Japan time; at approximately
+09:32 the client and keep-awake process are active, saved state is being
+persisted, and integrity checking is under way with 307/762 GiB reported.
+Measured WD throughput during two five-second check samples was
+104.96/109.97 MB/s (disk activity, not network speed). Post-restart software
+check: 189 tests and 13 subtests passed, existing warning only. New-session
+network speed remains unmeasured; the ETA above remains provisional.
+
+**§2z-aj correction, 2026-10-11 approximately 15:28 Japan time — actual
+transfer restored after owner challenge.** The morning restart did not
+resume network transfer: `check-integrity=true` forced a startup disk scan
+and held connections/download speed at zero for nearly six hours. The
+earlier ETA understated this overhead and is superseded. A running process
+and active disk reads were insufficient evidence of a resumed download.
+
+The scan was stopped gracefully, saved control state was verified
+byte-identical to the October 9 state backed up before the restart, and
+`full_bridge.conf` was corrected to `check-integrity=false` for normal
+saved-state resumption. Standard hash checks on incoming BitTorrent pieces
+remain active (verified in aria2 1.37.0 source); the interrupted extra scan
+is not claimed as completed validation. Configuration/control backups and
+the diagnosis are retained in WD acquisition metadata.
+
+Actual new network payload is now measured: exact client bytes rose from
+330,319,167,488 to 332,729,827,328 by approximately 15:27:52, a
+2,410,659,840-byte increase, with seven seed peers and recent rates about
+13–20 MB/s. New log:
+`acquisition/download-resume-fixed-20261011.stdout.log`. No errors reported.
+DATA_PHASE2_REPORT records the correction, source evidence and resume
+procedure. No model/code/default/protocol changes; no row parsing or
+analysis. Verdict: acquisition IN PROGRESS, **actual transfer confirmed**.
 
 
 ## 2z-ak. 2026-10-11 — Skills REVISED for current frontier models (owner-directed): core skill cut from about 7,000 to about 3,400 tokens with purpose and decision rights first; references, one shared entry file, an exposure ledger and a gate ledger added; frozen stacks, Gate v1 and the registered protocols UNCHANGED. In the working tree, not committed — owner review requested
@@ -4629,6 +4765,96 @@ owner's to correct. §2z-ah and §2z-aj, which the exposure ledger and the
 data-intake skill cite for the Reddit 2023–24 archive, are another
 session's in-progress entries and are not in this commit; they and the
 gap in lettering are resolved when that acquisition is recorded complete.
+
+## 2z-al. 2026-10-11 — WD USB/read failure diagnosed; download recovery IN PROGRESS pending physical reconnection
+
+Provenance: OpenAI Codex (GPT-6), 2026-10-11; work started from
+`c5df907ee25f73d77730cd8e89f5c32590e82285`, whose data-intake,
+model-status-authoring and repo-maintenance instructions governed this work.
+
+The owner requested diagnosis, repair and download resumption after §2z-aj's
+corrected transfer subsequently stopped. The download process exited with
+code 17. Its last log modification was 16:40:18 Japan time; saved control
+metadata showed 16:39:23. Neither file's contents were readable at this
+check, so no new completion percentage is asserted.
+
+Measured failure: logs, configuration and saved resume state all returned
+errno 5 (input/output error), including outside the filesystem sandbox.
+The system log records WD `disk4s2` I/O errors and USB host-controller errors
+beginning at 16:40:17. The WD still enumerated at USB 5 Gb/s, but this did
+not establish working storage access. About 131.7 GB remained free according
+to mounted-volume metadata. No active downloader or open files on WD were
+found. The physical failing component is not isolated; cable, port,
+enclosure, drive and filesystem health are not adjudicated by these logs.
+
+Recovery attempts: normal volume unmount failed; normal whole-drive unmount
+failed; forced whole-drive unmount succeeded after the no-open-files check.
+Normal remount and read-only remount both failed. `diskutil verifyVolume`
+invoked non-writing `fsck_hfs -fn -x`, which failed immediately with exit 8
+and diskutil -69845. This is a failed check, not a diagnosis of a specific
+repairable filesystem defect. No repair-mode fsck, formatting, erasure or
+source deletion was performed. The volume was left unmounted and the owner
+was asked to physically disconnect/reconnect WD, preferably using another
+cable/port, before any download writes resume.
+
+Evidence is stored locally because WD is inaccessible:
+`/private/tmp/wd-recovery-20261011-diagnosis.json`,
+`/private/tmp/wd-recovery-20261011-system.log`,
+`/private/tmp/wd-recovery-20261011-usb.log` and the USB device inventory.
+Data contact is recorded in EXPOSURE_LEDGER: storage/log metadata only;
+bridge status remains SEALED, no rows interpreted or scientific work run.
+
+Software health check passed: research 182 tests plus 13 subtests; package
+8 tests; default legacy guard 14/15, churn 0.013. Existing fixture warning
+only. No model/software/default/protocol change. Download NOT restarted
+while its destination and resume state remain unreadable. Verdict:
+**recovery IN PROGRESS; physical reconnection required to continue**.
+
+Commands used on the observed device identity (re-identify after reconnect;
+never assume the same disk number): `diskutil info`, `diskutil unmount`,
+`diskutil unmountDisk`, `diskutil unmountDisk force`, `diskutil mount`,
+`diskutil verifyVolume`, `diskutil mount readOnly`. The intended resumed
+download remains §2z-aj's corrected full selection with startup rescan off,
+normal received-piece checks, preserved resume state and caffeinate.
+
+**§2z-al recovery addendum, 2026-10-11 approximately 17:57 Japan time —
+drive access restored; actual download resumed.** On the owner's retry
+request, the WD was mounted again and configuration, control state and
+logs were readable. The volume UUID matched
+`F86ED844-5004-3419-B776-CE777D5F8FAF`; write verification also succeeded.
+The recovered saved control file was 48,960 bytes, SHA-256
+`89221f81f4d9678364f7f88651e7841b059e23b5456d317c4efacc8f188ef07e`.
+The now-readable prior log ends at 16:38:49 with approximately 366.4 GB
+received; this supersedes the earlier inability to read the saved progress,
+not the observed USB error diagnosis. The physical faulty component remains
+unidentified, and successful resumption is not a full drive-health verdict.
+
+Fresh budget: 131,698,802,688 bytes free; 18,812,155,131 additional selected
+allocation and 45,052,552,112 conservative boundary allowance leave
+67,834,095,445 projected free bytes. Control/config backups and this budget
+are saved in WD acquisition metadata with the `reconnected_20261011_1755`
+identifier. The initial sandboxed disk-info query was denied; the same
+read-only query succeeded with approved disk-service access. No raw values
+were read; EXPOSURE_LEDGER remains SEALED.
+
+The download launched at 17:56:58 in a user-owned Terminal window, with
+caffeinate and the corrected `check-integrity=false` saved-state resume.
+New payload was directly observed: 366,436,827,136 bytes at startup became
+366,697,381,888 by 17:57:29, with live rates approximately 14–15 MB/s.
+Progress is now also logged on the Mac at
+`/private/tmp/reddit-reconnected-20261011-1755.stdout.log`, so a WD failure
+will not hide the console diagnostics. The launch script is
+`/private/tmp/reddit-resume-reconnected-20261011-1755.zsh`; it checks the
+volume UUID, resume state and selection and refuses a second active client.
+Terminal window 21816 is the observed user-owned process host. The CUA
+inspection tool failed to initialize, but Terminal launch and live transfer
+were independently confirmed through the completed AppleScript result,
+process listing and exact byte counters.
+
+This supersedes the earlier **recovery waiting for reconnection** status.
+Acquisition remains IN PROGRESS; no completion, independent full-file
+validation, or scientific-continuity claim. No scientific software changes;
+the same-session health check above remains the validation result.
 
 ## 2z-am. 2026-10-11 — OWNER DECISION: nothing in the sealed new-data folders is looked at until the owner gives explicit permission; a mechanical check is installed for Claude Code (list, guard, hook, note files) and verified live; no standing comparison margin set. No data values read; no model, spec or protocol change
 
@@ -4814,3 +5040,297 @@ Wikipedia pilot and future loaders should call `require_released`
 themselves, which no spelling of a command can avoid. The standing
 comparison margin (deferred by the owner, above). The exposure audit of
 Wikipedia 2025-01. None of this session's files are committed.
+
+## 2z-an. 2026-10-11 — Reddit restart FAILED on recurrent WD write error; acquisition remains IN PROGRESS but stopped
+
+**Provenance:** OpenAI Codex (GPT-6), 2026-10-11; starting commit
+`c5df907ee25f73d77730cd8e89f5c32590e82285`. Data-intake and record-authoring
+skills, including their current working-tree revisions, governed this operation.
+Owner instruction: “restart and continue.” This supersedes the running status
+in §2z-al's 17:57 recovery addendum; §2z-am independently records the earlier
+18:01 failure.
+
+**Failure and retry.** The 17:56 restart failed at 18:01:19 with errno 5,
+aria2 error 17, writing `RC_2023-05.zst`, cache piece 96057. At 21:27 the WD
+was mounted and its identity, configuration and saved control were readable.
+Free space was 131,698,728,960 bytes; the allocation-aware completion budget
+left 67,834,021,717 bytes, above the 50 GB acquisition guard. The 49,520-byte
+control file was backed up on WD and locally before launching at 21:29:33
+in the owner's Terminal with caffeinate. Its SHA-256 was
+`edc4caff28945202219c4bdaa423f1019d0a9c9e8d5da3e9a7e0b199fc4d52a3`.
+The existing 36-file selection and `check-integrity=false` were retained;
+incoming torrent pieces still undergo normal hash verification.
+
+**Measured result: FAILED.** The client counter advanced from
+368,813,965,312 to 368,878,190,592 bytes after rolling back the failed piece:
+64,225,280 additional bytes, still 45% of the client total 818,879,135,744.
+At 21:30:51 a two-second process sample showed the main thread blocked in
+`write`, reached through the torrent piece cache flush. Kernel logs showed
+repeated USB transfer errors `0xe0005000`. At 21:31:11 the client reported
+the same file, piece 96057 and errno 5/error 17 as the 18:01 failure. A
+SIGINT requested graceful shutdown; the client logged its saved session
+and exited by 21:31:14. No downloader remained on the subsequent process
+check. No sustained transfer or reliable completion ETA is established.
+The cable, port, enclosure and disk have not been isolated as the cause.
+
+**Evidence and reproduction.** Mac-local files (retained if WD becomes
+unreadable): `/private/tmp/reddit-current-restart.json`,
+`/private/tmp/reddit-restarted-20261011-212925.stdout.log`,
+`/private/tmp/reddit-restart-212925-process-sample.txt`,
+`/private/tmp/reddit-restart-212925-kernel.log`, and the pre-restart backup
+`/private/tmp/reddit-control-before-20261011-212925.aria2`.
+Launch script: `/private/tmp/reddit-restart-20261011-212925.zsh`;
+run with `/bin/zsh` only after WD access is restored and no downloader is
+active. A subsequent retry should use a fresh stdout log to preserve evidence.
+
+**Contact and validation.** Download/control/log/drive metadata only; no
+archive rows or statistics read, no source deleted, no analysis or gate
+run. EXPOSURE_LEDGER contact appended; SEALED status unchanged. No software
+or scientific defaults changed; no tests rerun for this restart and record
+update (earlier session health results remain recorded in §2z-al, and the
+other agent's newer guard tests in §2z-am). No commit made while acquisition
+and the shared working-tree changes remain unfinished. Physical connection
+attention is required before another retry; do not loop restarts on this
+repeated write failure.
+
+
+**Later retry after owner-reported cable/port change, 2026-10-11 22:48–22:50
+Japan time (still FAILED).** The owner confirmed changing the cable or port
+and explicitly requested a restart. WD UUID matched; free space was
+131,698,647,040 bytes. The saved 49,100-byte control was backed up locally
+(SHA-256 `a9614b61ec52128b00de69286165384f1b319e8e0c3c5dd8c870a6d09c2be5be`).
+Started in Terminal with caffeinate at 22:48:20 using the unchanged selection
+and resume configuration. At 22:49:30 a process sample again found the
+main thread blocked in a piece-cache `write`; kernel logs again showed
+USB errors `0xe0005000`. At 22:49:48 aria2 failed on precisely the same
+`RC_2023-05.zst` write, piece 96057, errno 5 / code 17. It saved the session
+and exited itself by 22:49:50; no stop signal was sent in this attempt.
+The final counter was 368,893,657,088 bytes, 15,466,496 beyond the preceding
+saved counter, still 45%. The changed connection did not resolve the failure;
+which physical or filesystem component is responsible remains unisolated.
+No active downloader and no reliable ETA.
+
+Evidence: `/private/tmp/reddit-new-connection-restart.json`,
+`/private/tmp/reddit-restarted-20261011-224810.stdout.log`,
+`/private/tmp/reddit-224810-process-sample.txt`,
+`/private/tmp/reddit-224810-kernel.log`, and
+`/private/tmp/reddit-control-before-20261011-224810.aria2`.
+Launch script `/private/tmp/reddit-restart-20261011-224810.zsh`.
+Download/control/log metadata only; SEALED unchanged and contact logged.
+No source deletion, raw-value contact, scientific change, test rerun or commit.
+
+## 2z-ao. 2026-10-11 — DATA OPERATION: the WD write failures are a bad disk region under `RC_2023-05.zst` (it fails reads as well as writes); download restarted without that one archive and IN PROGRESS for the other 35; the sealed-data guard is ruled out as a cause. No data values read; no model, spec or protocol change
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-11, 23:00–23:25
+Japan time for the part recorded here; started from commit c5df907. Commit
+71c7e07 (the sealed-data rule, §2z-am) was made by another session during
+this work, and its guard checked every command here. §2z-ah, §2z-aj, §2z-al
+and §2z-an in the working copy are another session's entries and may not
+yet be committed._
+
+**Owner request.** "check the WD digital drive that keeps failing to
+download the reddit archives. diagnose the problem, fix it if you can, and
+restart downloads. If downloads start OK, check every 5 minutes for a
+while"; and, during the work, "make sure that this has nothing to do with
+the guard being set up." This entry supersedes the stopped status at the
+end of §2z-an. It does not complete the acquisition.
+
+**Finding.** One fixed place on the WD disk, under the archive
+`reddit/comments/RC_2023-05.zst`, can be neither written nor read. Every
+restart since 18:01 died there because the client kept returning to the
+same unfinished piece. It is not the cable or port (§2z-an's retry after
+the connection change failed identically, as this predicts), and it is not
+the guard.
+
+| measurement | result |
+|---|---|
+| failing torrent piece (aria2 log, three runs: 18:01:19, 21:31:11, 22:49:48) | 96057 each time, errno 5, aria2 code 17 |
+| what that piece is (torrent metadata: 16 MiB pieces; file 210 spans pieces 94783–96468) | bytes 21,364,171,976–21,380,949,191 of `RC_2023-05.zst`, 75.6% into a file already at its full 28,273,907,001 bytes, so a fixed set of disk blocks |
+| writes elsewhere in the same runs | went through: the client counter rose by 2.4 GB, 64 MB and 15 MB before each failure (§2z-al, §2z-an) |
+| read test: `shasum -a 256` of the whole file, started about 23:05:50 | no error for about 290 s (nine throughput samples: eight at 52–73 MB/s, one at 107), then stalled from 23:10:41 to 23:12:57 |
+| kernel log during the stall | `disk4s2: I/O error` at 23:11:47.886 and 23:12:57.474; about 43 USB transfer errors `0xe0005000` some 3.3 s apart, the same pattern as during the failed writes |
+| what `shasum` reported | exit 0 and a digest, within 5 s of the second I/O error. It is a digest of a truncated read, not the file's hash, and is not recorded here |
+
+The sampled rates put the stall at roughly 19–22 GB into the file; the
+failing piece is at 21.4 GB. That is consistent with the write failures,
+not a measurement of the offset: the throughput was sampled, not logged.
+
+**Two things about the evidence that later sessions need.** (1) `shasum`
+does not report a failed read. It stops and prints a digest of what it
+got, with exit 0. Read from the installed source (Digest::SHA 6.02): for a
+named file `addfile` calls the compiled reader `_addfilebin` and checks
+nothing afterwards, unlike its other two paths, which bail with "Read
+failed". A checksum of a file on the WD counts only if the kernel log
+shows no `I/O error` for the disk during the read, or if it comes from a
+tool that raises on a failed read (Python's `hashlib` loop does). (2) The kernel logs one
+`AppleUSBXHCI … status 0xe0005000` every 120 s while the drive is idle, and
+one for each `diskutil info` query. §2z-an cited these messages as
+corroboration; single ones are background. The fault signature is a run of
+them about 3.3 s apart together with a blocked read or write.
+
+**The guard is not the cause.** The first failure was at 16:40:17 and the
+second at 18:01:19 (§2z-al, §2z-an). Nothing of the guard existed then:
+`SEALED_PATHS.json` was created at 18:17:05, the note file was written to
+the WD folder at 18:21:11, the guard script at 19:07:49 and the hook in
+`.claude/settings.json` at 19:14:23 (file birth times). The hook inspects
+the text of Claude Code's own tool calls; it does not run for a downloader
+started in Terminal, and the guard script contains no call that changes a
+file, a permission or a mount. The bridge folder and its files carry no
+flags and no access-control entries. A refusal by the guard would be a
+denied tool call, and a permission problem would be errno 1 or 13; the
+client got errno 5 from the device, with matching kernel entries.
+
+**Change made.** The download was restarted at 23:17:46 in a user-owned
+Terminal window, with caffeinate, without torrent file 210. The registered
+configuration `acquisition/full_bridge.conf` is unchanged; two settings are
+overridden on the command line:
+
+- `--select-file=206-209,211-223,441-458` (210 left out);
+- `--bt-remove-unselected-file=false`. With the configured `true`, the
+  client would delete the now-unselected `RC_2023-05.zst` when the others
+  finish. That file must stay where it is: it holds about 14.2 GB of
+  received data, and while it exists the bad blocks cannot be handed to
+  another file.
+
+The saved control file was backed up first as
+`acquisition/reddit.aria2.before_skip210_20261011_2318` (48,960 bytes,
+SHA-256 `1417fb363a8f31acf1987efc3e15ff18c1ee9473e21c512264bd788716aae83c`,
+verified against the original). The client total is now 790,626,304,000
+bytes for 35 files; the counter started at 354,718,629,888 (the 36-file
+counter was 368,893,657,088). At 23:19:07 it stood at 355.33 GB with a live
+rate of 13.8 MB/s, no error in the client log and no disk I/O error in the
+kernel log. Earlier restarts failed within 90 s. Later observations are in
+the addendum below.
+
+**Not determined, not done.**
+
+- The extent of the bad area. No read that reports an offset was run: the
+  guard refuses `dd` on a sealed folder, and each read of the area stalls
+  the drive for about two minutes. The first failure, at 16:40, took the
+  whole drive off the bus.
+- Whether other bad areas exist. A failure on a different piece would show
+  one. SMART attributes are not readable through this USB bridge
+  (`diskutil`: not supported; `system_profiler` reports only "Verified").
+- `RC_2023-05.zst` is not being downloaded. The bridge will be 35 of 36
+  archives until it is fetched into different disk blocks.
+- No full-file hash verification of any archive. Received pieces are
+  hash-checked by the client as they arrive (§2z-aj); that is all.
+- The 23:00 volume was 98% full (131.7 GB free). Projected free space at
+  completion is unchanged from §2z-an, about 67.8 GB, because file 210 was
+  already at full length.
+
+**For the owner to decide.**
+
+1. How to get `RC_2023-05.zst`. Proposed: after the 35 finish, download
+   file 210 alone into a separate folder inside the bridge tree with its
+   own control file, leave the damaged file in place under a new name, and
+   move the fresh copy to the proper name. Cost: 28.3 GB held permanently
+   by the damaged file, and up to 27.5 GB more while it runs (HFS+ has no
+   sparse files, so the boundary fragment of `RC_2023-04` is allocated in
+   full and removed at the end).
+2. The boundary fragments of the unselected months (`RC_2022-12`,
+   `RC_2024-07`, `RS_2022-12`, `RS_2024-07`) will now remain after
+   completion, up to 45 GB. Removing them is a deletion on the WD.
+3. Whether to keep writing to this drive. It is the source of record for
+   the raw archives, 98% full, with a confirmed media fault; §2z-ag copied
+   199.0 GB of it to T9.
+
+**Contact and validation.** Download control data, client and kernel logs,
+file listings, torrent metadata, drive metadata, and one checksum read of a
+sealed archive, whose output is a digest of opaque bytes and is discarded.
+No row parsed, no value read; the bridge stays SEALED; contact logged in
+`EXPOSURE_LEDGER.md`. No code, default, protocol or gate touched; the
+health check was not rerun and nothing was committed.
+
+**Files.** Launch script, health-check script and console log:
+`tmp/reddit_bridge/` in the repository (untracked):
+`resume_skip_RC_2023-05.zsh`, `check_download.zsh`,
+`download-skip210-20261011-231745.stdout.log`. Diagnosis and change note:
+`acquisition/skip210_restart_20261011.json` on the WD, with a copy of the
+launch script. To resume after any stop, when no client is running:
+
+```sh
+/bin/zsh tmp/reddit_bridge/resume_skip_RC_2023-05.zsh
+```
+
+Do not run the earlier launch scripts or the bare command of §2z-aj: they
+select all 36 files and will fail on piece 96057 again.
+
+**§2z-ao addendum, 2026-10-11 23:29 Japan time — download STOPPED by
+decision, not by failure; CrowdTangle coverage on T9 measured.** This
+supersedes "IN PROGRESS" in the headline above: the acquisition is stopped
+pending the owner's decision on the drive.
+
+The restarted download ran from 23:17:46 to 23:28:38 with no client error
+and no kernel disk I/O error. The counter went from 354,718,629,888 to
+365,550,043,136 bytes (+10.83 GB, 46% of the 35-file total); checks at
+23:19, 23:24 and 23:26 were clean, with five-minute rates of about 18 MB/s.
+Earlier restarts failed within 90 s, so leaving out file 210 did avoid the
+failure, for 11 minutes and 10.8 GB. That is not evidence about the rest of
+the disk.
+
+The owner then asked whether the best course is to stop and replace the
+drive, and said: "The crowdtangle is irreplaceable so it is the priority."
+The client was stopped with SIGINT at 23:28:36; it saved its session and
+exited (status in-progress, no error). Reason: the Reddit archive is the
+one replaceable thing on this disk, it is not needed until a protocol
+exists, and random writes onto a 98%-full disk are the heaviest load it
+can be given. The saved state resumes with the script above, on this drive
+or, after copying the partial files and `reddit.aria2`, on another.
+
+CrowdTangle material on the WD against T9. Sources: the per-file table of
+the §2z-ag audit (T9 `manifest/drive_audit_20261008/source_disposition.csv`),
+a listing of names and sizes on the WD tonight, and a size check of each T9
+destination. No file was opened and nothing was re-hashed tonight; the
+hashes are those verified on 2026-10-08.
+
+| WD material | files | GB | copy on T9 |
+|---|---:|---:|---|
+| `crowdtangle/`, consolidated exports | 846 | 287.4 | all |
+| `crowdtangle_backfill/`, daily parquets, plus one unpaired TSV and a log | 1,174 | 153.7 | all |
+| `crowdtangle_backfill/`, daily TSVs | 1,173 | 352.6 | none. Each has a same-day parquet on T9, matched by file name; row equivalence was never tested (§2z-ag) |
+| `crowdtangle_backfill/`, image archives `2023-02-19` to `2024-03-06` | 328 | 1,817.4 | none |
+| total | 3,521 | 2,611.1 | 441.1 GB, 16.9% of the bytes |
+
+All 2,020 T9 destinations exist at the recorded size. Six hidden files on
+the WD (3.26 GB: two `.DS_Store`, four partial-transfer temporaries) are
+outside the table. T9 has 487.7 GB free. The Pushshift raw archives
+(§2z-ag: retained on WD only) can be downloaded again from the torrent of
+§2z-ah; the CrowdTangle material cannot.
+
+Not done: no copy was started. What goes to T9 first, whether its budget
+(600 GB, 40% free) is waived for that, and the replacement drive are the
+owner's decisions.
+
+**§2z-ao addendum 2, 2026-10-11 late evening — OWNER DECISION on the TSVs
+and the drive.** In the owner's words: "we don't need to back up the tsv's
+if we have the parquet -- that is just the same file in a different format.
+though we do need to get a different drive if this one is failing. ordered
+the new drive." This settles two of the items above:
+
+- The 1,173 daily backfill TSVs (352.6 GB) are not preservation targets.
+  No copy to T9 was made and its budget is untouched. This rests on the
+  owner's knowledge of how the files were produced; the row-for-row
+  equivalence remains untested in this record (§2z-ag), and no session
+  should cite the TSVs as an independent source.
+- A replacement drive is ordered. Its model and capacity were not stated
+  in the conversation.
+
+What then exists only on the WD and cannot be re-acquired is the 328 image
+archives (1,817.4 GB). Whether those are to be kept was not stated; the
+plan below assumes they are. Proposed order when the new drive is mounted,
+for the owner to confirm then: image archives; the 441.1 GB already on T9,
+so that it has a second copy once the WD is retired; the Pushshift raw
+archives; the partial bridge files and `reddit.aria2`, after the new
+location is added to `SEALED_PATHS.json`; then resume the download there
+and fetch `RC_2023-05.zst` fresh. Hashes from a reader that raises on a
+failed read, with the kernel log checked for disk I/O errors. Until then
+the WD is idle: no client is running and nothing was written to it after
+23:28:38.
+
+At the owner's instruction ("eject the drive.") the WD was ejected with
+`diskutil eject` at 23:57 Japan time, without force and with no client
+running; the volume unmounted cleanly and T9 stayed mounted. It is to stay
+unplugged until the replacement drive is in hand, so a session that finds
+`/Volumes/My Passport for Mac` missing should treat that as intended.
+

@@ -205,3 +205,23 @@ Recommended layout:
 4. Comment dumps lack `over_18` in sampled rows. Comment NSFW counts cannot be populated directly from comments alone.
 5. No `.rds` files were found in the WD inventory.
 
+## 2026-10-08 storage addendum: verified raw compression
+
+The historical inventory above is retained. At the owner's request, WD
+`reddit-uncompressed/RS_2022-12.json` was losslessly replaced with
+`reddit-uncompressed/RS_2022-12.json.zst`: 139,650,513,046 original bytes,
+15,147,456,307 compressed bytes, 124,503,056,739 bytes saved. A complete
+independent decode matched the original byte count and SHA-256 before the
+uncompressed representation was removed. The adjacent `.verification.json`
+records the evidence; DATA_PHASE2_REPORT has the full operational record.
+Other historical raw files remain unchanged by this compression operation.
+The missing January 2023–June 2024 bridge is being acquired separately under
+WD `pushshift/bridge_2023-01_2024-06/`; that acquisition is not yet complete.
+
+**WD drive health, 2026-10-11 (MODEL_STATUS §2z-ao).** The disk has at least
+one bad region, under `pushshift/bridge_2023-01_2024-06/reddit/comments/RC_2023-05.zst`
+about 75.6% into the file: writes there fail with errno 5 and a read
+stalls for minutes with kernel I/O errors. That file is incomplete and is
+kept in place so the blocks are not reused. Whether other regions are
+affected is not known; SMART attributes are not readable through the
+drive's USB bridge. `shasum` does not report a failed read on this drive.

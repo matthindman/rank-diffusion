@@ -103,7 +103,22 @@ moment-sensitivity exhibit; the gate's ability to reject a wrong model.
 `EXPOSURE_LEDGER.md` is authoritative. In short: all FB, Reddit 2018-12 to
 2022-12, the short Reddit 2024-07 to 2025-01 panel and the Instagram 2023
 panels are DEVELOPMENT. The Reddit bridge (2023-01 to 2024-06) is SEALED
-and still downloading. Wikipedia 2025-01 is EXPOSURE UNKNOWN; nothing else
+and its acquisition is STOPPED by decision at 365.6 of 790.6 GB (35 of the
+36 archives); a replacement drive is ordered and the WD was ejected at the
+owner's instruction, to stay unplugged until it arrives (2026-10-11), so a
+missing WD mount is intended. The WD write
+failures of October 11 were one bad disk region under
+`RC_2023-05.zst`, which fails reads as well as writes (§2z-ao); a restart
+at 23:17 that day without that archive ran cleanly for 11 minutes and was
+then stopped so the drive is not loaded while it holds CrowdTangle material
+with no second copy: 1,817 GB of image archives. The 353 GB of daily TSVs
+there are, by the owner's decision, the parquets in another format and are
+not backed up. Resume only
+with `tmp/reddit_bridge/resume_skip_RC_2023-05.zsh`: the earlier launch
+scripts select all 36 files and fail on the same piece. Do not delete or
+read through `RC_2023-05.zst` on the WD. A `shasum` of a file on that drive
+is valid only if the kernel log shows no disk I/O error during the read.
+Wikipedia 2025-01 is EXPOSURE UNKNOWN; nothing else
 from Wikipedia is acquired.
 
 By the owner's rule of 2026-10-11 (§2z-am), nothing in a sealed folder is
@@ -125,6 +140,11 @@ is in the newest data-operation entries of MODEL_STATUS.
   cap, which model generation the first block tests.
 - The Reddit bridge protocol: source-transition and score-timing forensics
   before any karma panel.
+- Moving off the WD when the replacement drive arrives (§2z-ao, addendum
+  2): whether the 1,817 GB of CrowdTangle image archives are kept, and the
+  copy order proposed there. The bridge download then resumes on the new
+  drive, where `RC_2023-05.zst` is fetched fresh; the new location must be
+  added to `SEALED_PATHS.json` before any bridge file is copied.
 - A standing margin for judging a candidate change against the current
   model on the gate. The owner decided on 2026-10-11 to wait before setting
   a number (§2z-am). Until then the skill uses the registered convention
