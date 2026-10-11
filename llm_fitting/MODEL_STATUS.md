@@ -4477,3 +4477,155 @@ python -m pytest Python/rankdiff/tests -q
 python -m venv /tmp/v && /tmp/v/bin/python -m pip install numpy pandas scipy matplotlib pyarrow zstandard duckdb certifi psutil pytest
 /tmp/v/bin/python -m pytest tests/ -q    # 22 failures on pandas 3.0.6; green after: pip install "pandas<3"
 ```
+
+
+## 2z-ak. 2026-10-11 — Skills REVISED for current frontier models (owner-directed): core skill cut from about 7,000 to about 3,400 tokens with purpose and decision rights first; references, one shared entry file, an exposure ledger and a gate ledger added; frozen stacks, Gate v1 and the registered protocols UNCHANGED. In the working tree, not committed — owner review requested
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-11; started
+from commit aca4f69._
+
+**Question.** The owner asked for a review of the four skills, which were
+written in July so that weaker models could carry the program, against (a)
+authoritative guidance on designing skills for the current models on both
+sides (Claude Opus 5.5 / Fable 5.1; GPT-6 Astra) and (b) the modeling-practice
+review behind §2z-ai, and for a revision that gets the best model on the
+structure / movement / parsimony trade-off and has the program ready to
+restart: development on data already seen, then evaluation on the Reddit
+2023–24 archive and Wikipedia pageviews.
+
+**What was consulted.** Three commissioned briefs in
+`lit_review/research_notes/Skill design for agent-run research/` (Anthropic
+guidance; OpenAI and cross-vendor guidance with the empirical studies; rigor
+for agent-run science), the vendor skill-authoring guide, and the §2z-ai
+notes. The briefs paraphrase their sources and tag what was read in full,
+summarized by a fetch tool, abstract-only or recalled; nothing from them is
+citable in the paper without a primary-source check.
+
+**What the sources said that drove the design** (as reported in the briefs):
+- Both vendors' current guidance says instruction files written for earlier
+  models are over-prescriptive for current ones and should be audited, and
+  that current models follow instructions more literally, so a blanket
+  instruction to be conservative suppresses useful work.
+- An invoked skill is not re-read, and after context compaction only its
+  first 5,000 tokens or so are re-attached; the open skill specification
+  recommends the same size. The July core skill was about 7,000 tokens with
+  its pitfalls, state and handoff sections last.
+- With both entry files present, Claude Code loads only `CLAUDE.md` and Codex
+  only `AGENTS.md` and `.agents/skills/`, so the two agents had been starting
+  from different digests.
+- The empirical studies are few and mostly preprints: compact, curated
+  skills helped; comprehensive or model-generated ones did not; stale
+  guidance is the one kind with measured harm.
+- Studies of agents doing analysis report characteristic failures:
+  incomplete work reported as done, gaps filled with an expected value that
+  was shown to the agent, specification search when a request is framed as
+  reporting a range, and correlated errors across models. A named
+  stop-and-flag outcome and giving reviewers logs and code were the cheapest
+  measured remedies.
+
+**The change.** No model code, default, stack, threshold or protocol was
+touched.
+- `stochastic-modeling/SKILL.md` rewritten: purpose, open and gated zones,
+  session start, the model with its binding language, thirteen numbered
+  principles each with its reason, the development loop, the confirmation
+  loop, collaboration. The instruction that the reader should "almost never
+  invent" is withdrawn.
+- Three references split out, loaded by task: `frozen-specs.md` (stacks,
+  reference values, flags, Gate v1 in full, recorded gate commands, known
+  gaps between the stated model and the frozen simulators),
+  `pitfalls.md` (the catalogue, extended with the July–October incidents),
+  `evidence-standards.md` (what a number carries, specification discipline,
+  identification and recovery, the gate's limits, supplementary scores and
+  baselines, the candidate dossier, protocol contents, verification,
+  provenance, paper checklist).
+- `data-intake`, `model-status-authoring`, `repo-maintenance` rewritten to
+  the same pattern and brought up to date.
+- `AGENTS.md` is now the single always-loaded contract; `CLAUDE.md` imports
+  it and adds three Claude-specific lines.
+- New project files: `llm_fitting/PROGRAM_STATE.md` (one-page digest that
+  replaces the dated state section of the old skill),
+  `llm_fitting/EXPOSURE_LEDGER.md`, `llm_fitting/GATE_LEDGER.md`,
+  `scripts/health_check.sh`, `tests/skill_scenarios/`.
+- `tests/test_skills_sync.py` now compares every file in the two skill
+  trees and checks that frontmatter uses only the two portable fields.
+
+**What is new in the contract** (everything else is restated, not changed):
+1. Data confirms once, tracked in the exposure ledger: DEVELOPMENT, CONSUMED,
+   SEALED, EXPOSURE UNKNOWN. The ledger's initial statuses were compiled from
+   this record and are the owner's to correct.
+2. Every gate evaluation is logged in the gate ledger, used or not, because
+   the gate's split-to-split SD is the size of the differences it judges.
+3. A mechanism is read as real only after recovery and model-recovery
+   evidence; ablations are refits.
+4. Agreement between models is not evidence; verification is blind to the
+   recorded value where independence matters; reviewers get code and logs.
+5. Every reported number carries a status (RAN-OK, RAN-FAILED, PARTIAL, NOT
+   RUN) and a trail; grids, seed counts and stopping rules are fixed before
+   running; stopping to flag an impossible task is a successful outcome.
+6. Each record entry carries a provenance line (model, vendor, date,
+   starting commit).
+7. A default comparison margin for candidate changes: the convention the
+   registered evaluations used (0.05 in gate relative error, 20 reps,
+   2,000 bootstrap draws) unless the owner sets another. **This is a
+   threshold and needs the owner's confirmation.**
+8. Proper scores at endpoint level and named baselines are described as
+   supplementary reporting; they gate nothing unless a protocol registers
+   them.
+
+**Behavioral check (not a registered evaluation).** Fifteen owner-message
+scenarios with 56 expectations; two fresh Claude sessions planning under the
+July skills and two under the revision; one blind grader. Scores: July 52.5
+and 51.0, revision 54.5 and 53.5, of 56. No plan under either version read
+sealed data, changed a default or reported a single split. The one outright
+failure was under the July skills (asked permission to start on open work).
+The difference is within what two runs can resolve: this shows no
+regression, not improvement. The baseline was contaminated (those agents
+could see the new ledgers and skill descriptions), both arms had the July
+`CLAUDE.md` injected by the harness, the answers are plans not behavior, and
+Codex was not tested. The agents' reports of unclear or contradictory
+instructions led to about twenty further edits the same day. Details:
+`tests/skill_scenarios/results_2026-10-11.md`.
+
+**Pre-registered predictions scored:** none.
+
+**Validation.**
+
+| check | result |
+|---|---|
+| `scripts/health_check.sh` | research suite 182 passed + 13 subtests (181 before the new frontmatter test); package suite 8 passed; legacy guard 14/15, churn 0.013 |
+| Skill mirror | byte-identical across all seven files |
+| Sizes (chars/4) | core 3,400 tokens (was 7,000); other skills 1,800–2,700; references 2,700–3,100; `AGENTS.md` 1,150 |
+| Model code, defaults, stacks, protocols | untouched |
+| Data contact | file listings; date range and row counts of two DEVELOPMENT panels |
+
+**Verdict.** Skills revised in the working tree and mirrored, so both
+vendors' agents now load the revision. NOT committed. The owner is asked to
+review, in particular item 7 above and the initial ledger statuses.
+
+**Not done.** Enforcement of the sealed-data rule by a hook or permission
+rule (the sources say prose is advisory); a run of the scenarios under
+Codex; the vendors' own prompt-audit tools; description-triggering tests; a
+backfill of the gate ledger; a machine-written run ledger and claims
+manifest. All are listed in `PROGRAM_STATE.md` as open decisions.
+
+**Reproduction.**
+
+```sh
+scripts/health_check.sh
+# scenarios: tests/skill_scenarios/README.md
+```
+
+**§2z-ak addendum, 2026-10-11 — COMMITTED at the owner's direction;
+supersedes this section's "not committed" status.** Owner decisions in the
+same exchange: commit the revision; the scenarios need not be run under
+Codex. Not decided: the candidate-comparison margin (item 7) and whether to
+enforce the sealed-data rule mechanically; the owner asked for both to be
+explained first. Pending that, item 7 was reworded before the commit: the
+skill no longer calls 0.05 a default, and says to use the registered
+convention (0.05 in gate relative error, 20 reps, 2,000 bootstrap draws)
+labelled as a convention until the owner sets a standing margin. The
+ledger's initial statuses were committed as compiled and remain the
+owner's to correct. §2z-ah and §2z-aj, which the exposure ledger and the
+data-intake skill cite for the Reddit 2023–24 archive, are another
+session's in-progress entries and are not in this commit; they and the
+gap in lettering are resolved when that acquisition is recorded complete.

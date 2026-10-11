@@ -1,31 +1,17 @@
-# rank-diffusion — Claude Instructions
+# rank-diffusion — Claude Code
 
-Mature, externally reviewed research program (PNAS-track) modeling rank
-dynamics of digital attention. Strict methodology; committed results must be
-protected.
+@AGENTS.md
 
-**Before any modeling, fitting, evaluation, data-intake, or paper work, read
-`.claude/skills/stochastic-modeling/SKILL.md` in full** — it is the core
-skill (method contract, frozen specs, pitfall catalogue, current agenda).
-Then read the newest dated §2 subsections of `llm_fitting/MODEL_STATUS.md`
-(the canonical record — all numbers live there) and, if touching new data,
-`llm_fitting/CONFIRMATION_PROTOCOL.md` (frozen; binding).
+## Claude Code specifics
 
-Quick rules (full contract in the skill):
-- OOS movement gate = only acceptance criterion; never single-split numbers.
-- No spec-fishing; pre-register predictions; report failures as findings.
-- Defaults byte-identical; legacy guard (facebook 14/15 / churn 0.013) +
-  `python -m pytest tests/ -q` (repo root) green at every commit.
-- Estimate by permanent rank, never current rank.
-- FB: cutdown parquet or SSD Era A only; IG raw = negative control — model IG
-  only via the §2z-c censoring apparatus (`instagram_hm`); never calibrate to IG.
-- Head-churn metrics need bands (seed SD ±0.15); reps ≥ 20 for head claims.
-- Append dated sections to MODEL_STATUS.md; never rewrite history.
-- Frozen specs/thresholds/protocols are owner-gated — ask before changing.
-- Package track (`Python/rankdiff`, `R/rankdiff`): governed by
-  `PACKAGING_ROADMAP.md`. The packages ship stabilized model generations and
-  lag the research line BY DESIGN — never edit them to chase a research
-  result, never let packaging work touch `llm_fitting/` or frozen specs, and
-  preserve their existing structure, README text, and authorship metadata.
-- Repo upkeep (moving files, tests/CI, packaging trees, docs, git surgery):
-  read `.claude/skills/repo-maintenance/SKILL.md` first.
+- `AGENTS.md` above is the shared contract for every agent in this
+  repository. Keep rules there, not here, so Claude and Codex start from the
+  same text.
+- When compacting, keep: decisions made this session and who made them;
+  predictions written down and whether each has been scored; gate
+  evaluations run and whether they are logged; data contact made and
+  whether it is in the exposure ledger; owner-gated questions still open;
+  files changed but not committed.
+- After compaction only the opening of an invoked skill is re-attached.
+  If the work depends on a reference file or a later section of a skill,
+  read it again.

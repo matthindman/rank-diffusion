@@ -1,82 +1,85 @@
-# rank-diffusion — Agent Instructions (ChatGPT/Codex, Gemini, and other agents)
+# rank-diffusion — instructions for every agent
 
-This repository is a mature, externally reviewed research program modeling
-rank dynamics of digital attention (PNAS-track). It has strict, hard-won
-methodological rules. **Before doing ANY modeling, fitting, evaluation, data
-intake, or paper work, read these in order:**
+A research program (PNAS-track, externally reviewed) building a stochastic
+model of rank dynamics in digital attention. The goal is the best model on a
+three-way trade-off: reproduce the stable rank-size structure, predict the
+movement of individual endpoints, and stay as simple as possible. Advancing
+the model is the job; the rules below keep the advances real.
 
-1. `.claude/skills/stochastic-modeling/SKILL.md` — **the core skill. Read it
-   in full, every session.** It encodes the working method, the frozen
-   per-platform specs, the pitfall catalogue, and the current agenda.
-   Companions in the same directory: `data-intake` (raw-data → validated
-   panel procedure), `model-status-authoring` (how to write the canonical
-   record), and `repo-maintenance` (repository layout, tests/CI, packaging
-   trees, git hygiene — read before restructuring files, editing
-   packaging/CI/docs, or any git surgery). The same skills are mirrored at
-   `.agents/skills/` for tools that read that path — the `.claude/skills/`
-   copies are canonical.
-2. `llm_fitting/MODEL_STATUS.md` — the canonical record of results. Newest
-   dated §2 subsections supersede older ones. All numbers live here, not in
-   your memory.
-3. `llm_fitting/CONFIRMATION_PROTOCOL.md` — registered frozen evaluations for
-   extension data. If your task touches new data, this binds you absolutely.
+This file is loaded in every session by every agent (`CLAUDE.md` imports
+it). The owner's instruction in the conversation outranks this file, and
+this file outranks a skill's procedure.
 
-## Non-negotiables (digest — the skill has the full contract)
+## Which skill to load
 
-- The rolling-origin OOS movement gate (≥5 splits, vs persistence, with CI
-  coverage) is the ONLY acceptance criterion. In-sample scorecards never
-  justify adopting a change. Never report single-split OOS numbers.
-- No spec-fishing: every parameter comes from a declared moment or an
-  independent instrument. Pre-register predictions before running; report
-  failures as findings.
-- Defaults stay byte-identical: new behavior behind opt-in flags, gated rng
-  streams; the legacy guard (`facebook` legacy panel default run: 14/15,
-  churn 0.013) and `python -m pytest tests/ -q` (repo root) must pass at
-  every commit.
-- Estimate by permanent (time-averaged) rank, never current rank (Eulerian
-  selection bias). Universe membership is absence-penalized.
-- FB data: only `data/raw/fb_ranked_weekly_cutdown.parquet` (legacy) or the
-  SSD Era-A slice; never `fb_ranked_weekly.parquet`. Instagram raw panels are
-  a negative control — never calibrate to it; the ONLY modeled use is the
-  §2z-c censoring apparatus (`instagram_hm`, scoped "of a-matching
-  activity"). Reddit is a census; FB is a censored sample — coverage
-  language differs (see skill §4.2).
-- Head-collision metrics have seed SD ~±0.15: never interpret 5-rep head
-  churn diffs without bands (use `scorecard_bands.py`, reps ≥ 20).
-- Document every substantive session as a new dated subsection appended to
-  `llm_fitting/MODEL_STATUS.md` (diagnosis → measurements → change →
-  pre-registered predictions scored → validation table → verdict →
-  reproduction commands). Never rewrite history; supersede explicitly.
-- Frozen specs, thresholds, defaults, and the confirmation protocol are
-  owner-gated. If a task seems to require changing them, stop and ask.
+Skills live in `.claude/skills/` (canonical) and are mirrored byte-for-byte
+in `.agents/skills/`.
 
-## The package track (`Python/rankdiff`, `R/rankdiff`)
+| for | load |
+|---|---|
+| fitting, simulating, evaluating or changing the model; testing a mechanism; planning experiments; protocols for new data; paper claims | `stochastic-modeling` — read its `SKILL.md` in full, then the reference it names for the task |
+| any raw data, panel building, drives, universes, first contact with a dataset | `data-intake` |
+| writing or citing `llm_fitting/MODEL_STATUS.md`; amending a protocol | `model-status-authoring` |
+| commits, pushes, files, CI, package trees, the skills themselves | `repo-maintenance` |
 
-The production packages are a separate track from the research line, with
-their own rules — read `PACKAGING_ROADMAP.md` before touching them. Digest:
+Start a research session with `llm_fitting/PROGRAM_STATE.md` and the newest
+dated sections of `llm_fitting/MODEL_STATUS.md` that it points to. All
+results live in MODEL_STATUS; quote numbers from it with their section, not
+from memory.
 
-- The packages ship **stabilized model generations** (currently the v4.3
-  permanent-transitory model) and lag the research line **by design**. Flow
-  is one-way, research → package, in owner-declared "graduations" — never
-  edit package internals to match a research result, and never let packaging
-  work modify `llm_fitting/`, `tests/` defaults, or frozen specs.
-- Preserve the packages' existing structure, naming, README text, and API
-  conventions — they are deliberate design choices; extend and correct
-  rather than rewrite.
-- Authorship/attribution metadata (DESCRIPTION `Authors@R`, pyproject
-  `authors`, LICENSE) is load-bearing — never drop or placeholder an author
-  when copying or consolidating trees.
-- `R/rankdiff` is the canonical R tree; the old `rankdiffR/` snapshot was
-  merged back and now lives in `archive/rankdiffR/` (reference only).
-- The legacy guard and the full pytest suite must stay green at every
-  commit on this track too.
+## What holds in every session
 
-## Environment notes
+- **Proceed on reversible work; stop at the gates.** Measurements,
+  diagnostics, opt-in experiments, drafts and tests on DEVELOPMENT data need
+  no permission. Ask the owner before: changing a default, a frozen stack,
+  the gate, a threshold or a registered protocol; first value-level contact
+  with SEALED data; adopting an agenda; changing paper claim language;
+  package-track changes; pushing. If the owner asks for one of these
+  directly, say briefly what it spends or changes, ask once, then do what
+  the owner decides.
+- **Check `llm_fitting/EXPOSURE_LEDGER.md` before opening any data file.**
+  A dataset can confirm only once. Reading values from SEALED data, even a
+  top-ten list, spends that.
+- **The rolling-origin movement gate decides adoption.** In-sample
+  scorecards never justify a change, and a single split is never reported.
+  Log every gate evaluation in `llm_fitting/GATE_LEDGER.md`.
+- **Every parameter comes from a declared moment or an independent
+  instrument.** Nothing is tuned to a score.
+- **Estimate and stratify by permanent rank, never current rank,** with
+  absence-penalized universe membership. Current rank selects on noise.
+- **Facebook:** only `data/raw/fb_ranked_weekly_cutdown.parquet` or the SSD
+  Era A slice. **Instagram:** raw panels are a negative control; the only
+  modeled use is the §2z-c censoring apparatus.
+- **Defaults stay bit-identical.** New behavior goes behind an opt-in flag.
+  `scripts/health_check.sh` (both test suites and the legacy guard: 14/15,
+  churn 0.013) passes before every commit.
+- **The record is append-only.** Every substantive session appends a dated
+  entry to MODEL_STATUS before it ends, including what failed and what was
+  not run.
+- **Claims about the head need bands** and at least 20 seeds.
+- **The repository is public and shared.** Another agent may be working in
+  this checkout: check `git status`, commit by explicit path, never revert
+  work you did not write. Push only when the owner asks.
 
-- Registered interpreter: `/Library/Frameworks/Python.framework/Versions/3.11/bin/python3`.
-- Tests import `archive.src.rankdiff...`; run pytest from repo root, no
-  PYTHONPATH needed.
-- SSD panels need `/Volumes/T9` mounted (`data/ssd`); the comments extension
-  raw data needs the WD drive. If unmounted, report and stop that thread.
-- Use `python -u` for long runs with redirected output; OOS gates can take
-  minutes-to-hours — do not kill them early.
+## Package track
+
+`Python/rankdiff` and `R/rankdiff` ship stabilized model generations and lag
+the research line on purpose. Read `PACKAGING_ROADMAP.md` before touching
+them. Do not edit them to follow a research result, do not let packaging
+work touch `llm_fitting/`, and keep their structure, README text and
+authorship metadata.
+
+## Environment
+
+- Registered interpreter:
+  `/Library/Frameworks/Python.framework/Versions/3.11/bin/python3`, with
+  pandas 2.x. Do not upgrade packages in it: the registered intake tooling
+  fails on pandas 3. Use a scratch environment, with `"pandas<3"`, for
+  anything that needs newer packages.
+- Run pytest from the repo root (`python -m pytest tests/ -q`); tests import
+  `archive.src.rankdiff…`.
+- SSD panels need `/Volumes/T9`; raw archives need the WD drive. If a drive
+  is missing, report it and stop that thread.
+- Long runs: `python -u`, wrapped in `caffeinate -dims`, from a user-owned
+  Terminal when another agent session is active; if you cannot tell, give
+  the owner the command. Do not interpret a run that was killed.
