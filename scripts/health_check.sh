@@ -35,6 +35,9 @@ echo "== research suite (tests/)"
 "$PY" -m pytest tests/ -q -p no:cacheprovider 2>&1 | tail -1
 [ "${PIPESTATUS[0]}" -eq 0 ] || fail=1
 
+echo "== sealed-data guard"
+"$PY" scripts/sealed_data_guard.py --self-check || fail=1
+
 echo "== package suite (Python/rankdiff/tests)"
 "$PY" -m pytest Python/rankdiff/tests -q -p no:cacheprovider 2>&1 | tail -1
 [ "${PIPESTATUS[0]}" -eq 0 ] || fail=1

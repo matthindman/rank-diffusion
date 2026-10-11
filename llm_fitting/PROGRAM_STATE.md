@@ -106,6 +106,16 @@ panels are DEVELOPMENT. The Reddit bridge (2023-01 to 2024-06) is SEALED
 and still downloading. Wikipedia 2025-01 is EXPOSURE UNKNOWN; nothing else
 from Wikipedia is acquired.
 
+By the owner's rule of 2026-10-11 (§2z-am), nothing in a sealed folder is
+looked at until the owner says, in the conversation, that the named dataset
+may be opened. The folders are listed in `SEALED_PATHS.json`;
+`scripts/sealed_data_guard.py` checks every Claude Code tool call against
+the list, and other agents are bound by the same rule in `AGENTS.md`.
+
+As of 19:16 Japan time on 2026-10-11 the archive download was stopped,
+after a disk write error at 18:01 (§2z-am, observation). Its current state
+is in the newest data-operation entries of MODEL_STATUS.
+
 ## Decisions waiting on the owner
 
 - Which agenda (or merge) to adopt.
@@ -116,9 +126,10 @@ from Wikipedia is acquired.
 - The Reddit bridge protocol: source-transition and score-timing forensics
   before any karma panel.
 - A standing margin for judging a candidate change against the current
-  model on the gate. The skill uses the registered convention (0.05, 20
-  reps) as a labelled stand-in; the paired-seed noise of the gate has not
-  been measured, and that measurement is what a tighter margin should rest
+  model on the gate. The owner decided on 2026-10-11 to wait before setting
+  a number (§2z-am). Until then the skill uses the registered convention
+  (0.05, 20 reps) as a labelled stand-in; the paired-seed noise of the gate
+  has not been measured, and that measurement is what a number should rest
   on.
 - Whether to replace the kurtosis-based t-df moment.
 - The b = 1 implementation gap between the main law and the frozen movement
@@ -126,10 +137,15 @@ from Wikipedia is acquired.
 - A pandas-3 fix for the registered intake tooling (§2z-ai).
 - The Instagram joint-post allocation build
   (`IG_JOINT_POST_ALLOCATION_PLAN_2026-07-18.md`).
+- Whether to give Codex the same automatic check that Claude Code now has
+  for sealed folders (§2z-am). Until then Codex is held by the written rule
+  and the note files only.
+- Whether the Wikipedia pilot and future loaders should themselves refuse
+  to run on a sealed folder (`require_released`), which catches what a
+  check of command text cannot (§2z-am).
 - Enforcement and provenance tooling proposed in the skills review of
-  2026-10-11 (§2z-ak) and not built: an agent hook or permission rule that
-  blocks reads of SEALED paths; a machine-written run ledger; a manifest
-  linking each published number to its run; hash-pinned evaluator files; a
-  blind-verification harness; a backfill of `GATE_LEDGER.md`. The owner
-  decided on 2026-10-11 that the skill scenarios need not be run under
-  Codex.
+  2026-10-11 (§2z-ak) and not built: a machine-written run ledger; a
+  manifest linking each published number to its run; hash-pinned evaluator
+  files; a blind-verification harness; a backfill of `GATE_LEDGER.md`. The
+  owner decided on 2026-10-11 that the skill scenarios need not be run
+  under Codex.

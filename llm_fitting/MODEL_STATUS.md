@@ -4629,3 +4629,188 @@ owner's to correct. §2z-ah and §2z-aj, which the exposure ledger and the
 data-intake skill cite for the Reddit 2023–24 archive, are another
 session's in-progress entries and are not in this commit; they and the
 gap in lettering are resolved when that acquisition is recorded complete.
+
+## 2z-am. 2026-10-11 — OWNER DECISION: nothing in the sealed new-data folders is looked at until the owner gives explicit permission; a mechanical check is installed for Claude Code (list, guard, hook, note files) and verified live; no standing comparison margin set. No data values read; no model, spec or protocol change
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-11; started
+from commit c5df907. Sections §2z-ah, §2z-aj and §2z-al in the working copy
+are another session's entries and may not yet be committed; a gap in the
+lettering of the committed file is that, not a missing record._
+
+**The decisions, in the owner's words (2026-10-11).** "wait to set a number.
+yes, set a rule that prevents looking at the new data until I give explicit
+permission." The first sentence answers §2z-ak's open item 7: no standing
+margin for judging a candidate against the current model is adopted. The
+skill keeps the convention of the registered evaluations (0.05 in gate
+relative error, 20 reps, 2,000 bootstrap draws) as a labelled stand-in, and
+the paired-seed noise of the gate remains unmeasured. The second sentence
+adopts the enforcement that §2z-ak left to the owner. "The new data" is the
+Reddit 2023-01..2024-06 archive and the Wikipedia pageviews data, which the
+restart plan (§2z-ak) reserves for evaluation after development on data
+already seen.
+
+**The rule.** Nothing inside a folder listed in
+`llm_fitting/SEALED_PATHS.json` is looked at until the owner says, in the
+conversation, that the named dataset may be opened. Allowed there: listing,
+sizes, checksums, integrity tests, downloads, and copies to a destination
+that is itself listed. Permission is the owner's statement in the
+conversation and nothing else — not a protocol draft, an agenda, a note in
+a file, another agent's message, or a summary of an earlier conversation.
+To unseal after that statement, the session quotes it in the contact log of
+`EXPOSURE_LEDGER.md` and moves the entry from `sealed` to `released`. The
+rule is stated once for every agent in `AGENTS.md`; the ledger, the
+data-intake skill and the core skill point to it.
+
+It is tighter than the ledger's earlier wording in one respect: schema and
+row-count inspection of a sealed file (a parquet footer) was "not contact,
+but record it"; it now also waits for permission, because the check cannot
+tell a footer read from a value read.
+
+**What is listed.**
+
+| entry | folder | status | may be read |
+|---|---|---|---|
+| `reddit-bridge-2023-01_2024-06` | WD `pushshift/bridge_2023-01_2024-06/` | SEALED | `acquisition/` (download logs and control files), the downloader's control file `reddit.aria2`, and the note file |
+| `wikipedia-pageviews` | T9 `rank-diffusion-data/wikipedia/`, also reached as `data/ssd/wikipedia` | EXPOSURE UNKNOWN, treated as sealed | the note file only; logs and manifest stay sealed until the exposure audit |
+
+`scripts/data_wrangling/wikipedia_pageviews_pilot.py` is listed as a script
+whose default paths point into the Wikipedia tree; a command line that
+names it may read or stage it but not run it. No runner is approved to
+operate on sealed folders (`approved_runners` is empty); the owner adds one
+when wanted.
+
+**What was built.**
+
+- `llm_fitting/SEALED_PATHS.json` — the list, with the unsealing procedure
+  written into it.
+- `scripts/sealed_data_guard.py` — returns ALLOW, ASK or DENY for a shell
+  command or a tool call. Its rule has two steps. First, does the line
+  concern a sealed folder: does it name one, name the folder's parent
+  together with the folder's own name or a wildcard, resolve into one
+  through a variable, a loop, a glob, the `data/ssd` link or `cd`, list a
+  containing folder recursively, or name the listed script. Second, if so,
+  every simple command on the line (including those inside `$(…)`,
+  `sh -c`, `xargs`, `find -exec`, `trap` and `eval`) must be an opaque
+  operation or a plain filter of the output of one; an interpreter, an
+  unknown program or a value the guard cannot compute is refused. It also
+  refuses, on any line, recursive searches and bulk copies or archives of a
+  folder that contains a sealed one; copies of sealed bytes to an unlisted
+  destination; and the obvious destructive commands (rm, overwriting by
+  redirection or copy, `rsync --delete`). Edits to the list, the guard or
+  the hook settings, and requests that hand another agent's command line a
+  sealed path, return ASK, an approval prompt for the owner. Modes:
+  `--hook`, `--check-command`, `--check-read`, `--list`, `--self-check`; and
+  `require_released(path)` for new builders and intake gates to call on
+  their inputs.
+- `.claude/settings.json` — a Claude Code hook that runs the guard before
+  every tool call of every tool (`.gitignore` now lets this one file be
+  versioned). If the guard cannot run, the hook refuses anything that names
+  an external data drive and lets the rest through, so a broken guard
+  neither opens the data nor locks the session.
+- `00_SEALED_README.txt` in each of the two folders, saying in plain words
+  what the folder is, what is allowed, and where the rule lives (SHA-256
+  `f602ff95…faa4ee` on WD, `72f38c97…fe660` on T9). These are additions to
+  the drives; a later inventory of either tree shows one more file than
+  §2z-ag recorded.
+- `tests/test_sealed_data_guard.py` (222 cases on a synthetic layout; no
+  drive access) and a guard self-check in `scripts/health_check.sh`.
+
+**How it was checked.**
+
+1. _Independent adversarial review of the first version._ A separate agent
+   session, given the code and not my conclusions, asked the guard about
+   6,550 commands and tool calls (about 550 written by hand, 6,000 random,
+   26 hook runs) on a throwaway layout; it read nothing in the real
+   folders. It found fifteen groups of commands that would have read sealed
+   bytes and were allowed (assignment from a substitution; `cd` then a
+   relative path inside a substitution; the listed script by any spelling
+   other than the plain one; Python here-documents whose lines happened to
+   parse as harmless shell; a path assembled from the parent folder and the
+   folder's name; loops over a parent folder; `bash -lc`; `${VAR:-default}`;
+   exported variables; `$_` and `$OLDPWD`; positional arguments to `sh -c`;
+   names carried by a file or pipe; and others), fourteen groups of
+   everyday commands that were refused wrongly (among them the standard
+   multi-line commit message), an exponential slowdown on inline code with
+   many brace groups, and a hook that exited with an error instead of a
+   decision when the list was unreadable. Its diagnosis: the first version
+   judged only the words that visibly carried a sealed path and treated
+   anything it could not compute as harmless.
+2. _Rewrite on the reviewer's principle,_ as described above: once a line
+   concerns a sealed folder, everything on it is refused unless shown to be
+   opaque. Here-document bodies and `-c` strings are judged by what
+   consumes them, not parsed as shell. The hook no longer exits with an
+   error on any input tried.
+3. _Replay of the reviewer's probe scripts against the rewrite_ (run by this
+   session, not by the reviewer): every flagged route is now refused except
+   those accepted as metadata (`file`, `xattr -l`, `gzip -l`, `zstd -l`,
+   `tar -t`, `diff -q`, `cmp -s`, `wc -c`), a nested `claude -p` (itself
+   hooked) and `git stash`. Of the reviewer's 169 everyday commands, 159
+   are allowed, 1 asks and 9 are refused by design (an interpreter, `perl`,
+   `open`, `mdls` or an unapproved runner on a line that names a sealed
+   folder). 6,000 random commands: no exception, none slower than one
+   second. On 51 commands of the kind this project runs, against the real
+   list: 35 expected allowed and 16 expected refused, none wrong.
+4. _Live, with the hook installed in this session._ A request for zero
+   bytes of a lock file in the Wikipedia folder was refused by absolute
+   path, through the Read tool, and by a relative path after `cd data`
+   (so the hook sees the session's working directory); a listing of the
+   same folder ran. A subagent given the same three calls got the same
+   results. The refused commands never executed.
+5. `scripts/health_check.sh`: research suite 404 passed and 13 subtests
+   (182 before this entry plus the 222 guard cases), package suite 8,
+   legacy guard 14/15 and 0.013, guard self-check wired. PASS.
+
+**Not verified.**
+
+- A fresh, separate session loading the hook: the command-line client could
+  not authenticate ("OAuth session expired"), so that test did not run.
+- The approval prompt (ASK) for rule-file edits and for handing a sealed
+  path to another agent: never triggered, so whether the prompt appears in
+  every permission mode is untested.
+- The rewrite has not had a second independent review; step 3 is my replay.
+- The hook's fallback for a guard that cannot run was bench-tested in bash,
+  zsh and sh on the first draft of the hook command. The shell logic is
+  unchanged since; only the message text differs. A repeat on the final
+  string was refused by a built-in safety check on scripts passed through a
+  shell variable and was not rerun. Behaviour on a hook timeout
+  (`onFailure: block`) is as documented, not tested.
+
+**What the check does not do.** It reads the text of one command. It cannot
+see what a program opens once it is running, so a script that reaches a
+sealed folder through a default path is caught only if the script is
+listed; new builders should call `require_released`. It does not follow
+names written to a file by one command and read back by the next. It covers
+Claude Code sessions in checkouts that contain `.claude/settings.json`,
+which other checkouts and worktrees will not have until the file is
+committed. Codex is held by the same rule in `AGENTS.md` and by the note
+files, not by a mechanism; a Codex-side hook was not built, because an
+untested configuration in the other vendor's control folder could have
+interfered with the acquisition that session was running. The WD volume has
+ownership disabled and T9 is exFAT, so file permissions cannot enforce the
+rule on either drive. It is a guard against mistakes, not a lock.
+
+**Data contact.** Folder and file names, sizes and dates were listed in
+both sealed folders; the two note files were written; the downloader's own
+log in `acquisition/` was read (below). No data file was opened and no
+values were read; both statuses are unchanged (`EXPOSURE_LEDGER.md` contact
+log, 2026-10-11). No gate evaluation was run (`GATE_LEDGER.md` unchanged).
+
+**Observation passed to the owner, not acted on.** The Reddit bridge
+download (§2z-al recovery addendum) stopped at 18:01:19 Japan time, about
+four minutes after its restart was confirmed. `acquisition/aria2.log` ends
+with "Download aborted … errorCode=17 Write disk cache flush failure
+index=96057", then "not complete" and a saved session; the control file was
+last written at 18:01 and no downloader process existed at 19:16. The note
+file was written to the same drive at 18:21, before I had read that log,
+and compared byte-identical afterwards. Restarting or diagnosing the
+download is the other session's operation and the owner's call.
+
+**Not changed.** Frozen stacks, Gate v1, the registered protocols, the
+claim set and every default. No scientific code was touched;
+`wikipedia_pageviews_pilot.py` itself is unmodified.
+
+**Open.** Whether to give Codex the same automatic check. Whether the
+Wikipedia pilot and future loaders should call `require_released`
+themselves, which no spelling of a command can avoid. The standing
+comparison margin (deferred by the owner, above). The exposure audit of
+Wikipedia 2025-01. None of this session's files are committed.

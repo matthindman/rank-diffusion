@@ -44,6 +44,7 @@ data/reddit/
 # Local agent config & scratch (skills are versioned; the rest is local)
 .claude/*
 !.claude/skills/
+!.claude/settings.json
 llm_fitting/.claude/
 tmp_*.json
 

@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "in=$(cat); g=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null)}/scripts/sealed_data_guard.py\"; py=$(command -v python3 || echo /usr/bin/python3); if out=$(printf '%s' \"$in\" | \"$py\" \"$g\" --hook 2>/dev/null); then printf '%s' \"$out\"; elif printf '%s' \"$in\" | grep -Eq '\"tool_name\" *: *\"(Edit|Write)\"'; then :; elif printf '%s' \"$in\" | grep -q -e '/Volumes/' -e 'data/ssd'; then printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"The sealed-data guard could not run (scripts/sealed_data_guard.py or python3 is missing or broken), so every command that names an external data drive is blocked until it is repaired. Restore the guard from git, or ask the owner.\"}}'; fi",
+            "timeout": 20,
+            "onFailure": "block",
+            "statusMessage": "Checking the sealed-data list"
+          }
+        ]
+      }
+    ]
+  }
+}

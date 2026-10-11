@@ -25,6 +25,28 @@ confirmation. So the order of operations matters more than speed.
    from rows, is value-level contact and waits for a committed protocol and
    the owner's go-ahead. "Just the top few names to sanity-check the file"
    is contact.
+
+   The folders that hold such data are listed in
+   `llm_fitting/SEALED_PATHS.json`, and each carries a `00_SEALED_README.txt`.
+   By the owner's rule of 2026-10-11 nothing inside them is looked at until
+   the owner says, in the conversation, that the named dataset may be
+   opened. `scripts/sealed_data_guard.py` enforces the list: Claude Code
+   runs it before every tool call, and `--check-command '…'` answers for any
+   other agent. Its rule is that a command line which names a sealed folder,
+   or can reach one, may contain only opaque operations and plain filters
+   of their output (`ls … | sort | head`, `find … | xargs shasum`,
+   `zstd -t`); an interpreter, an unknown program or an uncomputable
+   variable on that line is refused, so run other work as a separate
+   command and do arithmetic on sizes with `awk`. Commit messages and
+   documents may name the paths. It reads the text of one command, so it
+   cannot see a program that opens a sealed folder by a default path, or
+   names saved to a file by one command and read by the next; the rule
+   covers those cases even where the check does not. When the check blocks
+   something, stop and ask; do not find another route. When sealed bytes are copied or moved, add the
+   destination to the entry's `paths` first. To unseal after the owner's
+   word: move the entry from `sealed` to `released` with the date and the
+   owner's words, and log it in the ledger. Edits to the list, the guard and
+   `.claude/settings.json` prompt the owner for approval.
 4. Ground truth for what exists where: `DATA_INVENTORY.md` (drive map and
    copy policy), `DATA_PHASE2_REPORT.md` (pipeline runbook, validated
    outputs, resume commands), `llm_fitting/instrument_eras.py` (FB era table
@@ -41,6 +63,9 @@ confirmation. So the order of operations matters more than speed.
 3. **Write and commit the protocol** (contents in the stochastic-modeling
    skill's `evidence-standards.md`), with its runners built and tested on
    synthetic data. Never rehearse on the real files.
+   A new builder or intake gate calls
+   `sealed_data_guard.require_released(path)` on each input, so that it
+   refuses to run while its dataset is still sealed.
 4. **Run the fail-closed intake gate.** This is the first value-level
    contact. It checks schema, hygiene, calendar coverage and exact
    reconciliation, and it stops everything if any invariant fails.

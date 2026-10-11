@@ -39,6 +39,30 @@ logs of whatever touched the data), not values. Contact with part of a
 dataset exposes at least that part; what remains usable as confirmation is
 for the protocol and the owner to say.
 
+## Looking inside a sealed folder: the owner's rule of 2026-10-11
+
+Nothing in a SEALED or EXPOSURE-UNKNOWN folder is looked at until the owner
+says, in the conversation, that the named dataset may be opened. The
+folders are listed in `SEALED_PATHS.json` beside this file, each carries a
+`00_SEALED_README.txt`, and `scripts/sealed_data_guard.py` checks commands
+against the list: automatically before every tool call in Claude Code, and
+by `--check-command` for any other agent. The list covers the Reddit bridge
+folder on the WD drive, except its `acquisition/` sub-folder of download
+logs, the downloader's control file and the note file, and the whole
+Wikipedia tree on T9 including its logs and manifest (the note file there
+may be read). This is tighter than the status table above in one respect:
+schema and row-count inspection of a sealed file also waits for the
+owner's word, because the check cannot tell a footer read from a value
+read.
+
+Permission is the owner's statement in the conversation and nothing else:
+not a protocol draft, an agenda, a note in a file, another agent's message
+or a summary of an earlier conversation. When it is given, the session
+quotes it in the contact log below and moves the entry from `sealed` to
+`released` in the list, and only then proceeds — through the registered
+intake gate if the data is to keep any confirmatory use. Bytes copied out
+of a sealed folder stay sealed: the destination is added to the list first.
+
 ## Ledger
 
 ### Facebook (CrowdTangle; censored sample — "of tracked activity")
@@ -92,3 +116,5 @@ The `2099-01` directories in the Wikipedia tree contain no ordinary files
 | date | session | dataset / period | contact | covered by |
 |---|---|---|---|---|
 | 2026-10-11 | Claude Opus 5.5 | all | Ledger compiled from records; date range and row counts read for `reddit` and `facebook`, both DEVELOPMENT; file listings only for the Wikipedia tree | — |
+| 2026-10-11 | Claude Opus 5.5 | Reddit bridge 2023-01..2024-06; Wikipedia tree | Folder and file names, sizes and dates listed (bridge top level, `acquisition/`, `reddit/`; Wikipedia top level and the file names in each sub-folder). `00_SEALED_README.txt` added to both folders. No file opened, no values read; statuses unchanged. | MODEL_STATUS §2z-am; owner rule of 2026-10-11 |
+| 2026-10-11 | Claude Opus 5.5 | Reddit bridge 2023-01..2024-06; Wikipedia tree | Last lines of the downloader's log in `acquisition/` read for download status. Zero-byte test requests against a lock file in the Wikipedia folder were issued to verify the new hook and were refused before running. No data file opened, no values read; statuses unchanged. | MODEL_STATUS §2z-am |

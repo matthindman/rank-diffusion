@@ -59,7 +59,9 @@ then do what the owner decides.
    them; recent data-operation entries can be skimmed). MODEL_STATUS is the
    record; its newest sections supersede older ones, and every number
    lives there.
-2. Read `llm_fitting/EXPOSURE_LEDGER.md` before opening any data file.
+2. Read `llm_fitting/EXPOSURE_LEDGER.md` before opening any data file. The
+   sealed folders are listed in `llm_fitting/SEALED_PATHS.json`; nothing in
+   them is looked at until the owner says so in the conversation.
 3. Run `scripts/health_check.sh` before changing code and before every
    commit. A session that only reads and advises can skip it.
 4. Load the reference for the task:
@@ -139,8 +141,9 @@ beside them.
    or more seeds for anything about the head; splits, seeds and bootstrap
    draws stated.
 7. **Data confirms once.** DEVELOPMENT data can never confirm. SEALED data
-   is first read by the intake gate of a protocol committed beforehand.
-   Reading it earlier, even a top-ten list, spends the confirmation.
+   is first read by the intake gate of a protocol committed beforehand, and
+   only once the owner has said the dataset may be opened. Reading it
+   earlier, even a top-ten list, spends the confirmation.
 8. **The gate is a finite resource.** Its split-to-split SD is about the
    size of the differences it judges, so each extra evaluation on the same
    panels makes a lucky pass more likely. Log every evaluation in
