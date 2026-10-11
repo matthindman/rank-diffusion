@@ -49,6 +49,7 @@ first.
 | `data/`, `cache/`, `output/`, `tmp/` | local panels and artifacts | not in git; SSD panels need `/Volumes/T9` |
 | `.claude/skills/`, `.agents/skills/` | the skills and their mirror | see "Skills" below |
 | `AGENTS.md`, `CLAUDE.md` | agent entry files | see "Skills" below |
+| `llm_fitting/coordination/`, `llm_fitting/handoff/`, `scripts/agent_worktree.sh`, `scripts/heavy_lock.py` | the two-agent protocol, the task queue and briefs, each task's handoff folder, and the tools for a second working copy and for sharing the machine | Claude is the only writer on `main`; Codex writes in its own working copy (`coordination/PROTOCOL.md`) |
 | `llm_fitting/SEALED_PATHS.json`, `scripts/sealed_data_guard.py`, `.claude/settings.json` | the sealed-folder list, the check that enforces it, and the Claude Code hook that runs the check before every tool call | owner-gated: an entry leaves `sealed` only on the owner's word; edits prompt the owner; `tests/test_sealed_data_guard.py` must pass |
 | `.github/workflows/ci.yml` | CI | see "CI" below |
 

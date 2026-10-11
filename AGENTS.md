@@ -74,6 +74,19 @@ from memory.
   this checkout: check `git status`, commit by explicit path, never revert
   work you did not write. Push only when the owner asks.
 
+## Two agents at once
+
+Claude and Codex work in separate working copies under
+`llm_fitting/coordination/PROTOCOL.md` (owner-approved 2026-10-12). Codex
+writes only in its own working copy, on `codex/<task>` branches. Claude is
+the only writer of MODEL_STATUS, the ledgers, PROGRAM_STATE and the two
+model files (`minimal_rankdiff.py`, `rankdiff_kalman.py`), and appends
+Codex's record entries from its handoff folders, so for Codex the handoff
+entry stands in for the append asked for above. Heavy jobs go through
+`scripts/heavy_lock.py`. The working agenda is
+`llm_fitting/WORKPLAN_CLAUDE_2026-10-12.md`; Codex's tasks are in
+`llm_fitting/coordination/QUEUE.md`.
+
 ## Package track
 
 `Python/rankdiff` and `R/rankdiff` ship stabilized model generations and lag

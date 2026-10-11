@@ -28,6 +28,14 @@ work; do not treat either as binding until MODEL_STATUS records an adoption.
 Adoption sets priorities and any registered plan. Measurements and
 diagnostics on DEVELOPMENT data do not wait for it.
 
+**The working agenda for the development phase is
+`WORKPLAN_CLAUDE_2026-10-12.md`, adopted by the owner on 2026-10-12
+(§2z-aq, §2z-ar).** It narrows the two October agendas, which stay as
+background, and replaces §2x in that role. Claude leads and Codex/Astra
+validates independently under `coordination/PROTOCOL.md`; Codex's tasks
+are in `coordination/QUEUE.md`. Phase 1 has no model code and no candidate
+gate evaluations.
+
 ## Evidence to date
 
 | what | result | record |
@@ -136,7 +144,9 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
 
-- Which agenda (or merge) to adopt.
+- At decision point D1 of the work plan: which candidates go ahead; the
+  comparison margin; whether the endpoint-level scores become a registered
+  supplement for the new data.
 - Whether endpoint-level proper scores and named baselines become a
   registered supplementary evaluation for the new datasets.
 - Wikipedia protocol choices: entity key, primary window, universe rule and

@@ -5599,3 +5599,124 @@ the gate for FB and short submissions as well) would be a candidate
 evaluation with its own dossier and was not run. (c) Whether a leave-one-out
 from each frozen stack is wanted beside this forward path.
 
+## 2z-aq. 2026-10-12 — PLANNING ONLY: a work plan for the development phase and a working protocol for two agents, both PROPOSED; nothing adopted, no model or protocol change, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; started
+from commit 71c7e07, with §2z-ah, -aj, -al, -an, -ao and -ap present in the
+working copy and not yet committed._
+
+**Owner request.** With downloading blocked by the drive, propose a
+concrete plan to advance the agenda on the existing models and data,
+reviewing both agendas of 2026-10-08, aimed at the largest remaining
+sources of error per unit of effort; with Claude in charge of Codex/Astra,
+including prompts, setup and protection against overwriting; and adjusted
+for the ladder explainer of §2z-ap only where it has actionable lessons.
+
+**What was read.** `PROGRAM_STATE.md`; §2z-ap in full and its
+`runs/2026-10-12_ladder/summary.json`; the published explainer page;
+`RESEARCH_AGENDA_2026-10-08.md` and `RESEARCH_AGENDA_CLAUDE_2026-10-08.md`
+(parts B–F); `frozen-specs.md` §2, §4, §5 and `evidence-standards.md` §3,
+§5, §6, §8; the committed briefs on agent coordination. No panel was opened
+apart from the legacy fit run by the health check.
+
+**What is proposed** (`llm_fitting/WORKPLAN_CLAUDE_2026-10-12.md`).
+
+- Where the remaining error is, from the record: too few large lasting
+  moves (established departures, the 13-week upper tail, FB boundary
+  out-flux); head share on FB and the Instagram rescue; the amplitude
+  applied to half of the model; and a gate that cannot resolve what is
+  left. Gate v1 scores none of the first three.
+- A stated hypothesis, to be tested and not assumed: the first two are one
+  error, fat tails placed in the passing component and absent from the
+  lasting one.
+- Phase 1, no model code and no candidate gate evaluations: five
+  measurements by Claude (A1 tails by horizon, A2 anatomy of departure
+  events, A3 attribution of the head share, A4 compressibility of the band
+  profiles and V = σ_perm²/(2κ) from existing fits, A5 the ladder cell that
+  was not run) and three tasks for Codex (V1 the gate as an instrument, V2
+  planted mechanisms and recovery with an independent simulator, V3
+  endpoint-level scores, supplementary and retrospective).
+- A decision point, then at most three candidates with dossiers, one gate
+  evaluation per candidate per panel and at most 15 in the phase: one
+  amplitude for the whole model; tails where they persist; compressed
+  profiles. None adds a free parameter.
+
+**What the explainer changed in the plan.** The instrument study comes
+first and no candidate is evaluated before it; the amplitude gap becomes
+the first candidate and its missing cell is run first; the head-share
+measurement becomes an attribution across components, because the excess
+appears with Gaussian shocks at the swings step (my earlier account blamed
+the unbounded t alone); the unchanged 13-week tail on FB under the
+amplitude and tail steps is what makes the hypothesis testable; gate
+differences on long submissions are not used to rank candidates until V1
+reports.
+
+**Working protocol for two agents** (`llm_fitting/coordination/PROTOCOL.md`,
+briefs in `coordination/briefs/`). Codex works only in its own working copy
+on `codex/<task>` branches; Claude is the only writer of MODEL_STATUS, the
+ledgers, PROGRAM_STATE and the two model files; each task ends in a handoff
+folder that includes the record entry for Claude to append; heavy jobs
+share three slots; blind checks get definitions, not numbers.
+
+**Tooling added, tested, not committed.** `scripts/agent_worktree.sh`
+(creates a second working copy, links the data folder, makes git ignore the
+link; a throwaway copy passed 230 tests and reproduced the legacy fit,
+14/15 and 0.013, and was then removed; the script added `/data` to the
+local `.git/info/exclude`). `scripts/heavy_lock.py` (three job slots held
+by operating-system file locks; a third job waited for a free slot in a
+two-slot test). `scripts/health_check.sh` after the work: PASS (research
+suite 414 passed and 13 subtests, package suite 8, legacy guard 14/15 and
+0.013).
+
+**Not done.** Nothing was sent to Codex. No measurement in the plan was
+run. `AGENTS.md` was not changed; if the protocol is approved it needs a
+pointer there. No commit.
+
+**For the owner.** Adopt, amend or reject the plan; approve the protocol;
+say who commits the pending work on `main`; approve the instrument runs of
+V1.
+
+## 2z-ar. 2026-10-12 — OWNER DECISION: the work plan of §2z-aq is ADOPTED as the working agenda for the development phase; the two-agent protocol is APPROVED; Codex's instrument runs are approved; pending work on main is committed and pushed. No model, spec or gate change
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; started
+from commit 71c7e07 with the pending sections listed in §2z-aq._
+
+**The decision, in the owner's words.** "implement the plan. do commit and
+push what is pending on main. I approve the protocol and codex's instrument
+runs. you have permission to do direct calls for small jobs using the codex
+plugin. Do use sleep/wake when you are just waiting for results, or waiting
+on codex."
+
+**What it adopts and supersedes.**
+
+- `WORKPLAN_CLAUDE_2026-10-12.md` is the working agenda for the development
+  phase. It replaces §2x in that role. The two agendas of 2026-10-08
+  (§2z-af, §2z-ai) stay on file as background; neither was adopted.
+- `coordination/PROTOCOL.md` governs how Claude and Codex share the
+  repository. `AGENTS.md` now points to it, and says that for Codex the
+  record entry in a handoff folder stands in for a direct append to this
+  file. Claude appends those entries unchanged, with Codex named.
+- The instrument runs of brief V1 are approved: frozen movement stacks
+  only, logged as reproductions. No candidate evaluation is approved; that
+  waits for decision point D1 of the plan.
+- Claude may call Codex directly through the Codex plugin for small jobs
+  (a review, a blind check, a question), and sets a watch to be woken while
+  it waits. Both are written into the protocol.
+
+**What stays the owner's.** Every gated item in the skill: frozen stacks,
+Gate v1, margins, protocols, re-freezes, paper claims, sealed data. The
+comparison margin remains unset (§2z-am); V1 is to supply the evidence.
+
+**What changed in the repository with this entry.** The plan and protocol
+carry their new status; `coordination/QUEUE.md` lists Codex's tasks V1–V3
+in order with what each waits on; `AGENTS.md` gained a section "Two agents
+at once"; the repo-maintenance skill and its mirror list the new paths.
+The pending work of other sessions is committed by Claude at the owner's
+instruction, in separate commits that name their authors: the data
+operations (§2z-ah, -aj, -al, -an by OpenAI Codex; §2z-ao by another
+Claude session) and the ladder measurement (§2z-ap, another Claude
+session). Two literature documents that describe another project in detail
+remain uncommitted, as held since 2026-10-09; `tmp/` is not in git.
+
+**Not done at the time of writing.** No Phase 1 measurement has been run
+and nothing has been sent to Codex. Each task will get its own entry.
