@@ -1,0 +1,38 @@
+
+========================================================================
+REDDIT_COMMENTS — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=136  test_len=34  train-end origins=[34, 51, 68, 85, 102]  universe=top-12500 (B=4x, train-only membership) pool>=8 md6 NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 34  1.00  |  2.047      |  0.100        |    6.9   | False
+    T0= 51  1.00  |  1.332      |  0.083        |    5.5   | False
+    T0= 68  1.00  |  1.691      |  0.185        |    5.7   | False
+    T0= 85  1.00  |  1.239      |  0.218        |    5.2   | False
+    T0=102  1.00  |  1.065      |  0.237        |    5.0   | False
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 1.475 ± 0.352   |   persistence = 0.165 ± 0.062
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 0% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=102): emp median/p90 vs model median/p90
+    dRank1: emp    6/  26   model    8/  38
+    dRank4: emp    8/  34   model   19/ 118
+    dRank13: emp   11/  50   model   57/ 742
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 34     7.54 |    6.86  | -0.10 |     6.9      0.9  | 0.18/0.65/0.97
+    T0= 51     7.14 |    6.74  | -0.06 |     5.5      0.7  | 0.19/0.62/0.96
+    T0= 68     7.19 |    6.76  | -0.06 |     5.7      0.9  | 0.21/0.64/0.96
+    T0= 85     6.52 |    6.15  | -0.06 |     5.2      0.7  | 0.20/0.63/0.97
+    T0=102     6.41 |    6.09  | -0.05 |     5.0      0.6  | 0.19/0.60/0.96
+    CRPS skill vs persistence @ dRank1: -0.067 ± 0.016  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.372 ± 0.142  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -2.475 ± 1.058  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 34  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 7.0] OUT
+      T0= 51  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 7.0] OUT
+      T0= 68  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [5.0, 6.0] OUT
+      T0= 85  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 6.0] OUT
+      T0=102  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 6.0] OUT

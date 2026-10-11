@@ -1,0 +1,12 @@
+00:35:22 started subs_long (pid 78712)
+00:35:22 started fb (pid 78714)
+00:41:43 subs_long reached: panel slimmed
+00:41:43 started comments_gate_a (pid 80430)
+00:43:03 comments_gate_a reached: panel slimmed
+00:43:03 started comments_gate_b (pid 80744)
+00:44:23 comments_gate_b reached: panel slimmed
+00:44:23 started comments_struct (pid 81378)
+01:15:04 fb reached: ALL REQUESTED CELLS DONE
+01:15:04 started instagram (pid 88191)
+02:11:08 LADDER LAUNCHER FINISHED: 80 cells on disk
+uct R0-R2,S2 + gate R0-R2; b: gate R3-R5,G1; c: struct R3-R5); the single process started 01:15:04 was stopped during its first struct cell, before any cell was written

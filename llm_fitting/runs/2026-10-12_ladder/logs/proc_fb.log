@@ -1,0 +1,561 @@
+[facebook_a] cells to run: [('struct', 'R0'), ('struct', 'R1'), ('struct', 'R2'), ('struct', 'R3'), ('struct', 'R4'), ('struct', 'R5'), ('struct', 'S1'), ('struct', 'S2'), ('struct', 'S3'), ('struct', 'S4'), ('gate', 'R0'), ('gate', 'R1'), ('gate', 'R2'), ('gate', 'R3'), ('gate', 'R4'), ('gate', 'R5'), ('gate', 'G1'), ('gate', 'G2')]
+
+##### facebook_a struct R0  {'partition': 'rw', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done facebook_a struct R0 in 21s
+
+##### facebook_a struct R1  {'partition': 'rw_noise', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done facebook_a struct R1 in 16s
+
+##### facebook_a struct R2  {'partition': 'ou_noise', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done facebook_a struct R2 in 16s
+
+##### facebook_a struct R3  {'partition': 'full', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done facebook_a struct R3 in 16s
+
+##### facebook_a struct R4  {'partition': 'full', 'temper': True, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done facebook_a struct R4 in 16s
+
+##### facebook_a struct R5  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done facebook_a struct R5 in 17s
+
+##### facebook_a struct S1  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': True, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done facebook_a struct S1 in 19s
+
+##### facebook_a struct S2  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': True, 'stat_factor': True, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done facebook_a struct S2 in 17s
+
+##### facebook_a struct S3  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': True, 'stat_factor': True, 'two_scale': True, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done facebook_a struct S3 in 21s
+
+##### facebook_a struct S4  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': True, 'stat_factor': True, 'two_scale': True, 'mix_hetero': True, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done facebook_a struct S4 in 21s
+
+##### facebook_a gate R0  {'partition': 'rw', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+FACEBOOK_A — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=86  test_len=21  train-end origins=[21, 32, 43, 54, 65]  universe=top-3500 (B=4x, train-only membership) pool>=8 md6 NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 21  1.00  |  0.689      |  0.136        |   35.4   | True
+    T0= 32  1.00  |  0.523      |  0.183        |   49.4   | True
+    T0= 43  1.00  |  0.782      |  0.093        |   28.8   | True
+    T0= 54  1.00  |  0.829      |  0.145        |   13.3   | True
+    T0= 65  1.00  |  0.700      |  0.169        |   21.8   | True
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.704 ± 0.105   |   persistence = 0.145 ± 0.031
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 100% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=65): emp median/p90 vs model median/p90
+    dRank1: emp   14/  68   model   14/  57
+    dRank4: emp   20/ 122   model   32/ 173
+    dRank13: emp   26/ 203   model  103/ 658
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 21    47.40 |   47.26  | -0.00 |    35.4     30.5  | 0.09/0.50/0.86
+    T0= 32    61.33 |   60.84  | -0.01 |    49.4     39.4  | 0.15/0.51/0.86
+    T0= 43    40.99 |   40.73  | -0.01 |    28.8     20.4  | 0.11/0.53/0.87
+    T0= 54    25.72 |   25.64  | -0.00 |    13.3      6.8  | 0.11/0.52/0.89
+    T0= 65    34.29 |   34.20  | -0.00 |    21.8     13.3  | 0.10/0.52/0.87
+    CRPS skill vs persistence @ dRank1: -0.005 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.028 ± 0.021  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.146 ± 0.106  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 21  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [13.0, 15.0] in
+      T0= 32  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [13.0, 15.0] in
+      T0= 43  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 54  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 65  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [13.0, 14.5] in
+##### done facebook_a gate R0 in 31s
+
+##### facebook_a gate R1  {'partition': 'rw_noise', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+FACEBOOK_A — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=86  test_len=21  train-end origins=[21, 32, 43, 54, 65]  universe=top-3500 (B=4x, train-only membership) pool>=8 md6 NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 21  1.00  |  0.204      |  0.136        |   37.4   | False
+    T0= 32  1.00  |  0.140      |  0.183        |   46.1   | True
+    T0= 43  1.00  |  0.181      |  0.093        |   28.6   | True
+    T0= 54  1.00  |  0.257      |  0.145        |   13.5   | True
+    T0= 65  0.70  |  0.307      |  0.169        |   24.5   | False
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 0.7]  median=1.00 range=0.70-1.00
+  MODEL rel err = 0.218 ± 0.058   |   persistence = 0.145 ± 0.031
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 60% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=65): emp median/p90 vs model median/p90
+    dRank1: emp   14/  68   model   12/  50
+    dRank4: emp   20/ 122   model   19/  97
+    dRank13: emp   26/ 203   model   43/ 280
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 21    47.62 |   47.26  | -0.01 |    37.4     30.5  | 0.09/0.44/0.85
+    T0= 32    61.01 |   60.84  | -0.00 |    46.1     39.4  | 0.10/0.47/0.87
+    T0= 43    40.98 |   40.73  | -0.01 |    28.6     20.4  | 0.11/0.53/0.86
+    T0= 54    25.73 |   25.64  | -0.00 |    13.5      6.8  | 0.15/0.55/0.88
+    T0= 65    34.47 |   34.20  | -0.01 |    24.5     13.3  | 0.10/0.47/0.85
+    CRPS skill vs persistence @ dRank1: -0.006 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.006 ± 0.001  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.010 ± 0.014  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 21  h=1:OUT  h=4:in  h=13:OUT  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 32  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 43  h=1:in  h=4:in  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 54  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 65  h=1:OUT  h=4:in  h=13:OUT  week-block CI(h=1) [13.0, 14.5] OUT
+##### done facebook_a gate R1 in 320s
+
+##### facebook_a gate R2  {'partition': 'ou_noise', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+FACEBOOK_A — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=86  test_len=21  train-end origins=[21, 32, 43, 54, 65]  universe=top-3500 (B=4x, train-only membership) pool>=8 md6 NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 21  1.00  |  0.088      |  0.136        |   33.9   | False
+    T0= 32  1.00  |  0.183      |  0.183        |   47.6   | True
+    T0= 43  1.00  |  0.049      |  0.093        |   27.6   | True
+    T0= 54  0.70  |  0.151      |  0.145        |   17.1   | True
+    T0= 65  0.70  |  0.162      |  0.169        |   25.4   | False
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 0.7, 0.7]  median=1.00 range=0.70-1.00
+  MODEL rel err = 0.127 ± 0.050   |   persistence = 0.145 ± 0.031
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 60% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=65): emp median/p90 vs model median/p90
+    dRank1: emp   14/  68   model   12/  46
+    dRank4: emp   20/ 122   model   18/  78
+    dRank13: emp   26/ 203   model   26/ 146
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 21    47.30 |   47.26  | -0.00 |    33.9     30.5  | 0.09/0.47/0.88
+    T0= 32    61.11 |   60.84  | -0.00 |    47.6     39.4  | 0.10/0.47/0.86
+    T0= 43    40.93 |   40.73  | -0.00 |    27.6     20.4  | 0.17/0.51/0.86
+    T0= 54    25.99 |   25.64  | -0.01 |    17.1      6.8  | 0.11/0.50/0.84
+    T0= 65    34.57 |   34.20  | -0.01 |    25.4     13.3  | 0.10/0.47/0.83
+    CRPS skill vs persistence @ dRank1: -0.007 ± 0.005  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.007 ± 0.001  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.010 ± 0.005  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 21  h=1:OUT  h=4:in  h=13:in  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 32  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 43  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [12.0, 14.0] in
+      T0= 54  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [12.0, 14.0] in
+      T0= 65  h=1:OUT  h=4:in  h=13:in  week-block CI(h=1) [13.0, 14.5] OUT
+##### done facebook_a gate R2 in 297s
+
+##### facebook_a gate R3  {'partition': 'full', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+FACEBOOK_A — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=86  test_len=21  train-end origins=[21, 32, 43, 54, 65]  universe=top-3500 (B=4x, train-only membership) pool>=8 md6 NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 21  1.00  |  0.113      |  0.136        |   31.6   | True
+    T0= 32  0.50  |  0.142      |  0.183        |   48.1   | True
+    T0= 43  0.70  |  0.088      |  0.093        |   25.6   | True
+    T0= 54  0.70  |  0.143      |  0.145        |   12.7   | True
+    T0= 65  1.00  |  0.088      |  0.169        |   20.0   | True
+
+  sigma_obs_scale stability: [1.0, 0.5, 0.7, 0.7, 1.0]  median=0.70 range=0.50-1.00
+  MODEL rel err = 0.115 ± 0.024   |   persistence = 0.145 ± 0.031
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 100% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=65): emp median/p90 vs model median/p90
+    dRank1: emp   14/  68   model   13/  64
+    dRank4: emp   20/ 122   model   19/ 106
+    dRank13: emp   26/ 203   model   27/ 167
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 21    47.23 |   47.26  | +0.00 |    31.6     30.5  | 0.09/0.49/0.92
+    T0= 32    61.19 |   60.84  | -0.01 |    48.1     39.4  | 0.10/0.49/0.86
+    T0= 43    40.81 |   40.73  | -0.00 |    25.6     20.4  | 0.17/0.51/0.89
+    T0= 54    25.72 |   25.64  | -0.00 |    12.7      6.8  | 0.11/0.52/0.91
+    T0= 65    34.20 |   34.20  | +0.00 |    20.0     13.3  | 0.16/0.49/0.89
+    CRPS skill vs persistence @ dRank1: -0.002 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.008 ± 0.003  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.011 ± 0.003  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 21  h=1:in  h=4:in  h=13:OUT  week-block CI(h=1) [13.0, 15.0] in
+      T0= 32  h=1:in  h=4:in  h=13:OUT  week-block CI(h=1) [13.0, 15.0] in
+      T0= 43  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [12.0, 14.0] in
+      T0= 54  h=1:in  h=4:in  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 65  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [13.0, 14.5] in
+##### done facebook_a gate R3 in 304s
+
+##### facebook_a gate R4  {'partition': 'full', 'temper': True, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+FACEBOOK_A — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=86  test_len=21  train-end origins=[21, 32, 43, 54, 65]  universe=top-3500 (B=4x, train-only membership) temper pool>=8 md6 NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 21  1.00  |  0.134      |  0.136        |   26.8   | False  s=0.98
+    T0= 32  1.00  |  0.159      |  0.183        |   43.7   | True  s=0.97
+    T0= 43  1.00  |  0.066      |  0.093        |   22.4   | True  s=0.95
+    T0= 54  1.00  |  0.119      |  0.145        |    8.2   | True  s=0.94
+    T0= 65  1.00  |  0.129      |  0.169        |   18.5   | False  s=0.92
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.121 ± 0.031   |   persistence = 0.145 ± 0.031
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 60% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=65): emp median/p90 vs model median/p90
+    dRank1: emp   14/  68   model   12/  60
+    dRank4: emp   20/ 122   model   18/ 106
+    dRank13: emp   26/ 203   model   26/ 173
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 21    47.11 |   47.26  | +0.00 |    26.8     30.5  | 0.09/0.47/0.91
+    T0= 32    60.98 |   60.84  | -0.00 |    43.7     39.4  | 0.10/0.47/0.87
+    T0= 43    40.75 |   40.73  | -0.00 |    22.4     20.4  | 0.11/0.49/0.88
+    T0= 54    25.65 |   25.64  | -0.00 |     8.2      6.8  | 0.11/0.50/0.91
+    T0= 65    34.20 |   34.20  | -0.00 |    18.5     13.3  | 0.10/0.47/0.88
+    CRPS skill vs persistence @ dRank1: +0.000 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.005 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.009 ± 0.004  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 21  h=1:OUT  h=4:in  h=13:in  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 32  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 43  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [12.0, 14.0] in
+      T0= 54  h=1:in  h=4:in  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 65  h=1:OUT  h=4:in  h=13:in  week-block CI(h=1) [13.0, 14.5] OUT
+##### done facebook_a gate R4 in 300s
+
+##### facebook_a gate R5  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+FACEBOOK_A — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=86  test_len=21  train-end origins=[21, 32, 43, 54, 65]  universe=top-3500 (B=4x, train-only membership) temper pool>=8 md6 t-tails NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 21  1.00  |  0.140      |  0.136        |   26.2   | False  s=0.98
+    T0= 32  1.00  |  0.138      |  0.183        |   42.1   | True  s=0.97
+    T0= 43  1.00  |  0.119      |  0.093        |   22.4   | False  s=0.95
+    T0= 54  1.00  |  0.104      |  0.145        |    8.8   | True  s=0.94
+    T0= 65  1.00  |  0.114      |  0.169        |   18.6   | False  s=0.92
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.123 ± 0.014   |   persistence = 0.145 ± 0.031
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 40% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=65): emp median/p90 vs model median/p90
+    dRank1: emp   14/  68   model   11/  59
+    dRank4: emp   20/ 122   model   17/ 105
+    dRank13: emp   26/ 203   model   27/ 171
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 21    47.11 |   47.26  | +0.00 |    26.2     30.5  | 0.09/0.44/0.91
+    T0= 32    60.96 |   60.84  | -0.00 |    42.1     39.4  | 0.10/0.47/0.87
+    T0= 43    40.79 |   40.73  | -0.00 |    22.4     20.4  | 0.11/0.47/0.88
+    T0= 54    25.64 |   25.64  | +0.00 |     8.8      6.8  | 0.11/0.50/0.90
+    T0= 65    34.23 |   34.20  | -0.00 |    18.6     13.3  | 0.10/0.44/0.88
+    CRPS skill vs persistence @ dRank1: -0.000 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.005 ± 0.001  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.008 ± 0.003  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 21  h=1:OUT  h=4:in  h=13:in  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 32  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 43  h=1:OUT  h=4:in  h=13:in  week-block CI(h=1) [12.0, 14.0] OUT
+      T0= 54  h=1:in  h=4:in  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 65  h=1:OUT  h=4:OUT  h=13:in  week-block CI(h=1) [13.0, 14.5] OUT
+##### done facebook_a gate R5 in 300s
+
+##### facebook_a gate G1  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': 'state', 'spec_b': False}
+
+========================================================================
+FACEBOOK_A — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=86  test_len=21  train-end origins=[21, 32, 43, 54, 65]  universe=top-3500 (B=4x, train-only membership) temper pool>=8 md6 t-tails NNLS COND:state
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 21  1.00  |  0.147      |  0.136        |   26.7   | False  s=0.98
+    T0= 32  1.00  |  0.111      |  0.183        |   39.1   | True  s=0.97
+    T0= 43  1.00  |  0.143      |  0.093        |   19.8   | True  s=0.95
+    T0= 54  1.00  |  0.139      |  0.145        |    4.9   | True  s=0.94
+    T0= 65  1.00  |  0.071      |  0.169        |   16.5   | False  s=0.92
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.122 ± 0.029   |   persistence = 0.145 ± 0.031
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 60% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=65): emp median/p90 vs model median/p90
+    dRank1: emp   14/  68   model   12/  57
+    dRank4: emp   20/ 122   model   19/ 101
+    dRank13: emp   26/ 203   model   27/ 161
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 21    47.21 |   47.26  | +0.00 |    26.7     30.5  | 0.09/0.44/0.87
+    T0= 32    60.87 |   60.84  | -0.00 |    39.1     39.4  | 0.15/0.47/0.87
+    T0= 43    40.74 |   40.73  | -0.00 |    19.8     20.4  | 0.17/0.51/0.88
+    T0= 54    25.65 |   25.64  | -0.00 |     4.9      6.8  | 0.11/0.52/0.91
+    T0= 65    34.19 |   34.20  | +0.00 |    16.5     13.3  | 0.16/0.47/0.87
+    CRPS skill vs persistence @ dRank1: +0.000 ± 0.001  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.003 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.007 ± 0.003  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 21  h=1:OUT  h=4:in  h=13:in  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 32  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 43  h=1:in  h=4:in  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 54  h=1:in  h=4:in  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 65  h=1:OUT  h=4:in  h=13:in  week-block CI(h=1) [13.0, 14.5] OUT
+##### done facebook_a gate G1 in 318s
+
+##### facebook_a gate G2  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': 'state', 'spec_b': True}
+
+========================================================================
+FACEBOOK_A — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=86  test_len=21  train-end origins=[21, 32, 43, 54, 65]  universe=top-3500 (B=4x, train-only membership) temper pool>=8 md6 t-tails spec-B NNLS COND:state
+  day guard: 59 flagged days -> dropped 33 of 176 member-weeks from daily estimation
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 21  1.00  |  0.076      |  0.136        |   23.8   | False  s=0.98
+    T0= 32  1.00  |  0.095      |  0.183        |   38.7   | True  s=0.97
+    T0= 43  1.00  |  0.163      |  0.093        |   15.0   | True  s=0.95
+    T0= 54  1.00  |  0.142      |  0.145        |    4.8   | True  s=0.94
+    T0= 65  1.00  |  0.040      |  0.169        |   13.3   | True  s=0.92
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.103 ± 0.044   |   persistence = 0.145 ± 0.031
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 80% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=65): emp median/p90 vs model median/p90
+    dRank1: emp   14/  68   model   14/  63
+    dRank4: emp   20/ 122   model   20/ 106
+    dRank13: emp   26/ 203   model   28/ 166
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 21    47.12 |   47.26  | +0.00 |    23.8     30.5  | 0.09/0.47/0.88
+    T0= 32    60.82 |   60.84  | +0.00 |    38.7     39.4  | 0.15/0.49/0.87
+    T0= 43    40.68 |   40.73  | +0.00 |    15.0     20.4  | 0.17/0.53/0.89
+    T0= 54    25.64 |   25.64  | -0.00 |     4.8      6.8  | 0.11/0.55/0.90
+    T0= 65    34.11 |   34.20  | +0.00 |    13.3     13.3  | 0.16/0.52/0.89
+    CRPS skill vs persistence @ dRank1: +0.001 ± 0.001  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.002 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.006 ± 0.004  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 21  h=1:OUT  h=4:in  h=13:in  week-block CI(h=1) [13.0, 15.0] OUT
+      T0= 32  h=1:in  h=4:in  h=13:OUT  week-block CI(h=1) [13.0, 15.0] in
+      T0= 43  h=1:in  h=4:in  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 54  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [12.0, 14.0] in
+      T0= 65  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [13.0, 14.5] in
+##### done facebook_a gate G2 in 331s
+[facebook_a] ALL REQUESTED CELLS DONE

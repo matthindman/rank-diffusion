@@ -1,0 +1,167 @@
+[reddit_comments] cells to run: [('gate', 'R0'), ('gate', 'R2'), ('gate', 'R4'), ('gate', 'G1')]
+[reddit_comments] universes prebuilt and panel slimmed in 65s
+
+##### reddit_comments gate R0  {'partition': 'rw', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+REDDIT_COMMENTS — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=136  test_len=34  train-end origins=[34, 51, 68, 85, 102]  universe=top-12500 (B=4x, train-only membership) pool>=8 md6 NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 34  1.00  |  2.047      |  0.100        |    6.9   | False
+    T0= 51  1.00  |  1.332      |  0.083        |    5.5   | False
+    T0= 68  1.00  |  1.691      |  0.185        |    5.7   | False
+    T0= 85  1.00  |  1.239      |  0.218        |    5.2   | False
+    T0=102  1.00  |  1.065      |  0.237        |    5.0   | False
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 1.475 ± 0.352   |   persistence = 0.165 ± 0.062
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 0% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=102): emp median/p90 vs model median/p90
+    dRank1: emp    6/  26   model    8/  38
+    dRank4: emp    8/  34   model   19/ 118
+    dRank13: emp   11/  50   model   57/ 742
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 34     7.54 |    6.86  | -0.10 |     6.9      0.9  | 0.18/0.65/0.97
+    T0= 51     7.14 |    6.74  | -0.06 |     5.5      0.7  | 0.19/0.62/0.96
+    T0= 68     7.19 |    6.76  | -0.06 |     5.7      0.9  | 0.21/0.64/0.96
+    T0= 85     6.52 |    6.15  | -0.06 |     5.2      0.7  | 0.20/0.63/0.97
+    T0=102     6.41 |    6.09  | -0.05 |     5.0      0.6  | 0.19/0.60/0.96
+    CRPS skill vs persistence @ dRank1: -0.067 ± 0.016  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.372 ± 0.142  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -2.475 ± 1.058  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 34  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 7.0] OUT
+      T0= 51  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 7.0] OUT
+      T0= 68  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [5.0, 6.0] OUT
+      T0= 85  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 6.0] OUT
+      T0=102  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 6.0] OUT
+##### done reddit_comments gate R0 in 108s
+
+##### reddit_comments gate R2  {'partition': 'ou_noise', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+REDDIT_COMMENTS — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=136  test_len=34  train-end origins=[34, 51, 68, 85, 102]  universe=top-12500 (B=4x, train-only membership) pool>=8 md6 NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 34  0.70  |  0.205      |  0.100        |    2.1   | True
+    T0= 51  0.50  |  0.110      |  0.083        |    1.6   | True
+    T0= 68  0.70  |  0.262      |  0.185        |    1.6   | True
+    T0= 85  0.35  |  0.327      |  0.218        |    1.9   | True
+    T0=102  0.50  |  0.299      |  0.237        |    1.2   | True
+
+  sigma_obs_scale stability: [0.7, 0.5, 0.7, 0.35, 0.5]  median=0.50 range=0.35-0.70
+  MODEL rel err = 0.241 ± 0.077   |   persistence = 0.165 ± 0.062
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 100% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=102): emp median/p90 vs model median/p90
+    dRank1: emp    6/  26   model    6/  23
+    dRank4: emp    8/  34   model   10/  38
+    dRank13: emp   11/  50   model   15/  54
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 34     6.89 |    6.86  | -0.01 |     2.1      0.9  | 0.18/0.50/0.87
+    T0= 51     6.75 |    6.74  | -0.00 |     1.6      0.7  | 0.19/0.50/0.90
+    T0= 68     6.76 |    6.76  | -0.00 |     1.6      0.9  | 0.21/0.53/0.90
+    T0= 85     6.20 |    6.15  | -0.01 |     1.9      0.7  | 0.20/0.53/0.86
+    T0=102     6.09 |    6.09  | -0.00 |     1.2      0.6  | 0.19/0.52/0.88
+    CRPS skill vs persistence @ dRank1: -0.003 ± 0.003  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.005 ± 0.004  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.009 ± 0.005  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 34  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 7.0] in
+      T0= 51  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [6.0, 7.0] in
+      T0= 68  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [5.0, 6.0] in
+      T0= 85  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 6.0] in
+      T0=102  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 6.0] in
+##### done reddit_comments gate R2 in 1162s
+
+##### reddit_comments gate R4  {'partition': 'full', 'temper': True, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+REDDIT_COMMENTS — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=136  test_len=34  train-end origins=[34, 51, 68, 85, 102]  universe=top-12500 (B=4x, train-only membership) temper pool>=8 md6 NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 34  0.50  |  0.298      |  0.100        |    2.1   | True  s=0.64
+    T0= 51  0.70  |  0.119      |  0.083        |    1.7   | True  s=0.65
+    T0= 68  1.00  |  0.138      |  0.185        |    1.9   | False  s=0.65
+    T0= 85  1.00  |  0.317      |  0.218        |    1.3   | False  s=0.65
+    T0=102  0.70  |  0.224      |  0.237        |    1.0   | False  s=0.67
+
+  sigma_obs_scale stability: [0.5, 0.7, 1.0, 1.0, 0.7]  median=0.70 range=0.50-1.00
+  MODEL rel err = 0.219 ± 0.081   |   persistence = 0.165 ± 0.062
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 40% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=102): emp median/p90 vs model median/p90
+    dRank1: emp    6/  26   model    7/  26
+    dRank4: emp    8/  34   model   10/  38
+    dRank13: emp   11/  50   model   14/  54
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 34     6.92 |    6.86  | -0.01 |     2.1      0.9  | 0.18/0.55/0.93
+    T0= 51     6.77 |    6.74  | -0.00 |     1.7      0.7  | 0.19/0.50/0.94
+    T0= 68     6.77 |    6.76  | -0.00 |     1.9      0.9  | 0.21/0.57/0.91
+    T0= 85     6.18 |    6.15  | -0.00 |     1.3      0.7  | 0.20/0.57/0.89
+    T0=102     6.10 |    6.09  | -0.00 |     1.0      0.6  | 0.19/0.57/0.91
+    CRPS skill vs persistence @ dRank1: -0.004 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.008 ± 0.009  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.010 ± 0.009  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 34  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 7.0] in
+      T0= 51  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [6.0, 7.0] in
+      T0= 68  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [5.0, 6.0] OUT
+      T0= 85  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 6.0] OUT
+      T0=102  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 6.0] OUT
+##### done reddit_comments gate R4 in 1290s
+
+##### reddit_comments gate G1  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': 'state', 'spec_b': False}
+
+========================================================================
+REDDIT_COMMENTS — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=136  test_len=34  train-end origins=[34, 51, 68, 85, 102]  universe=top-12500 (B=4x, train-only membership) temper pool>=8 md6 t-tails NNLS COND:state
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 34  0.50  |  0.187      |  0.100        |    0.6   | True  s=0.64
+    T0= 51  0.70  |  0.077      |  0.083        |    1.4   | True  s=0.65
+    T0= 68  1.00  |  0.233      |  0.185        |    2.0   | False  s=0.65
+    T0= 85  1.00  |  0.282      |  0.218        |    0.7   | False  s=0.65
+    T0=102  0.00  |  0.152      |  0.237        |    0.8   | True  s=0.67
+
+  sigma_obs_scale stability: [0.5, 0.7, 1.0, 1.0, 0.0]  median=0.70 range=0.00-1.00
+  MODEL rel err = 0.186 ± 0.070   |   persistence = 0.165 ± 0.062
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 60% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=102): emp median/p90 vs model median/p90
+    dRank1: emp    6/  26   model    6/  24
+    dRank4: emp    8/  34   model    9/  35
+    dRank13: emp   11/  50   model   13/  52
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 34     6.85 |    6.86  | +0.00 |     0.6      0.9  | 0.18/0.50/0.91
+    T0= 51     6.75 |    6.74  | -0.00 |     1.4      0.7  | 0.19/0.50/0.92
+    T0= 68     6.80 |    6.76  | -0.01 |     2.0      0.9  | 0.21/0.57/0.93
+    T0= 85     6.16 |    6.15  | -0.00 |     0.7      0.7  | 0.20/0.57/0.91
+    T0=102     6.09 |    6.09  | -0.00 |     0.8      0.6  | 0.19/0.52/0.89
+    CRPS skill vs persistence @ dRank1: -0.002 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.003 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank13: -0.006 ± 0.004  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 34  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 7.0] in
+      T0= 51  h=1:in  h=4:in  h=13:in  week-block CI(h=1) [6.0, 7.0] in
+      T0= 68  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [5.0, 6.0] OUT
+      T0= 85  h=1:OUT  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 6.0] OUT
+      T0=102  h=1:in  h=4:OUT  h=13:OUT  week-block CI(h=1) [6.0, 6.0] in
+##### done reddit_comments gate G1 in 1421s
+[reddit_comments] ALL REQUESTED CELLS DONE

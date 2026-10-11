@@ -5334,3 +5334,268 @@ running; the volume unmounted cleanly and T9 stayed mounted. It is to stay
 unplugged until the replacement drive is in hand, so a session that finds
 `/Volumes/My Passport for Mac` missing should treat that as intended.
 
+## 2z-ap. 2026-10-12 — EXPLORATORY MEASUREMENT: a step-by-step ladder from a simple rank diffusion to the frozen stacks, five development panels, 80 cells including 37 gate evaluations. Noise and a home carry 83% of the combined improvement and the first three steps 86%; the amplitude step raises the macro error on all five panels; the frozen structure cards and the long-submissions gate reproduce exactly, and the other four gates score lower at 20 reps than their recorded 3-rep values. No change adopted; no default, frozen stack, gate, threshold or protocol touched
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12, 00:10–02:18
+Japan time; started from commit 71c7e07. The ladder scripts, their tests and
+the run folder were uncommitted when the cells ran, so the ledger rows name
+71c7e07 for the estimator, simulator and gate, which were unmodified. §2z-ah,
+§2z-aj, §2z-al, §2z-an and §2z-ao in the working copy may not yet be
+committed._
+
+**Owner request.** "in the x-collection project we just did an explainer,
+showing how adding additional model components increased accuracy. I want
+you to do something similar in spirit for the core models here. Start from
+the baseline of a simple rank diffusion model, and show how adding
+additional features improves fit. Think hard about how best to do this.
+Weight the two primary goals -- capturing macro-level stability and
+individual endpoint movement -- equally; and find the appropriate way to
+weight across the different data sets."
+
+**Tier.** Exploratory diagnostic on DEVELOPMENT data (`EXPOSURE_LEDGER.md`,
+contact line of 2026-10-12). Nothing here confirms anything, no rung is a
+candidate, and the index defined below is a presentation device (a Tier-3
+probe in the §2z-a hierarchy), not a criterion. Gate v1 is used unchanged.
+
+**Design, written before the first cell**
+(`llm_fitting/runs/2026-10-12_ladder/DESIGN.md`, file time 00:27; the first
+cell finished 00:33). Every rung is a refit.
+
+| id | adds | fit |
+|---|---|---|
+| R0 | rank diffusion: random walk in log activity, volatility by permanent-rank band | all of γ0 permanent |
+| R1 | noise | γ0..γ6, random-walk level + white noise |
+| R2 | home | γ0..γ6, OU level on the committed reversion grid + white noise |
+| R3 | short-lived swings | the unrestricted `--md-lags 6` fit |
+| R4 | endpoint amplitude | `--temperament` |
+| R5 | fat tails | `--t-tails` |
+| S1–S4 | structure only: `--md-vr-long`, `--stat-factor`, `--two-scale`, `--mix-hetero` | FB Era A, comments, long submissions; Instagram S2 only; short submissions none |
+| G1, G2 | movement only: `--conditional state`; then `--spec-b` (FB) or `--mix-hetero` (comments) | G1 all panels |
+
+The last structure rung is each panel's frozen structure stack and the last
+movement rung its frozen movement stack (`frozen-specs.md` §2; long
+submissions: the LONG stack of `subs_backtest.py` and the P6 command of
+PREREG_2026-07-16). R0–R2 are restrictions of `_md_partition` swapped in for
+one fit and restored (`ladder_explainer.py`: reversion grid fixed at 0.9999,
+φ fixed at 0, white part booked as σ_obs). All rungs share K, B = 4K,
+`min_knot_n = 8`, exact NNLS, exit and rebirth, the common factor, seeds
+0..19.
+
+- **Movement score:** Gate v1 exactly (5 rolling origins, 20 reps, 2,000
+  bootstrap draws, the seven moments, `MOM_FLOOR`), with the gate's train
+  calibration of the σ_obs scale at every rung. For R0, σ_obs ≡ 0 and the
+  search is skipped at scale 1.0; a synthetic run confirmed the skip returns
+  the same number as the committed search.
+- **Macro score (in sample):** unconditional simulation over the panel
+  length, 20 seeds; 19 statistics in four blocks (ladder: S(1), S(10), S(100)
+  within the common recorded top-M; variance: VR2/4/8/13, ACF1/2; order:
+  rolling R²(1/4/13), RACF1/4/13; top set: rolling Pers(1/4/13), out-flux at
+  K), each error in the 15-card's own tolerance units (ratio statistics
+  |ln(sim/emp)|/ln 1.2; correlations |diff|/0.08; Pers |diff|/max(3,
+  0.15·top_k)), capped at 20; index = mean of the four block means.
+- **Combined:** per panel, exp(½ ln[macro/macro at R0] + ½ ln[gate/gate at
+  R0]); across panels a weighted geometric mean. Primary weights: one vote
+  per platform-and-metric system (FB 1/3; comments 1/3; submissions 1/3,
+  split long 1/6 and short 1/6); Instagram shown, weight 0. Four alternative
+  weightings were fixed in the design and are all reported.
+
+**Macro index by rung** (tolerance units, 1.0 = the card's pass line; bracket
+= 5th–95th percentile over seeds; then the committed card at 5 seeds, passes
+of 15 and churn error).
+
+| rung | FB Era A | comments | subs long | subs short | IG rescue |
+|---|---|---|---|---|---|
+| R0 | 3.48 [3.41, 3.55]; 3/15, 0.051 | 3.73 [3.58, 3.87]; 5/15, 0.074 | 3.53 [3.46, 3.59]; 6/15, 0.142 | 2.06 [1.96, 2.18]; 5/15, 0.108 | 4.12 [4.02, 4.21]; 6/15, 0.058 |
+| R1 | 2.34 [1.99, 2.70]; 7/15, 0.086 | 1.31 [1.13, 1.48]; 9/15, 0.036 | 0.95 [0.87, 1.03]; 11/15, 0.037 | 0.63 [0.53, 0.74]; 14/15, 0.103 | 2.27 [2.17, 2.35]; 7/15, 0.018 |
+| R2 | 0.90 [0.88, 0.92]; 12/15, 0.059 | 1.16 [1.13, 1.18]; 11/15, 0.027 | 1.14 [1.14, 1.15]; 11/15, 0.135 | 0.27 [0.25, 0.29]; 14/15, 0.062 | 1.85 [1.83, 1.87]; 7/15, 0.042 |
+| R3 | 1.42 [1.35, 1.49]; 11/15, 0.049 | 1.17 [1.10, 1.30]; 10/15, 0.063 | 0.73 [0.72, 0.76]; 13/15, 0.115 | 0.27 [0.24, 0.32]; 14/15, 0.066 | 1.77 [1.68, 1.85]; 9/15, 0.044 |
+| R4 | 1.55 [1.48, 1.61]; 9/15, 0.056 | 1.46 [1.30, 1.59]; 9/15, 0.046 | 0.92 [0.91, 0.96]; 11/15, 0.090 | 0.32 [0.30, 0.34]; 14/15, 0.072 | 1.83 [1.78, 1.88]; 9/15, 0.039 |
+| R5 | 1.76 [1.69, 1.83]; 9/15, 0.042 | 1.35 [1.22, 1.47]; 9/15, 0.041 | 0.89 [0.88, 0.96]; 10/15, 0.082 | 0.33 [0.30, 0.36]; 14/15, 0.052 | 2.08 [2.02, 2.14]; 5/15, 0.069 |
+| S1 | 1.23 [1.17, 1.29]; 11/15, 0.010 | 1.02 [0.95, 1.10]; 11/15, 0.040 | 0.71 [0.69, 0.73]; 10/15, 0.064 | — | — |
+| S2 | 1.11 [1.05, 1.17]; 15/15, 0.030 | 0.94 [0.89, 0.99]; 12/15, 0.064 | 0.72 [0.70, 0.73]; 10/15, 0.064 | — | 2.12 [2.07, 2.18]; 7/15, 0.061 |
+| S3 | 1.11 [1.06, 1.15]; 14/15, 0.016 | 0.90 [0.83, 0.98]; 12/15, 0.048 | 0.62 [0.60, 0.64]; 11/15, 0.061 | — | — |
+| S4 | 1.09 [1.05, 1.13]; 14/15, 0.029 | 0.86 [0.77, 0.94]; 12/15, 0.044 | 0.55 [0.53, 0.58]; 13/15, 0.068 | — | — |
+
+Simulated top-1 share over the data's, by rung (R0 … top): FB 2.61, 4.56,
+1.52, 2.58, 2.35, 3.38, 2.34, 2.38, 2.45, 2.78; comments 0.22, 1.36, 1.30,
+1.12, 1.38, 1.23, 1.32, 1.32, 1.26, 1.38; subs long 0.16, 0.58, 0.57, 0.57,
+0.56, 0.59, 0.70, 0.71, 0.73, 0.75; subs short 0.83, 1.93, 1.14, 1.15, 1.06,
+1.07; IG 5.16, 3.36, 2.02, 2.00, 2.07, 3.15, 3.66 (20-seed means; the
+seed-SD caveat of `pitfalls.md` §3 applies to every head-share number).
+
+**Gate by rung** (mean ± SD over the 5 splits; share of splits with the
+model median inside the held-out interval; then the paired change from the
+rung below, mean ± SD over splits, and the number of splits that improved).
+
+| rung | FB Era A | comments | subs long | subs short | IG rescue |
+|---|---|---|---|---|---|
+| R0 | 0.704 ± 0.105; 100% | 1.475 ± 0.352; 0% | 1.503 ± 0.114; 0% | 0.677 ± 0.024; 0% | 2.179 ± 1.554; 0% |
+| R1 | 0.218 ± 0.058; 60%; −0.486 ± 0.090 (5/5) | 0.378 ± 0.058; 20%; −1.097 ± 0.319 (5/5) | 0.332 ± 0.081; 80%; −1.171 ± 0.116 (5/5) | 0.276 ± 0.024; 100%; −0.400 ± 0.017 (5/5) | 0.439 ± 0.199; 60%; −1.740 ± 1.381 (4/5) |
+| R2 | 0.127 ± 0.050; 60%; −0.091 ± 0.068 (4/5) | 0.241 ± 0.077; 100%; −0.137 ± 0.066 (5/5) | 0.443 ± 0.431; 60%; +0.111 ± 0.368 (3/5) | 0.212 ± 0.026; 100%; −0.064 ± 0.016 (5/5) | 0.354 ± 0.097; 40%; −0.085 ± 0.227 (4/5) |
+| R3 | 0.115 ± 0.024; 100%; −0.012 ± 0.042 (3/5) | 0.236 ± 0.096; 20%; −0.005 ± 0.076 (2/5) | 0.281 ± 0.198; 60%; −0.161 ± 0.257 (2/5) | 0.128 ± 0.041; 100%; −0.084 ± 0.024 (5/5) | 0.228 ± 0.096; 60%; −0.126 ± 0.120 (4/5) |
+| R4 | 0.121 ± 0.031; 60%; +0.007 ± 0.026 (2/5) | 0.219 ± 0.081; 40%; −0.016 ± 0.021 (3/5) | 0.265 ± 0.158; 40%; −0.017 ± 0.050 (2/5) | 0.163 ± 0.019; 100%; +0.035 ± 0.028 (0/5) | 0.326 ± 0.138; 20%; +0.098 ± 0.073 (1/5) |
+| R5 | 0.123 ± 0.014; 40%; +0.002 ± 0.027 (3/5) | 0.194 ± 0.087; 80%; −0.025 ± 0.026 (4/5) | 0.295 ± 0.202; 40%; +0.031 ± 0.062 (3/5) | 0.163 ± 0.019; 100%; 0.000 (0/5) | 0.302 ± 0.109; 20%; −0.024 ± 0.038 (2/5) |
+| G1 | 0.122 ± 0.029; 60%; −0.001 ± 0.030 (2/5) | 0.186 ± 0.070; 60%; −0.008 ± 0.076 (3/5) | 0.194 ± 0.061; 80%; −0.102 ± 0.194 (3/5) | 0.129 ± 0.028; 60%; −0.034 ± 0.026 (4/5) | 0.257 ± 0.109; 60%; −0.044 ± 0.031 (4/5) |
+| G2 | 0.103 ± 0.044; 80%; −0.019 ± 0.031 (3/5) | 0.137 ± 0.056; 80%; −0.049 ± 0.035 (4/5) | — | — | — |
+| baseline | 0.145 ± 0.031 | 0.165 ± 0.062 | 0.163 ± 0.048 | 0.168 ± 0.004 | 0.593 ± 0.309 |
+
+Short submissions R4 and R5 are the same number because the t-df moment
+returns Gaussian on 12–17-week train windows. Pooled CRPS skill at the top
+rungs is within ±0.006 of zero at every horizon on every panel, as recorded
+before (§2z-q, §2z-ae).
+
+**Combined error left, relative to R0** (bracket = 5th–95th percentile from
+jointly resampling seeds and splits, 2,000 draws; it describes simulation
+and split variability and is not a confidence interval for a population of
+systems).
+
+| weighting | R1 | R2 | R3 | R4 | R5 | + structure steps | + movement steps |
+|---|---|---|---|---|---|---|---|
+| primary: one vote per system | 0.343 [0.322, 0.359] | 0.229 [0.203, 0.249] | 0.217 [0.197, 0.234] | 0.238 [0.219, 0.257] | 0.238 [0.219, 0.256] | 0.196 [0.180, 0.210] | 0.170 [0.156, 0.182] |
+| A: one vote per platform | 0.368 | 0.226 | 0.226 | 0.247 | 0.252 | 0.205 | 0.180 |
+| B: one vote per panel | 0.330 | 0.234 | 0.206 | 0.229 | 0.231 | 0.193 | 0.167 |
+| C: proportional to panel length | 0.298 | 0.256 | 0.212 | 0.231 | 0.232 | 0.186 | 0.157 |
+| D: Instagram as a fourth system | 0.340 | 0.239 | 0.216 | 0.243 | 0.245 | 0.212 | 0.187 |
+
+Primary, by goal at the top: macro 0.225, movement 0.129. Share of the total
+log improvement (primary): R1 60%, R2 23%, R3 3%, R4 −5%, R5 0%, structure
+steps 11%, movement steps 8%. Under all five weightings R1 is the largest
+step, R2 the second, R4 raises the combined error, and the top sits between
+0.157 and 0.187.
+
+**What the measurements show.**
+
+1. Noise is the largest step on both goals on every panel: gate error down
+   59–80%, macro index down 33–73%. At R0 the held-out median 13-week move
+   is 3.7 (FB), 6.5 (comments) and 5.4 (subs long) times the data's, and
+   VR13 is 0.76–0.87 on those panels against 0.14–0.20 in the data.
+2. Home lowers the gate by 19–42% on four panels and is the largest macro
+   step on FB. On long submissions R2 is worse than R1 on both scores: with
+   φ fixed at 0 the fitted κ is on the top of the committed grid (0.20) for
+   43% of knots there, and simulated RACF13 is 0.10 against 0.60 in the
+   data. R3 repairs it (κ median 0.005, RACF13 0.52).
+3. After R2 or R3 the gate does not separate the rungs on FB (0.127 → 0.103
+   over five steps, paired changes all within their split SD). On comments
+   it falls from 0.241 to 0.137, with the largest late step at G2
+   (`--mix-hetero`, −0.049 ± 0.035, 4/5).
+4. The amplitude step raises the macro index on all five panels (FB +9%,
+   comments +24%, subs long +25%, subs short +16%, IG +4%), mostly through
+   the variance block; the seed bands separate cleanly only on long
+   submissions. At R4 the simulators scale σ_trans and σ_obs by the
+   amplitude and not σ_perm (the gap of `frozen-specs.md` §5). S1–S4 more
+   than recover the loss on the three long panels, mostly at S1; S4 itself
+   moves the index by −1%, −5% and −11%. A rung with `--mix-hetero` directly
+   after R3 was NOT RUN, so whether the half-step causes the loss is a
+   conjecture.
+5. On FB the three-profile R2 has the lowest macro index on the ladder (0.90
+   against 1.09 for the frozen stack), through the ladder block: top-1 share
+   1.52× the data against 2.78×. The frozen stack is better on the variance
+   block (0.13 against 0.45) and the card (14/15 against 12/15). R2's κ is at
+   the top of the grid on 80% of FB knots (35% on comments), so it is a
+   boundary value, not an identified estimate, and R2 is not a candidate. The
+   head-share residual of §2z-b is visible from R3 on at 2.3–3.4× on FB and
+   2.0–3.7× on Instagram.
+6. The upper tail of held-out movement (90th percentile, recorded per split,
+   not scored by the gate) is under-predicted by 37–39% at 13 weeks on FB
+   from R3 to the top; R4 and R5 do not change it. On comments it is within
+   +10% at every rung from R3.
+7. Neither score contains the moments that identify the amplitude and the
+   tails (the variance-dispersion moment, s = 0.69–1.12 on these panels; the
+   within-entity kurtosis moment, df 4.3–4.6 where it is finite). "No gain on
+   this index" is therefore not evidence that either is unnecessary.
+8. On long submissions the held-out coll1 is 0 in three of five splits and
+   0.038 and 0.077 in the other two, so that one moment dominates the gate
+   there (R2's split at T0 = 132 scores 1.246).
+
+**Predictions written in DESIGN.md, scored.**
+
+| # | prediction | outcome | verdict |
+|---|---|---|---|
+| 1 | R0 fails both goals everywhere: VR near 1, head shares at least twice the data, gate at least twice the baseline | gate 3.7–9.2× baseline; VR13 0.61–0.87 on four panels, 0.34 on the 30-week panel; top-1 share 2.6× and 5.2× on FB and IG but 0.16–0.83× on the three Reddit panels | PARTIAL |
+| 2 | R1 is the largest single movement gain on every panel, 40% or more | 59–80% on all five | PASS |
+| 3 | R2 is the largest single macro gain on the long panels and moves the gate by less than 0.05 | largest macro step on FB only; gate moved 0.064–0.137 on every panel (up on subs long) | FAIL |
+| 4 | R3 removes less than 20% of the remaining error on either goal | gate −36% to −40% on three panels; macro −36% on subs long and +58% on FB | FAIL |
+| 5 | R4 improves the gate on the Reddit panels by 0.02 or more and raises the S(1) error on FB | −0.016, −0.017, +0.035; FB top-1 ratio fell from 2.58 to 2.35 | FAIL |
+| 6 | R5 changes the gate by less than 0.02 and raises the S(1) error on FB | FB top-1 ratio 2.35 → 3.38; gate moved 0.024–0.031 on three panels, each inside its paired split SD | PARTIAL |
+| 7 | G1 improves the gate on the submissions panels and does little on FB; G2 brings FB to about 0.12 | −0.034 and −0.102; −0.001 on FB; FB top 0.103 ± 0.044 | PASS |
+| 8 | S1–S4 improve the variance block on FB and comments; S3 helps FB more than comments | variance block 1.28 → 0.13 and 2.39 → 1.32; S3 moved the index 1% on FB and 4% on comments | PARTIAL |
+| 9 | the top rungs reproduce the recorded values within their recorded split spread | see the next table | PASS |
+| 10 | R0–R3 account for at least 70% of the combined log improvement | 86% | PASS |
+
+**Reproduction.** The recorded gate commands of `frozen-specs.md` §2 were
+also run verbatim (CLI defaults: 3 reps, 400 bootstrap draws).
+
+| panel | structure card, record → ladder top | gate, record | recorded command, today | ladder top, 20 reps / 2,000 draws |
+|---|---|---|---|---|
+| FB Era A | 14/15, 0.029 (§2z-g) → 14/15, 0.029 | 0.123 ± 0.033, 60% (§2z-g) | 0.123 ± 0.033, 60% | 0.103 ± 0.044, 80%; below baseline 4/5; scale 1.0 on 5/5 |
+| comments | 12/15, 0.044 → 12/15, 0.044 | 0.171 ± 0.046, 60% | 0.171 ± 0.046, 60% | 0.137 ± 0.056, 80%; below baseline 4/5 |
+| subs short | 14/15, 0.052 → 14/15, 0.052 | 0.164 ± 0.053, 80% | 0.164 ± 0.053, 80% | 0.129 ± 0.028, 60%; below baseline 5/5 |
+| IG rescue | 8/15, 0.062 at 20 seeds → 8/15, 0.062 at 20 seeds | 0.320 ± 0.189, 60% | 0.320 ± 0.189, 60% | 0.257 ± 0.109, 60%; below baseline 4/5 |
+| subs long | none recorded for this card → 13/15, 0.068 | 0.194 ± 0.061, 80%, at 20 reps (§2z-ae P6) | not rerun | 0.194 ± 0.061, 80%; below baseline 2/5 |
+
+So the code and the panels are unchanged, and the four reference gates of
+§2z-g were recorded at 3 reps. At 20 reps the same stacks score 0.020–0.063
+lower on all four. That direction is what Monte Carlo noise in an absolute
+deviation would produce when the baseline has none; the cause was NOT
+isolated here (no rep sweep was run). The frozen reference values and every
+recorded verdict stand as recorded. Whether to re-record the reference gates
+at the registered precision is an owner decision.
+
+**Verdict.** No adoption rule applies and nothing is adopted. As a
+description: the three-component partition (noise, home, short-lived swings)
+carries 86% of the combined improvement on this index; the later features
+are identified from moments this index does not score, and their measured
+contribution to it is small and mixed in sign. This is development evidence
+about parsimony (`PROGRAM_STATE.md`, open residual 7), not a ranking of
+models.
+
+**Limits.** The macro score is in sample and the variance block is partly a
+fitting target from R1 on. The gains are path-dependent: the order is the
+logical nesting and the program's history, was fixed in advance and was not
+searched, and no leave-one-out was run. The gate limits of
+`evidence-standards.md` §4 apply to every gate number here. 37 exploratory
+and 4 reproduction evaluations were added to the same development panels;
+all are in `GATE_LEDGER.md`.
+
+**Execution record.** 43 structure cells and 37 gate cells, 00:33–02:11, all
+completed; no cell was killed after producing output. Two execution
+problems, neither affecting a number: (i) the first launch at 00:32 from the
+desktop app's Terminal panel left the two processes that read `/Volumes/T9`
+blocked in `open()` (`sample` showed the stack; nothing was read or scored);
+they were killed and relaunched at 00:35 from the agent shell; (ii) the
+single Instagram process started at 01:15:04 was stopped during its first
+structure cell, before any cell was written, and restarted as three
+processes to shorten the wall time. `scripts/health_check.sh` after the
+work: PASS (research suite 414 passed, including the 10 new tests; package
+suite 8 passed; legacy guard 14/15, churn 0.013). Not committed in this
+session: the owner had not asked for a commit.
+
+**Files.** `llm_fitting/ladder_explainer.py` (runner and summary),
+`llm_fitting/ladder_explainer_page.py` with
+`ladder_explainer_template.tmpl` (page builder), `tests/test_ladder_explainer.py`
+(10 tests: recovery by each restricted partition, restoration of the
+committed estimator and grids, the top rungs equal the frozen stacks, index
+units, weights, the gate formula), and
+`llm_fitting/runs/2026-10-12_ladder/` (DESIGN.md, launch.zsh, 80 cell JSONs,
+gate logs, the four reproduction logs, summary.json, explainer_text.json,
+gate_ledger_rows.md). The built page is `explainer.html` in that folder
+(git-ignored as a build product) and was published to the owner as a private
+artifact. No existing code file was modified.
+
+**Commands.**
+```
+zsh llm_fitting/runs/2026-10-12_ladder/launch.zsh          # every cell; skips cells already on disk
+python -u llm_fitting/ladder_explainer.py run --panel facebook_a --out llm_fitting/runs/2026-10-12_ladder
+python llm_fitting/ladder_explainer.py summarize --out llm_fitting/runs/2026-10-12_ladder
+python llm_fitting/ladder_explainer_page.py --out llm_fitting/runs/2026-10-12_ladder
+```
+
+**For the owner.** (a) Whether to re-record the four reference gates at 20
+reps. (b) The b = 1 implementation gap already on the open list now has
+measurements on both sides: the macro index rises at the movement-only
+amplitude step on five panels, and `--mix-hetero` is the largest late gate
+step on comments; a direct test (the full amplitude straight after R3, on
+the gate for FB and short submissions as well) would be a candidate
+evaluation with its own dossier and was not run. (c) Whether a leave-one-out
+from each frozen stack is wanted beside this forward path.
+

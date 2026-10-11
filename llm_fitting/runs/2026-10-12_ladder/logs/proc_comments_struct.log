@@ -1,0 +1,233 @@
+[reddit_comments] cells to run: [('struct', 'R0'), ('struct', 'R1'), ('struct', 'R2'), ('struct', 'R3'), ('struct', 'R4'), ('struct', 'R5'), ('struct', 'S1'), ('struct', 'S2'), ('struct', 'S3'), ('struct', 'S4')]
+[reddit_comments] universes prebuilt and panel slimmed in 37s
+
+##### reddit_comments struct R0  {'partition': 'rw', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done reddit_comments struct R0 in 69s
+
+##### reddit_comments struct R1  {'partition': 'rw_noise', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done reddit_comments struct R1 in 66s
+
+##### reddit_comments struct R2  {'partition': 'ou_noise', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done reddit_comments struct R2 in 61s
+
+##### reddit_comments struct R3  {'partition': 'full', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done reddit_comments struct R3 in 65s
+
+##### reddit_comments struct R4  {'partition': 'full', 'temper': True, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done reddit_comments struct R4 in 66s
+
+##### reddit_comments struct R5  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done reddit_comments struct R5 in 72s
+
+##### reddit_comments struct S1  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': True, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done reddit_comments struct S1 in 71s
+
+##### reddit_comments struct S2  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': True, 'stat_factor': True, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done reddit_comments struct S2 in 72s
+
+##### reddit_comments struct S3  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': True, 'stat_factor': True, 'two_scale': True, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done reddit_comments struct S3 in 82s
+
+##### reddit_comments struct S4  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': True, 'stat_factor': True, 'two_scale': True, 'mix_hetero': True, 'conditional': None, 'spec_b': False}
+    seed 1/20
+    seed 2/20
+    seed 3/20
+    seed 4/20
+    seed 5/20
+    seed 6/20
+    seed 7/20
+    seed 8/20
+    seed 9/20
+    seed 10/20
+    seed 11/20
+    seed 12/20
+    seed 13/20
+    seed 14/20
+    seed 15/20
+    seed 16/20
+    seed 17/20
+    seed 18/20
+    seed 19/20
+    seed 20/20
+##### done reddit_comments struct S4 in 82s
+[reddit_comments] ALL REQUESTED CELLS DONE

@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-11.** This page is a digest for starting a session quickly.
+**As of 2026-10-12.** This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -37,6 +37,7 @@ diagnostics on DEVELOPMENT data do not wait for it.
 | Outcome-unseen backtest, long submissions panel | eight registered items passed; s-trend (P4a) and functional VR share (P9b) failed; departure deficit replicated | §2z-ae |
 | Instagram 2023 dailies (P10, P11) | NOT ADJUDICATED: wrong observational unit in the registered build | §2z-ae |
 | Binding claim paragraph for the paper | adopted by the owner | §6 addendum 2026-07-12 |
+| Step-by-step ladder from a simple rank diffusion to the frozen stacks, five development panels (exploratory) | noise, home and short-lived swings carry 86% of the combined improvement on an equal-weight index of in-sample macro stability and the held-out gate; the amplitude step raises the macro index on all five panels; the reference gates of §2z-g were recorded at 3 reps and score 0.02–0.06 lower at 20 | §2z-ap; `runs/2026-10-12_ladder/` |
 
 ## Open residuals (measured)
 
@@ -63,7 +64,9 @@ diagnostics on DEVELOPMENT data do not wait for it.
    not predict out of sample (§2z-q E4, §2z-s).
 7. **Parsimony is unmeasured.** About 500 moment-estimated band values over
    about 55 knots have never been tested against a low-dimensional form
-   (§1, §2z-ai).
+   (§1, §2z-ai). A first measurement on the component side exists:
+   the forward ladder of §2z-ap. It does not test the band profiles, and it
+   has no leave-one-out.
 8. **Breadth.** Two platforms and three metrics, plus a censored Instagram
    demonstration.
 
@@ -153,7 +156,16 @@ is in the newest data-operation entries of MODEL_STATUS.
   on.
 - Whether to replace the kurtosis-based t-df moment.
 - The b = 1 implementation gap between the main law and the frozen movement
-  stacks (`frozen-specs.md` §5).
+  stacks (`frozen-specs.md` §5). §2z-ap adds measurements on both sides (the
+  macro index rises at the movement-only amplitude step on five panels;
+  `--mix-hetero` is the largest late gate step on comments); the direct test
+  has not been run.
+- Whether to re-record the four reference gates of §2z-g at 20 reps and
+  2,000 bootstrap draws. They were recorded at the command-line defaults (3
+  reps) and reproduce exactly at those; at 20 reps the same stacks score
+  0.103, 0.137, 0.129 and 0.257 (§2z-ap).
+- Whether a leave-one-out from each frozen stack is wanted beside the
+  forward ladder of §2z-ap.
 - A pandas-3 fix for the registered intake tooling (§2z-ai).
 - The Instagram joint-post allocation build
   (`IG_JOINT_POST_ALLOCATION_PLAN_2026-07-18.md`).

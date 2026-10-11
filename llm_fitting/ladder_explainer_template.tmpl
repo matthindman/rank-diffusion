@@ -1,0 +1,495 @@
+<title>Rank Diffusion Ladder</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of about 68 characters; figures and tables break out to the full 1040px frame. */
+:root {
+  --bg: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink2: #52514e; --muted: #807e78;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,.12); --wash: rgba(11,11,11,.035);
+  --macro: #2a78d6; --move: #eb6834; --comb: #1baf7a; --over: #d03b3b; --under: #2a78d6;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink2: #c3c2b7; --muted: #94928b;
+    --grid: #2c2c2a; --axis: #45453f; --border: rgba(255,255,255,.14); --wash: rgba(255,255,255,.05);
+    --macro: #3987e5; --move: #d95926; --comb: #199e70; --over: #e66767; --under: #3987e5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink2: #c3c2b7; --muted: #94928b;
+  --grid: #2c2c2a; --axis: #45453f; --border: rgba(255,255,255,.14); --wash: rgba(255,255,255,.05);
+  --macro: #3987e5; --move: #d95926; --comb: #199e70; --over: #e66767; --under: #3987e5;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.55; padding-inline: 20px; padding-block: 40px 72px; }
+main { max-width: 1040px; margin-inline: auto; display: flex; flex-direction: column; gap: 56px; }
+section, header { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(30px, 5vw, 46px); letter-spacing: -0.01em; max-width: 22ch; }
+h2 { font-size: 26px; }
+h3 { font-family: var(--sans); font-size: 15px; font-weight: 600; }
+p, ul, ol { margin: 0; max-width: 68ch; }
+ul, ol { padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; }
+.lead { font-family: var(--serif); font-size: 20px; line-height: 1.45; color: var(--ink); max-width: 62ch; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.note { color: var(--ink2); font-size: 14px; }
+code, .mono { font-family: var(--mono); font-size: .88em; }
+a { color: inherit; }
+.status { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--ink2); border-top: 1px solid var(--border); padding-top: 12px; }
+.status b { color: var(--ink); font-weight: 600; }
+
+figure { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+figcaption { font-size: 13px; color: var(--ink2); max-width: 82ch; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; min-width: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key { width: 16px; height: 0; border-top: 2px solid var(--c); display: inline-block; }
+.swatch { width: 10px; height: 10px; border-radius: 2px; background: var(--c); display: inline-block; }
+svg text { font-family: var(--sans); }
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* the ladder */
+.ladder { display: flex; flex-direction: column; }
+.rung { display: grid; grid-template-columns: 44px minmax(0, 1fr) 168px 168px 132px; gap: 6px 20px; align-items: center; padding: 14px 0; border-top: 1px solid var(--grid); }
+.rung.head { border-top: 0; padding: 0 0 8px; align-items: end; font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.rung.fork { border-top: 1px solid var(--axis); }
+.rid { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.what { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.what b { font-weight: 600; }
+.what span { font-size: 14px; color: var(--ink2); }
+.eq { font-family: var(--mono); font-size: 12.5px; color: var(--ink2); background: var(--wash); border-radius: 3px; padding: 3px 7px; align-self: flex-start; white-space: pre-wrap; overflow-wrap: anywhere; }
+.gain { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.gain .lab { display: none; font-size: 11px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.track { position: relative; height: 10px; }
+.track::before { content: ""; position: absolute; left: 25%; top: -3px; bottom: -3px; width: 1px; background: var(--axis); }
+.fill { position: absolute; top: 0; bottom: 0; background: var(--c); }
+.fill.pos { left: calc(25% + 1px); border-radius: 0 4px 4px 0; }
+.fill.neg { right: 75%; border-radius: 4px 0 0 4px; opacity: .55; }
+.gain .val { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--ink); }
+.gain .val small { color: var(--muted); font-size: 12px; }
+.left .num { font-size: 22px; font-weight: 600; line-height: 1; }
+.left small { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+@media (max-width: 860px) {
+  .rung { grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); }
+  .rung.head { display: none; }
+  .what { grid-column: 2 / -1; }
+  .gain { grid-column: auto; }
+  .gain.m { grid-column: 2; }
+  .gain .lab { display: block; }
+  .left { grid-column: 2 / -1; display: flex; align-items: baseline; gap: 10px; }
+  .left small { margin: 0; }
+}
+
+/* small multiples */
+.multi { display: grid; grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1fr); gap: 14px 18px; align-items: center; }
+.multi .rowlab { font-weight: 600; font-size: 14px; }
+.multi .rowlab small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+.multi .colhead { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.multi .ctitle { display: none; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.multi .cell { min-width: 0; }
+@media (max-width: 760px) { .multi { grid-template-columns: minmax(0, 1fr); } .multi .colhead { display: none; } .multi .ctitle { display: block; } }
+
+/* tables */
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; width: 100%; }
+th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { font-weight: 500; color: var(--ink2); font-size: 12px; vertical-align: bottom; white-space: normal; min-width: 64px; }
+th:first-child, td:first-child { text-align: left; }
+td.t, th.t { text-align: left; white-space: normal; min-width: 150px; }
+td.heat { color: var(--ink); }
+tr.sep td { border-top: 1px solid var(--axis); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--ink2); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.seg button:focus-visible { outline: 2px solid var(--macro); outline-offset: 2px; }
+details { border-top: 1px solid var(--grid); padding-top: 10px; }
+summary { cursor: pointer; font-size: 14px; color: var(--ink2); }
+.tip { position: fixed; z-index: 10; pointer-events: none; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.14); max-width: 260px; }
+.tip .tt { color: var(--ink2); margin-bottom: 4px; }
+.tip .tr { display: flex; align-items: center; gap: 6px; }
+.tip .tr b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.tip .tr span { color: var(--ink2); }
+.two { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+.verdict { font-weight: 600; }
+footer { font-size: 13px; color: var(--ink2); border-top: 1px solid var(--border); padding-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+</style>
+
+<main>
+<header>
+  <div class="eyebrow">Rank-diffusion program · model ladder · 12 October 2026</div>
+  <h1>What each part of the model buys</h1>
+  <p class="lead"><!--@lead@--></p>
+  <div class="status">
+    <span><b>Status</b> exploratory, development data only</span>
+    <span><b>Scores</b> macro stability in sample; movement held out (Gate v1)</span>
+    <span><b>Record</b> MODEL_STATUS §2z-ap</span>
+  </div>
+</header>
+
+<section>
+  <h2>The ladder</h2>
+  <p>Each row adds one feature to the row above and refits the model from scratch. The bars show how much of the previous row's error the step removes on each goal, averaged over the data sets. The last column is the error that remains, relative to the simple rank diffusion, with the two goals weighted equally.</p>
+  <figure>
+    <div class="card"><div class="ladder" id="ladder"></div></div>
+    <figcaption><!--@ladder_caption@--></figcaption>
+  </figure>
+  <!--@findings@-->
+</section>
+
+<section>
+  <h2>How fit is scored</h2>
+  <p><b>Macro stability</b> asks whether a system simulated from the fitted model keeps the aggregate picture the data shows: the concentration of activity at the top, the way dispersion grows with horizon, how well the ordering persists, and how fast the top set turns over. Nineteen statistics in four blocks are compared between twenty simulated panels and the real one. Each error is expressed in units of the tolerance the program's 15-row scorecard already uses, so 1.0 means "at the scorecard's pass line". This score is in sample.</p>
+  <p><b>Endpoint movement</b> is the program's out-of-sample gate, unchanged. The model is fitted on a training window and must predict how far endpoints move over the next 1, 4 and 13 weeks, how sticky ranks are, and how often the occupants of ranks 1, 5 and 20 change. Five rolling origins, twenty simulations each. The yardstick is the historical-mobility baseline, which simply assumes the test window will look like the training window.</p>
+  <p><b>Equal weight.</b> Each score is divided by its value for the simple rank diffusion, and the two ratios are averaged on the log scale. A step that halves the macro error counts exactly as much as a step that halves the movement error.</p>
+  <figure>
+    <div class="card">
+      <div class="legend" id="composite-legend"></div>
+      <div class="chart" id="composite"></div>
+    </div>
+    <figcaption><!--@composite_caption@--></figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Each data set</h2>
+  <p><!--@panels_note@--></p>
+  <figure>
+    <div class="card"><div class="multi" id="multi"></div></div>
+    <figcaption>Left: macro-stability error in scorecard-tolerance units; the horizontal line marks 1.0 and the band is the 5th–95th percentile over simulation seeds. Right: held-out gate error; whiskers are ± one standard deviation across the five splits, and the horizontal line is the historical-mobility baseline. Log scales. S steps exist only for the structure score and G steps only for the gate.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>What each step repairs</h2>
+  <p><!--@repairs_note@--></p>
+  <div class="seg" id="panel-select" role="group" aria-label="Data set"></div>
+  <div class="two">
+    <figure>
+      <h3>Macro stability, by block</h3>
+      <div class="card scroll"><table id="heat-macro"></table></div>
+      <figcaption>Mean error in tolerance units. Darker cells are further from the data.</figcaption>
+    </figure>
+    <figure>
+      <h3>Held-out movement, by moment</h3>
+      <div class="card scroll"><table id="heat-move"></table></div>
+      <figcaption>Model value relative to the held-out value, averaged over splits. Red over-predicts, blue under-predicts. The gate scores the absolute relative error of the first seven columns, split by split. * The 90th-percentile columns are the upper tail of movement; the gate does not score them.</figcaption>
+    </figure>
+  </div>
+  <details>
+    <summary>All nineteen macro statistics for this data set</summary>
+    <div class="scroll"><table id="stats"></table></div>
+  </details>
+</section>
+
+<section>
+  <h2>Weighting across data sets</h2>
+  <p>The summary gives one vote to each platform-and-metric system that has model-grade data: Facebook interactions, Reddit comment karma and Reddit submission karma. The two submissions panels share one vote. Three reasons. The claim is about how the model does on a system of this kind, so the unit is the system and not the entity-week; weighting by size would let the largest panel speak for all of them. The systems differ in what helps them, and with this few systems the spread between them cannot be estimated, so equal votes are the unbiased average. And panels that share communities or a metric are not independent replications. Instagram is shown but does not vote: its panel is censored by the collection query and the program records it as a breadth demonstration.</p>
+  <p>Four other weightings were fixed before the run. <!--@weights_note@--></p>
+  <figure>
+    <div class="card scroll"><table id="weights"></table></div>
+    <figcaption>Error left relative to the simple rank diffusion (1.00), under each weighting. Bands in brackets are the 5th–95th percentile from resampling simulation seeds and gate splits.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Predictions, scored</h2>
+  <p>Ten predictions were written into the design file before the first cell ran.</p>
+  <div class="card scroll"><!--@predictions@--></div>
+</section>
+
+<section>
+  <h2>Top of the ladder against the record</h2>
+  <p>The last structure rung is each panel's frozen structure stack and the last movement rung is its frozen movement stack, so the top of the ladder doubles as a reproduction of recorded values.</p>
+  <div class="card scroll"><!--@repro@--></div>
+</section>
+
+<section>
+  <h2>Every number</h2>
+  <p class="note">Use the data-set buttons above to switch. Profiles are rank-dependent parameter curves of about 55 knots each; scalars are single numbers. Every rung also carries an exit-rate profile, a factor-loading profile and the seeded ladder.</p>
+  <div class="card scroll"><table id="detail"></table></div>
+</section>
+
+<section>
+  <h2>What this cannot show</h2>
+  <ul>
+    <li>The macro score is in sample, and later rungs fit more moments of the same data. The variance block is partly a fitting target from the noise step on. The ladder, order and top-set blocks are never fitted.</li>
+    <li>The gains depend on the order of the steps. The order follows the logical nesting of the model and the order in which the program added the features. It was not searched.</li>
+    <li>The gate scores pooled displacement among survivors. It cannot see departures or the upper tail of movement, and under stationarity a tie with the baseline is the expected result for any adequate model.</li>
+    <li>Bands describe simulation-seed and split variability. Five overlapping splits are not five independent experiments, and nothing here is a confidence interval for a population of systems.</li>
+    <li>All of this is development data. Nothing here confirms the model, and no rung is a candidate for adoption.</li>
+    <!--@limits_extra@-->
+  </ul>
+</section>
+
+<footer>
+  <div><!--@provenance@--></div>
+</footer>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const D = /*__DATA__*/null;
+const S = D.summary, P = S.panels, C = S.composite, COPY = D.copy;
+const ORDER = ["facebook_a", "reddit_comments", "reddit_submissions_long", "reddit", "instagram"].filter(p => P[p]);
+const STEPS = ["R0", "R1", "R2", "R3", "R4", "R5", "S", "G"];
+const SHORT = {R0: "Rank diffusion", R1: "+ noise", R2: "+ home", R3: "+ swings", R4: "+ amplitude", R5: "+ tails", S: "+ long horizon", G: "+ actual state"};
+const NS = "http://www.w3.org/2000/svg";
+const $ = id => document.getElementById(id);
+function el(tag, attrs, kids) {
+  const e = document.createElement(tag);
+  for (const k in (attrs || {})) { if (k === "text") e.textContent = attrs[k]; else if (k === "style") e.style.cssText = attrs[k]; else e.setAttribute(k, attrs[k]); }
+  (kids || []).forEach(c => e.appendChild(typeof c === "string" ? document.createTextNode(c) : c));
+  return e;
+}
+function sv(tag, attrs) { const e = document.createElementNS(NS, tag); for (const k in (attrs || {})) e.setAttribute(k, attrs[k]); return e; }
+const ok = v => v !== null && v !== undefined && isFinite(v);
+function f(v, d) { return ok(v) ? v.toFixed(d === undefined ? 2 : d) : "–"; }
+function pct(v, d) { return ok(v) ? (100 * v).toFixed(d || 0) + "%" : "–"; }
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+/* tooltip */
+const tip = $("tip");
+function showTip(evt, title, rows) {
+  tip.replaceChildren();
+  tip.appendChild(el("div", {class: "tt", text: title}));
+  rows.forEach(r => {
+    const row = el("div", {class: "tr"});
+    if (r.color) row.appendChild(el("i", {class: "key", style: "--c:" + r.color}));
+    row.appendChild(el("b", {text: r.value}));
+    row.appendChild(el("span", {text: r.name}));
+    tip.appendChild(row);
+  });
+  tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = evt.clientX + 14, y = evt.clientY + 14;
+  if (x + w > window.innerWidth - 8) x = evt.clientX - w - 14;
+  if (y + h > window.innerHeight - 8) y = evt.clientY - h - 14;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+function hideTip() { tip.hidden = true; }
+
+/* ---------- the ladder ---------- */
+function gainCell(cls, label, color, prev, cur) {
+  const c = el("div", {class: "gain " + cls});
+  c.appendChild(el("div", {class: "lab", text: label}));
+  if (!ok(prev) || !ok(cur)) { c.appendChild(el("div", {class: "val"}, [el("small", {text: "starting point"})])); return c; }
+  const g = 1 - cur / prev;
+  if (Math.abs(g) < 0.0005) { c.appendChild(el("div", {class: "val"}, [el("small", {text: "not applicable"})])); return c; }
+  const track = el("div", {class: "track", style: "--c:" + color});
+  const w = Math.min(Math.abs(g), 1) * (g > 0 ? 75 : 25);
+  track.appendChild(el("span", {class: "fill " + (g > 0 ? "pos" : "neg"), style: "width:" + w.toFixed(1) + "%"}));
+  c.appendChild(track);
+  c.appendChild(el("div", {class: "val"}, [g > 0 ? pct(g) + " " : pct(-g) + " ", el("small", {text: g > 0 ? "removed" : "added"})]));
+  return c;
+}
+function drawLadder() {
+  const host = $("ladder"); host.replaceChildren();
+  const st = C.primary.steps;
+  host.appendChild(el("div", {class: "rung head"}, [el("div"), el("div", {text: "Step"}), el("div", {text: "Macro stability: error removed"}), el("div", {text: "Endpoint movement: error removed"}), el("div", {text: "Error left, both goals"})]));
+  STEPS.forEach((s, i) => {
+    const prev = i ? st[STEPS[i - 1]] : null, cur = st[s];
+    const row = el("div", {class: "rung" + (s === "S" ? " fork" : "")});
+    row.appendChild(el("div", {class: "rid", text: s === "S" ? "S1–4" : s === "G" ? "G1–2" : s}));
+    const w = el("div", {class: "what"}, [el("b", {text: COPY[s][0]}), el("span", {text: COPY[s][1]}), el("div", {class: "eq", text: COPY[s][2]})]);
+    row.appendChild(w);
+    row.appendChild(gainCell("m", "Macro stability", "var(--macro)", prev && prev.macro, i ? cur.macro : null));
+    row.appendChild(gainCell("g", "Endpoint movement", "var(--move)", prev && prev.move, i ? cur.move : null));
+    row.appendChild(el("div", {class: "left"}, [el("div", {class: "num", text: pct(cur.index)}), el("small", {text: i ? pct(cur.lo) + " to " + pct(cur.hi) : "by definition"})]));
+    host.appendChild(row);
+  });
+}
+
+/* ---------- line chart ---------- */
+function niceTicks(lo, hi, log) {
+  const out = [];
+  if (log) {
+    for (let e = -4; e <= 3; e++) [1, 2, 5].forEach(m => { const v = m * Math.pow(10, e); if (v >= lo * 0.999 && v <= hi * 1.001) out.push(v); });
+    return out;
+  }
+  const span = hi - lo, step = Math.pow(10, Math.floor(Math.log10(span / 4)));
+  const st = [1, 2, 5, 10].map(m => m * step).find(s => span / s <= 5) || step;
+  for (let v = Math.ceil(lo / st) * st; v <= hi + 1e-9; v += st) out.push(+v.toFixed(10));
+  return out;
+}
+function lineChart(host, o) {
+  host.replaceChildren();
+  const W = Math.max(260, host.clientWidth), H = o.height || 280;
+  const m = {l: o.left || 44, r: o.endLabels ? 118 : (o.refOutside ? 66 : 12), t: 10, b: 30};
+  const n = o.labels.length;
+  let vals = [];
+  o.series.forEach(s => s.vals.forEach((v, i) => { if (ok(v)) { vals.push(v); if (s.lo && ok(s.lo[i])) vals.push(s.lo[i]); if (s.hi && ok(s.hi[i])) vals.push(s.hi[i]); } }));
+  (o.refs || []).forEach(r => { if (ok(r.y)) vals.push(r.y); });
+  let lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  if (o.log) { lo = lo / 1.25; hi = hi * 1.25; } else { const p = (hi - lo) * 0.08 || 1; lo -= p; hi += p; }
+  const ty = v => o.log ? Math.log(v) : v;
+  const X = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const Y = v => m.t + (ty(hi) - ty(v)) / (ty(hi) - ty(lo)) * (H - m.t - m.b);
+  const svg = sv("svg", {viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": o.aria || "chart"});
+  let ticks = niceTicks(lo, hi, o.log);
+  if (ticks.length > 7) ticks = ticks.filter(t => { const s = t.toExponential(0)[0]; return s === "1" || s === "5"; });
+  if (ticks.length > 7) ticks = ticks.filter(t => t.toExponential(0)[0] === "1");
+  ticks.forEach(t => {
+    svg.appendChild(sv("line", {x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), stroke: "var(--grid)", "stroke-width": 1}));
+    const tx = sv("text", {x: m.l - 8, y: Y(t) + 4, "text-anchor": "end", "font-size": 11, fill: "var(--muted)"});
+    tx.textContent = o.tickFmt ? o.tickFmt(t) : String(t); svg.appendChild(tx);
+  });
+  o.labels.forEach((lab, i) => {
+    const every = o.sparse ? Math.ceil(n / Math.max(2, Math.floor((W - m.l - m.r) / 44))) : 1;
+    if (i % every && i !== n - 1) return;
+    const tx = sv("text", {x: X(i), y: H - 9, "text-anchor": i === 0 && !o.sparse ? "start" : (i === n - 1 && !o.endLabels && !o.sparse ? "end" : "middle"), "font-size": 11, fill: "var(--muted)"});
+    tx.textContent = lab; svg.appendChild(tx);
+  });
+  (o.refs || []).forEach(r => {
+    if (!ok(r.y)) return;
+    svg.appendChild(sv("line", {x1: m.l, x2: W - m.r, y1: Y(r.y), y2: Y(r.y), stroke: "var(--ink2)", "stroke-width": 1}));
+    const tx = o.refOutside ? sv("text", {x: W - m.r + 8, y: Y(r.y) + 4, "text-anchor": "start", "font-size": 11, fill: "var(--ink2)"})
+                            : sv("text", {x: W - m.r - 2, y: Y(r.y) - 5, "text-anchor": "end", "font-size": 11, fill: "var(--ink2)"});
+    tx.textContent = r.label; svg.appendChild(tx);
+  });
+  o.series.forEach(s => {
+    const pts = s.vals.map((v, i) => ok(v) ? [X(i), Y(v), i] : null).filter(Boolean);
+    if (s.lo && s.hi && s.band) {
+      const up = pts.map(p => X(p[2]) + "," + Y(s.hi[p[2]])), dn = pts.slice().reverse().map(p => X(p[2]) + "," + Y(s.lo[p[2]]));
+      svg.appendChild(sv("polygon", {points: up.concat(dn).join(" "), fill: s.color, "fill-opacity": 0.13, stroke: "none"}));
+    }
+    if (s.lo && s.hi && !s.band) pts.forEach(p => svg.appendChild(sv("line", {x1: p[0], x2: p[0], y1: Y(Math.max(s.lo[p[2]], lo)), y2: Y(s.hi[p[2]]), stroke: s.color, "stroke-width": 1.5, "stroke-opacity": 0.55})));
+    svg.appendChild(sv("polyline", {points: pts.map(p => p[0] + "," + p[1]).join(" "), fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round"}));
+    pts.forEach(p => svg.appendChild(sv("circle", {cx: p[0], cy: p[1], r: 4, fill: s.color, stroke: "var(--surface)", "stroke-width": 2})));
+  });
+  if (o.endLabels) {
+    const ends = o.series.map(s => { let i = s.vals.length - 1; while (i > 0 && !ok(s.vals[i])) i--; return {s: s, y: Y(s.vals[i]), v: s.vals[i]}; }).sort((a, b) => a.y - b.y);
+    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 15) ends[i].y = ends[i - 1].y + 15;
+    ends.forEach(e => {
+      const tx = sv("text", {x: W - m.r + 12, y: e.y + 4, "font-size": 12, fill: "var(--ink)"});
+      tx.textContent = (o.fmt ? o.fmt(e.v) : f(e.v)) + "  " + e.s.short; svg.appendChild(tx);
+    });
+  }
+  const cross = sv("line", {y1: m.t, y2: H - m.b, stroke: "var(--axis)", "stroke-width": 1, visibility: "hidden"});
+  svg.appendChild(cross);
+  const hit = sv("rect", {x: m.l - 10, y: 0, width: W - m.l - m.r + 20, height: H, fill: "transparent"});
+  hit.addEventListener("pointermove", evt => {
+    const r = svg.getBoundingClientRect(), px = (evt.clientX - r.left) * W / r.width;
+    let i = Math.round((px - m.l) / ((W - m.l - m.r) / Math.max(1, n - 1))); i = Math.max(0, Math.min(n - 1, i));
+    cross.setAttribute("x1", X(i)); cross.setAttribute("x2", X(i)); cross.setAttribute("visibility", "visible");
+    const rows = o.series.filter(s => ok(s.vals[i])).map(s => ({color: s.color, name: s.name + (s.lo && ok(s.lo[i]) ? "  (" + (o.fmt || f)(s.lo[i]) + " to " + (o.fmt || f)(s.hi[i]) + ")" : ""), value: (o.fmt || f)(s.vals[i])}));
+    (o.refs || []).forEach(rf => { if (ok(rf.y)) rows.push({name: rf.label, value: (o.fmt || f)(rf.y)}); });
+    showTip(evt, (o.titles || o.labels)[i], rows);
+  });
+  hit.addEventListener("pointerleave", () => { cross.setAttribute("visibility", "hidden"); hideTip(); });
+  svg.appendChild(hit);
+  host.appendChild(svg);
+}
+
+function drawComposite() {
+  const st = C.primary.steps;
+  const series = [
+    {name: "Macro stability", short: "macro", color: "var(--macro)", vals: STEPS.map(s => st[s].macro)},
+    {name: "Endpoint movement", short: "movement", color: "var(--move)", vals: STEPS.map(s => st[s].move)},
+    {name: "Both goals, equal weight", short: "both", color: "var(--comb)", vals: STEPS.map(s => st[s].index), lo: STEPS.map(s => st[s].lo), hi: STEPS.map(s => st[s].hi), band: true}
+  ];
+  const lg = $("composite-legend"); lg.replaceChildren();
+  series.forEach(s => lg.appendChild(el("span", {}, [el("i", {class: "key", style: "--c:" + s.color}), s.name])));
+  const narrow = $("composite").clientWidth < 620;
+  lineChart($("composite"), {labels: STEPS.map(s => narrow ? (s === "S" ? "S" : s === "G" ? "G" : s) : SHORT[s]), titles: STEPS.map(s => COPY[s][0]), series: series, log: true, height: 320, endLabels: !narrow, tickFmt: v => pct(v), fmt: v => pct(v, v < 0.1 ? 1 : 0), aria: "Error left relative to the simple rank diffusion, by step"});
+}
+
+function drawMulti() {
+  const host = $("multi"); host.replaceChildren();
+  host.appendChild(el("div")); host.appendChild(el("div", {class: "colhead", text: "Macro stability (tolerance units)"})); host.appendChild(el("div", {class: "colhead", text: "Held-out movement (gate relative error)"}));
+  ORDER.forEach(p => {
+    const d = P[p];
+    host.appendChild(el("div", {class: "rowlab"}, [d.label, el("small", {text: "top " + d.K.toLocaleString() + " · " + d.T + " weeks" + (d.system === "ig" ? " · not in the summary" : "")})]));
+    const a = el("div", {class: "chart"}), b = el("div", {class: "chart"});
+    host.appendChild(el("div", {class: "cell"}, [el("div", {class: "ctitle", text: "Macro stability (tolerance units)"}), a]));
+    host.appendChild(el("div", {class: "cell"}, [el("div", {class: "ctitle", text: "Held-out movement (gate relative error)"}), b]));
+    const sp = d.struct_path, gp = d.gate_path;
+    lineChart(a, {labels: sp, titles: sp.map(r => r + "  " + COPY[r][0]), sparse: true, refOutside: true, height: 170, log: true, left: 36,
+      series: [{name: "macro error", color: "var(--macro)", vals: sp.map(r => d.macro[r].index), lo: sp.map(r => d.macro[r].lo), hi: sp.map(r => d.macro[r].hi), band: true}],
+      refs: [{y: 1, label: "tolerance"}], tickFmt: v => String(v), fmt: v => f(v, 2), aria: d.label + ": macro-stability error by rung"});
+    const base = d.move[gp[gp.length - 1]].baseline;
+    lineChart(b, {labels: gp, titles: gp.map(r => r + "  " + COPY[r][0]), sparse: true, refOutside: true, height: 170, log: true, left: 36,
+      series: [{name: "gate error", color: "var(--move)", vals: gp.map(r => d.move[r].index), lo: gp.map(r => Math.max(d.move[r].index - d.move[r].sd, d.move[r].index * 0.2)), hi: gp.map(r => d.move[r].index + d.move[r].sd)}],
+      refs: [{y: base, label: "baseline"}], tickFmt: v => String(v), fmt: v => f(v, 3), aria: d.label + ": held-out gate error by rung"});
+  });
+}
+
+/* ---------- tables ---------- */
+let CUR = ORDER[0];
+function heatBg(color, t) { return "background: color-mix(in srgb, " + color + " " + Math.round(Math.max(0, Math.min(1, t)) * 52) + "%, var(--surface))"; }
+function drawSelect() {
+  const host = $("panel-select"); host.replaceChildren();
+  ORDER.forEach(p => {
+    const b = el("button", {type: "button", "aria-pressed": String(p === CUR), text: P[p].label, id: "sel-" + p});
+    b.addEventListener("click", () => { CUR = p; drawSelect(); drawTables(); });
+    host.appendChild(b);
+  });
+}
+function th(t, cls) { return el("th", cls ? {text: t, class: cls} : {text: t}); }
+function td(t, cls, style) { const a = {text: t}; if (cls) a.class = cls; if (style) a.style = style; return el("td", a); }
+function drawTables() {
+  const d = P[CUR];
+  const blocks = ["ladder", "variance", "order", "topset"], bname = {ladder: "Ladder", variance: "Variance structure", order: "Order persistence", topset: "Top set and boundary"};
+  let t = $("heat-macro"); t.replaceChildren();
+  t.appendChild(el("tr", {}, [th("Rung")].concat(blocks.map(b => th(bname[b]))).concat([th("Index")])));
+  d.struct_path.forEach(r => {
+    const row = el("tr", r === "S1" || (r === "S2" && d.struct_path.indexOf("S1") < 0) ? {class: "sep"} : {}, [td(r + "  " + COPY[r][0], "t")]);
+    blocks.forEach(b => { const v = d.macro[r].blocks[b]; row.appendChild(td(f(v, 2), "heat", heatBg("var(--macro)", Math.log(1 + v) / Math.log(13)))); });
+    row.appendChild(td(f(d.macro[r].index, 2)));
+    t.appendChild(row);
+  });
+  t = $("heat-move"); t.replaceChildren();
+  const moms = ["dRank1", "dRank4", "dRank13", "RACF1", "coll1", "coll5", "coll20", "p90_1", "p90_4", "p90_13"].filter(k => d.move.R0.moments[k] && ok(d.move.R0.moments[k].emp));
+  const mname = {dRank1: "Median move, 1 wk", dRank4: "Median move, 4 wk", dRank13: "Median move, 13 wk", RACF1: "Rank stickiness", coll1: "Change at #1", coll5: "Change at #5", coll20: "Change at #20", p90_1: "90th pct move, 1 wk *", p90_4: "90th pct move, 4 wk *", p90_13: "90th pct move, 13 wk *"};
+  t.appendChild(el("tr", {}, [th("Rung")].concat(moms.map(k => th(mname[k]))).concat([th("Gate error")])));
+  d.gate_path.forEach(r => {
+    const row = el("tr", r === "G1" ? {class: "sep"} : {}, [td(r + "  " + COPY[r][0], "t")]);
+    moms.forEach(k => {
+      const mm = d.move[r].moments[k];
+      if (!mm || !ok(mm.emp) || !ok(mm.sim) || Math.abs(mm.emp) < 0.02) { row.appendChild(td("–")); return; }
+      const dev = mm.sim / mm.emp - 1;
+      row.appendChild(td((dev >= 0 ? "+" : "−") + Math.abs(100 * dev).toFixed(0) + "%", "heat", heatBg(dev >= 0 ? "var(--over)" : "var(--under)", Math.abs(dev) / 1.0)));
+    });
+    row.appendChild(td(f(d.move[r].index, 3)));
+    t.appendChild(row);
+  });
+  t = $("stats"); t.replaceChildren();
+  const names = [].concat.apply([], blocks.map(b => S.design.blocks[b]));
+  t.appendChild(el("tr", {}, [th("Statistic"), th("Data")].concat(d.struct_path.map(r => th(r)))));
+  names.forEach(nm => {
+    const row = el("tr", {}, [td(nm.replace("rR2_", "R² rolling ").replace("rPers", "Top-set kept ").replace("outfluxK", "Out-flux at K"), "t"), td(f(d.macro.R0.stats[nm].emp, 3))]);
+    d.struct_path.forEach(r => { const s = d.macro[r].stats[nm]; row.appendChild(td(f(s.sim, 3), "heat", heatBg("var(--macro)", Math.log(1 + (s.err || 0)) / Math.log(21)))); });
+    t.appendChild(row);
+  });
+  t = $("detail"); t.replaceChildren();
+  t.appendChild(el("tr", {}, [th("Rung"), th("Profiles + scalars"), th("Macro index (5th–95th)"), th("Card passes of 15"), th("Churn error"), th("S(1) model / data"), th("Gate error ± SD"), th("Change from rung below (splits better)"), th("Baseline"), th("Median in interval"), th("Noise scale by split"), th("CRPS skill, 1 wk")]));
+  const all = d.struct_path.concat(d.gate_path.filter(r => r[0] === "G"));
+  all.forEach(r => {
+    const M = d.macro[r], G = d.move[r], pr = (M || G).params;
+    const row = el("tr", r === "S1" || r === "G1" ? {class: "sep"} : {}, [td(r + "  " + COPY[r][0], "t"), td(pr.profiles + " + " + pr.scalars)]);
+    if (M) { const s1 = M.stats.S1; row.appendChild(td(f(M.index, 2) + "  (" + f(M.lo, 2) + "–" + f(M.hi, 2) + ")")); row.appendChild(td(M.card.passes + "")); row.appendChild(td(f(M.card.churn_err, 3))); row.appendChild(td(f(s1.sim / s1.emp, 2) + "×")); }
+    else for (let i = 0; i < 4; i++) row.appendChild(td("·"));
+    if (G) { const c = G.crps_skill && G.crps_skill["1"]; row.appendChild(td(f(G.index, 3) + " ± " + f(G.sd, 3))); row.appendChild(td(G.step ? (G.step.mean >= 0 ? "+" : "−") + Math.abs(G.step.mean).toFixed(3) + " ± " + f(G.step.sd, 3) + "  (" + G.step.n_better + "/" + G.step.n + ")" : "–")); row.appendChild(td(f(G.baseline, 3))); row.appendChild(td(pct(G.coverage))); row.appendChild(td(G.scales.map(x => f(x, 2)).join(" "))); row.appendChild(td(c ? (c[0] >= 0 ? "+" : "−") + Math.abs(c[0]).toFixed(3) : "–")); }
+    else for (let i = 0; i < 6; i++) row.appendChild(td("·"));
+    t.appendChild(row);
+  });
+}
+function drawWeights() {
+  const t = $("weights"); t.replaceChildren();
+  const nm = {primary: "One vote per system (primary)", A_one_vote_per_platform: "One vote per platform", B_one_vote_per_panel: "One vote per panel", C_panel_length: "Proportional to panel length", D_instagram_as_fourth_system: "Instagram as a fourth system"};
+  t.appendChild(el("tr", {}, [th("Weighting"), th("Weights", "t"), th("After R3"), th("After R5"), th("Top of ladder"), th("Macro only, top"), th("Movement only, top")]));
+  Object.keys(nm).forEach(k => {
+    if (!C[k]) return;
+    const s = C[k].steps, w = C[k].weights;
+    const ws = ORDER.filter(p => w[p]).map(p => P[p].label.replace("Reddit ", "").replace("Facebook Era A", "Facebook") + " " + f(w[p], 2)).join(" · ");
+    t.appendChild(el("tr", {}, [td(nm[k], "t"), td(ws, "t"), td(f(s.R3.index, 3)), td(f(s.R5.index, 3)), td(f(s.G.index, 3) + "  [" + f(s.G.lo, 3) + "–" + f(s.G.hi, 3) + "]"), td(f(s.G.macro, 3)), td(f(s.G.move, 3))]));
+  });
+}
+function drawAll() { drawLadder(); drawComposite(); drawMulti(); }
+drawSelect(); drawTables(); drawWeights(); drawAll();
+let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { drawComposite(); drawMulti(); }, 150); });
+</script>

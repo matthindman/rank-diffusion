@@ -1,0 +1,36 @@
+
+========================================================================
+REDDIT — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=30  test_len=13  train-end origins=[12, 13, 14, 16, 17]  universe=top-5000 (B=4x, train-only membership) pool>=8 md6 NNLS
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 12  1.00  |  0.163      |  0.172        |    2.9   | True
+    T0= 13  1.00  |  0.127      |  0.171        |    2.6   | True
+    T0= 14  1.00  |  0.095      |  0.162        |    2.3   | True
+    T0= 16  0.50  |  0.072      |  0.167        |    1.3   | True
+    T0= 17  0.25  |  0.183      |  0.168        |    1.8   | True
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 0.5, 0.25]  median=1.00 range=0.25-1.00
+  MODEL rel err = 0.128 ± 0.041   |   persistence = 0.168 ± 0.004
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 100% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=17): emp median/p90 vs model median/p90
+    dRank1: emp    6/  27   model    7/  24
+    dRank4: emp    9/  40   model   12/  41
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 12     6.60 |    6.53  | -0.01 |     2.9      1.2  | 0.20/0.58/0.93
+    T0= 13     6.75 |    6.68  | -0.01 |     2.6      1.1  | 0.20/0.58/0.93
+    T0= 14     7.42 |    7.40  | -0.00 |     2.3      1.9  | 0.20/0.53/0.90
+    T0= 16     6.69 |    6.68  | -0.00 |     1.3      1.1  | 0.21/0.53/0.89
+    T0= 17     6.75 |    6.72  | -0.00 |     1.8      1.2  | 0.20/0.56/0.89
+    CRPS skill vs persistence @ dRank1: -0.005 ± 0.004  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.006 ± 0.003  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 12  h=1:in  h=4:OUT  week-block CI(h=1) [6.0, 6.0] OUT
+      T0= 13  h=1:in  h=4:in  week-block CI(h=1) [6.0, 6.5] OUT
+      T0= 14  h=1:in  h=4:in  week-block CI(h=1) [6.0, 6.0] in
+      T0= 16  h=1:in  h=4:in  week-block CI(h=1) [5.0, 6.0] in
+      T0= 17  h=1:in  h=4:OUT  week-block CI(h=1) [6.0, 7.0] in

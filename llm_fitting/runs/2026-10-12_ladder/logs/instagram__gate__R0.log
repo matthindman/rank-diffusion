@@ -1,0 +1,38 @@
+
+========================================================================
+INSTAGRAM_HM_TS — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=52  test_len=13  train-end origins=[13, 20, 26, 32, 39]  universe=top-10000 (B=4x, train-only membership) pool>=8 md6 NNLS
+  FIXED membership from llm_fitting/ig_trainsafe_members.parquet ({13: 40000, 20: 40000, 26: 40000, 32: 40000, 39: 40000})
+  member-ids sha256: 130726eb194597fcbba67ca3eced29a5f8e5e20d34dcc8e3ae186e455ac75aac
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 13  1.00  |  0.187      |  0.138        |  110.2   | False
+    T0= 20  1.00  |  0.432      |  0.407        |  111.7   | False
+    T0= 26  1.00  |  3.389      |  0.598        |   89.9   | False
+    T0= 32  1.00  |  3.891      |  0.785        |   38.6   | False
+    T0= 39  1.00  |  2.996      |  1.038        |   31.3   | False
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 2.179 ± 1.554   |   persistence = 0.593 ± 0.309
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 0% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=39): emp median/p90 vs model median/p90
+    dRank1: emp   16/  76   model   12/  42
+    dRank4: emp   17/  96   model   25/ 105
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 13   117.96 |  116.39  | -0.01 |   110.2     50.1  | 0.11/0.47/0.80
+    T0= 20   117.92 |  115.48  | -0.02 |   111.7     53.8  | 0.09/0.40/0.77
+    T0= 26    95.49 |   93.06  | -0.03 |    89.9     29.3  | 0.08/0.40/0.75
+    T0= 32    44.82 |   42.97  | -0.04 |    38.6     26.4  | 0.08/0.41/0.77
+    T0= 39    38.10 |   36.68  | -0.04 |    31.3     16.3  | 0.09/0.43/0.78
+    CRPS skill vs persistence @ dRank1: -0.028 ± 0.011  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.013 ± 0.002  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 13  h=1:OUT  h=4:OUT  week-block CI(h=1) [12.0, 14.0] OUT
+      T0= 20  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 18.0] OUT
+      T0= 26  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 18.0] OUT
+      T0= 32  h=1:OUT  h=4:OUT  week-block CI(h=1) [14.0, 17.0] OUT
+      T0= 39  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 17.0] OUT

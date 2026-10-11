@@ -1,0 +1,166 @@
+[instagram] cells to run: [('gate', 'R3'), ('gate', 'R4'), ('gate', 'R5'), ('gate', 'G1')]
+
+##### instagram gate R3  {'partition': 'full', 'temper': False, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+INSTAGRAM_HM_TS — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=52  test_len=13  train-end origins=[13, 20, 26, 32, 39]  universe=top-10000 (B=4x, train-only membership) pool>=8 md6 NNLS
+  FIXED membership from llm_fitting/ig_trainsafe_members.parquet ({13: 40000, 20: 40000, 26: 40000, 32: 40000, 39: 40000})
+  member-ids sha256: 130726eb194597fcbba67ca3eced29a5f8e5e20d34dcc8e3ae186e455ac75aac
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 13  1.00  |  0.187      |  0.138        |  102.7   | False
+    T0= 20  1.00  |  0.323      |  0.407        |  101.0   | False
+    T0= 26  1.00  |  0.086      |  0.598        |   81.5   | True
+    T0= 32  1.00  |  0.198      |  0.785        |   31.3   | True
+    T0= 39  1.00  |  0.345      |  1.038        |   24.1   | True
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.228 ± 0.096   |   persistence = 0.593 ± 0.309
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 60% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=39): emp median/p90 vs model median/p90
+    dRank1: emp   16/  76   model   15/  61
+    dRank4: emp   17/  96   model   17/  65
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 13   117.11 |  116.39  | -0.01 |   102.7     50.1  | 0.16/0.56/0.87
+    T0= 20   116.30 |  115.48  | -0.01 |   101.0     53.8  | 0.09/0.46/0.86
+    T0= 26    94.04 |   93.06  | -0.01 |    81.5     29.3  | 0.14/0.48/0.83
+    T0= 32    43.70 |   42.97  | -0.02 |    31.3     26.4  | 0.13/0.47/0.85
+    T0= 39    37.17 |   36.68  | -0.01 |    24.1     16.3  | 0.14/0.49/0.86
+    CRPS skill vs persistence @ dRank1: -0.011 ± 0.004  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.022 ± 0.009  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 13  h=1:OUT  h=4:in  week-block CI(h=1) [12.0, 14.0] OUT
+      T0= 20  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 18.0] OUT
+      T0= 26  h=1:in  h=4:OUT  week-block CI(h=1) [15.0, 18.0] in
+      T0= 32  h=1:in  h=4:in  week-block CI(h=1) [14.0, 17.0] in
+      T0= 39  h=1:in  h=4:in  week-block CI(h=1) [15.0, 17.0] in
+##### done instagram gate R3 in 709s
+
+##### instagram gate R4  {'partition': 'full', 'temper': True, 't_tails': False, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+INSTAGRAM_HM_TS — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=52  test_len=13  train-end origins=[13, 20, 26, 32, 39]  universe=top-10000 (B=4x, train-only membership) temper pool>=8 md6 NNLS
+  FIXED membership from llm_fitting/ig_trainsafe_members.parquet ({13: 40000, 20: 40000, 26: 40000, 32: 40000, 39: 40000})
+  member-ids sha256: 130726eb194597fcbba67ca3eced29a5f8e5e20d34dcc8e3ae186e455ac75aac
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 13  1.00  |  0.171      |  0.138        |   93.1   | True  s=0.81
+    T0= 20  1.00  |  0.386      |  0.407        |   99.8   | False  s=0.77
+    T0= 26  1.00  |  0.187      |  0.598        |   80.3   | False  s=0.76
+    T0= 32  1.00  |  0.337      |  0.785        |   32.7   | False  s=0.76
+    T0= 39  1.00  |  0.547      |  1.038        |   24.8   | False  s=0.76
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.326 ± 0.138   |   persistence = 0.593 ± 0.309
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 20% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=39): emp median/p90 vs model median/p90
+    dRank1: emp   16/  76   model   13/  57
+    dRank4: emp   17/  96   model   14/  61
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 13   116.95 |  116.39  | -0.00 |    93.1     50.1  | 0.16/0.53/0.85
+    T0= 20   116.44 |  115.48  | -0.01 |    99.8     53.8  | 0.09/0.42/0.85
+    T0= 26    94.07 |   93.06  | -0.01 |    80.3     29.3  | 0.08/0.44/0.83
+    T0= 32    43.83 |   42.97  | -0.02 |    32.7     26.4  | 0.08/0.44/0.84
+    T0= 39    37.27 |   36.68  | -0.02 |    24.8     16.3  | 0.09/0.45/0.85
+    CRPS skill vs persistence @ dRank1: -0.012 ± 0.005  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.023 ± 0.009  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 13  h=1:in  h=4:in  week-block CI(h=1) [12.0, 14.0] in
+      T0= 20  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 18.0] OUT
+      T0= 26  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 18.0] OUT
+      T0= 32  h=1:OUT  h=4:OUT  week-block CI(h=1) [14.0, 17.0] OUT
+      T0= 39  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 17.0] OUT
+##### done instagram gate R4 in 654s
+
+##### instagram gate R5  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': None, 'spec_b': False}
+
+========================================================================
+INSTAGRAM_HM_TS — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=52  test_len=13  train-end origins=[13, 20, 26, 32, 39]  universe=top-10000 (B=4x, train-only membership) temper pool>=8 md6 t-tails NNLS
+  FIXED membership from llm_fitting/ig_trainsafe_members.parquet ({13: 40000, 20: 40000, 26: 40000, 32: 40000, 39: 40000})
+  member-ids sha256: 130726eb194597fcbba67ca3eced29a5f8e5e20d34dcc8e3ae186e455ac75aac
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 13  1.00  |  0.171      |  0.138        |   93.1   | True  s=0.81
+    T0= 20  1.00  |  0.386      |  0.407        |   99.8   | False  s=0.77
+    T0= 26  1.00  |  0.187      |  0.598        |   80.3   | False  s=0.76
+    T0= 32  1.00  |  0.315      |  0.785        |   33.3   | False  s=0.76
+    T0= 39  1.00  |  0.449      |  1.038        |   25.6   | False  s=0.76
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.302 ± 0.109   |   persistence = 0.593 ± 0.309
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 20% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=39): emp median/p90 vs model median/p90
+    dRank1: emp   16/  76   model   12/  59
+    dRank4: emp   17/  96   model   15/  63
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 13   116.95 |  116.39  | -0.00 |    93.1     50.1  | 0.16/0.53/0.85
+    T0= 20   116.44 |  115.48  | -0.01 |    99.8     53.8  | 0.09/0.42/0.85
+    T0= 26    94.07 |   93.06  | -0.01 |    80.3     29.3  | 0.08/0.44/0.83
+    T0= 32    43.81 |   42.97  | -0.02 |    33.3     26.4  | 0.08/0.44/0.84
+    T0= 39    37.22 |   36.68  | -0.01 |    25.6     16.3  | 0.09/0.43/0.86
+    CRPS skill vs persistence @ dRank1: -0.012 ± 0.005  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.022 ± 0.009  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 13  h=1:in  h=4:in  week-block CI(h=1) [12.0, 14.0] in
+      T0= 20  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 18.0] OUT
+      T0= 26  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 18.0] OUT
+      T0= 32  h=1:OUT  h=4:OUT  week-block CI(h=1) [14.0, 17.0] OUT
+      T0= 39  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 17.0] OUT
+##### done instagram gate R5 in 674s
+
+##### instagram gate G1  {'partition': 'full', 'temper': True, 't_tails': True, 'md_vr_long': False, 'stat_factor': False, 'two_scale': False, 'mix_hetero': False, 'conditional': 'state', 'spec_b': False}
+
+========================================================================
+INSTAGRAM_HM_TS — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=52  test_len=13  train-end origins=[13, 20, 26, 32, 39]  universe=top-10000 (B=4x, train-only membership) temper pool>=8 md6 t-tails NNLS COND:state
+  FIXED membership from llm_fitting/ig_trainsafe_members.parquet ({13: 40000, 20: 40000, 26: 40000, 32: 40000, 39: 40000})
+  member-ids sha256: 130726eb194597fcbba67ca3eced29a5f8e5e20d34dcc8e3ae186e455ac75aac
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 13  1.00  |  0.158      |  0.138        |   67.7   | True  s=0.81
+    T0= 20  1.00  |  0.386      |  0.407        |   71.2   | False  s=0.77
+    T0= 26  1.00  |  0.121      |  0.598        |   50.6   | True  s=0.76
+    T0= 32  1.00  |  0.242      |  0.785        |   34.5   | True  s=0.76
+    T0= 39  1.00  |  0.378      |  1.038        |   32.9   | False  s=0.76
+
+  sigma_obs_scale stability: [1.0, 1.0, 1.0, 1.0, 1.0]  median=1.00 range=1.00-1.00
+  MODEL rel err = 0.257 ± 0.109   |   persistence = 0.593 ± 0.309
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 60% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=39): emp median/p90 vs model median/p90
+    dRank1: emp   16/  76   model   14/  77
+    dRank4: emp   17/  96   model   16/  88
+
+  distributional scores (--dist-scores; pooled predictive, declared):
+    per split @ dRank1:  CRPSmod | CRPSpers | skill | W1(model) W1(pers) | pred cov@10/50/90 (nominal .10/.50/.90)
+    T0= 13   116.50 |  116.39  | -0.00 |    67.7     50.1  | 0.16/0.53/0.88
+    T0= 20   115.61 |  115.48  | -0.00 |    71.2     53.8  | 0.09/0.46/0.88
+    T0= 26    93.19 |   93.06  | -0.00 |    50.6     29.3  | 0.14/0.48/0.87
+    T0= 32    43.07 |   42.97  | -0.00 |    34.5     26.4  | 0.13/0.47/0.87
+    T0= 39    36.72 |   36.68  | -0.00 |    32.9     16.3  | 0.09/0.47/0.90
+    CRPS skill vs persistence @ dRank1: -0.001 ± 0.001  (>0 = model beats persistence; n=5 splits)
+    CRPS skill vs persistence @ dRank4: -0.006 ± 0.003  (>0 = model beats persistence; n=5 splits)
+    per-horizon model-median-in-CI (descriptive; registered criterion = h=1 only):
+      T0= 13  h=1:in  h=4:in  week-block CI(h=1) [12.0, 14.0] OUT
+      T0= 20  h=1:OUT  h=4:OUT  week-block CI(h=1) [15.0, 18.0] OUT
+      T0= 26  h=1:in  h=4:in  week-block CI(h=1) [15.0, 18.0] in
+      T0= 32  h=1:in  h=4:in  week-block CI(h=1) [14.0, 17.0] in
+      T0= 39  h=1:OUT  h=4:in  week-block CI(h=1) [15.0, 17.0] OUT
+##### done instagram gate G1 in 660s
+[instagram] ALL REQUESTED CELLS DONE
