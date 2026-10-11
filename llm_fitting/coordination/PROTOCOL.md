@@ -75,8 +75,15 @@ branch, containing:
   form the `model-status-authoring` skill describes.
 - `GATE_ROWS.md` — one row per gate evaluation, in the ledger's columns,
   including runs that were abandoned.
-- `QUESTIONS.md` — only if something blocks the task or needs a change to a
-  file the agent does not own. If it is not empty, stop there and say so.
+- `QUESTIONS.md` — only if something blocks part of the task or needs a
+  change to a file the agent does not own. Write the question, commit, and
+  carry on with everything that does not depend on the answer; nobody is
+  waiting at the other end. Claude answers in
+  `llm_fitting/handoff/<task>/ANSWERS.md` on `main`. Stop only when nothing
+  in the task, or in the queue, can proceed without the answer.
+- `PREFLIGHT.md` — optional, a few lines: any instruction in `AGENTS.md`, a
+  skill, this protocol or the brief that conflicted with another or had to
+  be guessed at, and how it was resolved. It does not stop the task.
 
 The last message of the session names the branch and the final commit.
 
@@ -119,9 +126,11 @@ and 22 on comments, one core each.
   heavy jobs at a time across both agents and frees its slot however the
   job ends.
 - A job expected to run longer than about fifteen minutes is written as a
-  launch script that skips work already on disk. Ask the owner to start it
-  in a Terminal window under `caffeinate -dims`. Runs started from the
-  desktop app's own terminal panel have stalled on the T9 drive.
+  launch script that skips work already on disk, so that it can be
+  restarted after an interruption, and is run under `caffeinate -dims`. Run
+  it yourself if your environment keeps it alive. Only if it cannot, ask
+  the owner to start the script in a Terminal window. Runs started from the
+  Claude desktop app's own terminal panel have stalled on the T9 drive.
 - Do not interpret a run that was killed.
 
 ## 7. Seeds and pairing
