@@ -1,0 +1,8 @@
+# V3 gate-ledger handoff
+
+| date | session | commit | panel | kind | spec (flags beyond defaults) | splits × reps | model rel err ± SD | baseline ± SD | coverage | log / MODEL_STATUS § | note |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-10-12 | OpenAI Codex V3 | 291c41f359fa9a2bac567b714ddcdbee4a875053 | facebook_a | reproduction | temper;min-knot8;md6;t;conditional state;spec-b | 5 × 20; boot2000 | 0.103361 ± 0.044469 | 0.145285 ± 0.030719 | 0.800000 | llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/facebook_a/gate.log | RAN-OK; frozen nominal export; 39fe06da-284c-45c2-a2a3-6539cccea3f7 |
+| 2026-10-12 | OpenAI Codex V3 | 291c41f359fa9a2bac567b714ddcdbee4a875053 | reddit_comments | reproduction | temper;min-knot8;md6;t;conditional state;mix | 5 × 20; boot2000 | 0.136897 ± 0.055575 | 0.164842 ± 0.062282 | 0.800000 | llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_comments/gate.log | RAN-OK; frozen nominal export; 5597ecf0-67eb-4cda-bc6c-3acc9cbb13ee |
+| 2026-10-12 | OpenAI Codex V3 | 291c41f359fa9a2bac567b714ddcdbee4a875053 | reddit | reproduction | temper;min-knot8;md6;t;conditional state | 5 × 20; boot2000 | 0.128612 ± 0.028301 | 0.167808 ± 0.003711 | 0.600000 | llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit/gate.log | RAN-OK; frozen nominal export; 4ef0edff-55ed-4f88-8b17-61a646e29ed5 |
+| 2026-10-12 | OpenAI Codex V3 | 291c41f359fa9a2bac567b714ddcdbee4a875053 | reddit_submissions_long | reproduction | temper;min-knot8;md6;t;conditional state | 5 × 20; boot2000 | 0.193724 ± 0.060631 | 0.162609 ± 0.047871 | 0.800000 | llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_submissions_long/gate.log | RAN-OK; frozen nominal export; dc676f31-6730-4aa5-8c5f-4fe1d54960ea |

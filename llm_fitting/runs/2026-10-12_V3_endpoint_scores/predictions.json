@@ -1,0 +1,42 @@
+[
+  {
+    "prediction": "P1",
+    "status": "PASS",
+    "result": "11 known-answer tests pass; full health log accompanies handoff."
+  },
+  {
+    "prediction": "P2",
+    "status": "PASS",
+    "result": "Conditional primitive/export/cache replay exact; protected model files unchanged."
+  },
+  {
+    "prediction": "P3",
+    "status": "PASS",
+    "result": "Two transitions at nominal h1; calendar-aligned skill withheld."
+  },
+  {
+    "prediction": "P4",
+    "status": "PASS",
+    "result": "Positive nominal h4 all-cohort CRPS improvement on 4/4 panels against no_change."
+  },
+  {
+    "prediction": "P5",
+    "status": "PASS",
+    "result": "Positive nominal h4 all-cohort CRPS improvement on 4/4 panels against historical_mobility."
+  },
+  {
+    "prediction": "P6",
+    "status": "PASS",
+    "result": "Advantage over rank-bin smaller than over no-change on 4/4 panels."
+  },
+  {
+    "prediction": "P7",
+    "status": "FAIL",
+    "result": "[('reddit_comments', -0.0171855500433559), ('reddit_submissions_long', -0.015892781915462298)]"
+  },
+  {
+    "prediction": "P8",
+    "status": "PASS",
+    "result": "All short-panel week-block intervals withheld."
+  }
+]

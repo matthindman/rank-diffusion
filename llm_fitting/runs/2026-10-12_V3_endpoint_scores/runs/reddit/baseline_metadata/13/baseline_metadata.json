@@ -1,0 +1,38 @@
+{
+  "panel": "reddit",
+  "T0": 13,
+  "horizons": {
+    "1": {
+      "available": true,
+      "historical_pairs": 1135,
+      "kernel_pairs_by_bin": {
+        "0": 4,
+        "1": 1200,
+        "2": 4800,
+        "3": 24000,
+        "4": 30000,
+        "5": 60000,
+        "6": 119996
+      },
+      "fallback_no_change_bins": []
+    },
+    "4": {
+      "available": true,
+      "historical_pairs": 858,
+      "kernel_pairs_by_bin": {
+        "0": 4,
+        "1": 900,
+        "2": 3600,
+        "3": 18000,
+        "4": 22500,
+        "5": 45000,
+        "6": 89996
+      },
+      "fallback_no_change_bins": []
+    },
+    "13": {
+      "available": false,
+      "reason": "fewer than h+1 training weeks"
+    }
+  }
+}

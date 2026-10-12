@@ -1,0 +1,7 @@
+{
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "numpy": "2.0.1",
+  "pandas": "2.2.2",
+  "platform": "macOS-14.2.1-arm64-arm-64bit",
+  "note": "Same registered environment throughout; no upgrades."
+}

@@ -1,0 +1,626 @@
+{
+  "id": "4ef0edff-55ed-4f88-8b17-61a646e29ed5",
+  "status": "RAN-OK",
+  "fixed": {
+    "panel": "reddit",
+    "sources": {
+      "llm_fitting/minimal_rankdiff.py": "1e3f47c45baa786d29c0adae6d1ff267e681c8cbeda3a021c0d0f53c90acfa06",
+      "llm_fitting/rankdiff_kalman.py": "764d9fccf107e8acd633363e05252b3c504cf8a601dad70cb72a1729de4c35a2",
+      "llm_fitting/ladder_explainer.py": "3063ad14ac23f10067fb92d4ffcce46d725dd0381c6582f30d1ded46cfd20943",
+      "llm_fitting/validation/gate_instrument.py": "f267d03e528dc2edf6a1dc3b3cf3f45911b0205a9ea61e1c558cc65ae6c8f344",
+      "llm_fitting/validation/endpoint_run.py": "4e007e170de24d91aa6639e9684a63101ae5598bc9473c52e56b59d271cab8f3",
+      "llm_fitting/validation/endpoint_baselines.py": "ce778d1f1b944782a0c66b148379502da0391a1a531018b286e9395625e1d168",
+      "llm_fitting/validation/endpoint_scores.py": "70cb8a9e33b88b8ae1bb40f0046662c029fd90b32d80f0e3b097591ea1fd0fff"
+    },
+    "inputs": {
+      "data/reddit/reddit_weekly.parquet": "b879683a7a8983034d8636f50366c0b03aa97ca47d6e3a73913928ac119c5b4f"
+    },
+    "reps": 20,
+    "boot": 2000,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ]
+  },
+  "commit": "291c41f359fa9a2bac567b714ddcdbee4a875053",
+  "command": [
+    "llm_fitting/validation/endpoint_run.py",
+    "--panel",
+    "reddit",
+    "--out",
+    "output/V3_endpoint_scores/runs",
+    "--exports",
+    "output/V3_endpoint_scores/exports"
+  ],
+  "started": 1791783680.73219,
+  "result": {
+    "model_rel": 0.12861241849694438,
+    "model_rel_sd": 0.02830092495364945,
+    "base_rel": 0.16780845374512796,
+    "base_rel_sd": 0.0037112259534418848,
+    "coverage": 0.6,
+    "scales": [
+      1.0,
+      1.0,
+      0.7,
+      0.35,
+      0.1
+    ],
+    "n_splits": 5
+  },
+  "splits": [
+    {
+      "origin": 12,
+      "scale": 1.0,
+      "horizons": [
+        1,
+        4
+      ],
+      "emp": {
+        "dRank1": 6.0,
+        "p90_1": 23.0,
+        "dRank4": 9.0,
+        "p90_4": 38.200000000000045,
+        "RACF1": 0.4627115683811542,
+        "coll1": 0.5833333333333334,
+        "coll5": 0.9166666666666666,
+        "coll20": 1.0
+      },
+      "base": {
+        "dRank1": 6.0,
+        "p90_1": 26.0,
+        "dRank4": 10.0,
+        "p90_4": 47.60000000000002,
+        "RACF1": 0.5016081709266034,
+        "coll1": 0.2727272727272727,
+        "coll5": 0.6363636363636364,
+        "coll20": 1.0
+      },
+      "sim": {
+        "dRank1": 8.0,
+        "p90_1": 28.0,
+        "dRank4": 12.0,
+        "p90_4": 47.0,
+        "RACF1": 0.46843039882739435,
+        "coll1": 0.4416666666666667,
+        "coll5": 0.8583333333333334,
+        "coll20": 0.9625
+      },
+      "components": {
+        "dRank1": 0.05555555555555555,
+        "dRank4": 0.05555555555555555,
+        "RACF1": 0.0020598975103245216,
+        "coll1": 0.04047619047619047,
+        "coll5": 0.01060606060606059,
+        "coll20": 0.006249999999999996
+      },
+      "active": [
+        "dRank1",
+        "dRank4",
+        "RACF1",
+        "coll1",
+        "coll5",
+        "coll20"
+      ],
+      "train_calibration": {
+        "dRank1": 6.0,
+        "p90_1": 26.0,
+        "dRank4": 10.0,
+        "p90_4": 47.60000000000002,
+        "RACF1": 0.5016081709266034,
+        "coll1": 0.2727272727272727,
+        "coll5": 0.6363636363636364,
+        "coll20": 1.0
+      }
+    },
+    {
+      "origin": 13,
+      "scale": 1.0,
+      "horizons": [
+        1,
+        4
+      ],
+      "emp": {
+        "dRank1": 6.0,
+        "p90_1": 25.0,
+        "dRank4": 9.0,
+        "p90_4": 42.0,
+        "RACF1": 0.4693079857832906,
+        "coll1": 0.5,
+        "coll5": 0.9166666666666666,
+        "coll20": 1.0
+      },
+      "base": {
+        "dRank1": 6.0,
+        "p90_1": 25.600000000000023,
+        "dRank4": 10.0,
+        "p90_4": 45.30000000000007,
+        "RACF1": 0.5356566581637016,
+        "coll1": 0.25,
+        "coll5": 0.6666666666666666,
+        "coll20": 1.0
+      },
+      "sim": {
+        "dRank1": 7.0,
+        "p90_1": 26.0,
+        "dRank4": 12.0,
+        "p90_4": 46.0,
+        "RACF1": 0.47942023442132853,
+        "coll1": 0.5333333333333333,
+        "coll5": 0.825,
+        "coll20": 0.925
+      },
+      "components": {
+        "dRank1": 0.027777777777777776,
+        "dRank4": 0.05555555555555555,
+        "RACF1": 0.003591191337162904,
+        "coll1": 0.011111111111111108,
+        "coll5": 0.016666666666666666,
+        "coll20": 0.012499999999999992
+      },
+      "active": [
+        "dRank1",
+        "dRank4",
+        "RACF1",
+        "coll1",
+        "coll5",
+        "coll20"
+      ],
+      "train_calibration": {
+        "dRank1": 6.0,
+        "p90_1": 25.600000000000023,
+        "dRank4": 10.0,
+        "p90_4": 45.30000000000007,
+        "RACF1": 0.5356566581637016,
+        "coll1": 0.25,
+        "coll5": 0.6666666666666666,
+        "coll20": 1.0
+      }
+    },
+    {
+      "origin": 14,
+      "scale": 0.7,
+      "horizons": [
+        1,
+        4
+      ],
+      "emp": {
+        "dRank1": 6.0,
+        "p90_1": 24.0,
+        "dRank4": 9.0,
+        "p90_4": 41.0,
+        "RACF1": 0.4291439117686078,
+        "coll1": 0.5,
+        "coll5": 0.8333333333333334,
+        "coll20": 1.0
+      },
+      "base": {
+        "dRank1": 6.0,
+        "p90_1": 25.0,
+        "dRank4": 10.0,
+        "p90_4": 43.10000000000002,
+        "RACF1": 0.5599200995798939,
+        "coll1": 0.3076923076923077,
+        "coll5": 0.6923076923076923,
+        "coll20": 1.0
+      },
+      "sim": {
+        "dRank1": 7.0,
+        "p90_1": 25.0,
+        "dRank4": 11.0,
+        "p90_4": 43.0,
+        "RACF1": 0.48258175273333703,
+        "coll1": 0.4458333333333333,
+        "coll5": 0.8416666666666665,
+        "coll20": 0.8999999999999997
+      },
+      "components": {
+        "dRank1": 0.027777777777777776,
+        "dRank4": 0.037037037037037035,
+        "RACF1": 0.020753659980284448,
+        "coll1": 0.018055555555555564,
+        "coll5": 0.0016666666666666165,
+        "coll20": 0.01666666666666672
+      },
+      "active": [
+        "dRank1",
+        "dRank4",
+        "RACF1",
+        "coll1",
+        "coll5",
+        "coll20"
+      ],
+      "train_calibration": {
+        "dRank1": 6.0,
+        "p90_1": 25.0,
+        "dRank4": 10.0,
+        "p90_4": 43.10000000000002,
+        "RACF1": 0.5599200995798939,
+        "coll1": 0.3076923076923077,
+        "coll5": 0.6923076923076923,
+        "coll20": 1.0
+      }
+    },
+    {
+      "origin": 16,
+      "scale": 0.35,
+      "horizons": [
+        1,
+        4
+      ],
+      "emp": {
+        "dRank1": 6.0,
+        "p90_1": 26.0,
+        "dRank4": 9.0,
+        "p90_4": 40.0,
+        "RACF1": 0.4313822121791713,
+        "coll1": 0.5,
+        "coll5": 0.8333333333333334,
+        "coll20": 1.0
+      },
+      "base": {
+        "dRank1": 6.0,
+        "p90_1": 24.0,
+        "dRank4": 9.0,
+        "p90_4": 42.0,
+        "RACF1": 0.574932039922374,
+        "coll1": 0.26666666666666666,
+        "coll5": 0.6666666666666666,
+        "coll20": 1.0
+      },
+      "sim": {
+        "dRank1": 6.0,
+        "p90_1": 23.0,
+        "dRank4": 11.0,
+        "p90_4": 43.0,
+        "RACF1": 0.46119378330372696,
+        "coll1": 0.4708333333333334,
+        "coll5": 0.7958333333333333,
+        "coll20": 0.8958333333333334
+      },
+      "components": {
+        "dRank1": 0.0,
+        "dRank4": 0.037037037037037035,
+        "RACF1": 0.011517849014512168,
+        "coll1": 0.009722222222222207,
+        "coll5": 0.007500000000000017,
+        "coll20": 0.017361111111111105
+      },
+      "active": [
+        "dRank1",
+        "dRank4",
+        "RACF1",
+        "coll1",
+        "coll5",
+        "coll20"
+      ],
+      "train_calibration": {
+        "dRank1": 6.0,
+        "p90_1": 24.0,
+        "dRank4": 9.0,
+        "p90_4": 42.0,
+        "RACF1": 0.574932039922374,
+        "coll1": 0.26666666666666666,
+        "coll5": 0.6666666666666666,
+        "coll20": 1.0
+      }
+    },
+    {
+      "origin": 17,
+      "scale": 0.1,
+      "horizons": [
+        1,
+        4
+      ],
+      "emp": {
+        "dRank1": 6.0,
+        "p90_1": 27.0,
+        "dRank4": 9.0,
+        "p90_4": 40.10000000000002,
+        "RACF1": 0.3940186210116295,
+        "coll1": 0.5,
+        "coll5": 0.8333333333333334,
+        "coll20": 1.0
+      },
+      "base": {
+        "dRank1": 6.0,
+        "p90_1": 24.0,
+        "dRank4": 9.0,
+        "p90_4": 40.0,
+        "RACF1": 0.573882273290695,
+        "coll1": 0.3125,
+        "coll5": 0.6875,
+        "coll20": 1.0
+      },
+      "sim": {
+        "dRank1": 7.0,
+        "p90_1": 24.0,
+        "dRank4": 11.0,
+        "p90_4": 40.0,
+        "RACF1": 0.4788022849308409,
+        "coll1": 0.4291666666666667,
+        "coll5": 0.8125,
+        "coll20": 0.9291666666666666
+      },
+      "components": {
+        "dRank1": 0.027777777777777776,
+        "dRank4": 0.037037037037037035,
+        "RACF1": 0.0358627991157424,
+        "coll1": 0.0236111111111111,
+        "coll5": 0.0041666666666666735,
+        "coll20": 0.011805555555555569
+      },
+      "active": [
+        "dRank1",
+        "dRank4",
+        "RACF1",
+        "coll1",
+        "coll5",
+        "coll20"
+      ],
+      "train_calibration": {
+        "dRank1": 6.0,
+        "p90_1": 24.0,
+        "dRank4": 9.0,
+        "p90_4": 40.0,
+        "RACF1": 0.573882273290695,
+        "coll1": 0.3125,
+        "coll5": 0.6875,
+        "coll20": 1.0
+      }
+    }
+  ],
+  "baseline_metadata": [
+    {
+      "panel": "reddit",
+      "T0": 12,
+      "horizons": {
+        "1": {
+          "available": true,
+          "historical_pairs": 1041,
+          "kernel_pairs_by_bin": {
+            "0": 4,
+            "1": 1100,
+            "2": 4400,
+            "3": 22000,
+            "4": 27500,
+            "5": 55000,
+            "6": 109996
+          },
+          "fallback_no_change_bins": []
+        },
+        "4": {
+          "available": true,
+          "historical_pairs": 765,
+          "kernel_pairs_by_bin": {
+            "0": 3,
+            "1": 800,
+            "2": 3200,
+            "3": 16000,
+            "4": 20000,
+            "5": 40000,
+            "6": 79997
+          },
+          "fallback_no_change_bins": []
+        },
+        "13": {
+          "available": false,
+          "reason": "fewer than h+1 training weeks"
+        }
+      }
+    },
+    {
+      "panel": "reddit",
+      "T0": 13,
+      "horizons": {
+        "1": {
+          "available": true,
+          "historical_pairs": 1135,
+          "kernel_pairs_by_bin": {
+            "0": 4,
+            "1": 1200,
+            "2": 4800,
+            "3": 24000,
+            "4": 30000,
+            "5": 60000,
+            "6": 119996
+          },
+          "fallback_no_change_bins": []
+        },
+        "4": {
+          "available": true,
+          "historical_pairs": 858,
+          "kernel_pairs_by_bin": {
+            "0": 4,
+            "1": 900,
+            "2": 3600,
+            "3": 18000,
+            "4": 22500,
+            "5": 45000,
+            "6": 89996
+          },
+          "fallback_no_change_bins": []
+        },
+        "13": {
+          "available": false,
+          "reason": "fewer than h+1 training weeks"
+        }
+      }
+    },
+    {
+      "panel": "reddit",
+      "T0": 14,
+      "horizons": {
+        "1": {
+          "available": true,
+          "historical_pairs": 1229,
+          "kernel_pairs_by_bin": {
+            "0": 6,
+            "1": 1300,
+            "2": 5200,
+            "3": 26000,
+            "4": 32500,
+            "5": 65000,
+            "6": 129994
+          },
+          "fallback_no_change_bins": []
+        },
+        "4": {
+          "available": true,
+          "historical_pairs": 950,
+          "kernel_pairs_by_bin": {
+            "0": 6,
+            "1": 1000,
+            "2": 4000,
+            "3": 20000,
+            "4": 25000,
+            "5": 50000,
+            "6": 99994
+          },
+          "fallback_no_change_bins": []
+        },
+        "13": {
+          "available": true,
+          "historical_pairs": 100,
+          "kernel_pairs_by_bin": {
+            "0": 3,
+            "1": 100,
+            "2": 400,
+            "3": 2000,
+            "4": 2500,
+            "5": 5000,
+            "6": 9997
+          },
+          "fallback_no_change_bins": []
+        }
+      }
+    },
+    {
+      "panel": "reddit",
+      "T0": 16,
+      "horizons": {
+        "1": {
+          "available": true,
+          "historical_pairs": 1414,
+          "kernel_pairs_by_bin": {
+            "0": 16,
+            "1": 1500,
+            "2": 6000,
+            "3": 30000,
+            "4": 37500,
+            "5": 75000,
+            "6": 149984
+          },
+          "fallback_no_change_bins": []
+        },
+        "4": {
+          "available": true,
+          "historical_pairs": 1135,
+          "kernel_pairs_by_bin": {
+            "0": 15,
+            "1": 1200,
+            "2": 4800,
+            "3": 24000,
+            "4": 30000,
+            "5": 60000,
+            "6": 119985
+          },
+          "fallback_no_change_bins": []
+        },
+        "13": {
+          "available": true,
+          "historical_pairs": 295,
+          "kernel_pairs_by_bin": {
+            "0": 10,
+            "1": 300,
+            "2": 1200,
+            "3": 6000,
+            "4": 7500,
+            "5": 15000,
+            "6": 29990
+          },
+          "fallback_no_change_bins": []
+        }
+      }
+    },
+    {
+      "panel": "reddit",
+      "T0": 17,
+      "horizons": {
+        "1": {
+          "available": true,
+          "historical_pairs": 1504,
+          "kernel_pairs_by_bin": {
+            "0": 24,
+            "1": 1600,
+            "2": 6400,
+            "3": 32000,
+            "4": 40000,
+            "5": 80000,
+            "6": 159976
+          },
+          "fallback_no_change_bins": []
+        },
+        "4": {
+          "available": true,
+          "historical_pairs": 1229,
+          "kernel_pairs_by_bin": {
+            "0": 24,
+            "1": 1300,
+            "2": 5200,
+            "3": 26000,
+            "4": 32500,
+            "5": 65000,
+            "6": 129976
+          },
+          "fallback_no_change_bins": []
+        },
+        "13": {
+          "available": true,
+          "historical_pairs": 390,
+          "kernel_pairs_by_bin": {
+            "0": 18,
+            "1": 400,
+            "2": 1600,
+            "3": 8000,
+            "4": 10000,
+            "5": 20000,
+            "6": 39982
+          },
+          "fallback_no_change_bins": []
+        }
+      }
+    }
+  ],
+  "export_files": {
+    "output/V3_endpoint_scores/exports/reddit/reddit__T0_0012.npz": "53e3bac196edafe412b7729a8de11f7f06ae02e9383d71b00cb67ad824a76308",
+    "output/V3_endpoint_scores/exports/reddit/reddit__T0_0012__baselines.npz": "c5d87b5e3e31cf80a3fd15d40129f6d6cbbb813845692bac3c95a58c4bc4ac89",
+    "output/V3_endpoint_scores/exports/reddit/reddit__T0_0013.npz": "085f054c0230046a855e46bdb8b739ad993e5c9904b9b68963b8847b37cb9284",
+    "output/V3_endpoint_scores/exports/reddit/reddit__T0_0013__baselines.npz": "e17784eff88c5e7430e472354190af4d49ca623466bd4451b6f4fdc3f2d2252a",
+    "output/V3_endpoint_scores/exports/reddit/reddit__T0_0014.npz": "4b946874dd4f9c4545488d41748674b516e692899c60bda6c854c39b816fcca8",
+    "output/V3_endpoint_scores/exports/reddit/reddit__T0_0014__baselines.npz": "cb7a74d17d035194527a22b3a270318263035df7f287816e4246b46a9c5b402a",
+    "output/V3_endpoint_scores/exports/reddit/reddit__T0_0016.npz": "ab8e12565908efd736229a5e552c134e9308c530f7eece826a8e2e81144dd3ca",
+    "output/V3_endpoint_scores/exports/reddit/reddit__T0_0016__baselines.npz": "61fde8c8c417fe709946d2e8c37ba1d817c79b6539a8acf3041e8b15a3dc601c",
+    "output/V3_endpoint_scores/exports/reddit/reddit__T0_0017.npz": "916fff6cec5bd38d1279960527f5e139728dba16f48f563773792ccdb7900089",
+    "output/V3_endpoint_scores/exports/reddit/reddit__T0_0017__baselines.npz": "42709e4d7b9d626e8d6ee970cff32a7f72283e144de795fcc4c8ff5c82ec1084"
+  },
+  "seconds": 280.0988070964813
+}

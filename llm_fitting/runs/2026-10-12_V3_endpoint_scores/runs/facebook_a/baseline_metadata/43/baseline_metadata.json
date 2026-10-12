@@ -1,0 +1,48 @@
+{
+  "panel": "facebook_a",
+  "T0": 43,
+  "horizons": {
+    "1": {
+      "available": true,
+      "historical_pairs": 2844,
+      "kernel_pairs_by_bin": {
+        "0": 14894,
+        "1": 2940,
+        "2": 11760,
+        "3": 58800,
+        "4": 73500,
+        "5": 147000,
+        "6": 279106
+      },
+      "fallback_no_change_bins": []
+    },
+    "4": {
+      "available": true,
+      "historical_pairs": 2669,
+      "kernel_pairs_by_bin": {
+        "0": 13449,
+        "1": 2730,
+        "2": 10920,
+        "3": 54600,
+        "4": 68250,
+        "5": 136500,
+        "6": 259551
+      },
+      "fallback_no_change_bins": []
+    },
+    "13": {
+      "available": true,
+      "historical_pairs": 2140,
+      "kernel_pairs_by_bin": {
+        "0": 10018,
+        "1": 2100,
+        "2": 8400,
+        "3": 42000,
+        "4": 52500,
+        "5": 105000,
+        "6": 199982
+      },
+      "fallback_no_change_bins": []
+    }
+  }
+}
