@@ -70,3 +70,14 @@
   Controlled cases match every numeric output exactly; native equivalence
   checks must pass before use. This is an execution optimization, with no
   new selection criterion, model change, or changed diagnostic definition.
+
+- All native equivalence checks pass exactly. The comments worker alone was
+  restarted with the eligibility wrapper; completed atomic seed records are
+  retained under their producer hashes, and any fit lacking its companion
+  diagnostic is archived unused and replayed. No partial aggregate is read
+  as a scientific result. Facebook and long submissions continue unchanged.
+
+- Future diagnostic-only processes launched by the existing warning-guard
+  scripts also activate the verified eligibility wrapper. Existing extension
+  processes keep their loaded code and cached hash; no further interruption
+  is needed. Each new checkpoint stamps both wrappers when both are active.

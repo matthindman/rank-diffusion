@@ -41,5 +41,11 @@ def main():
         from validation import planted_study as runner
     else:
         from validation import planted_extension as runner
-    with bounded_warnings():runner.main()
+    if mode=="study" and len(sys.argv)>1 and sys.argv[1]=="diagnostics":
+        # Fresh diagnostic workers use the verified exact eligibility reduction.
+        # Existing workers keep their loaded code and cached producer hash.
+        from validation.planted_efficient_run import eligible_statistics
+        with bounded_warnings(),eligible_statistics():runner.main()
+    else:
+        with bounded_warnings():runner.main()
 if __name__=="__main__":main()
