@@ -12,6 +12,8 @@ tree may be older. How to use it: `PROTOCOL.md` §5, "The queue".
 
 | R1 | Review of the decision document for D1 | `briefs/R_review.md`; the document is `llm_fitting/D1_CANDIDATES_CLAUDE_2026-10-12.md` on `main` | none: write `llm_fitting/handoff/R1_D1_review/REVIEW.md` on your current branch | open; do it AFTER V2 part 4 is committed, because it requires reading the A-task results | the record sections it cites (§2z-as to §2z-ay) |
 
+| R2 | Review of A9 and A10 (variance against ladder slope, both ways) | `briefs/R_review.md`; MODEL_STATUS §2z-bf and §2z-bh; `runs/2026-10-12_A9_variance_ladder/`, `runs/2026-10-12_A10_two_way/` | none: write `llm_fitting/handoff/R2_variance_ladder_review/REVIEW.md` on your current branch | open; after the calendar-aligned V3 tables | look hardest at: whether a flat ratio of two profiles that both rise toward the bottom can arise without a link (propose the planted check); the horizon-difference variance estimator; the ladder integration |
+
 Reviews and blind checks are added here as rows when they are needed, or
 sent as direct calls.
 

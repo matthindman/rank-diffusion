@@ -6886,3 +6886,104 @@ Prediction P7 fails in the opposite direction: model outside-event frequency is 
 **Not run / waiting.** Correctly timed endpoint evaluation awaits Q1 in QUESTIONS.md; no ANSWERS.md is on main at handoff. No non-frozen specification, parameter/refitting bootstrap, candidate gate, new data, new threshold, package change or adoption. No sealed folder was touched. WD absence is intentional.
 
 **Artifacts and reproduction.** Handoff llm_fitting/handoff/V3_endpoint_scores; aggregate archive llm_fitting/runs/2026-10-12_V3_endpoint_scores. Full local exports/caches remain under ignored output/V3_endpoint_scores. launch.sh PANEL runs each frozen stack with the registered interpreter, shared lock and caffeinate; endpoint_audit.py, endpoint_analysis.py and endpoint_report.py regenerate the audit/tables/report. Full commands, source/input hashes, attempts, seeds, all bands and data denominators accompany REPORT.md. Method sources: Ferro 2014 (DOI10.1002/qj.2270) and Gneiting–Raftery 2007 (DOI10.1198/016214506000001437).
+
+## 2z-bh. 2026-10-12 — EXPLORATORY MEASUREMENT (A10, owner-requested): the variance–structure relation estimated both ways. In shape the two directions correspond once variance is measured with noise handled (implied and estimated variance within a typical factor of 1.14–1.31; the variance-predicted ladder has 40–65% of a power law's error). In level and over time they do not: the constant is unmeasured, its time scale exceeds the panels, and a half-window holdout loses to carrying the ladder forward by a factor of three. Three of seven predictions held, one on three panels of four, three failed. Descriptive; nothing adopted
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; design,
+predictions and runner committed at 430b27d before anything ran; results
+committed with this entry. Requested by the owner after §2z-bf._
+
+**Tier.** Exploratory and descriptive, DEVELOPMENT data. Data only, plus
+the frozen structure fit for one variance column. No model code,
+simulation or gate evaluation; no planted-data validation.
+
+**Question.** Under a one-constant rank diffusion the ladder's local
+log-log slope is σ²/(2g). From the ladder, what variance must each rank
+have; from the variance, what ladder follows; how closely do the two agree;
+what is missing.
+
+**Method.** As §2z-bf, with the variance taken as the growth of the
+variance of changes between 13 and 26 weeks on every panel so that g is
+comparable. Four variance estimates in order of noise handling. The
+predicted ladder is the predicted slope integrated in log rank upward from
+the observed value at rank K, compared at 200 log-spaced ranks. A holdout
+in time on the two 212-week panels and across the three Reddit panels.
+
+**Result, variance → structure.** Root-mean-square error of the predicted
+ladder, log units.
+
+| variance estimate | FB Era A | comments | long submissions | comments extension |
+|---|---|---|---|---|
+| one-week variance, no noise handling | 0.548 | 1.100 | 0.578 | 1.375 |
+| fitted σ_perm² | 0.207 | 0.548 | 0.156 | 0.629 |
+| growth of variance, 13 to 26 weeks | 0.097 | 0.274 | 0.130 | 0.155 |
+| the same less an estimated annual cycle | 0.179 | 0.412 | 0.226 | 0.767 |
+| best single power law (same number of free quantities) | 0.252 | 0.423 | 0.199 | 0.391 |
+| quadratic in log rank (one more) | 0.034 | 0.147 | 0.072 | 0.139 |
+| g per week, from the growth of variance | 0.0067 | 0.0036 | 0.0033 | 0.0036 |
+
+**Result, structure → variance.** Typical factor between the variance the
+ladder implies and the estimate, across octave bins: 1.25, 1.31, 1.16,
+1.14; implied value inside the estimate's 5–95% bracket in 8 of 8, 5 of 10,
+7 of 8 and 7 of 10 bins.
+
+**Result, holdouts.** g from the first and second half of the window:
+0.0039 and 0.0027 on long submissions, 0.0038 and 0.0039 on the comments
+extension. The second-half ladder predicted from first-half variance and
+g: error 0.528 on both, against 0.249 and 0.175 in sample and 0.168 and
+0.194 for carrying the first-half ladder forward. Across Reddit panels g
+agrees within 9%; predicting one panel's ladder with another's g gives
+errors of 0.14 to 0.64, a 6% change in g moving the top by about 0.6 log
+units.
+
+**What the measurements show.**
+
+1. In shape the relation holds in both directions when variance is
+   measured as the growth of variance with horizon. It does not appear at
+   all with the one-week variance (g 9 to 19 times larger, ladder two to
+   three and a half times worse than a power law).
+2. The model's fitted lasting variance predicts the ladder worse than the
+   model-free estimate on every panel, and worse than a power law on both
+   comments panels.
+3. The constant is not measured, is 1.9 times larger on Facebook than on
+   Reddit, moves between halves of the long-submissions window, and has to
+   be known to a few percent for the level of the ladder to follow.
+4. 1/g is 280–300 weeks on Reddit and 150 on Facebook, longer than any
+   panel. Over half a window the ladder is better predicted by itself than
+   by its variance profile, by a factor of about three.
+5. The head (bins of 5 to 16 endpoints) is not resolved: one head bin on
+   each Reddit panel is quieter than its steepness implies, and the
+   predicted top value is off by −0.26 to +0.35 with no consistent sign.
+6. A cycle correction in three coarse rank groups made every prediction
+   worse.
+
+**Predictions (DESIGN.md), scored.** (1) The model-free variance beats the
+power law on all four panels: HELD. (2) Noise handling matters in a known
+direction: HELD on four. (3) Implied variance inside the bracket in at
+least 60% of bins on each panel: HELD on three, FAILED on comments. (4)
+Predicted top short by at least 0.3 on both comments panels: FAILED (−0.26,
++0.11). (5) The cycle correction changes little: FAILED on both comments
+panels. (6) g stable between halves and the held-out ladder within twice
+the in-sample error: FAILED. (7) g agrees on the Reddit panels and is at
+least 1.5 times larger on Facebook: HELD.
+
+**Verdict.** No adoption rule applies. The owner's hypothesis, that the
+structure of the variance reproduces the structure and local slope of the
+ladder, holds as a statement about shape on four development panels and
+is conditional on handling noise. It is not yet a prediction of the
+ladder: one number is taken from the ladder, the relation is a
+stationary-state relation whose adjustment time exceeds the panels, and no
+planted check exists. What it identifies as missing, in order: an
+independent measurement of g (the decline of incumbents relative to the
+whole and the entry that balances it); longer panels; a variance partition
+that does not depend on the unrecovered reversion; the head; a possible
+rank dependence of the drift (departures of a factor of about 1.3 on the
+comments panels); a proper treatment of the annual cycle. The first of
+these is the turnover and state-dependent-growth part of the diagnostic
+batch recommended in §2z-be, which now has a quantitative target.
+
+**Not run.** Any planted check; an independent estimate of g; crossing
+rates; Instagram. **Files.** `llm_fitting/phase1_a10.py`;
+`llm_fitting/runs/2026-10-12_A10_two_way/` (DESIGN.md, cells,
+report_tables.txt, REPORT.md). Command: `python llm_fitting/phase1_a10.py
+run <panel>`, `report`.

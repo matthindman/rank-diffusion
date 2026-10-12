@@ -44,7 +44,10 @@ and §2z-bd (what V2 changes in the entries before it), §2z-be (the debate
 on candidate 2, closed), §2z-bf (A9: lasting variance over the ladder's
 local slope is close to constant across ranks), §2z-bg (Codex's V3:
 endpoint scores at nominal rows; a timing discrepancy in the gate's
-conditional simulator, flagged for the owner).
+conditional simulator, flagged for the owner). §2z-bh (A10: the
+variance–structure relation both ways; it holds in shape with noise
+handled, and what it lacks is an independent measurement of its one
+constant and panels longer than its adjustment time).
 The per-endpoint export for Codex's V3 (A6) is on `main`.
 
 ## Evidence to date

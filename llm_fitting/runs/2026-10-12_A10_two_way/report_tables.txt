@@ -1,0 +1,46 @@
+
+## facebook_a (K=3500, T=86; variance growth from 13 to 26 weeks)
+variance estimate: g = median V/(2 slope); CV across bins; log-log trend of the ratio on rank | ladder: RMSE, largest error, error at rank 1, at rank 10 | power law RMSE, quadratic RMSE
+  V0 one-week, no noise handling   g 0.12495  CV 0.25  trend +0.14 | 0.548  0.704  +0.243  +0.363 | 0.252  0.034
+  V1 fitted s_perm^2               g 0.00886  CV 0.28  trend -0.07 | 0.207  0.725  +0.725  +0.043 | 0.252  0.034
+  V2 variance growth 13-26         g 0.00670  CV 0.25  trend -0.06 | 0.097  0.350  +0.350  +0.195 | 0.252  0.034
+  V3 V2 less the annual cycle      g 0.00643  CV 0.28  trend -0.08 | 0.179  0.757  +0.757  +0.452 | 0.252  0.034
+structure -> variance (against V2): RMS log ratio 0.221 (typical factor 1.25); implied inside the 5-95% bracket in 100% of bins
+  ranks: implied / estimated [5%, 95%]   14-27: 0.0075/0.0123 [0.0057, 0.0193]   27-55: 0.0084/0.0090 [0.0032, 0.0143]   55-109: 0.0095/0.0068 [0.0029, 0.0106]   109-219: 0.0103/0.0118 [0.0083, 0.0151]   219-438: 0.0116/0.0106 [0.0070, 0.0138]   438-875: 0.0132/0.0124 [0.0095, 0.0150]   875-1750: 0.0150/0.0148 [0.0129, 0.0165]   1750-3500: 0.0184/0.0186 [0.0169, 0.0205]
+
+## reddit_comments (K=12500, T=136; variance growth from 13 to 26 weeks)
+variance estimate: g = median V/(2 slope); CV across bins; log-log trend of the ratio on rank | ladder: RMSE, largest error, error at rank 1, at rank 10 | power law RMSE, quadratic RMSE
+  V0 one-week, no noise handling   g 0.03879  CV 0.24  trend +0.09 | 1.100  1.271  -0.250  +0.993 | 0.423  0.147
+  V1 fitted s_perm^2               g 0.00367  CV 0.29  trend +0.06 | 0.548  0.853  -0.333  +0.554 | 0.423  0.147
+  V2 variance growth 13-26         g 0.00355  CV 0.27  trend +0.01 | 0.274  0.607  -0.256  +0.481 | 0.423  0.147
+  V3 V2 less the annual cycle      g 0.00278  CV 0.38  trend +0.11 | 0.412  1.054  -1.054  +0.183 | 0.423  0.147
+structure -> variance (against V2): RMS log ratio 0.273 (typical factor 1.31); implied inside the 5-95% bracket in 50% of bins
+  ranks: implied / estimated [5%, 95%]   12-24: 0.0050/0.0077 [0.0032, 0.0124]   24-49: 0.0060/0.0033 [0.0019, 0.0046]   49-98: 0.0065/0.0075 [0.0049, 0.0112]   98-195: 0.0065/0.0056 [0.0037, 0.0078]   195-391: 0.0076/0.0070 [0.0054, 0.0087]   391-781: 0.0084/0.0112 [0.0090, 0.0135]   781-1562: 0.0095/0.0103 [0.0091, 0.0115]   1562-3125: 0.0103/0.0090 [0.0081, 0.0099]   3125-6250: 0.0129/0.0118 [0.0109, 0.0128]   6250-12500: 0.0152/0.0178 [0.0169, 0.0187]
+
+## reddit_submissions_long (K=5000, T=212; variance growth from 13 to 26 weeks)
+variance estimate: g = median V/(2 slope); CV across bins; log-log trend of the ratio on rank | ladder: RMSE, largest error, error at rank 1, at rank 10 | power law RMSE, quadratic RMSE
+  V0 one-week, no noise handling   g 0.03043  CV 0.49  trend +0.29 | 0.578  1.968  -1.968  -0.506 | 0.199  0.072
+  V1 fitted s_perm^2               g 0.00394  CV 0.18  trend -0.01 | 0.156  0.367  -0.367  +0.144 | 0.199  0.072
+  V2 variance growth 13-26         g 0.00334  CV 0.15  trend +0.01 | 0.130  0.341  +0.150  +0.140 | 0.199  0.072
+  V3 V2 less the annual cycle      g 0.00287  CV 0.18  trend -0.01 | 0.226  0.633  +0.511  +0.339 | 0.199  0.072
+structure -> variance (against V2): RMS log ratio 0.148 (typical factor 1.16); implied inside the 5-95% bracket in 88% of bins
+  ranks: implied / estimated [5%, 95%]   20-39: 0.0055/0.0041 [0.0031, 0.0049]   39-78: 0.0057/0.0073 [0.0044, 0.0105]   78-156: 0.0062/0.0070 [0.0048, 0.0092]   156-312: 0.0065/0.0066 [0.0050, 0.0084]   312-625: 0.0069/0.0068 [0.0054, 0.0080]   625-1250: 0.0073/0.0071 [0.0063, 0.0079]   1250-2500: 0.0086/0.0082 [0.0073, 0.0091]   2500-5000: 0.0108/0.0117 [0.0107, 0.0126]
+time holdout: g first half 0.00394, second half 0.00273; CV first 0.18, second 0.24, first-half variance over second-half slope 0.24; second-half ladder RMSE from first-half variance and g 0.528 (in sample 0.249; power law 0.276); the ladder itself moved by 0.168
+
+## reddit_comments_ext (K=12500, T=213; variance growth from 13 to 26 weeks)
+variance estimate: g = median V/(2 slope); CV across bins; log-log trend of the ratio on rank | ladder: RMSE, largest error, error at rank 1, at rank 10 | power law RMSE, quadratic RMSE
+  V0 one-week, no noise handling   g 0.03745  CV 0.28  trend +0.12 | 1.375  1.613  +0.397  +1.248 | 0.391  0.139
+  V1 fitted s_perm^2               g 0.00444  CV 0.40  trend -0.12 | 0.629  3.511  +3.511  +1.088 | 0.391  0.139
+  V2 variance growth 13-26         g 0.00364  CV 0.14  trend -0.00 | 0.155  0.474  +0.112  +0.226 | 0.391  0.139
+  V3 V2 less the annual cycle      g 0.00241  CV 0.24  trend +0.06 | 0.767  1.095  +0.761  +0.893 | 0.391  0.139
+structure -> variance (against V2): RMS log ratio 0.127 (typical factor 1.14); implied inside the 5-95% bracket in 70% of bins
+  ranks: implied / estimated [5%, 95%]   12-24: 0.0048/0.0041 [0.0033, 0.0045]   24-49: 0.0065/0.0067 [0.0039, 0.0100]   49-98: 0.0061/0.0075 [0.0042, 0.0122]   98-195: 0.0069/0.0067 [0.0053, 0.0086]   195-391: 0.0075/0.0070 [0.0056, 0.0085]   391-781: 0.0083/0.0103 [0.0083, 0.0124]   781-1562: 0.0087/0.0097 [0.0087, 0.0108]   1562-3125: 0.0105/0.0097 [0.0088, 0.0106]   3125-6250: 0.0124/0.0109 [0.0102, 0.0116]   6250-12500: 0.0151/0.0158 [0.0151, 0.0165]
+time holdout: g first half 0.00376, second half 0.00392; CV first 0.22, second 0.16, first-half variance over second-half slope 0.28; second-half ladder RMSE from first-half variance and g 0.528 (in sample 0.175; power law 0.456); the ladder itself moved by 0.194
+
+## across Reddit panels: each ladder predicted with another panel's g (V2)
+  g from reddit_comments (0.00355) on reddit_submissions_long: RMSE 0.140 (own g 0.00334: 0.130; power law 0.199)
+  g from reddit_comments (0.00355) on reddit_comments_ext: RMSE 0.282 (own g 0.00364: 0.155; power law 0.391)
+  g from reddit_submissions_long (0.00334) on reddit_comments: RMSE 0.638 (own g 0.00355: 0.274; power law 0.423)
+  g from reddit_submissions_long (0.00334) on reddit_comments_ext: RMSE 0.633 (own g 0.00364: 0.155; power law 0.391)
+  g from reddit_comments_ext (0.00364) on reddit_comments: RMSE 0.144 (own g 0.00355: 0.274; power law 0.423)
+  g from reddit_comments_ext (0.00364) on reddit_submissions_long: RMSE 0.238 (own g 0.00334: 0.130; power law 0.199)
