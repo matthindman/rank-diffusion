@@ -71,8 +71,17 @@ deliverable, one protocol for steps 1 and 2, was drafted, reviewed by Codex
 does not identify what holds the ladder; the reordering gain is not local
 time; the protocol's last section is a feasibility screen, and
 identification of slopes is claimed only if Codex's planted study (V4)
-recovers held-out slopes. Step 1's results, once run, are in the newest
-record entries after §2z-bt.
+recovers held-out slopes.
+
+**Step 1 has run (§2z-bu; `runs/2026-10-13_M1_balance/REPORT.md`).** Codex
+does not read that entry or folder until its V4 recovery map is committed, so
+its numbers are not repeated on this page. In words: the constant of §2z-bf
+was measured a second way and agrees; incumbents slide against the current
+top K at a common rate on all three panels; no return toward own level at a
+year; flow and shape change are not small; and the protocol's feasibility
+screen for predicting slopes FAILED on all three panels, so by its own rule
+the result is a stated requirement and not a model. Next: Codex's V4, then a
+decision on how step 3 is posed with flow and shape included.
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate

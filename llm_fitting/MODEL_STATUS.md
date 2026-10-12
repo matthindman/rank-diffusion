@@ -7761,3 +7761,133 @@ Codex at this version, blind to step 1's output.
 **Commands.** `python -m pytest tests/test_balance_accounting.py -q`. Health
 check before the commit: research suite 505 passed, package suite 8 passed,
 legacy guard 14/15 and churn 0.013.
+
+## 2z-bu. 2026-10-13 — EXPLORATORY MEASUREMENT (M1, step 1 of the adopted agenda): the balance accounting on three development panels. The ladder's reordering rate, measured from who replaced whom, equals the variance-over-slope constant of §2z-bf; incumbents slide against the current top K at about 0.0043 per week on all three panels; no return toward an endpoint's own level at a year. Flow and shape change are not small, and the feasibility screen for predicting slopes FAILS on all three panels. 19 of 42 scored predictions passed, 16 failed, 3 inconclusive, 4 not adjudicated; nothing adopted, no fit, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-13; protocol v2
+and runner committed at 223f5e2 before any run; results committed with this
+entry. Codex: this entry reports step 1's output; do not read it until your V4
+recovery map is committed._
+
+**Tier.** Exploratory and descriptive, DEVELOPMENT data, in sample. Data only.
+No fit, no simulation, no gate evaluation. The statistics have known-answer
+tests on synthetic panels and no recovery study yet (V4), so no mechanism is
+claimed.
+
+**Question.** What holds the rank-size ladder, in an accounting sense: what do
+the endpoints at the top lose, what puts it back, and can the one constant of
+§2z-bf be measured without taking it from the ladder?
+
+**Method.** `MTS_PROTOCOL_STEPS_1_2_2026-10-13.md` v2 (§2z-bt). Between two
+times, exactly: change of the ladder's shape against a positional centre =
+minus the occupants' loss, plus the endpoint reordering gain, plus flow.
+Weekly positions at horizons 1 to 52 weeks; block means (52 weeks on Reddit,
+26 on Facebook) with cohorts fixed on the first block by permanent rank and
+measured between later blocks; the primary change on Reddit has a whole block
+between selection and start. Endpoints ever inside the weekly top 4K tracked;
+every scored cell certified exact. Scores by `mts_step1.score`, fixed
+beforehand.
+
+**Result** (primary pair, centre K; rates per endpoint per week).
+
+| | Facebook Era A | Reddit comments (ext) | Reddit submissions (long) |
+|---|---|---|---|
+| reordering gain, K/16 to K/2 | 0.0061–0.0077 | 0.0026–0.0030 | 0.0025–0.0034 |
+| constant of §2z-bf | 0.0067 | 0.0026 | 0.0030 |
+| reordering gain over its small-step value k v / (2S), K/16 to K | 0.70–1.10 | 0.88–1.06 | 0.68–1.48 |
+| slide of the cohort fixed on block 0, seven octave bins pooled | 0.0044 (no gap) | 0.0043 | 0.0043 |
+| same in the no-gap year | — | 0.0056 | 0.0051 |
+| slide over the reordering gain at K | 0.84 | 1.73 | 1.63 |
+| flow over the reordering gain, k up to K/2 | 3–24% | 0–29% | 8–18% |
+| shape term over the reordering gain, K/16 to K/2 | 5–46% | 6–18% | 12–76% |
+| predictable share of the reordering gain at K/4, K/2, K | 0.50, 0.62, 0.59 | 1.21, 1.27, 1.16 | 1.68, 1.42, 1.08 |
+| association of the change with the level one block earlier (5–95%) | −0.002 (−0.023 to 0.015) | +0.152 (0.129 to 0.173) | +0.118 (0.051 to 0.180) |
+| and with the still earlier level | — | −0.129 (−0.151 to −0.107) | −0.134 (−0.189 to −0.075) |
+| occupants of the top K at the start block not in the cohort | 919 of 3,500 | 3,702 of 12,500 | 1,615 of 5,000 |
+
+1. **The constant, measured a second way.** The reordering gain uses no
+   variance and no slope, and on all three panels it lands on the constant
+   §2z-bf took from them. The small-step value computed in the same run is
+   within 13% of it at every k on comments.
+2. **A common slide.** Every octave bin of the year-1 cohort declines against
+   the centre between years 3 and 4 on both Reddit panels, with intervals
+   excluding zero, at 0.0043 per week, about 20% a year. The value is
+   0.0041–0.0044 at boundaries K/2, K and 2K. In the year next to selection
+   it is 1.17 and 1.30 times larger, so most of it is not the fading of what
+   selected the cohort. It differs little between rank bins on comments.
+   Facebook's one pair gives 0.0044. That Facebook's slide equals Reddit's
+   while its reordering gain is twice as large was not predicted (B8 failed).
+3. **No return toward own level.** On both Reddit panels the associations
+   have the signs opposite to a personal home: endpoints that rose from year
+   1 to 2 tend to keep rising from year 3 to 4. Descriptive only (§2z-bt).
+4. **Flow and shape are first-order.** On comments, endpoints with no block
+   level a year earlier supply 15–29% of the reordering gain between K/8 and
+   K/2 and 31% of what replaces incumbents at K. On submissions the top of the
+   ladder is sinking toward the centre: the shape term is 45–76% of the
+   reordering gain between K/16 and K/4. On weekly positions that term runs at
+   about −0.004 per week at K/16 on both Reddit panels over the whole window,
+   0.8 log units in four years. On Facebook the head is rising.
+5. **The slide over-predicts the reordering gain on Reddit** (1.1 to 1.7
+   times), and over-predicts what the current occupants themselves lose (1.3
+   to 1.9 times on comments): within a cohort, the endpoints holding the top
+   are the ones that had been rising.
+
+**Predictions scored** (protocol §6; details in
+`runs/2026-10-13_M1_balance/report_tables.md`).
+
+| | Facebook | comments | submissions |
+|---|---|---|---|
+| A1 identity closes | PASS | PASS | PASS |
+| A2 one-week reordering 0.6–1.2 of its small-step value | PASS | PASS | FAIL (0.37–0.71) |
+| A2b below 1 at the head | PASS | FAIL | FAIL |
+| A3 one-week loss ≥ 5× the longest-horizon loss | PASS (12×) | PASS (5.8×) | FAIL (3.6×) |
+| A4 weekly shape term under 10% | PASS | FAIL (28%) | FAIL (40%) |
+| B1 block reordering gain in the §2z-bf range | PASS | PASS | PASS |
+| B2 every bin slides; slide 0.5–2× the gain at K | NOT ADJUDICATED | PASS | PASS |
+| B3 little difference between bins | INCONCLUSIVE | PASS | INCONCLUSIVE |
+| B4 no association with the still earlier level | NOT ADJUDICATED | FAIL | INCONCLUSIVE |
+| B5 predictable share 0.5–1.2 | NOT ADJUDICATED | FAIL | FAIL |
+| B6 flow small | FAIL | FAIL | FAIL |
+| B7 shape stable | FAIL | PASS | FAIL |
+| B9 block reordering 0.5–1.1 of its small-step value | FAIL | PASS | FAIL |
+| B10 no-gap slide 0.7–1.5× the slide with a gap | NOT ADJUDICATED | PASS (1.30) | PASS (1.17) |
+| B8 Facebook slide 1.3–3× Reddit's | FAIL (0.82) | | |
+
+B4 failed on comments because the association is clearly not zero; its sign is
+the opposite of what a home would give.
+
+**Verdict by the rule fixed beforehand.** The feasibility screen fails on all
+three panels: on flow alone for comments; on flow, shape and the predictable
+share for submissions and Facebook. Step 3 as the protocol wrote it, slopes
+from S = v / (2s) with s the cohort's slide, is not worth attempting on these
+panels: the slide is 1.6 to 1.7 times the reordering gain on Reddit, so it
+would give slopes about 40% too shallow. Per the protocol the result is a
+stated requirement: the balance has to be used with all its terms, with entry
+measured as a quantity of its own and the shape allowed to move; a prediction
+needs the mapping from cohorts to current occupants, who are selected on
+recent direction; Facebook needs a longer or quieter instrument.
+
+**What it does not show.** What holds the ladder. The common slide is what the
+hypothesis of §2z-bq predicts, and it would also appear under other
+mechanisms; nothing here separates them without the planted study. It does
+not show a stationary ladder: two panels of three are not, to the accuracy
+this accounting needs.
+
+**Secondary runs** (declared; reported, not scored). 26-week blocks on the two Reddit panels, pairs a whole year apart, a cohort on each block in turn (22 combinations per
+panel), and the 136-week comments window. At K/4 the slide is 0.0041–0.0060 per week on comments and 0.0035–0.0057 on
+submissions in every combination; for one fixed pair of outcome blocks it is about 10% lower with the cohort chosen two
+years earlier than just before. The reordering gain is 0.0032–0.0035 and 0.0029–0.0039. Flow is 13–36% and 5–24% of it.
+The shape term is negative in every pair on submissions (−18% to −99% of the gain) and changes sign by year on comments
+(−130% to +48%), so the stable shape of the primary pair on comments is one year's value.
+
+**Not run.** The recovery study (V4, Codex). Any fit, simulation or gate
+evaluation.
+
+**Commands.** `python llm_fitting/mts_step1.py run <panel> --reviewed` for
+`facebook_a`, `reddit_submissions_long`, `reddit_comments_ext`, then the three
+secondary runs of the protocol's section 11, each through
+`scripts/heavy_lock.py` under `caffeinate -dims`; `python
+llm_fitting/mts_step1.py report`. Outputs: `runs/2026-10-13_M1_balance/`
+(`cells/`, `logs/`, `report_tables.md`, `REPORT.md`). No run was killed.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
