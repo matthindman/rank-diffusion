@@ -1,8 +1,9 @@
 # Decision point D1 — what Phase 1 found and what I propose to test
 
 _Claude (Opus 5.5), 2026-10-12. Status: DRAFT FOR THE OWNER'S DECISION.
-Nothing here is adopted. Codex has not yet reviewed it (queue row R1). Every
-number is quoted from the MODEL_STATUS section named beside it._
+Nothing here is adopted. Codex reviewed it on 2026-10-12 (queue row R1; see
+the second status section). Every number is quoted from the MODEL_STATUS
+section named beside it._
 
 ## Status after 2026-10-12, afternoon
 
@@ -22,6 +23,61 @@ number is quoted from the MODEL_STATUS section named beside it._
   amplitude spread is recovered without bias at its frozen value. The
   evidence against reversion to a home is strengthened. The text below is
   left as written on the morning of 2026-10-12.
+
+## Status after Codex's review R1, 2026-10-12 evening
+
+Codex reviewed this document (`handoff/R1_D1_review/REVIEW.md`, recorded as
+§2z-bi). I checked each finding against the code and the record and accept
+all of them (§2z-bk). The text below the next heading is still the
+morning's, kept as history. Read it with these corrections.
+
+- **Candidate 1, "harms no panel" is too strong.** All five point estimates
+  of the index improve. On short submissions (−0.040 [−0.064, +0.009]) and
+  Instagram (−0.013 [−0.096, +0.057]) the change is unresolved at 20 seeds
+  (§2z-az). The time-median ladder still carries observation spread and is
+  not an estimate of latent homes.
+- **Reference gates.** Three of the four recorded values were taken at 3
+  simulations. Long submissions was already at 20 (seeds 0–19), so its
+  distance from Codex's 80-seed value is not a three-simulation correction,
+  and the seed sets differ (§2z-ax).
+- **Candidate 3's reason no longer holds.** It leaned on candidate 2, which
+  is withdrawn, and on the cycle inflating fitted reversion, which planted
+  cycles contradict (§2z-bd). The cycle stays a known omission as a model
+  component and becomes a required control in any diagnostic of lasting
+  movement.
+- **Candidate 4 is less specified than I wrote.** V2's bounded arm clipped
+  standardized shocks and does not test a limit on raw size. The worst-seed
+  maxima I quoted are descriptive and are not an identifying moment. A tail
+  measure that does not depend on the score has to be declared and
+  recovered first. The amplitude spread is recovered with small bias at the
+  three values tested, with a floor of 0.14–0.19 at a true zero; "recovered
+  without bias" above overstates that.
+- **The margin.** A difference of at most 0.05 on 40 shared seeds is a
+  working tolerance you can choose. It is not statistical evidence of no
+  harm: V1 measured simulation noise for one fitted stack, not refitting,
+  future panels or the selection of a candidate. Before a first comparison
+  the seed list, the paired difference, the resampling unit, the interval
+  rule and what is held fixed have to be written down.
+- **A4.** The half-sample reliabilities in the table below were computed on
+  a shifted rank coordinate. Corrected values are in §2z-bk.
+
+**The decision list as it stands** (it replaces "What I am asking you to
+decide" below):
+
+1. Whether the proposed next phase becomes the working agenda
+   (`RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md`; Codex's proposal
+   with my amendments).
+2. Whether the structure stacks are re-frozen with the time-median seeding
+   (implemented, opt-in, §2z-bb).
+3. The margin, as a working rule, with its procedure completed first.
+4. Whether Codex's 80-seed values become the recorded reference gates.
+5. The wording around b = 1: no change is proposed. The reading behind my
+   morning request is withdrawn (§2z-bd).
+6. Whether candidates 3 and 4 wait, as described above.
+7. Whether the frozen gate's conditional simulator, which takes two weekly
+   steps before its first recorded week, should be changed (§2z-bg).
+8. Whether Codex's two large V2 result archives go into the public
+   repository.
 
 ## In one paragraph
 

@@ -1,5 +1,11 @@
 # A4 — report
 
+_Correction, 2026-10-12 (MODEL_STATUS §2z-bk; found by Codex's review R1). The
+"reliability" column below, and every ratio built on it, was computed from half
+fits on a rank coordinate shifted by log 2. Corrected values and what they
+change are in `CORRECTION_REPORT.md`. The curves' R², the scaling exponents and
+the grid-edge counts below are unaffected._
+
 Run 2026-10-12 by Claude (Opus 5.5) from commit a2728b7 (design and
 predictions committed first). Nine fits (three panels × full universe and
 two halves), all completed; no simulation, no gate evaluation. Command:

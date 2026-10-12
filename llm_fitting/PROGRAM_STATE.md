@@ -47,8 +47,23 @@ endpoint scores at nominal rows; a timing discrepancy in the gate's
 conditional simulator, flagged for the owner). §2z-bh (A10: the
 variance–structure relation both ways; it holds in shape with noise
 handled, and what it lacks is an independent measurement of its one
-constant and panels longer than its adjustment time).
+constant; its "factor of three" against carrying the ladder forward and
+its reading of 1/g as an adjustment time are corrected in §2z-bk).
+§2z-bi (Codex's review R1 of the D1 document), §2z-bj (Codex's
+independent recomputation of the variance–slope correspondence, its
+review of A10, a proposed agenda and three proof targets), §2z-bk
+(corrections after both reviews: A10's holdout comparison, A4's
+half-sample reliabilities), §2z-bl (the proposed next phase: PROPOSED,
+not adopted).
 The per-endpoint export for Codex's V3 (A6) is on `main`.
+
+**A proposal for the phase after D1 exists and is not adopted:**
+`RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md` (Codex's six steps
+with Claude's amendments marked; §2z-bl). It would replace Phase 2 of the
+work plan. Its question is whether movement and turnover measured without
+the ladder explain the ladder. Until the owner adopts it, no step of it is
+started; its first deliverable would be one measurement-and-recovery
+protocol.
 
 ## Evidence to date
 
@@ -104,10 +119,13 @@ The per-endpoint export for Codex's V3 (A6) is on `main`.
    (§1, §2z-ai). A first measurement on the component side exists:
    the forward ladder of §2z-ap. It does not test the band profiles, and it
    has no leave-one-out. The band profiles were measured on 2026-10-12
-   (§2z-at): the volatility profiles reproduce and are not straight lines
-   in rank; the κ profile does not reproduce and sits on its slowest grid
-   value at 31–52% of knots, so part of the κ shift in residual 3 is a
-   boundary estimate.
+   (§2z-at, with its half-sample numbers corrected in §2z-bk): the
+   volatility profiles reproduce (0.71–0.97; σ_trans on FB 0.59); a
+   straight line in rank reaches 76–97% of the reproducible share for six
+   of nine and fails for the lasting volatility on FB and comments; the κ
+   profile does not reproduce on FB or long submissions, does on comments
+   (0.64), and sits on its slowest grid value at 31–52% of knots, so part
+   of the κ shift in residual 3 is a boundary estimate.
    Recovery on simulated data (§2z-bc): fitted reversion has a median
    relative error of 0.9–1.7 and sits at a bound in 46–68% of bands; the
    tail-thickness moment is not self-consistent; the amplitude spread is
@@ -194,20 +212,23 @@ is in the newest data-operation entries of MODEL_STATUS.
 - **D1, decided so far (§2z-ba):** the seeding change is approved (opt-in,
   structure simulation, time-median ladder; re-freeze still to be decided).
   Candidate 2 is withdrawn by a signed Claude–Codex consensus (§2z-be,
-  `handoff/D1_debate/CONSENSUS.md`). **Waiting on the owner:** whether the
-  design for the diagnostic batch it recommends should be written
-  (restoring response toward an own earlier level, a train-only ladder, or
-  neither; turnover at nested cutoffs; state-dependent growth). The rest of
-  the list below is open.
-- **Decision point D1 is ready for the owner:**
-  `D1_CANDIDATES_CLAUDE_2026-10-12.md` (draft; Codex's review is queued).
-  It asks six things: whether a parameter-free seeding change goes ahead
-  (§2z-av, §2z-az); whether a redesign of the lasting layer goes to its
-  design step (§2z-aw, §2z-ay); the comparison margin, now with its
-  measurement (§2z-ax); whether the 80-seed values become the recorded
-  reference gates; the wording around b = 1; and whether the annual cycle
-  and a limit on raw jump size wait. The plan's three original candidates
-  are withdrawn or narrowed there.
+  `handoff/D1_debate/CONSENSUS.md`).
+- **Whether the proposed next phase becomes the working agenda**
+  (`RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md`, §2z-bl), and
+  whether Codex's three proof targets are run
+  (`handoff/D1_debate/proof_prompts/`).
+- **The rest of D1.** `D1_CANDIDATES_CLAUDE_2026-10-12.md` now carries
+  Codex's review (§2z-bi) and a current decision list in its second status
+  section: the re-freeze of the structure stacks with the seeding option;
+  the comparison margin, as a working rule whose procedure has to be
+  completed first; whether the 80-seed values become the recorded
+  reference gates (three of the four old values were at 3 simulations,
+  long submissions at 20); no change proposed to the wording around b = 1;
+  whether the annual cycle and a limit on raw jump size wait.
+- Whether the frozen gate's conditional simulator, which takes two weekly
+  steps before its first recorded week, should be changed (§2z-bg).
+- Whether Codex's two large V2 result archives (33 MB) go into the public
+  repository (§2z-bc).
 - Whether endpoint-level proper scores and named baselines become a
   registered supplementary evaluation for the new datasets.
 - Wikipedia protocol choices: entity key, primary window, universe rule and

@@ -1,5 +1,18 @@
 # A10 — results
 
+_Correction, 2026-10-12 (MODEL_STATUS §2z-bk; found by Codex's review). Two
+statements below are wrong and are left in place for the record. (1) "Carrying
+the earlier ladder forward beats the variance-based prediction by a factor of
+three" compared an error scored on log-spaced ranks with one scored on every
+rank. Scored alike the ratio is 0.93 to 1.42 depending on weighting and anchor
+(`AUDIT_REPORT.md`). (2) 1/g is not "how long a ladder would take to adjust":
+no adjustment time was derived or measured, so "the observed ladder is mostly
+inherited" and "cannot be tested as a forecast inside these panels" do not
+follow from it. Also qualified: the constant is the ratio a/(2S) fitted from
+ladder and variance together, and reading it as the rate at which incumbents
+lose ground assumes one common drift and no flow; an implied variance falling
+inside a bootstrap bracket is a description, not a test._
+
 _Written 2026-10-12 by Claude (Opus 5.5). Design and predictions:
 `DESIGN.md` (committed at 430b27d before anything ran)._
 

@@ -5783,6 +5783,8 @@ then `report`.
 
 ## 2z-at. 2026-10-12 — EXPLORATORY MEASUREMENT (work plan A4): the band profiles of the three volatilities reproduce between halves of the entities and are not straight lines in rank; the reversion-rate profile does not reproduce and sits on its slowest grid value at 31–52% of knots. Four of eight sub-predictions failed; nothing adopted, no simulation, no gate evaluation
 
+_[CORRECTED 2026-10-12 by §2z-bk: the half-sample "reliability" numbers of this entry were computed on a rank coordinate shifted by log 2 (found by Codex, §2z-bi). Corrected: volatility profiles 0.71–0.97 (σ_trans on FB 0.59); a line reaches 76–97% of the reproducible share for six of nine; the κ profile reproduces on comments (0.64) and not on FB or long submissions.]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; design,
 predictions and runner committed at a2728b7 before any fit, results at
 adec301._
@@ -6889,6 +6891,8 @@ Prediction P7 fails in the opposite direction: model outside-event frequency is 
 
 ## 2z-bh. 2026-10-12 — EXPLORATORY MEASUREMENT (A10, owner-requested): the variance–structure relation estimated both ways. In shape the two directions correspond once variance is measured with noise handled (implied and estimated variance within a typical factor of 1.14–1.31; the variance-predicted ladder has 40–65% of a power law's error). In level and over time they do not: the constant is unmeasured, its time scale exceeds the panels, and a half-window holdout loses to carrying the ladder forward by a factor of three. Three of seven predictions held, one on three panels of four, three failed. Descriptive; nothing adopted
 
+_[CORRECTED 2026-10-12 by §2z-bk: "loses to carrying the ladder forward by a factor of three" compared two different rank weightings (found by Codex, §2z-bj); scored alike the ratio is 0.93 to 1.42. "Its time scale exceeds the panels" and finding 4 treat 1/g as an adjustment time, which was not derived or measured.]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; design,
 predictions and runner committed at 430b27d before anything ran; results
 committed with this entry. Requested by the owner after §2z-bf._
@@ -6987,3 +6991,294 @@ rates; Instagram. **Files.** `llm_fitting/phase1_a10.py`;
 `llm_fitting/runs/2026-10-12_A10_two_way/` (DESIGN.md, cells,
 report_tables.txt, REPORT.md). Command: `python llm_fitting/phase1_a10.py
 run <panel>`, `report`.
+
+## 2z-bi. 2026-10-12 — R1 (OpenAI Codex; integrated by Claude): review of the D1 decision document. PLANNING ONLY, nothing adopted. A4's half-sample comparison was made on a shifted rank coordinate and needs a corrected rerun; the decision document's live recommendations, its margin wording, "harms no panel" and its description of the reference seeds need correcting. Three deterministic checks passed; zero gate evaluations
+
+_Integration note (Claude Opus 5.5, 2026-10-12): the entry below is Codex's `llm_fitting/handoff/R1_D1_review/STATUS_ENTRY.md`, appended verbatim under the two-agent protocol (§2z-ar). Branch `codex/r-d1-review` at 9f1c5ff is merged; health on the merged tree: research suite 491 passed (13 subtests), package suite 8, legacy guard 14/15 and 0.013. Its heading in the handoff was: "2026-10-12 — R1 D1 review: PLANNING ONLY, nothing adopted; A4 split-half coordinates need repair, D1 recommendations and margin interpretation need updating". I checked every finding against the code and the record and accept all of them. The A4 coordinate error is confirmed by reading `phase1_a4.py` and `minimal_rankdiff.estimate`, and the corrected rerun is §2z-bk. The corrections to the decision document are in its second status section. No gate rows and no new data contact (its `GATE_ROWS.md`, `EXPOSURE_ROWS.md`)._
+
+_Provenance: OpenAI Codex, integrated by Claude under coordination/PROTOCOL.md. Started from main 191422962f3ba22fe6db11d19d860fd779cc42f0; skills at that commit. Review design and check source committed before execution at 15ef4ced45a200cc535a0d39081b875dc116e15c. No reviewed file edited._
+
+Read D1, its cited A-task artifacts/code and §§2z-as–bd, V1/V2, the current queue and subsequently closed candidate-2 consensus. The review covers candidates 1, 3, 4, the margin and §2z-bd. The new finding is that A4 retains full-population ranks after thinning identities while the estimator recomputes N on each half, so the half profiles are not in the full profile's coordinate. A deterministic 200-endpoint, 12-week fixture gives N=100 per half, an unclipped shift log(2), and 50% clipped at z=0 versus none in the full panel. The affected reliability/line-share interpretation in §2z-at needs a common-coordinate rerun. The empirical effect and its direction were not measured; full-fit R² and grid-edge counts are not invalidated by this check alone.
+
+The approved structure-only seeding implementation is contained, but “harms no panel” exceeds §2z-az's conditional seed bands. D1's live recommendations should reflect approved candidate 1, withdrawn candidate 2, and §2z-bd's reversed seasonal-estimator interpretation. Candidate 3's old dependency is unsupported; candidate 4 still needs a moment/observation design. V1 simulation precision does not select the acceptable-harm margin or supply refitting/future-panel uncertainty. The common-seed margin procedure needs a declared comparison and uncertainty rule before adoption. Long submissions' old reference already used 20 seeds, not three.
+
+The complete V2 strong-pair audit confirms the already appended correction to §2z-bd: separated labels 55/649, 42/763 and 68/781. Counts were known before checking, so this is unblinded artifact verification. Labels do not identify a mechanism. The native s recovery has small bias at the tested values, not a global unbiasedness result. The volatility-ratio contrast is supported within the planted set, with its literal non-volatility range slightly wider than quoted. An ancillary deterministic check shows absolute ladder drift can respond to common activity growth without a normalized shape change; it does not attribute observed drift to that cause.
+
+Commands: registered Python `llm_fitting/validation/review_d1_checks.py --out llm_fitting/handoff/R1_D1_review/CHECKS.json`; `bash scripts/health_check.sh`. Exact auxiliary extraction, evidence hashes, limits and logs are in REPORT/REVIEW. No empirical refit, new gate call, raw-panel analysis or sealed exposure. No model/default/stack/claim changed. Zero gate rows. Review complete; the proposed A4 correction/rerun is for Claude, and V3's existing timing question remains separate.
+
+## 2z-bj. 2026-10-12 — Variance–structure follow-up (OpenAI Codex, at the owner's direct request; integrated by Claude): EXPLORATORY measurement, then PLANNING ONLY. An independent recomputation supports the shape correspondence of §2z-bf (variance-to-slope error 6–12% over seven fixed octaves, 8–17% over all but the top bin, with g still taken from the ladder). A review of A10 (§2z-bh) finds its time-holdout baseline scored on a different rank weighting: on a common grid the variance reconstruction is 12–14% worse than carrying the ladder forward, not about three times; and 1/g is not a relaxation time. A six-step agenda and three proof targets are proposed. Nothing adopted; no fit, simulation or gate evaluation
+
+_Integration note (Claude Opus 5.5, 2026-10-12): the text below is Codex's `llm_fitting/handoff/D1_debate/variance_structure/STATUS_ENTRY.md`, followed by the two addenda of `llm_fitting/handoff/D1_debate/STATUS_ENTRY.md` (the agenda and the proof prompts), all appended verbatim under the two-agent protocol (§2z-ar). The work was done in the Codex session that held the candidate-2 debate, at the owner's direct request after §2z-be; it was not a queue task. Branch `codex/d1-debate` at 2602abd is merged; health on the merged tree as in §2z-bi. Codex did not run the health script, for the reason it gives. I did not rerun its measurements. I reproduced its A10 finding independently and corrected §2z-bh (§2z-bk). Its data contact (the four development panels of §2z-bf, read-only, descriptive) has a line in `EXPOSURE_LEDGER.md`. The agenda is carried into the program's documents as a proposal in §2z-bl; it is not adopted._
+
+EXPLORATORY DEVELOPMENT: Codex independent variance–structure follow-up, informed by A9. Owner requested estimates in both directions, mathematical literature, and useful proof problems. Work confined to codex/d1-debate and this handoff; the other Codex working copy was not read. D1 debate was already signed off before this follow-up.
+
+**Primary measurements.** Common-origin/common-finite-mask differences of increment variances: horizons 13/26 Facebook Era A and 13/52 Reddit; 13/65 Reddit sensitivity. Read-only registered loader/universe, permanent-rank cohorts, full-window B=4K selection, presence≥0.7, estimated common-factor subtraction. Same four DEVELOPMENT files as A9; no sealed data. INPUT_MANIFEST.json gives hashes and versions.
+
+On the prespecified seven octaves K/128..K, with g calibrated as median[a/(2S)], variance→slope MARE is 11.5%, 9.7%, 6.0%, 9.1%; structure→variance MARE 11.2%, 10.1%, 6.3%, 8.5% (FB, comments, submissions, comments extension). Reddit 13/65 gives slope MARE 11.0%, 8.3%, 5.5%, with g 0.002815, 0.003267, 0.003259. Extension g differs by about 16% from its 13/52 value. Broader all-but-first-bin primary slope errors 17.1%, 17.1%, 8.3%, 12.6%; reverse errors 15.2%, 22.5%, 9.4%, 12.6%. All variants and bins retained.
+
+**Limits/negative checks.** The two directions are algebraic counterparts with an in-sample scale, not independent predictions. LOBO is rank interpolation, not temporal holdout. Four panels include overlapping comments histories and only two platforms. Finite time and ladder uncertainty preclude a constancy confidence claim. Calendar-block brackets have only 1.09–3.10 blocks' worth of origins; near-full-length circular blocks can look spuriously precise. Endpoint-mean variance decomposition is compatible with large contributions under zero-drift Brownian motion: an exact overlap-covariance calculation supplies the relevant finite-window benchmark. Do not subtract it as proven permanent drift. Integrated slope errors can yield material level discrepancies, including 0.702 log units in the short-comments 13/65 projection. No validated latent instantaneous variance estimate or independent drift measurement was obtained.
+
+**Mathematics/literature.** THEORY.md derives S(u)=u a_eff(u)/(2G(u)) under stationary zero-current balance, adds a source/current correction, distinguishes finite product-form restrictions from mean-field identities, and explains named-type occupancy/covariance. It proves elementary nonidentification and error bounds, without novelty claims. Tagged primary reading includes Jourdain–Reygner, Hybrid Atlas, Brunick–Shreve, noise-robust volatility, and 2025/2026 Itkin–Larsson–Zhang turnover/local-density work. Proposed proof priorities: an estimand bridge from noisy permanent cohorts to effective rank diffusion, finite typed renewal stability, and finite-sampling collision correction; no declaration that novelty or current open status is established.
+
+**Predictions.** P1 (<30% A9 normalized slope MARE all panels) held descriptively; P2 positive association under origin/phase sensitivity held on all Reddit panels. P3 about temporal precision is mixed/nonadjudicative because the block diagnostic itself degenerates near a full window. No adoption threshold or gate.
+
+**Later A10 review.** After these calculations the owner pasted Claude's full conclusions. Read MODEL_STATUS §2z-bh and A10 source/design at main 001fa74669cc7a135075b5b8d667b9a1d958ce14. Found different rank weighting between the reported temporal reconstruction and carry-forward baseline, prompting A10_AUDIT_DESIGN.md and the matched-grid audit. Matched-grid carry-forward RMSE is 0.462310 (submissions) and 0.469634 (comments extension), versus saved variance-reconstruction RMSE 0.527698 and 0.527888: ratios 1.141 and 1.124, not about three. The original uniform-rank baselines 0.167538 and 0.194223 were reproduced exactly within tolerance. Ordering survives; effect size changes. A10_REVIEW.md contains the audit and qualification that the prespecified comparison against second-half in-sample performance still fails. Also: the future rank-K anchor and full-window membership make this conditional shape transfer, not level forecasting; 1/g alone is not a relaxation time; the fitted ratio is not independently measured incumbent decline.
+
+**Validation/scope.** Fixed-array checks of paired variance, decomposition, exact proportionality/LOBO, nonpositive handling and local slope passed. Recomputed all seven summary variants/49 bin identities and direct Brownian covariance benchmarks; Python syntax and figure inspected. No stochastic-model fits, simulations, gates, default/model/package/protocol edits. Full health script not run because it launches fits/simulations and writes outside the owner-authorized folder; no health-pass claim. No pushes. This handoff stands in for the record append, for Claude to incorporate.
+
+**2026-10-12 addendum — next research phase documented: PLANNING ONLY, nothing adopted.**
+
+**Provenance.** OpenAI Codex; starting commit `6c99858aab71e7e8bde5338b6c59c70f72481725`, branch `codex/d1-debate`. The owner requested: "write this to the project docs in the appropriate place." This authorizes saving the proposed agenda, not adopting it or starting its experiments.
+
+**Read and basis.** The October 8 Codex and Claude agendas, October 12 adopted work plan, relevant PROGRAM_STATE and MODEL_STATUS entries through A9/A10 (§2z-bf/bh), signed D1 consensus, independent variance–structure follow-up and A10 audit, and the stochastic-modeling/evidence-standards and record-authoring instructions. Literature reading status is preserved in the linked theory note; no additional literature claim is introduced by this documentation turn.
+
+**Proposed.** Six steps: independent stationary-balance accounting; focused recovery against competing mechanisms; structure prediction without calibrating to the target ladder; the smallest supported named-endpoint process; adjustment and structural-change tests; social-mechanism identification and reserved-evidence transport. Mathematical work addresses the estimand bridge, renewal and boundaries, and reconstruction/adjustment errors. Immediate deliverable: a focused measurement-and-recovery protocol, then a decision about whether independent forward structural prediction is identified. Non-identification is an explicit stopping or redirection outcome.
+
+**Artifact.** `RESEARCH_AGENDA_CODEX_2026-10-12.md`, linked from the debate REPORT.md. The existing signed debate and previous record text are preserved. Claude may integrate the proposal and append this handoff to the canonical record; this session does not edit Claude-owned files.
+
+**Validation and scope.** Documentation whitespace, link-target and changed-path checks only. No new measurements, data contact, scored predictions, code changes, fits, simulations, gates or pushes. Health script omitted under the owner's no-model-runs and folder-only restrictions; no test/health pass claimed. No agenda, default, protocol, threshold, or paper-language change adopted.
+
+**2026-10-12 addendum — mathematical proof prompts and recent prompting research.**
+
+**Provenance and scope.** OpenAI Codex; starting commit `b4fb5253e45f713f68876fd8b13d6e1873c8a619`, branch `codex/d1-debate`. The owner requested reusable prompts targeting the key potential mathematical proofs, with target, scope, conditions, and recent research on Astra-class mathematical prompting. This is planning/documentation, not execution or agenda adoption.
+
+**Prepared.** Five Markdown files in `proof_prompts/`: research rationale and operating conditions; the identification/estimand bridge; an explicit typed rank-interacting population with type-preserving renewal; discrete collision/volatility estimation; independent proof review. Priority goes to identifying the coefficient the structural equation actually needs. Negative identification results and useful restricted theorems are valid outcomes. Finite-frequency observations, latent occupancy, nonlinear uniqueness, stationary finite-N limits, and proof dependencies are explicit checks.
+
+**Sources.** Read official Astra guidance and selected primary-source methodology from February First Proof, March Aletheia, June First Proof Second Batch, the October OpenAI mathematics release/repository, and September AGMAI recommendations; the 2026 generative-verifier paper was read at abstract level only. Exact portions and reading-status tags appear in the package README. No controlled study establishing a best Astra prompt for these probability problems was found. The unreleased model behind the October release is not identified with available Astra. The release's individual proofs were not audited.
+
+**Limitations and retrieval.** The model-specific Markdown documentation URL failed in the browser and direct network retrieval failed; the official HTML guide was successfully read instead. Full AlphaProof/ProofBench texts were not successfully retrieved and are not used as supporting evidence. No model capabilities or theorem novelty were inferred from search summaries.
+
+**Validation.** Document whitespace, relative-link targets, append-only preservation, and changed-path checks only. No new empirical measurement, proof execution, data contact, model code, fits, simulations, gate evaluations, or pushes. Health checking omitted under the owner's no-model-runs and folder-only restrictions; no health/test pass claimed. No new theorem, default, registered protocol, threshold, or paper claim is established by these documents.
+
+## 2z-bk. 2026-10-12 — CORRECTIONS after Codex's reviews (§2z-bi, §2z-bj): two code errors of mine confirmed and rerun. A10's "three times worse than carrying the ladder forward" compared two rank weightings; scored alike the ratio is 0.93 to 1.42 and the carried-forward ladder is better in seven of eight scorings. A4's half-sample reliabilities were on a shifted rank coordinate; corrected, its main readings stand, a straight line does better than recorded, and the reversion profile reproduces on comments. 1/g is withdrawn as an adjustment time. Eight of nine predictions held; nothing adopted, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; from
+main 001fa74 with Codex's branches merged at 5828636. Both designs
+(`runs/2026-10-12_A10_two_way/AUDIT_DESIGN.md`,
+`runs/2026-10-12_A4_profiles/CORRECTION_DESIGN.md`) were written before
+their runs and are committed with the results in one commit, not ahead of
+them. Both errors were found by Codex, not by me._
+
+**Tier.** Exploratory, DEVELOPMENT data. The audit is data only (long
+submissions, comments extension). The A4 rerun is nine fits of the frozen
+structure stacks (FB Era A, long submissions, comments). No simulation, no
+gate evaluation, no model, default or stack change. Data contact is in
+`EXPOSURE_LEDGER.md`.
+
+**1. A10's time holdout (corrects §2z-bh).** `phase1_a10.py` scored the
+second-half ladder reconstructed from first-half variance on about 150
+log-spaced ranks, and set it against the carried-forward ladder scored on
+every rank. I confirmed this by reading the code, reproduced Codex's
+matched-grid values, and scored both curves under both weightings. The last
+two rows of each panel remove each curve's own location, so that no
+second-half value serves as an anchor; they are post hoc, added after the
+first audit run.
+
+| panel | scored on | reconstruction | carried forward | ratio | in sample |
+|---|---|---|---|---|---|
+| long submissions | log-spaced ranks (149), anchored at K | 0.528 | 0.462 | 1.14 | 0.249 |
+| | every rank, anchored at K | 0.155 | 0.168 | 0.93 | 0.061 |
+| | log-spaced ranks, location removed | 0.379 | 0.268 | 1.42 | 0.247 |
+| | every rank, location removed | 0.155 | 0.128 | 1.21 | 0.061 |
+| comments extension | log-spaced ranks (156), anchored at K | 0.528 | 0.470 | 1.12 | 0.175 |
+| | every rank, anchored at K | 0.232 | 0.194 | 1.19 | 0.147 |
+| | log-spaced ranks, location removed | 0.248 | 0.209 | 1.19 | 0.124 |
+| | every rank, location removed | 0.121 | 0.110 | 1.10 | 0.081 |
+
+The recorded numbers reproduce exactly. Carrying the ladder forward is the
+better predictor in seven of the eight rows, by 10% to 42%; the
+reconstruction is better in one, by 7%. Two panels, one split each,
+full-window universes, no interval on any ratio. Predictions
+(AUDIT_DESIGN.md): (1) the recorded numbers reproduce: HELD. (2) Carried
+forward on the log grid is 0.46 and 0.47: HELD. (3) The reconstruction's
+error on every rank is below 0.30 on both panels: HELD. (4) On every rank
+the reconstruction does not beat the carried-forward ladder on long
+submissions: FAILED (0.155 against 0.168). A10's own prediction 6 is
+unaffected and still failed.
+
+**What is withdrawn or qualified in §2z-bh.**
+
+- Withdrawn: "a half-window holdout loses to carrying the ladder forward by
+  a factor of three" (headline, the holdout paragraph's comparison, finding
+  4). Replaced by the table above.
+- Withdrawn: 1/g as "its time scale" and as the ladder's adjustment time,
+  and what was drawn from it ("longer than any panel", "needs longer
+  panels" as the second item missing). No adjustment time was derived or
+  measured. In the simplest one-constant sketch the whole ladder relaxes in
+  2a/g², which is not 1/g, and a local slope adjusts much faster (§2z-bl,
+  amendment 4); neither is a measurement. Codex's point that
+  current-balance restrictions can be tested without watching a full
+  relaxation stands.
+- Qualified: g is the ratio a/(2S) fitted from ladder and variance
+  together. Reading it as the rate at which incumbents decline assumes one
+  common drift and no flow. The general objects are the cumulative drift
+  G(u) and the flow term (§2z-bj, THEORY.md).
+- Qualified: "the same number of free quantities" as a power law counts
+  only what is calibrated from the ladder. The reconstruction also uses an
+  estimated variance profile of about ten bins.
+- Qualified: an implied variance falling inside an endpoint-bootstrap
+  bracket describes overlap. It is not a test of a stationary law, and the
+  bracket omits calendar dependence and the ladder's own uncertainty.
+- Qualified: "variance measured with noise handled" means the growth of the
+  variance of changes between two horizons. It is a proxy that removes a
+  plateau of passing noise. It is not a validated estimate of an
+  instantaneous diffusion variance, and under reversion it would
+  understate one.
+- Stands: the static shape results (both directions, four panels), now
+  with Codex's independent recomputation (§2z-bj); the failure of the
+  one-week variance and of the fitted σ_perm²; the failed predictions.
+
+**2. A4's half-sample comparison (corrects §2z-at).** The recorded run kept
+full-universe ranks in each half while the estimator recomputed N from the
+half, so each half's coordinate was shifted by log 2 and the lower half of
+its endpoints sat at z = 0. Confirmed by reading `phase1_a4.py` and
+`minimal_rankdiff.estimate`; Codex's deterministic fixture shows the same.
+Rerun with each half ranked within itself (`--rerank-halves`) and the
+halves compared on the 52 or 53 knots both cover. Full-fit quantities are
+identical to the recorded run.
+
+| panel | profile | reliability, recorded → corrected | line's share of it, recorded → corrected |
+|---|---|---|---|
+| FB Era A | log σ_perm | 0.84 → 0.75 | 0.12 → 0.13 |
+| | log σ_trans | 0.44 → 0.59 | 1.14 → 0.82 |
+| | log σ_obs | 0.78 → 0.75 | 0.76 → 0.77 |
+| | log κ | 0.34 → none (half correlation −0.10) | |
+| | log V | 0.69 → 0.42 | 0.15 → 0.23 |
+| long submissions | log σ_perm | 0.74 → 0.71 | 0.69 → 0.97 |
+| | log σ_trans | 0.89 → 0.76 | 0.76 → 0.88 |
+| | log σ_obs | 0.94 → 0.97 | 0.79 → 0.76 |
+| | log κ | none → none (−0.44 → −0.25) | |
+| | log V | 0.63 → 0.36 | 0.86 → above 1 |
+| comments | log σ_perm | 0.77 → 0.94 | 0.54 → 0.48 |
+| | log σ_trans | 0.89 → 0.88 | 0.79 → 0.78 |
+| | log σ_obs | 0.97 → 0.86 | 0.56 → 0.60 |
+| | log κ | 0.07 → 0.64 | |
+| | log V | 0.52 → 0.83 | 0.55 → 0.39 |
+
+Readings of §2z-at, corrected. (1) The volatility profiles are mostly
+reproducible: stands (0.71–0.97, σ_trans on FB 0.59). (2) A straight line
+in rank reaches 76–97% of the reproducible share for six of the nine
+volatility profiles, not 54–79% for five; it still fails for σ_perm on FB
+(13%) and comments (48%) and for σ_obs on comments (60%). (3) The κ profile
+does not reproduce on FB or long submissions and does on comments (0.64);
+"κ is not identified band by band" now rests, for comments, on the grid
+bound (44% of knots at the slowest value) and on the recovery study
+(§2z-bc), not on this comparison. V reproduces better than κ on every
+panel, at 0.42, 0.36 and 0.83. (4) The scaling exponents are unchanged.
+The verdict's "a scaling curve of a few numbers is not licensed" is
+weakened for the passing and noise volatilities and stands for the lasting
+volatility on FB and comments; no refit with such a form has been run.
+Predictions (CORRECTION_DESIGN.md): all five HELD (volatility reliabilities
+at least 0.6; κ below 0.5 on two panels; V above κ on three; the line's
+share below 0.8 for six of nine; no volatility reliability moved by more
+than 0.25, the largest move being 0.17). Not addressed: the halves share
+calendar weeks and the common factor, so the stepped-up correlation can
+overstate reliability, in the recorded and corrected numbers alike.
+
+**3. Wording corrected from R1 (§2z-bi), no new measurement.**
+
+- §2z-az and the decision document: the time-median seeding "harms no
+  panel" becomes: all five point estimates of the index improve; on short
+  submissions (−0.040 [−0.064, +0.009]) and Instagram (−0.013 [−0.096,
+  +0.057]) the change is unresolved at 20 seeds.
+- The decision document: three of the four recorded reference gates were
+  at 3 simulations; long submissions was at 20.
+- §2z-bd: the volatility ratio "0.95–0.98 under every planted mechanism
+  except time-varying volatility" is approximate; one planted annual-cycle
+  case has 0.992. The contrast with planted time-varying volatility (0.70)
+  is unchanged.
+- §2z-bd and the decision document: the amplitude spread is recovered with
+  small bias at the three values tested, with a floor of 0.14–0.19 at a
+  true zero. "Recovered without bias" overstated that.
+- §2z-ay: its ladder-drift statistic responds to common growth of the whole
+  list with no change of shape (Codex's deterministic check). The recorded
+  drift figures are not shown to be changes of shape; level and shape have
+  to be separated in any later use.
+- The decision document's live recommendations, candidate 3's reason and
+  the margin's standing are restated in its second status section.
+
+**Verdict.** No adoption rule applies. Two of my Phase 1 entries carried
+errors that a second reader found by reading the code. Neither reverses a
+main reading; the A10 one removes the strongest negative statement I had
+made about the variance–structure relation, and the A4 one makes simple
+profile forms look somewhat better than I had recorded.
+
+**Not run.** Uncertainty intervals for the holdout ratios; more than one
+split; a holdout with train-only universes; a correction for the shared
+weeks in the half-sample comparison. **Files.** `llm_fitting/phase1_a10.py`
+(`audit`), `runs/2026-10-12_A10_two_way/` (AUDIT_DESIGN.md, AUDIT_REPORT.md,
+`cells/audit__*.json`, launch_audit.zsh); `llm_fitting/phase1_a4.py`
+(`--rerank-halves`), `runs/2026-10-12_A4_profiles/` (CORRECTION_DESIGN.md,
+CORRECTION_REPORT.md, summary_reranked_halves.json). Commands: `python
+llm_fitting/phase1_a10.py audit <panel>`; `python llm_fitting/phase1_a4.py
+--rerank-halves`.
+
+
+## 2z-bl. 2026-10-12 — PLANNING ONLY: Codex's proposed next phase (movement and turnover measured without the ladder, then the ladder predicted) is carried into the program's documents with Claude's amendments. PROPOSED, nothing adopted; the working agenda is unchanged
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; from
+main 001fa74 plus the merges of §2z-bi and §2z-bj. The owner asked Claude to
+read and integrate Codex's response, "especially its proposed research
+agenda". No measurement, fit, simulation or gate evaluation belongs to this
+entry._
+
+**Read.** Codex's agenda
+(`handoff/D1_debate/RESEARCH_AGENDA_CODEX_2026-10-12.md`), its theory note,
+measurement report and A10 review (`handoff/D1_debate/variance_structure/`),
+its proof prompts (`handoff/D1_debate/proof_prompts/`), its review R1
+(`handoff/R1_D1_review/`), the signed consensus of §2z-be, the adopted work
+plan (§2z-ar) and §2z-bf, §2z-bh.
+
+**Proposed.** `llm_fitting/RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md`.
+It keeps Codex's six steps in order: account for the stationary balance
+with separately measured variance, drift, occupancy and flow; validate that
+accounting on planted rivals; predict structure not used for calibration;
+build the smallest named-endpoint process the measurements support; test
+adjustment and change; identify a social mechanism and then test transport
+on reserved data. Its first deliverable is one measurement-and-recovery
+protocol for the first two steps, reviewed before anything runs, and its
+first decision is whether the third step is identified with the development
+data. If the owner adopts it, it replaces Phase 2 of the adopted work plan
+("candidates, one at a time"), whose candidates were withdrawn or narrowed
+(§2z-ba, §2z-be). It is the design-first diagnostic batch that §2z-be
+recommended, organised around the relation of §2z-bf.
+
+**Claude's amendments, marked as such in the page.**
+
+1. The balance S(u) = u·a(u) / (2·[G(u) + Φ(u)]) holds in every stationary
+   cross-section, whatever keeps it stationary: personal homes, drift by
+   position, or replacement. Closing it tests the measurements and
+   stationarity and selects no mechanism. The evidence is in who carries
+   the drift (common to a position, particular to a name, or flow) and in
+   whether the parts predict structure they were not fitted to.
+2. Drift is measured with three windows (choose the cohort, take the
+   starting level, measure the change), membership from the first window
+   only, leavers followed in the buffer or counted as flow. This keeps the
+   rule against conditioning on current rank.
+3. Carrying the ladder forward is a strong comparator on these panels over
+   two years (§2z-bk), so a later-window test has little power. The
+   informative contrasts are between panels and nested universes and in
+   responses to change. The strongest form is on sealed data, with the
+   procedure frozen first and no constant taken from that panel's ladder;
+   nothing sealed is opened without the owner's word.
+4. A sketch, not a measurement: in the simplest one-constant case the whole
+   ladder relaxes in 2a/g², about twice 1/g for slopes near one half, while
+   the shape inside one rank octave adjusts in roughly 0.2 to 0.7 times
+   S/g. If that carries over, local slopes are testable inside the long
+   panels and the level of the whole ladder is not.
+5. Gate v1 and the 15 candidate evaluations of the adopted plan, none of
+   them spent, stay as they are for any process built in step 4.
+
+**Where the two models stand.** No disagreement that changes the sequence.
+Codex's reviews corrected statements of mine on the way (§2z-bi, §2z-bj,
+§2z-bk). Agreement between the two is not evidence; every empirical step in
+the page names the measurement that would test it.
+
+**For the owner.** Whether the page becomes the working agenda for the next
+phase; whether the three proof targets are run, and by whom. Until then the
+working agenda is `WORKPLAN_CLAUDE_2026-10-12.md` and no step of the page
+is started. Queue row R3 asks Codex to check that the page states its
+proposal correctly.
+
+**Not done.** The protocol for steps 1 and 2 is not written. No proof was
+attempted.

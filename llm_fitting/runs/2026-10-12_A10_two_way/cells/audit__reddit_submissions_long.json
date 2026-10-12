@@ -1,0 +1,36 @@
+{
+ "panel": "reddit_submissions_long",
+ "K": 5000,
+ "T": 212,
+ "half": 106,
+ "g_first": 0.003941216413289556,
+ "g_second": 0.002728176677221067,
+ "grid_points": 149,
+ "log_grid": {
+  "from_first_half": 0.5276982986167231,
+  "in_sample": 0.249094689102952,
+  "carried_forward": 0.4623104060366736,
+  "from_first_half_centred": 0.37905519130236587,
+  "in_sample_centred": 0.24705136730404315,
+  "carried_forward_centred": 0.2676309285768154,
+  "ratio": 1.1414372069636314,
+  "ratio_centred": 1.4163355233943729
+ },
+ "every_rank": {
+  "from_first_half": 0.1554636772175118,
+  "in_sample": 0.061470478758035935,
+  "carried_forward": 0.1675375203076784,
+  "from_first_half_centred": 0.15483566529476692,
+  "in_sample_centred": 0.06060554600044156,
+  "carried_forward_centred": 0.12827683768823275,
+  "ratio": 0.9279334977144624,
+  "ratio_centred": 1.2070430491207103
+ },
+ "reproduces_recorded": {
+  "from_first_half": true,
+  "carried_forward": true,
+  "g_first": true
+ },
+ "commit": "5828636",
+ "finished": "2026-10-12 16:42:09"
+}

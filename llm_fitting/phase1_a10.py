@@ -6,6 +6,12 @@ Data only, plus the frozen structure fit for one variance column.
 
     python llm_fitting/phase1_a10.py run facebook_a
     python llm_fitting/phase1_a10.py report
+    python llm_fitting/phase1_a10.py audit reddit_submissions_long   # 2026-10-12 correction
+
+`audit` answers Codex's A10 review: the recorded time holdout scored the
+variance reconstruction on about 150 log-spaced ranks and the "ladder itself
+moved" baseline on every rank. It recomputes both under both weightings.
+Design: runs/2026-10-12_A10_two_way/AUDIT_DESIGN.md.
 """
 import json
 import sys
@@ -104,7 +110,8 @@ def predict_on_grid(rows, key, g, r, obs):
     pred = obs[-1] + np.r_[np.cumsum(seg[::-1])[::-1], 0.0]
     err = pred - obs
     out = dict(rmse=float(np.sqrt(np.mean(err ** 2))), max_abs=float(np.max(np.abs(err))),
-               err_rank1=float(err[0]), err_rank10=float(err[np.argmin(np.abs(r - 10))]))
+               err_rank1=float(err[0]), err_rank10=float(err[np.argmin(np.abs(r - 10))]),
+               sd=float(np.std(err)))             # error with the location removed (no anchor)
     for name, deg in (("power_law", 1), ("quadratic", 2)):
         fit = np.polyval(np.polyfit(lr, obs, deg), lr)
         out[f"rmse_{name}"] = float(np.sqrt(np.mean((fit - obs) ** 2)))
@@ -168,6 +175,50 @@ def run(panel):
     print(f"[{panel}] done", flush=True)
 
 
+def audit(panel):
+    """Time holdout of `run`, with the reconstruction and the carried-forward
+    ladder each scored on the log-spaced grid and on every rank 1..K."""
+    rng = np.random.default_rng(0)
+    if panel in le.PANELS:
+        cfg = le.PANELS[panel]
+        df = mrd.restrict_universe(mrd.load_panel(mrd.PLATFORMS[cfg["struct"]]), cfg["K"], buffer_mult=4)
+    else:
+        df = mrd.restrict_universe(mrd.load_panel(mrd.PLATFORMS[panel]), 12_500, buffer_mult=4)
+    K, T = int(df.attrs["score_k"]), int(df["period"].max()) + 1
+    R, X, _ = ra.from_long(df)
+    bins = a9._bins(K)
+    h = T // 2
+    r1, med1 = profile(R[:h], X[:h], K, bins, rng)
+    r2, med2 = profile(R[h:], X[h:], K, bins, rng)
+    g1, g2 = _g(r1, "V2")[0], _g(r2, "V2")[0]
+    Kc = int(min(K, med1.size, med2.size))
+    moved = med1[:Kc] - med2[:Kc] - (med1[Kc - 1] - med2[Kc - 1])     # carried forward, anchored at rank K
+    grid = _grid(med2, K)[0]
+    every = np.arange(1, Kc + 1)
+    out = dict(panel=panel, K=K, T=T, half=h, g_first=g1, g_second=g2, grid_points=int(grid.size))
+    for name, r in (("log_grid", grid), ("every_rank", every)):
+        obs = med2[r - 1]
+        cf = moved[r - 1]
+        first, same = predict_on_grid(r1, "V2", g1, r, obs), predict_on_grid(r2, "V2", g2, r, obs)
+        out[name] = dict(
+            from_first_half=first["rmse"], in_sample=same["rmse"],
+            carried_forward=float(np.sqrt(np.mean(cf ** 2))),
+            # post hoc, not in AUDIT_DESIGN.md: location removed from each curve
+            # separately, so that no value of the second half serves as an anchor
+            from_first_half_centred=first["sd"], in_sample_centred=same["sd"],
+            carried_forward_centred=float(np.std(med1[r - 1] - med2[r - 1])))
+        out[name]["ratio"] = out[name]["from_first_half"] / out[name]["carried_forward"]
+        out[name]["ratio_centred"] = out[name]["from_first_half_centred"] / out[name]["carried_forward_centred"]
+    saved = json.loads((OUT / "cells" / f"a10__{panel}.json").read_text())["time_holdout"]
+    out["reproduces_recorded"] = dict(
+        from_first_half=bool(np.isclose(out["log_grid"]["from_first_half"], saved["second_from_first"]["rmse"])),
+        carried_forward=bool(np.isclose(out["every_rank"]["carried_forward"], saved["ladder_moved_rmse"])),
+        g_first=bool(np.isclose(g1, saved["g_first"])))
+    (OUT / "cells" / f"audit__{panel}.json").write_text(json.dumps(
+        dict(out, commit=le._commit(), finished=time.strftime("%Y-%m-%d %H:%M:%S")), indent=1, default=float))
+    print(json.dumps(out, indent=1, default=float), flush=True)
+
+
 def report():
     cells = {p: json.loads((OUT / "cells" / f"a10__{p}.json").read_text())
              for p in PANELS if (OUT / "cells" / f"a10__{p}.json").exists()}
@@ -215,5 +266,7 @@ def report():
 if __name__ == "__main__":
     if sys.argv[1] == "run":
         run(sys.argv[2])
+    elif sys.argv[1] == "audit":
+        audit(sys.argv[2])
     else:
         report()
