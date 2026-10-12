@@ -1,0 +1,9 @@
+[reddit_comments] K=12500 T=136 M=2000 data S1=0.1057
+    base               S1 0.1458 (55s)
+    gauss              S1 0.1184 (108s)
+    no_amp             S1 0.1333 (162s)
+    no_passing         S1 0.1253 (208s)
+    frozen_homes       S1 0.1429 (250s)
+    seed_ladder        S1 0.0923 (304s)
+    seed_means         S1 0.1059 (357s)
+    seed_means_gauss   S1 0.1302 (407s)

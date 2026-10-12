@@ -35,7 +35,8 @@ background, and replaces §2x in that role. Claude leads and Codex/Astra
 validates independently under `coordination/PROTOCOL.md`; Codex's tasks
 are in `coordination/QUEUE.md`. Phase 1 has no model code and no candidate
 gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
-(A1, A2).
+(A1, A2), §2z-av (A3). The per-endpoint export for Codex's V3 (A6) is on
+`main`.
 
 ## Evidence to date
 
@@ -64,7 +65,13 @@ gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
 2. **Head share.** S(1) over-produced on FB Era A (about 2.7×), on the
    comments extension, and on the Instagram rescue; under-produced on long
    submissions. The sign difference shows heterogeneity and does not isolate
-   a cause (§2z-b, §2z-d, §2z-q, §2z-ae P8, §2z-af).
+   a cause (§2z-b, §2z-d, §2z-q, §2z-ae P8, §2z-af). Attributed on
+   2026-10-12 (§2z-av): on comments and long submissions it is the
+   first-week seeding of the unconditional simulation, sign included
+   (seeding from endpoint means gives 1.00 and 0.97 of the data); on FB and
+   Instagram it is rare spike weeks from the passing shocks, with the
+   data's own far tails heavier than the simulation's in standardized
+   units and bounded in raw size.
 3. **Parameters are not stationary.** s drifts by era and differs by metric;
    κ levels moved 4–8× into the extension, with identification at that
    panel length in question (§2z-q, §2z-s, §2z-ae, §2z-ai).

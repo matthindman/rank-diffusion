@@ -1,0 +1,8 @@
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/residual_anatomy.py:110: RuntimeWarning: All-NaN slice encountered
+  med = np.nanmedian(a, axis=axis, keepdims=True)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/residual_anatomy.py:111: RuntimeWarning: All-NaN slice encountered
+  return MAD_TO_SD * np.nanmedian(np.abs(a - med), axis=axis), np.squeeze(med, axis)
+[reddit_submissions_long] base S1 0.0563 (data 0.0724) (54s)
+    bound12    S1 0.0502 (87s)
+    bound8     S1 0.0489 (121s)
+    bound6     S1 0.0487 (155s)

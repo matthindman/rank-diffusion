@@ -1,0 +1,96 @@
+
+## facebook_a (K=3500, T=86, top-2000, 20 seeds; t df 4.3, s 0.89, b 1.02)
+data: S1 0.0170 (first week 0.0245), S10 0.101, S100 0.368, gap 1-2 0.217, gap 1-10 0.862, gap 10-100 1.410, top-5%-weeks share of S1 0.084
+seed ladders, SD of the top 100 log values: first week 0.574, time-median ladder 0.509, endpoint means 0.545
+arm                 S1 mean (SD)     /data   paired diff vs base (SD)  excess removed   S10/data  S100/data  gap 1-2   top-5%-weeks
+base                0.0474 (0.0104)   2.78   +0.0000 (0.0000)            -0%         1.48     1.24    0.546    0.408
+gauss               0.0272 (0.0046)   1.60   -0.0202 (0.0085)            66%         1.26     1.20    0.377    0.130
+no_amp              0.0329 (0.0078)   1.93   -0.0145 (0.0115)            48%         1.28     1.20    0.478    0.231
+no_passing          0.0242 (0.0048)   1.42   -0.0232 (0.0092)            76%         1.18     1.20    0.394    0.077
+frozen_homes        0.0518 (0.0179)   3.04   +0.0044 (0.0176)           -15%         1.54     1.21    0.585    0.376
+seed_ladder         0.0433 (0.0147)   2.54   -0.0041 (0.0129)            14%         1.28     1.12    0.560    0.421
+seed_means          0.0401 (0.0119)   2.36   -0.0073 (0.0164)            24%         1.26     1.10    0.535    0.389
+seed_means_gauss    0.0256 (0.0070)   1.51   -0.0217 (0.0103)            72%         1.12     1.08    0.371    0.208
+
+## instagram (K=10000, T=52, top-2000, 20 seeds; t df 4.4, s 0.79, b 0.00)
+data: S1 0.0352 (first week 0.0302), S10 0.170, S100 0.466, gap 1-2 0.317, gap 1-10 1.335, gap 10-100 1.706, top-5%-weeks share of S1 0.086
+seed ladders, SD of the top 100 log values: first week 0.611, time-median ladder 0.650, endpoint means 0.699
+arm                 S1 mean (SD)     /data   paired diff vs base (SD)  excess removed   S10/data  S100/data  gap 1-2   top-5%-weeks
+base                0.1289 (0.0313)   3.66   +0.0000 (0.0000)            -0%         2.10     1.70    0.833    0.347
+gauss               0.0714 (0.0100)   2.03   -0.0575 (0.0322)            61%         1.81     1.67    0.392    0.116
+no_amp              0.0895 (0.0146)   2.54   -0.0394 (0.0341)            42%         1.91     1.69    0.514    0.263
+no_passing          0.0674 (0.0098)   1.91   -0.0615 (0.0274)            66%         1.83     1.67    0.304    0.106
+frozen_homes        0.1127 (0.0293)   3.20   -0.0162 (0.0369)            17%         2.12     1.76    0.660    0.338
+seed_ladder         0.1221 (0.0250)   3.47   -0.0067 (0.0381)             7%         2.13     1.72    0.703    0.298
+seed_means          0.1470 (0.0233)   4.18   +0.0181 (0.0452)           -19%         2.40     1.74    0.792    0.272
+seed_means_gauss    0.0978 (0.0199)   2.78   -0.0311 (0.0330)            33%         2.11     1.71    0.504    0.110
+
+## reddit_comments (K=12500, T=136, top-2000, 20 seeds; t df 5.2, s 0.69, b 1.08)
+data: S1 0.1057 (first week 0.1361), S10 0.251, S100 0.554, gap 1-2 1.244, gap 1-10 2.368, gap 10-100 1.816, top-5%-weeks share of S1 0.076
+seed ladders, SD of the top 100 log values: first week 0.734, time-median ladder 0.737, endpoint means 0.726
+arm                 S1 mean (SD)     /data   paired diff vs base (SD)  excess removed   S10/data  S100/data  gap 1-2   top-5%-weeks
+base                0.1458 (0.0514)   1.38   +0.0000 (0.0000)            -0%         1.32     1.14    1.194    0.107
+gauss               0.1184 (0.0343)   1.12   -0.0273 (0.0765)            68%         1.21     1.11    1.035    0.086
+no_amp              0.1333 (0.0456)   1.26   -0.0125 (0.0732)            31%         1.28     1.13    1.120    0.102
+no_passing          0.1253 (0.0387)   1.18   -0.0205 (0.0706)            51%         1.25     1.13    1.094    0.074
+frozen_homes        0.1429 (0.0118)   1.35   -0.0029 (0.0463)             7%         1.21     1.10    1.543    0.108
+seed_ladder         0.0923 (0.0176)   0.87   -0.0535 (0.0552)           134%         1.07     1.02    0.737    0.101
+seed_means          0.1059 (0.0317)   1.00   -0.0399 (0.0514)           100%         1.10     1.02    0.940    0.108
+seed_means_gauss    0.1302 (0.0594)   1.23   -0.0155 (0.0483)            39%         1.19     1.05    1.061    0.092
+
+## reddit_submissions_long (K=5000, T=212, top-2000, 20 seeds; t df 4.3, s 1.12, b 0.95)
+data: S1 0.0724 (first week 0.0383), S10 0.224, S100 0.535, gap 1-2 0.667, gap 1-10 1.757, gap 10-100 1.880, top-5%-weeks share of S1 0.093
+seed ladders, SD of the top 100 log values: first week 0.807, time-median ladder 0.739, endpoint means 0.696
+arm                 S1 mean (SD)     /data   paired diff vs base (SD)  excess removed   S10/data  S100/data  gap 1-2   top-5%-weeks
+base                0.0541 (0.0114)   0.75   +0.0000 (0.0000)             0%         1.09     1.11    0.346    0.191
+gauss               0.0490 (0.0118)   0.68   -0.0051 (0.0149)           -28%         1.07     1.11    0.276    0.104
+no_amp              0.0479 (0.0073)   0.66   -0.0062 (0.0146)           -34%         1.07     1.11    0.263    0.110
+no_passing          0.0500 (0.0130)   0.69   -0.0041 (0.0161)           -23%         1.10     1.12    0.282    0.089
+frozen_homes        0.0454 (0.0037)   0.63   -0.0087 (0.0118)           -48%         1.17     1.12    0.135    0.190
+seed_ladder         0.0780 (0.0163)   1.08   +0.0239 (0.0159)           130%         0.97     0.97    0.806    0.158
+seed_means          0.0703 (0.0140)   0.97   +0.0162 (0.0144)            88%         0.87     0.96    0.855    0.175
+seed_means_gauss    0.0636 (0.0104)   0.88   +0.0095 (0.0159)            52%         0.87     0.96    0.734    0.103
+
+## bounded passing shocks, facebook_a (t df 4.3; data S1 0.0170; first-run base 0.0474, Gaussian arm 0.0272)
+base, all slots tracked (other stream): S1 0.0506 (0.0159)
+bound12    S1 0.0385 (0.0096)  /data  2.26  paired diff -0.0088 (0.0071)  share of the Gaussian arm's change    44%  top-5%-weeks 0.296 (data 0.084)
+bound8     S1 0.0333 (0.0071)  /data  1.96  paired diff -0.0141 (0.0077)  share of the Gaussian arm's change    70%  top-5%-weeks 0.224 (data 0.084)
+bound6     S1 0.0311 (0.0068)  /data  1.82  paired diff -0.0163 (0.0079)  share of the Gaussian arm's change    81%  top-5%-weeks 0.183 (data 0.084)
+far tail of one-week changes: data / sim median over seeds [sim min, max]
+  head     (n 14,193)  z_q999_up 6.52/3.86 [3.72, 4.27]  z_q9999_up 15.97/5.38 [4.82, 6.30]  z_max_up 18.23/6.96 [5.32, 12.26]  z_max_dn 23.92/7.49 [5.36, 16.79]  raw_q999_up 2.26/1.83 [1.70, 2.19]  raw_max_up 3.87/3.91 [2.39, 6.09]  beyond6 2.33e-03/1.51e-04 [0.00e+00, 4.00e-04]  beyond10 9.16e-04/0.00e+00 [0.00e+00, 8.95e-05]
+  middle   (n 85,818)  z_q999_up 6.80/3.77 [3.63, 3.89]  z_q9999_up 13.16/5.42 [5.01, 6.90]  z_max_up 30.80/8.61 [6.91, 32.45]  z_max_dn 22.09/8.75 [6.26, 27.12]  raw_q999_up 3.03/2.52 [2.45, 2.70]  raw_max_up 8.02/6.25 [4.46, 23.84]  beyond6 2.99e-03/1.19e-04 [5.94e-05, 2.31e-04]  beyond10 4.78e-04/4.92e-06 [0.00e+00, 4.81e-05]
+  shell    (n 126,483)  z_q999_up 7.54/3.70 [3.58, 3.87]  z_q9999_up 12.25/5.18 [4.65, 5.53]  z_max_up 24.56/9.59 [6.98, 39.38]  z_max_dn 59.91/9.62 [6.51, 34.79]  raw_q999_up 3.72/3.25 [2.98, 3.41]  raw_max_up 9.51/8.87 [6.14, 35.69]  beyond6 3.87e-03/1.01e-04 [4.29e-05, 1.53e-04]  beyond10 5.22e-04/8.31e-06 [0.00e+00, 2.59e-05]
+  top2pct  (n 2,635)  z_q999_up 5.18/3.98 [3.59, 5.03]  z_q9999_up 6.47/5.31 [4.19, 8.53]  z_max_up 6.63/5.50 [4.37, 10.60]  z_max_dn 7.19/6.22 [4.61, 13.01]  raw_q999_up 1.39/1.46 [1.05, 1.81]  raw_max_up 1.88/2.10 [1.35, 2.90]  beyond6 1.14e-03/2.53e-04 [0.00e+00, 1.58e-03]  beyond10 0.00e+00/0.00e+00 [0.00e+00, 4.80e-04]
+
+## bounded passing shocks, instagram (t df 4.4; data S1 0.0352; first-run base 0.1289, Gaussian arm 0.0714)
+base, all slots tracked (other stream): S1 0.1224 (0.0280)
+bound12    S1 0.1034 (0.0256)  /data  2.94  paired diff -0.0254 (0.0155)  share of the Gaussian arm's change    44%  top-5%-weeks 0.302 (data 0.086)
+bound8     S1 0.0826 (0.0159)  /data  2.35  paired diff -0.0462 (0.0245)  share of the Gaussian arm's change    80%  top-5%-weeks 0.222 (data 0.086)
+bound6     S1 0.0731 (0.0110)  /data  2.08  paired diff -0.0557 (0.0276)  share of the Gaussian arm's change    97%  top-5%-weeks 0.160 (data 0.086)
+far tail of one-week changes: data / sim median over seeds [sim min, max]
+  head     (n 13,958)  z_q999_up 5.14/4.52 [4.13, 4.96]  z_q9999_up 7.85/6.74 [5.53, 8.96]  z_max_up 9.69/8.46 [6.51, 21.66]  z_max_dn 7.74/8.66 [5.87, 25.13]  raw_q999_up 2.93/2.92 [2.64, 3.76]  raw_max_up 5.75/5.95 [3.86, 14.82]  beyond6 7.88e-04/4.79e-04 [7.84e-05, 1.19e-03]  beyond10 0.00e+00/0.00e+00 [0.00e+00, 1.61e-04]
+  middle   (n 72,426)  z_q999_up 5.39/4.20 [3.95, 4.80]  z_q9999_up 9.09/5.85 [4.87, 8.79]  z_max_up 10.98/6.64 [5.28, 14.07]  z_max_dn 14.90/6.87 [5.25, 12.96]  raw_q999_up 4.27/3.60 [3.11, 4.22]  raw_max_up 8.68/6.01 [4.37, 17.47]  beyond6 1.26e-03/2.39e-04 [0.00e+00, 7.04e-04]  beyond10 1.38e-04/0.00e+00 [0.00e+00, 1.74e-04]
+  shell    (n 129,681)  z_q999_up 6.40/4.24 [3.98, 4.54]  z_q9999_up 10.38/5.91 [5.35, 6.44]  z_max_up 23.41/7.07 [6.11, 64.58]  z_max_dn 19.62/7.40 [5.60, 37.78]  raw_q999_up 5.95/4.22 [3.69, 4.66]  raw_max_up 9.68/7.84 [5.16, 60.56]  beyond6 2.44e-03/2.50e-04 [4.96e-05, 5.27e-04]  beyond10 2.54e-04/0.00e+00 [0.00e+00, 2.51e-04]
+  top2pct  (n 3,774)  z_q999_up 4.15/4.53 [3.99, 5.47]  z_q9999_up 5.68/6.26 [4.43, 9.90]  z_max_up 5.77/6.98 [4.48, 11.03]  z_max_dn 5.77/7.30 [5.36, 15.21]  raw_q999_up 2.70/2.73 [2.30, 3.31]  raw_max_up 3.12/4.17 [2.99, 7.18]  beyond6 0.00e+00/3.38e-04 [0.00e+00, 1.40e-03]  beyond10 0.00e+00/0.00e+00 [0.00e+00, 3.09e-04]
+
+## bounded passing shocks, reddit_comments (t df 5.2; data S1 0.1057; first-run base 0.1458, Gaussian arm 0.1184)
+base, all slots tracked (other stream): S1 0.1405 (0.1054)
+bound12    S1 0.1433 (0.0515)  /data  1.36  paired diff -0.0025 (0.0038)  share of the Gaussian arm's change     9%  top-5%-weeks 0.093 (data 0.076)
+bound8     S1 0.1427 (0.0519)  /data  1.35  paired diff -0.0031 (0.0041)  share of the Gaussian arm's change    11%  top-5%-weeks 0.089 (data 0.076)
+bound6     S1 0.1427 (0.0519)  /data  1.35  paired diff -0.0031 (0.0041)  share of the Gaussian arm's change    11%  top-5%-weeks 0.089 (data 0.076)
+far tail of one-week changes: data / sim median over seeds [sim min, max]
+  head     (n 133,245)  z_q999_up 5.96/3.87 [3.80, 3.96]  z_q9999_up 9.75/5.60 [5.18, 5.93]  z_max_up 41.35/10.54 [7.48, 14.01]  z_max_dn 94.35/9.99 [6.97, 15.27]  raw_q999_up 1.57/1.26 [1.20, 1.31]  raw_max_up 5.20/3.26 [2.26, 5.30]  beyond6 1.34e-03/1.43e-04 [5.40e-05, 2.38e-04]  beyond10 1.58e-04/6.76e-06 [0.00e+00, 4.69e-05]
+  middle   (n 560,143)  z_q999_up 5.73/3.70 [3.68, 3.75]  z_q9999_up 11.42/5.21 [5.08, 5.39]  z_max_up 62.51/11.34 [9.24, 16.77]  z_max_dn 36.21/11.83 [9.16, 20.29]  raw_q999_up 2.15/1.73 [1.69, 1.77]  raw_max_up 9.26/5.82 [4.37, 8.15]  beyond6 1.24e-03/8.20e-05 [5.96e-05, 1.01e-04]  beyond10 2.50e-04/3.33e-06 [0.00e+00, 1.16e-05]
+  shell    (n 667,457)  z_q999_up 6.22/3.90 [3.85, 3.95]  z_q9999_up 12.60/5.52 [5.33, 5.73]  z_max_up 36.41/10.86 [7.91, 17.53]  z_max_dn 36.57/9.88 [8.22, 16.45]  raw_q999_up 3.23/2.41 [2.36, 2.46]  raw_max_up 9.84/7.54 [6.12, 15.41]  beyond6 1.81e-03/1.11e-04 [8.36e-05, 1.38e-04]  beyond10 3.21e-04/3.70e-06 [0.00e+00, 9.54e-06]
+  top2pct  (n 24,840)  z_q999_up 5.67/3.74 [3.55, 4.09]  z_q9999_up 8.99/5.39 [4.49, 7.48]  z_max_up 11.99/7.50 [5.41, 14.01]  z_max_dn 12.61/7.00 [5.20, 15.27]  raw_q999_up 1.22/1.04 [0.93, 1.09]  raw_max_up 2.46/2.06 [1.45, 4.43]  beyond6 1.29e-03/1.07e-04 [3.46e-05, 4.07e-04]  beyond10 1.21e-04/0.00e+00 [0.00e+00, 1.85e-04]
+
+## bounded passing shocks, reddit_submissions_long (t df 4.3; data S1 0.0724; first-run base 0.0541, Gaussian arm 0.0490)
+base, all slots tracked (other stream): S1 0.0563 (0.0205)
+bound12    S1 0.0502 (0.0110)  /data  0.69  paired diff -0.0039 (0.0038)  share of the Gaussian arm's change    76%  top-5%-weeks 0.135 (data 0.093)
+bound8     S1 0.0489 (0.0110)  /data  0.68  paired diff -0.0052 (0.0039)  share of the Gaussian arm's change   102%  top-5%-weeks 0.113 (data 0.093)
+bound6     S1 0.0487 (0.0110)  /data  0.67  paired diff -0.0054 (0.0040)  share of the Gaussian arm's change   107%  top-5%-weeks 0.110 (data 0.093)
+far tail of one-week changes: data / sim median over seeds [sim min, max]
+  head     (n 77,859)  z_q999_up 7.57/4.48 [4.33, 4.77]  z_q9999_up 21.55/7.06 [6.32, 8.44]  z_max_up 146.95/12.50 [7.59, 69.50]  z_max_dn 200.44/13.05 [7.83, 37.80]  raw_q999_up 1.29/1.12 [1.04, 1.27]  raw_max_up 12.17/3.93 [2.29, 13.57]  beyond6 2.66e-03/4.54e-04 [2.64e-04, 5.86e-04]  beyond10 6.68e-04/4.35e-05 [0.00e+00, 1.08e-04]
+  middle   (n 350,265)  z_q999_up 7.99/3.99 [3.90, 4.10]  z_q9999_up 27.45/6.21 [5.91, 6.82]  z_max_up 174.61/14.69 [9.86, 29.87]  z_max_dn 206.22/13.64 [9.59, 23.54]  raw_q999_up 1.51/1.60 [1.50, 1.68]  raw_max_up 14.52/7.19 [5.43, 14.29]  beyond6 3.19e-03/2.32e-04 [1.77e-04, 2.88e-04]  beyond10 1.13e-03/2.06e-05 [2.65e-06, 4.89e-05]
+  shell    (n 470,185)  z_q999_up 11.51/4.08 [3.97, 4.16]  z_q9999_up 31.50/6.29 [5.84, 6.94]  z_max_up 189.89/14.46 [11.87, 42.03]  z_max_dn 200.36/15.56 [10.39, 33.46]  raw_q999_up 3.17/2.31 [2.20, 2.48]  raw_max_up 10.24/10.56 [7.56, 22.69]  beyond6 5.36e-03/2.47e-04 [1.87e-04, 3.46e-04]  beyond10 2.35e-03/1.74e-05 [8.31e-06, 3.50e-05]
+  top2pct  (n 14,981)  z_q999_up 6.79/4.00 [3.73, 4.33]  z_q9999_up 12.27/5.92 [5.31, 8.04]  z_max_up 19.19/7.39 [5.69, 14.46]  z_max_dn 14.33/7.85 [5.04, 15.55]  raw_q999_up 0.84/0.74 [0.58, 1.11]  raw_max_up 2.27/1.56 [1.06, 3.20]  beyond6 2.07e-03/2.42e-04 [0.00e+00, 4.42e-04]  beyond10 4.01e-04/0.00e+00 [0.00e+00, 1.25e-04]

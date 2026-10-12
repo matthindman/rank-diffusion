@@ -1,0 +1,9 @@
+[instagram] K=10000 T=52 M=2000 data S1=0.0352
+    base               S1 0.1289 (22s)
+    gauss              S1 0.0714 (43s)
+    no_amp             S1 0.0895 (64s)
+    no_passing         S1 0.0674 (86s)
+    frozen_homes       S1 0.1127 (107s)
+    seed_ladder        S1 0.1221 (129s)
+    seed_means         S1 0.1470 (151s)
+    seed_means_gauss   S1 0.0978 (172s)

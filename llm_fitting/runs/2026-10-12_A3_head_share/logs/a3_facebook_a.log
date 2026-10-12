@@ -1,0 +1,9 @@
+[facebook_a] K=3500 T=86 M=2000 data S1=0.0170
+    base               S1 0.0474 (12s)
+    gauss              S1 0.0272 (23s)
+    no_amp             S1 0.0329 (35s)
+    no_passing         S1 0.0242 (46s)
+    frozen_homes       S1 0.0518 (55s)
+    seed_ladder        S1 0.0433 (67s)
+    seed_means         S1 0.0401 (80s)
+    seed_means_gauss   S1 0.0256 (92s)

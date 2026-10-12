@@ -6026,3 +6026,111 @@ A version of the statistic that does not depend on reversion (each
 endpoint's long-horizon changes scaled by its own one-week scale) is part
 of the follow-up design A7. `runs/2026-10-12_A1A2_anatomy/REPORT.md` is
 corrected in place, with the correction marked.
+
+## 2z-av. 2026-10-12 — EXPLORATORY MEASUREMENT (work plan A3): the head-share error on the two Reddit panels is the first-week seeding of the simulation, sign change included; on Facebook and Instagram it is rare spike weeks from the passing shocks, and the data's own far tails are heavier than the simulation's, so a bound on the standardized shock is not licensed. Seven of twelve predictions held in full, two in part, three failed; nothing adopted, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; design,
+predictions and runner committed at 3db30e6 before the first cells, the
+addendum (far tail, bounded shocks) at 7c53c4b before its cells; results
+committed with this entry._
+
+**Tier.** Exploratory. Interventions in each panel's fitted structure stack
+on DEVELOPMENT data, in sample, 20 seeds, same seeds in every arm. Not a
+refit and not a candidate comparison. Extends §2z-w, §2z-x and §2z-y (FB)
+to four panels and runs the seeding change recommended in §2o and never
+run.
+
+**Question.** Open residual 2: why the simulated top-1 share is too high on
+FB, Instagram and comments and too low on long submissions.
+
+**Result.** Simulated top-1 share within the recorded top 2,000 as a
+multiple of the data's.
+
+| arm | FB Era A | Instagram rescue | comments | long submissions |
+|---|---|---|---|---|
+| data, top-1 share (first week alone) | 0.0170 (0.0245) | 0.0352 (0.0302) | 0.1057 (0.1361) | 0.0724 (0.0383) |
+| base (seed SD) | 2.78 (0.61) | 3.66 (0.89) | 1.38 (0.49) | 0.75 (0.16) |
+| Gaussian passing shocks | 1.60 | 2.03 | 1.12 | 0.68 |
+| passing component off | 1.42 | 1.91 | 1.18 | 0.69 |
+| amplitude off | 1.93 | 2.54 | 1.26 | 0.66 |
+| homes frozen | 3.04 | 3.20 | 1.35 | 0.63 |
+| seeded from the time-median ladder | 2.54 | 3.47 | 0.87 | 1.08 |
+| seeded from endpoint means | 2.36 | 4.18 | 1.00 | 0.97 |
+| endpoint means and Gaussian shocks | 1.51 | 2.78 | 1.23 | 0.88 |
+| passing shocks bounded at 12 / 8 / 6 SDs | 2.26 / 1.96 / 1.82 | 2.94 / 2.35 / 2.08 | 1.36 / 1.35 / 1.35 | 0.69 / 0.68 / 0.67 |
+
+Share of the summed weekly top-1 share from the 5% of weeks where it is
+highest: data 0.084, 0.086, 0.076, 0.093; base 0.408, 0.347, 0.107, 0.191;
+passing component off 0.077, 0.106, 0.074, 0.089. Share of one-week changes
+beyond 6 of the endpoint's own robust SDs, middle group, data / simulation:
+3.0e-3 / 1.2e-4, 1.3e-3 / 2.4e-4, 1.2e-3 / 8.2e-5, 3.2e-3 / 2.3e-4. Largest
+one-week rise in log units among the top 2% of K: 1.88 / 2.10, 3.12 / 4.17,
+2.46 / 2.06, 2.27 / 1.56. Largest rise anywhere on the list, data against
+the simulation's largest over 20 seeds: 9.5 / 35.7, 9.7 / 60.6, 9.8 / 15.4,
+14.5 / 22.7.
+
+**What the measurements show.**
+
+1. On comments and long submissions the head-share error is the seeding.
+   Homes are set to the first week's sorted observed values; that week's
+   top share is 29% above the window mean on comments and 47% below it on
+   long submissions. Seeding from sorted endpoint means brings the
+   simulation to 1.00 and 0.97 of the data (paired differences of 3.5 and
+   5 standard errors).
+2. On FB and Instagram seeding is a small part (FB 24% of the excess at 2.0
+   standard errors with endpoint means, 14% with the time-median ladder;
+   Instagram 7% with the time-median ladder). The endpoint-mean arm is not
+   valid on Instagram, where means over observed weeks are biased by
+   censoring.
+3. On FB and Instagram the excess is carried by the passing shocks through
+   spike weeks: 76% and 66% removed with the passing component off; 35–41%
+   of the simulated top-1 share comes from 5% of weeks against 8–9% in the
+   data. With those weeks taken out the base arm is still 1.70 (FB) and 2.5
+   (Instagram) times the data, a remainder this task does not attribute.
+4. The data's far tails are heavier than the simulation's in an endpoint's
+   own units, in every rank group on every panel (5 to 25 times as many
+   changes beyond 6 robust SDs in the middle group), including the top 2%
+   on three of four panels. A bound at 8 innovation SDs would give 70–80%
+   of the Gaussian arm's reduction on FB and Instagram, and the data does
+   not support it.
+5. What differs is raw size. The largest log-unit rises among the top 2%
+   match; across the whole list the simulation's worst seeds contain rises
+   of 36 (FB) and 61 (Instagram) log units against 9.5–9.7 in the data.
+
+**Predictions (DESIGN.md), scored.** (1) Base 2.3–3.2× on FB, above on
+Instagram and comments, below on submissions: HELD. (2) FB Gaussian shocks
+remove more than half: HELD (66%, equal to §2z-w). (3) Endpoint-mean
+seeding moves all four toward the data: HELD on FB, comments and
+submissions, FAILED on Instagram. (4) Time-median ladder moves FB most:
+FAILED. (5) Frozen homes lower the share everywhere: FAILED on FB. (6)
+Amplitude off removes at least 40% on FB: HELD (48%). (7) No single arm
+within 25% on all four: HELD; endpoint means with Gaussian shocks within
+50% on FB: FAILED (1.51). (8) Among large endpoints the data's largest
+standardized rise is smaller than the simulation's: FAILED on FB, comments
+and (head group) Instagram. (9) Shell: at least as many changes beyond 6
+robust SDs in the data: HELD. (10) FB bounds at 8 and 6 give half and three
+quarters of the Gaussian reduction: HELD (70%, 81%). (11) FB top-5%-weeks
+share below 0.25 at a bound of 8: HELD. (12) Long submissions unmoved by a
+bound at 12: HELD.
+
+**Verdict.** No adoption rule applies. Open residual 2 splits in two. (a) A
+seeding artifact, which accounts for comments and long submissions and for
+the difference in sign: repairable with no parameter by seeding the
+unconditional simulation from the ladder of lasting levels. That changes a
+default of the structure simulation and every structure card, so it is the
+owner's decision; it does not touch the gate, whose four primary stacks
+simulate from the filtered state. (b) Spike weeks on FB and Instagram. The
+work plan's candidate "passing shocks bounded at the largest standardized
+move in the data" would not bind, because the data's largest standardized
+moves exceed the simulation's; what the data constrains is the raw size of
+a jump given where the endpoint sits. Testing a raw-size restriction needs
+an opt-in change in the simulator (Phase 2).
+
+**Not shown, not run.** The source of the steadier part of the FB and
+Instagram excess. A raw-unit bound. Seeding and bounding together. The
+effect of any arm on the structure cards. A lasting-ladder estimate that is
+valid under censoring. **Files.** `llm_fitting/phase1_a3.py`;
+`llm_fitting/residual_anatomy.py` (`far_tail`);
+`llm_fitting/runs/2026-10-12_A3_head_share/` (DESIGN.md, cells, logs,
+report_tables.txt, REPORT.md). Commands: `python llm_fitting/phase1_a3.py
+run <panel>`, `run_b <panel>`, `report`.

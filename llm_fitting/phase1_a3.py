@@ -212,16 +212,26 @@ def report_b(lines):
             continue
         c = json.loads(f.read_text())
         e = c["emp"]
-        base = np.array([r["S1"] for r in c["arms"]["base"]])
-        gauss = (np.mean([r["S1"] for r in json.loads(f0.read_text())["arms"]["gauss"]])
-                 if f0.exists() else np.nan)
+        # The bounded arms share their random stream with the base arm of the
+        # first run (same call, default tracking).  The base arm inside this
+        # cell tracks every slot for the far-tail statistics, which draws a
+        # different tracking sample and so a different stream: it is shown
+        # for reference and is not the comparison.
+        first = json.loads(f0.read_text())["arms"]
+        base = np.array([r["S1"] for r in first["base"]])
+        gauss = float(np.mean([r["S1"] for r in first["gauss"]]))
         lines.append(f"\n## bounded passing shocks, {panel} (t df {c['t_df']:.1f}; "
-                     f"data S1 {e['S1']:.4f}, Gaussian arm {gauss:.4f})")
+                     f"data S1 {e['S1']:.4f}; first-run base {base.mean():.4f}, "
+                     f"Gaussian arm {gauss:.4f})")
         for arm, rows in c["arms"].items():
             v = np.array([r["S1"] for r in rows])
+            tag = "base, all slots tracked (other stream)" if arm == "base" else arm
+            if arm == "base":
+                lines.append(f"{tag}: S1 {v.mean():.4f} ({v.std(ddof=1):.4f})")
+                continue
             d = v - base
             lines.append(
-                f"{arm:10s} S1 {v.mean():.4f} ({v.std(ddof=1):.4f})  /data {v.mean() / e['S1']:5.2f}  "
+                f"{tag:10s} S1 {v.mean():.4f} ({v.std(ddof=1):.4f})  /data {v.mean() / e['S1']:5.2f}  "
                 f"paired diff {d.mean():+.4f} ({d.std(ddof=1):.4f})  "
                 f"share of the Gaussian arm's change {100 * d.mean() / (gauss - base.mean()):5.0f}%  "
                 f"top-5%-weeks {np.mean([r['S1_top5pct_weeks'] for r in rows]):.3f} "
