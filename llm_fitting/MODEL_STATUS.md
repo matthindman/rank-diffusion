@@ -6001,3 +6001,28 @@ designed separately as A7. **Files.** `llm_fitting/residual_anatomy.py`,
 report_tables.txt, gaussian_walk_benchmark.json, REPORT.md). Commands:
 `python llm_fitting/phase1_anatomy.py a1 <panel>`, `a2 <panel>`, `report`,
 `benchmark`.
+
+**Correction, 2026-10-12, same session, after the entry above was committed
+(07fe478).** Finding 5 and the A1 result table compare the data's tail ratio
+with the simulation's at every horizon. At long horizons that comparison
+overstates the case. The statistic scales each endpoint's overlapping h-week
+changes by that endpoint's own robust scale, and for a series that wanders
+it is higher than for one that reverts, with Gaussian shocks in both: the
+"walk" column of the table rises from 1.59–1.63 at one week to 1.76–1.83 at
+the longest horizon, while the reverting simulation stays at 1.63–1.65.
+Whether the data wanders is the open question, so the walk column is the
+conservative yardstick. Against it the data's excess is 0.59, 0.44, 0.20
+and 0.07 on FB at 1, 4, 13 and 26 weeks; 0.30, 0.32, 0.21 and 0.03 on
+comments at 1, 4, 13 and 52 weeks; and 0.54, 0.61, 0.53 and 0.30 on
+submissions at the same four. Finding 5 should therefore read: an
+endpoint's own changes are fatter-tailed than any Gaussian benchmark at
+short horizons on all three panels, and at long horizons on submissions
+only; on FB and comments the long-horizon excess lies between 0.03–0.07
+and 0.21–0.25 depending on how far the data reverts. A1 prediction 2 keeps
+its scores as stated (they were written against the simulation), with this
+caveat on what the comments result means. The verdict's sentence on C-T is
+strengthened, not reversed: its remaining support is now submissions only.
+A version of the statistic that does not depend on reversion (each
+endpoint's long-horizon changes scaled by its own one-week scale) is part
+of the follow-up design A7. `runs/2026-10-12_A1A2_anatomy/REPORT.md` is
+corrected in place, with the correction marked.

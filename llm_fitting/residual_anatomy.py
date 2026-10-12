@@ -140,6 +140,15 @@ def tails_by_horizon(R, X, K, horizons=HORIZONS, groups=GROUPS, pres_floor=0.7,
               that endpoint's own shocks.
       group   changes divided by the robust scale of the whole rank group.
               The spread of amplitudes across endpoints stays in.
+      anchor  (added for A7) each identity's h-week changes divided by its
+              own robust scale of ONE-week changes, then by the group's
+              robust scale of the result.  The "entity" ratio is higher for
+              a series that wanders than for one that reverts, even with
+              Gaussian shocks, because the scale is estimated from the same
+              overlapping changes; this one is not (Gaussian: 1.57 at every
+              horizon, a little more from the noise in the one-week scale).
+              It keeps in any difference between endpoints in how long-run
+              and short-run volatility relate.
 
     Reported per (group, horizon, standardization): quantiles of |z|, the
     ratios q90/q50 and q99/q90 (Gaussian: 2.44 and 1.57), the share beyond
@@ -151,6 +160,9 @@ def tails_by_horizon(R, X, K, horizons=HORIZONS, groups=GROUPS, pres_floor=0.7,
     base = (pr <= K) & (pres >= pres_floor)
     Y = defactor(X, base)
     gmask = _groups(pr, K, groups)
+    d1 = Y[1:] - Y[:-1]
+    s1, _ = _mad_scale(d1)
+    s1 = np.where(np.isfinite(d1).sum(axis=0) >= min_changes, s1, np.nan)
     rows = []
     for h in horizons:
         if T < 2.5 * h:
@@ -160,6 +172,15 @@ def tails_by_horizon(R, X, K, horizons=HORIZONS, groups=GROUPS, pres_floor=0.7,
             dg = d[:, m & base]
             if dg.shape[1] < 20:
                 continue
+            sa = s1[m & base]
+            use = np.isfinite(sa) & (sa > 0)
+            za = (dg[:, use] / sa[use]).ravel()
+            za = za[np.isfinite(za)]
+            if za.size >= 500:
+                ca = np.median(za)
+                za = (za - ca) / (MAD_TO_SD * np.median(np.abs(za - ca)))
+                rows.append(dict(group=g, h=int(h), mode="anchor",
+                                 entities=int(use.sum()), **_tail_row(za)))
             ok = np.isfinite(dg).sum(axis=0) >= min_changes
             s_i, med_i = _mad_scale(dg[:, ok])
             good = s_i > 0
@@ -284,7 +305,7 @@ def departures(R, K, t0, t1=None, cut_frac=0.5, pres_floor=0.7, lookback=13,
             else:
                 cls = "censored"
             events.append(dict(
-                t=int(t), kind="crossing" if rr[t + 1, e] > 0 else "absence",
+                t=int(t), e=int(e), kind="crossing" if rr[t + 1, e] > 0 else "absence",
                 margin=float((K - rr[t, e]) / K), pre_med=pre_med, slid=bool(slid),
                 back=back, followed=int(followed), nth=int(counts[e]), cls=cls))
     exposure = int(inK[t0: T - 1].sum())
@@ -335,4 +356,151 @@ def long_dispersion(R, X, K, horizons=(13, 26, 52, 78, 104), groups=GROUPS,
             mad = MAD_TO_SD * np.median(np.abs(flat - np.median(flat)))
             rows.append(dict(group=g, h=int(h), n=int(flat.size),
                              var=float(np.var(flat)), robust_var=float(mad ** 2)))
+    return rows
+
+
+
+# --------------------------------------------------------------------------- #
+# A7. Follow-ups: relocation by endpoint, direction, volatility over time
+# --------------------------------------------------------------------------- #
+def cohort_fate(R, K, t0, t1=None, cut_frac=0.5, pres_floor=0.7, near=0.75,
+                lookback=13, follow=13, floor=None, train_lo=0):
+    """The cohort of `departures`, counted by endpoint instead of by event.
+
+    One relocation to the boundary produces many exit events, so event counts
+    cannot say whether endpoints drift there or step there.  Per endpoint:
+
+      shift            log(permanent rank in the scoring window / permanent
+                       rank in the train window); quantiles over endpoints
+                       present in at least pres_floor of the scoring weeks
+      share_relocated  scoring-window permanent rank beyond near*K, and
+                       present (so not a death)
+      share_gone       present in fewer than pres_floor of the scoring weeks
+      share_time_outside   cohort-weeks of the scoring window not in the top-K
+      share_ever_exit, exits_per_exiting
+      first_<class>    class of each endpoint's FIRST exit, as shares
+    """
+    T = R.shape[0] if t1 is None else int(t1)
+    fl = float(R.max() + 1) if floor is None else float(floor)
+    coh = cohort(R, train_lo, t0, cut_frac * K, pres_floor, fl)
+    Rc = R[:, coh]
+    pr0, _ = perm_rank(Rc, train_lo, t0, fl)
+    pr1, pres1 = perm_rank(Rc, t0, T, fl)
+    here = pres1 >= pres_floor
+    shift = np.log(pr1[here] / pr0[here])
+    rr = Rc[t0:T].astype(float)
+    events, _ = departures(R, K, t0, t1=t1, cut_frac=cut_frac, pres_floor=pres_floor,
+                           lookback=lookback, near=near, follow=follow, floor=floor,
+                           train_lo=train_lo)
+    first = [e for e in events if e["nth"] == 1]
+    n = int(coh.sum())
+    out = dict(n=n, n_present=int(here.sum()),
+               share_relocated=float(np.mean((pr1 > near * K) & here)),
+               share_relocated_out=float(np.mean((pr1 > K) & here)),
+               share_gone=float(np.mean(~here)),
+               share_time_outside=float(1.0 - ((rr > 0) & (rr <= K)).mean()),
+               share_ever_exit=len(first) / max(n, 1),
+               exits_per_exiting=len(events) / max(len(first), 1))
+    for q in (50, 75, 90, 95, 99):
+        out[f"shift_q{q}"] = float(np.quantile(shift, q / 100)) if shift.size else np.nan
+    for c in ("slide", "excursion", "lasting", "censored"):
+        out[f"first_{c}"] = (float(np.mean([e["cls"] == c for e in first]))
+                             if first else np.nan)
+    return out
+
+
+def _block_means(Y, block, min_frac=0.5):
+    nb = Y.shape[0] // block
+    M = np.full((nb, Y.shape[1]), np.nan)
+    for b in range(nb):
+        seg = Y[b * block:(b + 1) * block]
+        cnt = np.isfinite(seg).sum(axis=0)
+        M[b] = np.where(cnt >= min_frac * block,
+                        np.nansum(seg, axis=0) / np.maximum(cnt, 1), np.nan)
+    return M
+
+
+def momentum(R, X, K, block=26, groups=GROUPS, pres_floor=0.7, floor=None):
+    """Does the direction an endpoint moved predict how it moves later?
+
+    Levels net of the common factor are averaged over consecutive blocks of
+    `block` weeks; c_b is the change between block b and block b+1, with the
+    rank group's mean change removed block by block.  Slope of a later change
+    on an earlier one, pooled over endpoints and blocks:
+
+      adjacent  c_{b+1} on c_b.  They share block b+1.  Random walk: +0.25;
+                white noise around a fixed level: -0.5.
+      skip      c_{b+2} on c_b.  No block in common.  Zero for a random walk
+                and for white noise around a fixed level; negative for a
+                level that reverts on the scale of the blocks; positive when
+                direction persists (endpoint-specific trends).
+    """
+    T = R.shape[0]
+    pr, pres = perm_rank(R, 0, T, floor)
+    base = (pr <= K) & (pres >= pres_floor)
+    M = _block_means(defactor(X, base), block)
+    C = M[1:] - M[:-1]
+    rows = []
+    for g, m in _groups(pr, K, groups).items():
+        c = C[:, m & base]
+        cnt = np.isfinite(c).sum(axis=1, keepdims=True)
+        c = c - np.nansum(c, axis=1, keepdims=True) / np.maximum(cnt, 1)
+        for name, gap in (("adjacent", 1), ("skip", 2)):
+            if c.shape[0] <= gap:
+                continue
+            a, b = c[:-gap].ravel(), c[gap:].ravel()
+            ok = np.isfinite(a) & np.isfinite(b)
+            if ok.sum() < 200:
+                continue
+            a, b = a[ok], b[ok]
+            rows.append(dict(group=g, block=int(block), pair=name, n=int(ok.sum()),
+                             slope=float((a * b).sum() / (a * a).sum()),
+                             corr=float(np.corrcoef(a, b)[0, 1])))
+    return rows
+
+
+def volatility_persistence(R, X, K, groups=GROUPS, pres_floor=0.7, min_changes=12,
+                           floor=None):
+    """Is an endpoint's volatility a fixed property or does it change over time?
+
+    Log robust scale of each endpoint's one-week changes, net of the common
+    factor, on four subsets of weeks.  Correlation across endpoints:
+
+      corr_interleaved  odd weeks against even weeks: both halves see every
+                        period of the panel
+      corr_halves       first half against second half: only what lasts
+                        across the panel is shared
+
+    Each half has the same number of changes, so sampling noise lowers both
+    alike.  ratio = corr_halves / corr_interleaved is 1 for a fixed endpoint
+    amplitude and below 1 when an endpoint's volatility moves over time.
+    """
+    T = R.shape[0]
+    pr, pres = perm_rank(R, 0, T, floor)
+    base = (pr <= K) & (pres >= pres_floor)
+    Y = defactor(X, base)
+    d1 = Y[1:] - Y[:-1]
+    idx = np.arange(d1.shape[0])
+    parts = dict(odd=idx % 2 == 1, even=idx % 2 == 0,
+                 first=idx < d1.shape[0] // 2, second=idx >= d1.shape[0] // 2)
+    ls = {}
+    for name, sel in parts.items():
+        seg = d1[sel]
+        sc, _ = _mad_scale(seg)
+        good = (np.isfinite(seg).sum(axis=0) >= min_changes) & (sc > 0)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            ls[name] = np.where(good, np.log(sc), np.nan)
+
+    def corr(a, b):
+        ok = np.isfinite(a) & np.isfinite(b)
+        return (float(np.corrcoef(a[ok], b[ok])[0, 1]) if ok.sum() >= 50 else np.nan,
+                int(ok.sum()))
+
+    rows = []
+    for g, m in _groups(pr, K, groups).items():
+        cols = m & base
+        ci, n1 = corr(ls["odd"][cols], ls["even"][cols])
+        ch, n2 = corr(ls["first"][cols], ls["second"][cols])
+        rows.append(dict(group=g, n=min(n1, n2), corr_interleaved=ci, corr_halves=ch,
+                         ratio=ch / ci if ci and ci > 0 else np.nan))
     return rows

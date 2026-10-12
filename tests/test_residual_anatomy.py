@@ -132,3 +132,89 @@ def test_long_dispersion_grows_for_a_walk_and_levels_off_for_noise():
     w = {r["h"]: r["var"] for r in rows(wn, group="middle")}
     assert v[104] / v[13] == pytest.approx(8.0, rel=0.25)
     assert w[104] / w[13] == pytest.approx(1.0, rel=0.15)
+
+
+# --------------------------------------------------------------------------- #
+# A7 follow-up statistics
+# --------------------------------------------------------------------------- #
+def test_anchored_tail_ratio_does_not_depend_on_wandering():
+    """A Gaussian walk scores the Gaussian value (1.57) at every horizon under
+    the anchored scale, and well above it at long horizons under the entity
+    scale; fat one-week shocks show at one week."""
+    R, X = panel(n=3000, T=136, kind="rw")
+    t = {(r["h"], r["mode"]): r["r9990"]
+         for r in rows(ra.tails_by_horizon(R, X, 3000), group="middle")}
+    assert abs(t[(26, "anchor")] - 1.57) < 0.05
+    assert abs(t[(1, "anchor")] - t[(1, "entity")]) < 0.03
+    assert t[(26, "entity")] > t[(26, "anchor")] + 0.10
+    R, X = panel(n=3000, T=136, kind="rw", df=3)
+    t = {(r["h"], r["mode"]): r["r9990"]
+         for r in rows(ra.tails_by_horizon(R, X, 3000), group="middle")}
+    assert t[(1, "anchor")] > 2.2
+
+
+def test_momentum_benchmarks():
+    n, T = 3000, 136
+    rng = np.random.default_rng(5)
+
+    def skip_adj(R, X):
+        m = {r["pair"]: r["slope"] for r in rows(ra.momentum(R, X, n, block=26), group="middle")}
+        return m["skip"], m["adjacent"]
+
+    R, X = panel(n=n, T=T, kind="rw")
+    skip, adj = skip_adj(R, X)
+    assert abs(skip) < 0.05 and abs(adj - 0.25) < 0.05
+    R, X = panel(n=n, T=T, kind="noise")
+    skip, adj = skip_adj(R, X)
+    assert abs(skip) < 0.07 and abs(adj + 0.5) < 0.06
+    R, X = panel(n=n, T=T, kind="rw")                    # endpoint-specific trends
+    X = X + rng.normal(0, 0.01, n) * np.arange(T)[:, None]
+    skip, _ = skip_adj(R, X)
+    assert skip > 0.4
+    level = np.sort(rng.normal(0, 3, n))[::-1]           # a level that reverts
+    ou, x = np.zeros((T, n)), rng.normal(0, 0.5, n)
+    for t in range(T):
+        x = 0.97 * x + rng.normal(0, 0.5 * np.sqrt(0.06), n)
+        ou[t] = x
+    skip, _ = skip_adj(R, level + ou)
+    assert skip < -0.15
+
+
+def test_volatility_persistence_fixed_and_switched():
+    n, T = 3000, 136
+    rng = np.random.default_rng(6)
+    level = np.sort(rng.normal(0, 3, n))[::-1]
+    a1, a2 = np.exp(rng.normal(0, 0.5, n)), np.exp(rng.normal(0, 0.5, n))
+    sh = rng.normal(0, 0.05, (T, n))
+    fixed = level + np.cumsum(sh * a1, axis=0)
+    sw = sh.copy()
+    sw[: T // 2] *= a1
+    sw[T // 2:] *= a2
+    switched = level + np.cumsum(sw, axis=0)
+    R = (np.argsort(np.argsort(-fixed, axis=1), axis=1) + 1).astype(np.int32)
+    v = rows(ra.volatility_persistence(R, fixed, n), group="middle")[0]
+    assert abs(v["ratio"] - 1.0) < 0.03 and v["corr_interleaved"] > 0.8
+    v = rows(ra.volatility_persistence(R, switched, n), group="middle")[0]
+    assert v["corr_interleaved"] > 0.7 and v["corr_halves"] < 0.15
+
+
+def test_cohort_fate_counts_endpoints_not_events():
+    """100 endpoints at fixed ranks, K = 50, train weeks 0-39: the cohort is
+    ranks 1-25.  Five of them sit at rank 45 through the scoring window
+    (relocated, never out); two step to rank 60 at week 42 and stay (one exit
+    each, lasting); one flickers across the cut every other week."""
+    T, n, K, t0 = 80, 100, 50, 40
+    R = np.tile(np.arange(1, n + 1), (T, 1)).astype(np.int32)
+    R[t0:, 0:5] = 45
+    R[42:, 5:7] = 60
+    R[t0:, 7] = np.where(np.arange(t0, T) % 2 == 0, 45, 55)
+    f = ra.cohort_fate(R, K, t0)
+    assert f["n"] == 25
+    assert f["share_relocated"] == pytest.approx(8 / 25)       # 5 at 45, 2 at 60, 1 flickering
+    assert f["share_relocated_out"] == pytest.approx(2 / 25)   # mean rank beyond K: the two at 60 (about 57)
+    assert f["share_ever_exit"] == pytest.approx(3 / 25)
+    assert f["share_gone"] == 0.0
+    ev, _ = ra.departures(R, K, t0)
+    assert f["exits_per_exiting"] == pytest.approx(len(ev) / 3)
+    assert len(ev) > 15                                         # the flickerer dominates the event count
+    assert f["first_lasting"] == pytest.approx(2 / 3)

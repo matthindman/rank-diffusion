@@ -79,8 +79,9 @@ on FB, 0.06 on submissions and 0.16 on comments (simulation 0.45, 0.47,
    had the large-sample value 1.57 in mind when writing the prediction, and
    against that the simulation is 0.05–0.08 above, so the clause holds
    either way. The stated kill condition (excess gone by about 4 weeks) is
-   not met on any panel: the excess is at least 20 seed SDs at every
-   horizon in the middle group.
+   not met on any panel: the excess over the simulation is at least 20 seed
+   SDs at every horizon in the middle group. See finding 6 for why the
+   excess over the simulation overstates the case at long horizons.
 3. *At 13 weeks big moves keep at least 0.05 more in the data than in the
    simulation on at least two panels.* HELD for drops (+0.11 FB, +0.09
    submissions, +0.04 comments). FAILED for rises (−0.06, 0.00, −0.02). The
@@ -174,13 +175,25 @@ rank group on both panels.
    stops growing, while the data's grows nearly in proportion to the
    horizon (on submissions 0.0062, 0.0055, 0.0053 and 0.0059 per week at
    the four horizons).
-6. **An endpoint's own changes are fat-tailed at every horizon measured,
-   and the simulation's are close to Gaussian** (0.06–0.14 above the walk
-   benchmark at one week, against 0.30–0.59 for the data). On FB and
-   submissions the simulation is much nearer the data when endpoints are
-   pooled than when each is scaled by itself, which is what a model does
-   when it carries its fat tails as differences in scale between
-   endpoints. On comments it is equally far either way.
+6. **An endpoint's own changes are fatter-tailed than the simulation's at
+   every horizon, and at short horizons fatter than any Gaussian process.**
+   At one week the simulation is 0.06–0.14 above the walk benchmark and the
+   data 0.30–0.59 above. *Corrected the same day, after the first version
+   of this report was committed:* at long horizons the simulation is not
+   the right yardstick. The statistic is higher for a series that wanders
+   than for one that reverts, Gaussian shocks or not, and the question on
+   the table is whether the data wanders. Against the walk benchmark the
+   data's excess is 0.59, 0.44, 0.20 and 0.07 on FB at 1, 4, 13 and 26
+   weeks; 0.30, 0.32, 0.21 and 0.03 on comments at 1, 4, 13 and 52 weeks;
+   and 0.54, 0.61, 0.53 and 0.30 on submissions. So within-endpoint fat
+   tails are established at short horizons on all three panels and at long
+   horizons on submissions only. On FB and comments the long-horizon excess
+   lies between 0.03–0.07 (if the data is a walk) and 0.21–0.25 (if it
+   reverts as the simulation does). On FB and submissions the simulation is
+   much nearer the data when endpoints are pooled than when each is scaled
+   by itself, which is what a model does when it carries its fat tails as
+   differences in scale between endpoints. On comments it is equally far
+   either way.
 7. **Big drops stick more than the model allows and big rises do not.**
    The data keeps 0.04–0.11 more of a big drop after 13 weeks on every
    panel, and no more of a big rise.
@@ -208,10 +221,11 @@ rank group on both panels.
 
 ## Consequences for the plan
 
-- **C-T ("tails where they persist") loses its departure argument.** It was
-  proposed to create sudden lasting moves; the data has fewer of those than
-  the simulation. What A1 leaves standing for it is the tail shape at long
-  horizons, which time-varying volatility would also produce.
+- **C-T ("tails where they persist") loses its departure argument, and
+  most of its tail argument.** It was proposed to create sudden lasting
+  moves; the data has fewer of those than the simulation. Tails that
+  persist to long horizons are established on submissions only (finding
+  6), and time-varying volatility would also produce them.
 - **The lasting level is the place to look, and reversion to a fixed home
   is the suspect.** Findings 2, 3 and 5 all describe endpoints whose level
   moves and stays moved. A4 found the reversion rate at its slowest grid

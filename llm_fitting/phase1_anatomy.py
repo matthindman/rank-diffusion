@@ -7,6 +7,9 @@ Design and predictions: llm_fitting/runs/2026-10-12_A1A2_anatomy/DESIGN.md.
     python llm_fitting/phase1_anatomy.py a2 reddit_comments_ext
     python llm_fitting/phase1_anatomy.py report
     python llm_fitting/phase1_anatomy.py benchmark
+    python llm_fitting/phase1_anatomy.py a7 facebook_a          # follow-ups a, c, d
+    python llm_fitting/phase1_anatomy.py a7b reddit_comments_ext  # follow-up b
+    python llm_fitting/phase1_anatomy.py report7
 """
 import json
 import sys
@@ -201,6 +204,121 @@ def report():
     print(text)
 
 
+# --------------------------------------------------------------------------- #
+# A7: follow-ups (design in runs/2026-10-12_A7_followups/DESIGN.md)
+# --------------------------------------------------------------------------- #
+OUT7 = Path("llm_fitting/runs/2026-10-12_A7_followups")
+
+
+def _write7(name, obj):
+    (OUT7 / "cells").mkdir(parents=True, exist_ok=True)
+    (OUT7 / "cells" / name).write_text(json.dumps(obj, indent=1, default=float))
+
+
+def a7(panel):
+    cfg = le.PANELS[panel]
+    spec = le.spec_for(panel, "struct", cfg["struct_path"][-1])
+    df = mrd.restrict_universe(mrd.load_panel(mrd.PLATFORMS[cfg["struct"]]),
+                               cfg["K"], buffer_mult=4)
+    K, T = int(df.attrs["score_k"]), int(df["period"].max()) + 1
+    p = le._fit(df, spec)
+    R, X, _ = ra.from_long(df)
+    blocks = [b for b in (13, 26) if T >= 5 * b]
+
+    def stats(R, X):
+        return dict(tails=[r for r in ra.tails_by_horizon(R, X, K)
+                           if r["mode"] in ("anchor", "entity")],
+                    momentum=[r for b in blocks for r in ra.momentum(R, X, K, block=b)],
+                    vol=ra.volatility_persistence(R, X, K))
+
+    emp, sims, t0 = stats(R, X), [], time.time()
+    print(f"[{panel}] data: {R.shape[1]:,} identities, {T} weeks", flush=True)
+    for s in range(A1_SEEDS):
+        sim = mrd.simulate(p, T, seed=s, kappa=None, top_record=K, track=p.N,
+                           track_ids=True)
+        sims.append(stats(*ra.from_sim(sim)))
+        print(f"    seed {s + 1}/{A1_SEEDS} ({time.time() - t0:.0f}s)", flush=True)
+    _write7(f"a7__{panel}.json", dict(
+        panel=panel, K=K, T=T, spec=spec, seeds=A1_SEEDS, emp=emp, sims=sims,
+        commit=le._commit(), finished=time.strftime("%Y-%m-%d %H:%M:%S")))
+
+
+def a7b(panel):
+    cfg = A2_PANELS[panel]
+    K = cfg["K"]
+    df = mrd.load_panel(mrd.PLATFORMS[panel])
+    if cfg["anchor"] is not None:
+        anchor = df[["period", "ts"]].drop_duplicates().set_index("ts")["period"]
+        t0 = int(anchor.loc[pd.Timestamp(cfg["anchor"])])
+    else:
+        t0 = cfg["t0"]
+    df = mrd.restrict_universe(df, K, buffer_mult=4, member_window=t0)
+    sk, T = int(df.attrs["score_k"]), int(df["period"].max()) + 1
+    floor, half = ea.N_FLOOR, t0 // 2
+    R, _, _ = ra.from_long(df)
+
+    def stats(R):
+        return dict(main=ra.cohort_fate(R, sk, t0, floor=floor),
+                    within_train=ra.cohort_fate(R, sk, half, t1=t0, floor=floor))
+
+    emp = stats(R)
+    print(f"[{panel}] t0 = {t0}, T = {T}; cohort {emp['main']['n']}", flush=True)
+    p = mrd.estimate(df, **ea.LONG)
+    sims, t_start = [], time.time()
+    for s in range(A2_SEEDS):
+        sim = mrd.simulate(p, T, seed=s, top_record=sk, track_ids=True)
+        sims.append(stats(ra.from_sim(sim)[0]))
+        print(f"    seed {s + 1}/{A2_SEEDS} ({time.time() - t_start:.0f}s)", flush=True)
+    _write7(f"a7b__{panel}.json", dict(
+        panel=panel, K=K, t0=t0, T=T, seeds=A2_SEEDS, emp=emp, sims=sims,
+        commit=le._commit(), finished=time.strftime("%Y-%m-%d %H:%M:%S")))
+
+
+def report7():
+    lines = []
+    for panel in A1_PANELS:
+        f = OUT7 / "cells" / f"a7__{panel}.json"
+        if not f.exists():
+            continue
+        c = json.loads(f.read_text())
+        lines.append(f"\n## A7 {panel} (K={c['K']}, T={c['T']}, {c['seeds']} seeds)")
+        for mode in ("anchor", "entity"):
+            j = _join([r for r in c["emp"]["tails"] if r["mode"] == mode],
+                      [[r for r in s["tails"] if r["mode"] == mode] for s in c["sims"]],
+                      ("group", "h"), "r9990")
+            lines.append(f"q99/q90, {mode} scale: data / sim mean (sim SD) [data - sim]")
+            for g in ("head", "middle", "shell"):
+                cells = [f"h{h}: {v['emp']:.2f}/{v['sim']:.2f} ({v['sd']:.2f}) [{v['emp'] - v['sim']:+.2f}]"
+                         for (gg, h), v in j.items() if gg == g]
+                lines.append(f"  {g:7s} " + "  ".join(cells))
+        j = _join(c["emp"]["momentum"], [s["momentum"] for s in c["sims"]],
+                  ("group", "block", "pair"), "slope")
+        lines.append("momentum slope: data / sim mean (sim SD)")
+        for (g, b, pair), v in j.items():
+            lines.append(f"  {g:7s} block {b:2d} {pair:8s} {v['emp']:+.3f} / {v['sim']:+.3f} ({v['sd']:.3f})")
+        for key in ("corr_interleaved", "corr_halves", "ratio"):
+            j = _join(c["emp"]["vol"], [s["vol"] for s in c["sims"]], ("group",), key)
+            lines.append(f"volatility {key}: " + "  ".join(
+                f"{g} {v['emp']:.3f}/{v['sim']:.3f} ({v['sd']:.3f})" for (g,), v in j.items()))
+    for panel in A2_PANELS:
+        f = OUT7 / "cells" / f"a7b__{panel}.json"
+        if not f.exists():
+            continue
+        c = json.loads(f.read_text())
+        lines.append(f"\n## A7b {panel} (K={c['K']}, t0={c['t0']}, T={c['T']}, {c['seeds']} seeds)")
+        for split in ("main", "within_train"):
+            e = c["emp"][split]
+            lines.append(f"{split}: cohort {e['n']}, present in the scoring window {e['n_present']}")
+            for key in [k for k in e if k not in ("n", "n_present")]:
+                sv = np.array([s[split].get(key, np.nan) for s in c["sims"]], dtype=float)
+                sv = sv[np.isfinite(sv)]
+                lines.append(f"  {key:20s} data {e[key]:.4f}  sim {sv.mean():.4f} "
+                             f"[q10 {np.quantile(sv, .1):.4f}, q90 {np.quantile(sv, .9):.4f}]")
+    text = "\n".join(lines)
+    (OUT7 / "report_tables.txt").write_text(text + "\n")
+    print(text)
+
+
 def benchmark(K=3_500, seeds=5):
     """q99/q90 (entity scale, middle group) for a Gaussian random walk at each
     A1 panel length.  The large-sample value is 1.57; with each endpoint's
@@ -229,5 +347,11 @@ if __name__ == "__main__":
         a2(sys.argv[2])
     elif cmd == "benchmark":
         benchmark()
+    elif cmd == "a7":
+        a7(sys.argv[2])
+    elif cmd == "a7b":
+        a7b(sys.argv[2])
+    elif cmd == "report7":
+        report7()
     else:
         report()
