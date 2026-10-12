@@ -5720,3 +5720,63 @@ remain uncommitted, as held since 2026-10-09; `tmp/` is not in git.
 
 **Not done at the time of writing.** No Phase 1 measurement has been run
 and nothing has been sent to Codex. Each task will get its own entry.
+
+## 2z-as. 2026-10-12 — EXPLORATORY MEASUREMENT (work plan A5): the ladder cell that was skipped. Applying the endpoint amplitude to the lasting component repairs 49–94% of the variance-block loss of the amplitude step and raises the FB top-1 share from 2.35× to 3.54× the data; three of five predictions failed; nothing adopted, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; design and
+predictions committed at 5072f89 before the first cell, results at d7a6ff5._
+
+**Tier.** Exploratory diagnostic on DEVELOPMENT data, structure only, in
+sample. First task of Phase 1 of the work plan adopted in §2z-ar.
+
+**Question.** §2z-ap found the macro index rising at the amplitude step (R4)
+on all five panels, with the simulators scaling only σ_trans and σ_obs by
+v_i. Is the half-application the cause? The cell R4m = R3 + `--temperament
+--mix-hetero` was run through `ladder_explainer.run_struct`, 20 seeds (0–19),
+and compared with the R3 and R4 cells of §2z-ap (same seeds and code).
+
+**Result** (macro index in scorecard-tolerance units; bracket = 5th–95th
+percentile from resampling the 20 seeds jointly).
+
+| panel | R3 | R4 | R4m | R4m − R4 | variance block R3 / R4 / R4m | ladder block R3 / R4 / R4m | b | top-1 share over data, R4 → R4m |
+|---|---|---|---|---|---|---|---|---|
+| FB Era A | 1.42 | 1.55 | 1.71 | +0.159 [+0.026, +0.305] | 0.81 / 1.26 / 1.04 | 3.46 / 3.19 / 4.17 | 1.02 | 2.35 → 3.54 |
+| Reddit comments | 1.17 | 1.46 | 1.43 | −0.029 [−0.233, +0.182] | 1.92 / 2.37 / 2.06 | 0.92 / 1.55 / 1.86 | 1.08 | 1.38 → 1.51 |
+| Reddit submissions, long | 0.73 | 0.92 | 0.77 | −0.150 [−0.204, −0.109] | 0.94 / 1.75 / 1.13 | 1.06 / 1.07 / 1.24 | 0.95 | 0.56 → 0.53 |
+| Reddit submissions, short | 0.27 | 0.32 | 0.32 | 0 | 0.11 / 0.30 / 0.30 | 0.38 / 0.26 / 0.26 | 0 | 1.06 → 1.06 |
+| Instagram rescue | 1.77 | 1.83 | 1.64 | −0.196 [−0.247, −0.132] | 1.26 / 1.42 / 1.27 | 3.37 / 3.40 / 2.93 | 1.02 | 2.07 → 1.79 |
+
+**What the measurements show.**
+
+1. The half-application is a real cause of the variance-block loss at R4:
+   the full amplitude removes 49% of it on FB, 69% on comments, 77% on long
+   submissions and 94% on Instagram.
+2. The full amplitude also moves the head. On FB the simulated top-1 share
+   goes from 2.35 to 3.54 times the data's and the index gets worse, with a
+   seed band that excludes zero; the ladder block worsens on comments and
+   long submissions too.
+3. On the 30-week panel b = 0 by construction (no horizon has the eight
+   non-overlapping changes the estimate needs), so R4m equals R4.
+
+**Predictions (DESIGN.md), scored.** (1) R4m not higher than R4 on the three
+long panels: FAILED on FB. (2) Recovery under half on comments and long
+submissions: HELD on comments (10%), FAILED on long submissions (81%). (3)
+FB difference inside its seed band: FAILED. (4) FB top-1 share not lower at
+R4m: HELD. (5) Instagram within ±5%: FAILED (−10.7%).
+
+**Verdict.** No adoption rule applies. For the plan: candidate C-A ("one
+amplitude for the whole model") is not a flag change. It repairs horizon
+scaling and feeds the head-share error, which is the largest macro error on
+FB. Its dossier has to say what happens at the head, and task A3 has to
+measure how amplitude and rank relate among the top endpoints. A related
+lead from the first A1 panel (FB, not yet written up): the simulation's
+endpoint-level one-week changes are close to Gaussian while the data's are
+fat-tailed, which raises the possibility that the amplitude spread s is
+inflated by within-endpoint fat tails. Codex's recovery study (V2, part 2)
+tests exactly that; it is a conjecture until then.
+
+**Not run.** Any gate evaluation; any variant with the amplitude shrunk or
+bounded. **Files.** `llm_fitting/phase1_a5.py`;
+`llm_fitting/runs/2026-10-12_A5_full_amplitude/` (DESIGN.md, cells,
+summary.json, REPORT.md). Command: `python llm_fitting/phase1_a5.py run`,
+then `report`.
