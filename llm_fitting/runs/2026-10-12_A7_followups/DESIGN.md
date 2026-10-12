@@ -104,3 +104,46 @@ d2. In the data the ratio is lower than the simulation's by at least 0.10
 None of these readings is final until V2 shows the statistic separates the
 planted alternatives at these panel sizes. The four statistics are in
 `residual_anatomy.py` for V2 to run.
+
+
+## Addendum, 2026-10-12, after the first five cells and before the cells below
+
+The first cells showed the data's 26-week skip slope positive on both Reddit
+panels (+0.126, +0.118), which prediction c3 did not allow. Before reading
+that as persistent direction I checked the data at other spacings
+(`posthoc_momentum_seasonality.json`, data only): with 13-week blocks the
+slope is negative when the two changes are half a year apart, near zero at
+three quarters, and positive at one and at two years, on all three Reddit
+panels. That is the signature of an endpoint-specific annual cycle, and a
+26-week "skip" compares changes exactly one year apart. With whole-year
+blocks, which average a cycle out, the data's adjacent slope is +0.31 and
++0.28 (a random walk gives +0.25) and its skip slope +0.01 and +0.07.
+
+Two things are therefore added, as `a7c`, on the three A1 panels and on the
+comments extension over its full window (213 weeks, the A2 full-window fit),
+20 seeds each:
+
+- `momentum` at spacings of 1, 2, 3, 4, 6 and 8 quarters, and with 52-week
+  blocks where the panel has four years, for the simulation as well as the
+  data. The data values above have been seen; the simulation's have not.
+- `amplitude_coherence`: the correlation across endpoints between
+  short-run and long-run volatility with sampling noise divided out. It is
+  1 when one amplitude scales everything. This is prompted by the anchored
+  tails (fat at long horizons, and growing with horizon on comments, while
+  the entity-scaled tails are not): that pattern is what endpoints
+  differing in long-run relative to short-run volatility would produce.
+
+Predictions for what has not been seen:
+
+e1. Simulation, whole-year blocks: adjacent slope below +0.15 and skip
+    slope below −0.05 on both four-year panels (the fitted level reverts
+    where the data's does not).
+e2. Simulation, 13-week blocks: the slope at four quarters is at most
+    +0.02 on every Reddit panel (it has no annual cycle).
+f1. Simulation: amplitude coherence at 13 weeks is at least 0.85 in the
+    middle group on all three A1 panels (b is 0.95 to 1.08 there).
+f2. Data: lower than the simulation by at least 0.15 on all three.
+
+If f2 holds, "one amplitude for the whole model" (candidate C-A) is not
+what the data shows, and the b = 1 law needs restating: equal spread of the
+two amplitudes is not the same as one amplitude.

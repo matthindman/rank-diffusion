@@ -420,7 +420,7 @@ def _block_means(Y, block, min_frac=0.5):
     return M
 
 
-def momentum(R, X, K, block=26, groups=GROUPS, pres_floor=0.7, floor=None):
+def momentum(R, X, K, block=26, groups=GROUPS, pres_floor=0.7, floor=None, gaps=None):
     """Does the direction an endpoint moved predict how it moves later?
 
     Levels net of the common factor are averaged over consecutive blocks of
@@ -434,6 +434,12 @@ def momentum(R, X, K, block=26, groups=GROUPS, pres_floor=0.7, floor=None):
                 and for white noise around a fixed level; negative for a
                 level that reverts on the scale of the blocks; positive when
                 direction persists (endpoint-specific trends).
+
+    gaps: other spacings, in blocks; rows are then named "gap<g>".  An
+    endpoint-specific annual cycle gives a positive slope where the two
+    changes are a whole number of years apart and a negative one at half
+    years, so 26-week blocks with "skip" (one year apart) cannot tell a cycle
+    from a trend.  Whole-year blocks average the cycle out.
     """
     T = R.shape[0]
     pr, pres = perm_rank(R, 0, T, floor)
@@ -445,7 +451,9 @@ def momentum(R, X, K, block=26, groups=GROUPS, pres_floor=0.7, floor=None):
         c = C[:, m & base]
         cnt = np.isfinite(c).sum(axis=1, keepdims=True)
         c = c - np.nansum(c, axis=1, keepdims=True) / np.maximum(cnt, 1)
-        for name, gap in (("adjacent", 1), ("skip", 2)):
+        pairs = ((("adjacent", 1), ("skip", 2)) if gaps is None
+                 else tuple((f"gap{g}", int(g)) for g in gaps))
+        for name, gap in pairs:
             if c.shape[0] <= gap:
                 continue
             a, b = c[:-gap].ravel(), c[gap:].ravel()
@@ -503,4 +511,53 @@ def volatility_persistence(R, X, K, groups=GROUPS, pres_floor=0.7, min_changes=1
         ch, n2 = corr(ls["first"][cols], ls["second"][cols])
         rows.append(dict(group=g, n=min(n1, n2), corr_interleaved=ci, corr_halves=ch,
                          ratio=ch / ci if ci and ci > 0 else np.nan))
+    return rows
+
+
+def amplitude_coherence(R, X, K, h_long=13, groups=GROUPS, pres_floor=0.7,
+                        min_changes=12, floor=None):
+    """Is an endpoint's long-run volatility the same amplitude as its
+    short-run volatility?
+
+    Log robust scale of each endpoint's one-week changes (s1) and of its
+    h_long-week changes (sL), each on the first and on the second half of
+    the panel.  With a and b the two halves,
+
+        coherence = mean(corr(s1_a, sL_b), corr(s1_b, sL_a))
+                    / sqrt(corr(s1_a, s1_b) * corr(sL_a, sL_b))
+
+    which is the correlation across endpoints between the two amplitudes
+    with the sampling noise of each divided out.  One amplitude scaling
+    everything gives 1; separate amplitudes for the lasting and passing
+    parts give less.  Compare with the simulation, which carries whatever
+    bias the short halves add.
+    """
+    T = R.shape[0]
+    pr, pres = perm_rank(R, 0, T, floor)
+    base = (pr <= K) & (pres >= pres_floor)
+    Y = defactor(X, base)
+    half = T // 2
+
+    def logscale(seg, h):
+        d = seg[h:] - seg[:-h]
+        sc, _ = _mad_scale(d)
+        good = (np.isfinite(d).sum(axis=0) >= min_changes) & (sc > 0)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            return np.where(good, np.log(sc), np.nan)
+
+    s1a, s1b = logscale(Y[:half], 1), logscale(Y[half:], 1)
+    sLa, sLb = logscale(Y[:half], h_long), logscale(Y[half:], h_long)
+
+    def corr(a, b):
+        ok = np.isfinite(a) & np.isfinite(b)
+        return float(np.corrcoef(a[ok], b[ok])[0, 1]) if ok.sum() >= 50 else np.nan
+
+    rows = []
+    for g, m in _groups(pr, K, groups).items():
+        c = m & base
+        r1, rL = corr(s1a[c], s1b[c]), corr(sLa[c], sLb[c])
+        cross = 0.5 * (corr(s1a[c], sLb[c]) + corr(s1b[c], sLa[c]))
+        ok = np.isfinite(r1) and np.isfinite(rL) and r1 > 0 and rL > 0
+        rows.append(dict(group=g, h=int(h_long), rel_short=r1, rel_long=rL, cross=cross,
+                         coherence=float(cross / np.sqrt(r1 * rL)) if ok else np.nan))
     return rows

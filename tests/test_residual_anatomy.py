@@ -218,3 +218,39 @@ def test_cohort_fate_counts_endpoints_not_events():
     assert f["exits_per_exiting"] == pytest.approx(len(ev) / 3)
     assert len(ev) > 15                                         # the flickerer dominates the event count
     assert f["first_lasting"] == pytest.approx(2 / 3)
+
+
+def test_momentum_tells_an_annual_cycle_from_a_trend():
+    """A random walk plus an endpoint-specific annual cycle: quarter changes
+    half a year apart are opposed, a year apart they repeat; whole-year
+    blocks see only the walk."""
+    n, T = 3000, 212
+    rng = np.random.default_rng(8)
+    R, X = panel(n=n, T=T, kind="rw")
+    amp, phase = rng.normal(0, 0.3, n), rng.uniform(0, 2 * np.pi, n)
+    X = X + amp * np.sin(2 * np.pi * np.arange(T)[:, None] / 52.0 + phase)
+    q = {r["pair"]: r["slope"] for r in rows(ra.momentum(R, X, n, block=13, gaps=(2, 4)),
+                                             group="middle")}
+    assert q["gap2"] < -0.2 and q["gap4"] > 0.2
+    y = {r["pair"]: r["slope"] for r in rows(ra.momentum(R, X, n, block=52), group="middle")}
+    assert abs(y["skip"]) < 0.06 and abs(y["adjacent"] - 0.25) < 0.08
+
+
+def test_amplitude_coherence_one_amplitude_against_two():
+    """One amplitude for the walk and the noise gives 1.  A separate amplitude
+    for the walk gives the correlation between the two population scales,
+    which is known here (about 0.70 at 13 weeks)."""
+    n, T, sw, sn, h = 3000, 212, 0.05, 0.079, 13
+    rng = np.random.default_rng(9)
+    level = np.sort(rng.normal(0, 4, n))[::-1]
+    a, b = np.exp(rng.normal(0, 0.5, n)), np.exp(rng.normal(0, 0.5, n))
+    walk, noise = rng.normal(0, sw, (T, n)), rng.normal(0, sn, (T, n))
+    one = level + np.cumsum(walk * a, axis=0) + noise * a
+    two = level + np.cumsum(walk * b, axis=0) + noise * a
+    R = (np.argsort(np.argsort(-one, axis=1), axis=1) + 1).astype(np.int32)
+    truth = np.corrcoef(0.5 * np.log(sw**2 * b**2 + 2 * sn**2 * a**2),
+                        0.5 * np.log(h * sw**2 * b**2 + 2 * sn**2 * a**2))[0, 1]
+    c1 = rows(ra.amplitude_coherence(R, one, n, h_long=h), group="middle")[0]["coherence"]
+    c2 = rows(ra.amplitude_coherence(R, two, n, h_long=h), group="middle")[0]["coherence"]
+    assert abs(c1 - 1.0) < 0.05
+    assert abs(c2 - truth) < 0.08 and c2 < 0.85

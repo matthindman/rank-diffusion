@@ -274,6 +274,42 @@ def a7b(panel):
         commit=le._commit(), finished=time.strftime("%Y-%m-%d %H:%M:%S")))
 
 
+def a7c(panel):
+    """Post hoc additions to A7 (DESIGN.md, addendum): direction at several
+    spacings and with whole-year blocks, and whether long-run and short-run
+    volatility share one amplitude."""
+    if panel in A1_PANELS:
+        cfg = le.PANELS[panel]
+        df = mrd.restrict_universe(mrd.load_panel(mrd.PLATFORMS[cfg["struct"]]),
+                                   cfg["K"], buffer_mult=4)
+        p = le._fit(df, le.spec_for(panel, "struct", cfg["struct_path"][-1]))
+    else:                                   # the comments extension, full window
+        df = mrd.restrict_universe(mrd.load_panel(mrd.PLATFORMS[panel]),
+                                   A2_PANELS[panel]["K"], buffer_mult=4)
+        p = mrd.estimate(df, **ea.LONG)
+    K, T = int(df.attrs["score_k"]), int(df["period"].max()) + 1
+    R, X, _ = ra.from_long(df)
+
+    def stats(R, X):
+        mom = ra.momentum(R, X, K, block=13, gaps=(1, 2, 3, 4, 6, 8))
+        if T >= 4 * 52:
+            mom += ra.momentum(R, X, K, block=52, gaps=(1, 2))
+        return dict(momentum=mom,
+                    coherence=[r for h in (13, 26) if T >= 5 * h
+                               for r in ra.amplitude_coherence(R, X, K, h_long=h)])
+
+    emp, sims, t0 = stats(R, X), [], time.time()
+    print(f"[{panel}] data: {R.shape[1]:,} identities, {T} weeks", flush=True)
+    for s in range(A1_SEEDS):
+        sim = mrd.simulate(p, T, seed=s, kappa=None, top_record=K, track=p.N,
+                           track_ids=True)
+        sims.append(stats(*ra.from_sim(sim)))
+        print(f"    seed {s + 1}/{A1_SEEDS} ({time.time() - t0:.0f}s)", flush=True)
+    _write7(f"a7c__{panel}.json", dict(
+        panel=panel, K=K, T=T, seeds=A1_SEEDS, emp=emp, sims=sims,
+        commit=le._commit(), finished=time.strftime("%Y-%m-%d %H:%M:%S")))
+
+
 def report7():
     lines = []
     for panel in A1_PANELS:
@@ -314,6 +350,26 @@ def report7():
                 sv = sv[np.isfinite(sv)]
                 lines.append(f"  {key:20s} data {e[key]:.4f}  sim {sv.mean():.4f} "
                              f"[q10 {np.quantile(sv, .1):.4f}, q90 {np.quantile(sv, .9):.4f}]")
+    for panel in A1_PANELS + ("reddit_comments_ext",):
+        f = OUT7 / "cells" / f"a7c__{panel}.json"
+        if not f.exists():
+            continue
+        c = json.loads(f.read_text())
+        lines.append(f"\n## A7c {panel} (K={c['K']}, T={c['T']}, {c['seeds']} seeds)")
+        j = _join(c["emp"]["momentum"], [s["momentum"] for s in c["sims"]],
+                  ("group", "block", "pair"), "slope")
+        lines.append("slope of a later change on an earlier one, middle group: data / sim mean (sim SD)")
+        for b in (13, 52):
+            cells = [f"{pair}: {v['emp']:+.3f}/{v['sim']:+.3f} ({v['sd']:.3f})"
+                     for (g, bb, pair), v in j.items() if g == "middle" and bb == b]
+            if cells:
+                lines.append(f"  {b}-week blocks  " + "  ".join(cells))
+        for key in ("coherence", "rel_short", "rel_long"):
+            j = _join(c["emp"]["coherence"], [s["coherence"] for s in c["sims"]],
+                      ("group", "h"), key)
+            lines.append(f"amplitude {key}: " + "  ".join(
+                f"{g} h{h} {v['emp']:.3f}/{v['sim']:.3f} ({v['sd']:.3f})"
+                for (g, h), v in j.items()))
     text = "\n".join(lines)
     (OUT7 / "report_tables.txt").write_text(text + "\n")
     print(text)
@@ -351,6 +407,8 @@ if __name__ == "__main__":
         a7(sys.argv[2])
     elif cmd == "a7b":
         a7b(sys.argv[2])
+    elif cmd == "a7c":
+        a7c(sys.argv[2])
     elif cmd == "report7":
         report7()
     else:
