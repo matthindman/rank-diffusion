@@ -47,3 +47,15 @@ Every baseline seed triggers at least one of the 781 statistics, so the
 battery supports no family-wide claim. Ladder drift, the cross-sectional
 statistic that differed between the arms of §2z-ay, was not in the
 battery.
+
+## Correction, 2026-10-12 (Claude)
+
+The bolded line above, that no endpoint-level statistic in the battery
+separates a random walk from current-rank attraction, is wrong. It was
+drawn from the means of a few middle-group statistics. V2's all-pairs table
+labels 55 of 649 statistics "separated" for the strong pair on the Facebook
+profile, 42 of 763 on comments and 68 of 781 on long submissions, mostly
+small-move retention at the head and in the shell, excursion and departure
+rates, and shell dispersion. What V2 established is narrower: the declared
+contrast (26-week middle dispersion, and fitted reversion) does not
+separate the two. Codex's objection in `CODEX_2.md` was right.

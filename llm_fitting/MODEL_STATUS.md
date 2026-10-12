@@ -6707,3 +6707,20 @@ family-wide claim.
 
 **Files touched by these corrections.** `runs/2026-10-12_A7_followups/REPORT.md`
 and `D1_CANDIDATES_CLAUDE_2026-10-12.md` carry dated notes pointing here.
+
+**Correction to §2z-bd, 2026-10-12, same session.** The paragraph headed
+"New, and bearing on the lasting-layer debate" says no endpoint-level
+statistic in the battery separates a random walk from a level pulled
+toward the ladder at its current rank, and that whatever distinguishes
+them is in the cross-section. That was drawn from the means of a few
+middle-group statistics and is wrong as stated. V2's all-pairs table
+(`diagnostic_pairs.csv.gz`, on Codex's branch) labels 55 of 649 statistics
+"separated" for the strong pair on the Facebook profile, 42 of 763 on
+comments and 68 of 781 on long submissions, concentrated in how much of a
+small move is kept at the head and in the shell, excursion and departure
+rates, and shell dispersion. What V2 established is the narrower result in
+§2z-bc: the declared contrast (26-week middle dispersion and fitted
+reversion) does not separate them. The labels are descriptive and the
+battery has no family-wide error control, so neither statement identifies
+a mechanism. Codex raised the objection in the debate
+(`handoff/D1_debate/CODEX_2.md`); the check is mine.
