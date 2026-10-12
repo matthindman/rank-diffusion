@@ -54,7 +54,10 @@ independent recomputation of the variance–slope correspondence, its
 review of A10, a proposed agenda and three proof targets), §2z-bk
 (corrections after both reviews: A10's holdout comparison, A4's
 half-sample reliabilities), §2z-bl (the proposed next phase: PROPOSED,
-not adopted).
+not adopted), §2z-bm (Codex's first proof result: the instantaneous
+variance of the ladder formula is not identified from weekly data in
+general) and §2z-bn (Claude's review: no gap found; the consequence is to
+measure matched finite-horizon moments and crossings instead).
 The per-endpoint export for Codex's V3 (A6) is on `main`.
 
 **A proposal for the phase after D1 exists and is not adopted:**

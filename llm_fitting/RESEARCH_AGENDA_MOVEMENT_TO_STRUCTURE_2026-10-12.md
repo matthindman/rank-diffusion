@@ -95,6 +95,17 @@ Claude's amendments:
   the ladder-drift statistic used in §2z-ay responds to common growth with
   no change of shape (Codex's review R1, §2z-bi).
 - Boundaries at K/2, K and 2K inside the 4K buffer.
+- Added after Codex's first proof result (§2z-bm, reviewed in §2z-bn): the
+  estimands are finite-horizon and matched. Mean change, mean squared
+  change and crossings in each direction are measured at the same stated
+  horizons for the same cohort, fixed on an earlier window. The
+  instantaneous variance of the formula above cannot be recovered from
+  weekly observations in general, and it is not needed: the ladder depends
+  on the ratio of movement to restoring drift on a common clock, and at a
+  finite horizon the exact form of the balance is that as many endpoints
+  cross a level downward as upward. On observed positions the one-week
+  balance has to close in a stationary cross-section, so it is run first as
+  a check of the instrument.
 
 **2. Validate the diagnostic on planted rivals.** Processes that look alike
 in variance and ladder and differ in cause, at the real panel lengths and
@@ -107,7 +118,10 @@ identities with no dependence on position, replacement-stabilised growth
 with no dependence on state, drift that depends only on position, and a
 level with no stabiliser at all. Codex's simulator from V2 is the natural
 place to build them, and Codex stays blind to the empirical step-1 numbers
-until its recovery map is committed, as in V2.
+until its recovery map is committed, as in V2. One more case after the
+proof result: a slow and a fast component of equal stationary variance, on
+which the measurement must give the same answer whichever is called the
+signal.
 
 **3. Predict structure that was not used for calibration.** Freeze the
 measured inputs, then predict an unused window's local slopes and
@@ -167,8 +181,13 @@ fixed. Named as the route to the third level; not scheduled.
 Codex prepared three proof targets and a referee prompt
 (`handoff/D1_debate/proof_prompts/`): what the finite-lag variance
 instrument identifies; stability of a typed population with replacement;
-what weekly crossings say about relative diffusion. They are prompts, not
-results, and none is certified open. The first bears directly on step 1.
+what weekly crossings say about relative diffusion. None is certified
+open. The first has been attempted by Codex (`PROOF_1_RESULT.md`, §2z-bm):
+the instantaneous variance by current position is not identified from
+weekly data in general, and is identified under stated restrictions or
+with much shorter lags. Claude's review found no gap and draws the
+consequence used in step 1 (`PROOF_1_REVIEW_CLAUDE.md`, §2z-bn). The other
+two have not been run.
 One elementary bound in the theory note already constrains the design: the
 relative error of a predicted slope is at most the sum of the relative
 errors of variance and cumulative drift, inflated as the drift error
@@ -201,10 +220,12 @@ narrower claim, and not another flexible model fitted to the same ladder.
 
 On substance, nowhere that changes the sequence. Codex's reviews corrected
 several of Claude's statements on the way (§2z-bi, §2z-bj, §2z-bk). Claude's additions
-are the five marked above: the balance is an identity and not a test; the
+are those marked above: the balance is an identity and not a test; the
 three-window drift design; the weakness of a later-window test against
-persistence and the sealed-data form of step 3; the two time scales; and
-the standing gate budget. Agreement between the two models is not evidence
+persistence and the sealed-data form of step 3; the two time scales; the
+standing gate budget; and, after the first proof result, matched
+finite-horizon estimands in place of an instantaneous variance, which
+Codex has not yet seen. Agreement between the two models is not evidence
 for any of it.
 
 ## For the owner

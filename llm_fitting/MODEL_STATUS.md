@@ -7282,3 +7282,107 @@ proposal correctly.
 
 **Not done.** The protocol for steps 1 and 2 is not written. No proof was
 attempted.
+
+## 2z-bm. 2026-10-12 — THEORETICAL RESULT: the named-movement/occupancy variance bridge is unidentified in the general weekly Itô class; restricted identification theorems and finite-lag bounds proved. No change adopted (OpenAI Codex; integrated by Claude)
+
+_Integration note (Claude Opus 5.5, 2026-10-12): the entry below is Codex's `llm_fitting/handoff/D1_debate/proof_prompts/PROOF_1_STATUS_ENTRY.md`, appended verbatim under the two-agent protocol (§2z-ar). It answers the first of the three proof targets of §2z-bj, run by Codex at the owner's direct request. Branch `codex/d1-debate` at 8dcf233 is merged. Codex ran no health script, for the reason it gives. No data contact and no gate evaluation. My review is §2z-bn._
+
+_Provenance: OpenAI Codex (GPT-6), 2026-10-12; starting commit `2602abd30e638b505d30a5d221c90f9e39939559`, branch `codex/d1-debate`, working copy `/Users/hindman/Documents/GitHub/rank-diffusion-codex-debate`. Instructions/skills at that commit, plus the owner's explicit theory-only scope, governed this work. No additional agents or independent reviewer were used._
+
+**Standing.** Mathematical research, not an empirical confirmation or a proposed change to the binding paper claims. This is the handoff record for the designated MODEL_STATUS writer under `coordination/PROTOCOL.md`; Codex did not edit the canonical record or any ledger. The work follows the D1 questions in §2z-ba and the distinction between named movement and structure raised by §2z-aw/§2z-ay. No empirical values are used as proof premises.
+
+**Question and artifact.** When do noisy fixed-frequency named observations identify the occupancy-weighted instantaneous relative variance in the stationary ladder equation? Full statements, proofs, source audit, assumption-to-observation table, measurement implications, and exact remaining obligations are in `llm_fitting/handoff/D1_debate/proof_prompts/PROOF_1_RESULT.md`.
+
+**Established within the stated mathematical classes.**
+
+- An independent stationary OU signal/noise exchange preserves the entire observed panel and calibration law but changes the target variance. A known contemporaneous error variance alone does not remove this example.
+- A stationary hidden two-dimensional OU construction has an identical noiseless lattice-time law and identical stationary marginal ladder to an ordinary OU, but a different first-coordinate bracket density. This is continuous-time aliasing, not just matching two moments. Mean centering and independent measurement replicates on the same lattice do not remove it.
+- With identified error, observed sufficient types, and scalar stationary reversible Markov dynamics with the explicit generator-domain assumptions, the two-time law identifies the generator and local variance by spectral inversion, then identifies occupancy transport. This uses classical low-frequency and repeated-measurement principles, with proofs given; no novelty is claimed.
+- A typed stationary OU subclass with mean-zero latent-independent temporally uncorrelated errors identifies its parameters and occupancy variance from three-date population covariances even when noise variance is unknown.
+- A separate experiment with noise-managed joint laws at lags tending to zero identifies occupancy-band variance under conditional moment continuity, without scalar Markov dynamics. It does not establish consistency from fixed weekly data.
+- An exact increment-variance decomposition and finite-lag enclosure retain drift–martingale covariance, error covariance and signal/error covariance. Explicit constant-drift Brownian, heterogeneous-trend, stationary OU and overlapping-increment calculations audit the result.
+- Transport bounds separate coefficient estimation, occupancy weights and within-cohort state dependence. Pointwise variance error propagates to structural reconstruction conditional on independently supplied positive cumulative drift. A band mean gives an integrated structural restriction, not a pointwise slope theorem.
+
+**Prior art checked.** Original sources/author manuscripts were read for Gobet–Hoffmann–Reiß, Kotlarski, Brunick–Shreve, Jourdain–Reygner, Evdokimov–White, Zhang–Mykland–Aït-Sahalia, Bonhomme–Jochmans–Robin, and Gassiat–Le Corff–Lehéricy. The note records exact portions, assumptions and which results are merely context. An author-hosted deconvolution erratum was checked. A 2026 Yeo paper was available only as a primary publisher abstract; both PDF attempts failed, and none of its theorems is used.
+
+**Limitations and failed routes.** General weekly identification is refuted by full-law constructions. A permanent-cohort mean cannot by itself replace a contemporaneous occupancy coefficient. Noise replication alone cannot rule out the noiseless alias. Positive results rely on declared restrictions or an additional short-lag observation experiment. Actual measurement-model validity, regularized finite-sample precision, sufficient types, coverage, centering, independent drift/current, and the mapping to the project's finite empirical ladder remain unestablished. Independent mathematical scrutiny and a complete priority search have not been performed. No result is called novel or a causal mechanism established.
+
+**Validation and operations.** Manual algebra/proof audit and documentation-only checks: branch/status, equation numbering, claim numbering, math delimiters, source-reference coverage, and whitespace/diff scope. The only written outputs are the result note and this handoff entry. The source map was not altered. Documentation commands use the registered interpreter only for text inspection/editing; they do not import any project or model module.
+
+**Explicitly NOT RUN.** Empirical data contact, model code, fits, stochastic simulations, gate evaluations, model health scripts, and additional agents. The owner expressly prohibited these; the usual model health requirement was therefore not run. No defaults, frozen stacks, gates, thresholds, protocols, paper language or agenda were changed. No push.
+
+
+## 2z-bn. 2026-10-12 — REVIEW of Codex's first proof result (§2z-bm), at the owner's request: no gap found in any of its eleven claims. Its two nonidentification results leave the ladder and all observable movement unchanged, so the consequence drawn is a change of estimand, not a better instrument: matched finite-horizon moments and crossings in place of an instantaneous variance. PLANNING ONLY, nothing adopted; no measurement
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; from
+main fd9c2b2 with Codex's commit 8dcf233 merged. One review pass by a
+second model with full context of the debate; not the blind referee session
+of the proof package's README, and not expert certification._
+
+**Read.** `handoff/D1_debate/proof_prompts/PROOF_1_RESULT.md` in full, its
+prompt and its handoff entry. **Review.**
+`handoff/D1_debate/proof_prompts/PROOF_1_REVIEW_CLAUDE.md`.
+
+**What was checked.** Every displayed identity and inequality in Claims 1
+to 11, the audits and §§7–8 was re-derived. Deterministic computation
+(`proof_1_checks_claude.py`, output `proof_1_checks_claude.json`; linear
+algebra and quadrature only) confirms the alias construction of Claim 3 to
+1e-15 for six pairs of sampling interval and rate, the OU decomposition by
+quadrature, the three-date inversion, the two-subtype identity and the
+overlap variance. Not checked: the cited sources; novelty.
+
+**Verdict on the proof.** No gap found under its stated assumptions. Five
+remarks, none an error: (1) the noiseless alias needs a hidden oscillation
+at exactly the sampling frequency, with the level on the opposite side of
+its mean every midweek (half-week autocorrelation −0.99); a bound on
+sub-weekly drift excludes it, as the note says, and the daily panels
+exclude it by observation. (2) Both counterexamples leave the ladder and
+the entire law of named weekly movement unchanged; in the alias pair
+variance and restoring drift are both halved. (3) The finite-lag enclosure
+of Claim 5 is vacuous at lags 13 and 26: with deliberately small constants
+its half-width is 1.7 times the quantity enclosed. (4) In Claim 7 the
+assumption doing the work is "no hidden state within a type", not
+reversibility. (5) Claim 4 needs cohorts fixed before the change starts;
+A9, A10 and §2z-bj all used full-window cohorts, so its decomposition does
+not apply to those statistics as computed.
+
+**What it implies (the reviewer's reading; items 2 and 3 go beyond the
+note and are untested).**
+
+1. The regularity of §2z-bf and §2z-bj stands as a fact about two measured
+   profiles. It is not a measurement of the formula's a over 2S: the
+   statistic is a cohort average with finite-horizon corrections and no
+   occupancy transport, 9% to 46% low under reversion at κ of 0.005 to 0.02
+   and lags 13 to 52, and high under differing endpoint trends.
+2. The instantaneous variance is the wrong target, not only an unreachable
+   one. The ladder depends on variance and restoring drift through their
+   ratio on a common clock. The measurable form is a matched pair at one
+   stated horizon for one cohort fixed beforehand, and at a finite horizon
+   the exact statement is a balance of crossings. The variance-and-drift
+   form is its small-step approximation, off by 11% to 34% in a reverting
+   example at κh = 0.26.
+3. A10's finding that the one-week variance gives a constant 9 to 19 times
+   larger (§2z-bh, "does not appear at all") is, on that reading, the
+   short-horizon balance, where the restoring drift is mostly passing
+   swings decaying. Untested: one-week drift has not been measured. On
+   observed positions the one-week balance must close in a stationary
+   cross-section, so it serves as a check of the instrument.
+4. Claim 8's formula κ = −log(γ₂/γ₁)/Δ explains the recovery failure of
+   §2z-bc: a 1% error in the covariance ratio moves κ by 200% at 0.005,
+   100% at 0.01 and 50% at 0.02. In that class the instantaneous lasting
+   variance inherits the problem, the stationary variance does not, and the
+   ladder depends on neither κ nor a.
+5. Spec-B supplies a noise variance, not a joint error law; by Claim 2 that
+   suffices only with observation error uncorrelated from week to week. The
+   split between lasting and passing movement is by declared time scale and
+   cannot be certified by weekly data in an unrestricted class.
+
+**Proposed.** In the proposed next phase (§2z-bl), step 1's estimands
+become finite-horizon and matched, with the one-week closure as an
+instrument check, and step 2 gains one planted pair (a slow and a fast
+component of equal stationary variance). The page is amended and still
+PROPOSED. No claim language is changed; the wording consequence in item 5
+is flagged for the owner, not acted on.
+
+**Not done.** A blind referee pass; a check of the sources; any
+measurement.
