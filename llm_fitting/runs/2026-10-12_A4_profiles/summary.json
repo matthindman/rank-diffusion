@@ -1,0 +1,248 @@
+{
+ "facebook_a": {
+  "knots": 54,
+  "knots_half": [
+   53,
+   53
+  ],
+  "spec": {
+   "partition": "full",
+   "temper": true,
+   "t_tails": true,
+   "md_vr_long": true,
+   "stat_factor": true,
+   "two_scale": true,
+   "mix_hetero": true,
+   "conditional": null,
+   "spec_b": false
+  },
+  "profiles": {
+   "log_sigma_perm": {
+    "half_corr": 0.7173228303081256,
+    "reliability": 0.8353966041194736,
+    "r2_line": 0.10221103651286523,
+    "r2_quad": 0.11874820026596711,
+    "line_share": 0.12235031362211235,
+    "scaling_exponent": -0.029512134991253196,
+    "sd_across_knots": 0.26984948271842607
+   },
+   "log_sigma_trans": {
+    "half_corr": 0.28197606976726186,
+    "reliability": 0.4399084763235145,
+    "r2_line": 0.5035736520190985,
+    "r2_quad": 0.5603623457072204,
+    "line_share": 1.144723684862039,
+    "scaling_exponent": -0.08242302060784468,
+    "sd_across_knots": 0.352330357546138
+   },
+   "log_sigma_obs": {
+    "half_corr": 0.6373513547924432,
+    "reliability": 0.77851507305008,
+    "r2_line": 0.5891287964192274,
+    "r2_quad": 0.6362318514391538,
+    "line_share": 0.7567339629162584,
+    "scaling_exponent": -0.18265524726677537,
+    "sd_across_knots": NaN
+   },
+   "log_kappa": {
+    "half_corr": 0.2017357428037638,
+    "reliability": 0.3357406052233998,
+    "r2_line": 0.03325982058568,
+    "r2_quad": 0.18190867126939336,
+    "line_share": 0.09906403952405195,
+    "scaling_exponent": 0.017007161665400627,
+    "sd_across_knots": 1.1065797758251565
+   },
+   "log_V": {
+    "half_corr": 0.5321022526567682,
+    "reliability": 0.6946040993465902,
+    "r2_line": 0.10518562223563577,
+    "r2_quad": 0.20097268339575347,
+    "line_share": 0.15143248122863548,
+    "scaling_exponent": -0.07603143164790706,
+    "sd_across_knots": 1.1542624618520436
+   }
+  },
+  "kappa": {
+   "values_used": [
+    0.005,
+    0.01,
+    0.02,
+    0.0325,
+    0.04,
+    0.045,
+    0.0575,
+    0.07
+   ],
+   "share_slowest": 0.3148148148148148,
+   "share_fastest": 0.3148148148148148,
+   "slowest": 0.0050000000000000044,
+   "fastest": 0.06999999999999995,
+   "top_third_share_slowest": 0.2777777777777778,
+   "grid_slowest": 0.0050000000000000044,
+   "grid_fastest": 0.30000000000000004
+  }
+ },
+ "reddit_submissions_long": {
+  "knots": 54,
+  "knots_half": [
+   53,
+   53
+  ],
+  "spec": {
+   "partition": "full",
+   "temper": true,
+   "t_tails": true,
+   "md_vr_long": true,
+   "stat_factor": true,
+   "two_scale": true,
+   "mix_hetero": true,
+   "conditional": null,
+   "spec_b": false
+  },
+  "profiles": {
+   "log_sigma_perm": {
+    "half_corr": 0.5831678310504073,
+    "reliability": 0.7367100563981072,
+    "r2_line": 0.5105594365050254,
+    "r2_quad": 0.5109483303946403,
+    "line_share": 0.6930262890684998,
+    "scaling_exponent": -0.033388847895978124,
+    "sd_across_knots": 0.20153330103991596
+   },
+   "log_sigma_trans": {
+    "half_corr": 0.8051485711593295,
+    "reliability": 0.8920579547003545,
+    "r2_line": 0.6744535265937732,
+    "r2_quad": 0.6861976360495624,
+    "line_share": 0.7560646962901918,
+    "scaling_exponent": -0.1187874444049547,
+    "sd_across_knots": NaN
+   },
+   "log_sigma_obs": {
+    "half_corr": 0.8926128243658272,
+    "reliability": 0.9432598288188415,
+    "r2_line": 0.7455664033054472,
+    "r2_quad": 0.7472909906302971,
+    "line_share": 0.7904146668040047,
+    "scaling_exponent": -0.23250194782937503,
+    "sd_across_knots": NaN
+   },
+   "log_kappa": {
+    "half_corr": -0.43777270685502107,
+    "reliability": -1.557280168332684,
+    "r2_line": 0.26149713416412645,
+    "r2_quad": 0.42509907736289043,
+    "line_share": NaN,
+    "scaling_exponent": 0.05044342758583989,
+    "sd_across_knots": 0.547153478883683
+   },
+   "log_V": {
+    "half_corr": 0.4597187740061664,
+    "reliability": 0.6298730717074745,
+    "r2_line": 0.5419006872976473,
+    "r2_quad": 0.6184185453881117,
+    "line_share": 0.8603331554223304,
+    "scaling_exponent": -0.11722112337779615,
+    "sd_across_knots": 0.7713239717377712
+   }
+  },
+  "kappa": {
+   "values_used": [
+    0.005,
+    0.01,
+    0.02
+   ],
+   "share_slowest": 0.5185185185185185,
+   "share_fastest": 0.2037037037037037,
+   "slowest": 0.0050000000000000044,
+   "fastest": 0.020000000000000018,
+   "top_third_share_slowest": 0.2777777777777778,
+   "grid_slowest": 0.0050000000000000044,
+   "grid_fastest": 0.30000000000000004
+  }
+ },
+ "reddit_comments": {
+  "knots": 55,
+  "knots_half": [
+   54,
+   54
+  ],
+  "spec": {
+   "partition": "full",
+   "temper": true,
+   "t_tails": true,
+   "md_vr_long": true,
+   "stat_factor": true,
+   "two_scale": true,
+   "mix_hetero": true,
+   "conditional": null,
+   "spec_b": false
+  },
+  "profiles": {
+   "log_sigma_perm": {
+    "half_corr": 0.6274734005559365,
+    "reliability": 0.7711012669596871,
+    "r2_line": 0.4147557776217128,
+    "r2_quad": 0.41537102416930105,
+    "line_share": 0.5378745897500854,
+    "scaling_exponent": -0.053714650664617405,
+    "sd_across_knots": 0.3770361248997745
+   },
+   "log_sigma_trans": {
+    "half_corr": 0.8020403585038234,
+    "reliability": 0.8901469434011255,
+    "r2_line": 0.7074666639019007,
+    "r2_quad": 0.7423370898104209,
+    "line_share": 0.7947751426284414,
+    "scaling_exponent": -0.11974982282648532,
+    "sd_across_knots": NaN
+   },
+   "log_sigma_obs": {
+    "half_corr": 0.9330640568489545,
+    "reliability": 0.9653731375771601,
+    "r2_line": 0.5434374314566597,
+    "r2_quad": 0.6049913555966111,
+    "line_share": 0.5629299286497124,
+    "scaling_exponent": -0.14222759423207434,
+    "sd_across_knots": NaN
+   },
+   "log_kappa": {
+    "half_corr": 0.03584813072176603,
+    "reliability": 0.0692150319309598,
+    "r2_line": 0.02970870903658518,
+    "r2_quad": 0.07592349120763053,
+    "line_share": 0.4292233667712361,
+    "scaling_exponent": 0.04121110466052719,
+    "sd_across_knots": 0.9519888624413706
+   },
+   "log_V": {
+    "half_corr": 0.3495382709493541,
+    "reliability": 0.5180116466107565,
+    "r2_line": 0.2843454374122296,
+    "r2_quad": 0.31795012639532017,
+    "line_share": 0.5489170741095172,
+    "scaling_exponent": -0.14864040598976203,
+    "sd_across_knots": 1.2184388518779101
+   }
+  },
+  "kappa": {
+   "values_used": [
+    0.005,
+    0.01,
+    0.02,
+    0.0225,
+    0.0375,
+    0.04,
+    0.07
+   ],
+   "share_slowest": 0.43636363636363634,
+   "share_fastest": 0.12727272727272726,
+   "slowest": 0.0050000000000000044,
+   "fastest": 0.06999999999999995,
+   "top_third_share_slowest": 0.5,
+   "grid_slowest": 0.0050000000000000044,
+   "grid_fastest": 0.30000000000000004
+  }
+ }
+}
