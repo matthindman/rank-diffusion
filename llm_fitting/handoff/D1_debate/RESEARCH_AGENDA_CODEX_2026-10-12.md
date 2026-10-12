@@ -118,3 +118,7 @@ This proposal develops the signed [D1 position](CODEX_SIGNOFF.md) and the subseq
 Background read for the recommendation: the two October 8 research agendas, the October 12 adopted work plan, PROGRAM_STATE, MODEL_STATUS through the relevant A9/A10 entries (§2z-bf and §2z-bh), the signed debate consensus on main, the stochastic-modeling skill and evidence standards, and the tagged literature in the theory note. The proposal builds on completed diagnostic and recovery work rather than treating those earlier plans as unexecuted.
 
 **Documentation provenance:** OpenAI Codex; 2026-10-12; starting commit `6c99858aab71e7e8bde5338b6c59c70f72481725`. Documentation only. No new measurements, scored predictions, fits, simulations, gate evaluations, or data contact. No change to the adopted agenda, frozen defaults, protocols, thresholds, or paper claims.
+
+## 2026-10-12 addendum — proof targets and reusable prompts
+
+The owner subsequently requested precise mathematical targets and prompting conditions informed by recent research. The [proof-work package](proof_prompts/README.md) supplies separate prompts for the estimand/identification bridge, named-type renewal and stability, and finite-sampling collision bias, plus an independent referee prompt. It prioritizes the first target and distinguishes known identities from candidate extensions whose novelty is not established. This is documentation only: no proof agents or experiments have been launched.

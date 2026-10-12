@@ -13,3 +13,7 @@ The scientific result is a clarified recommendation, not mechanism identificatio
 ## Follow-up documentation — 2026-10-12
 
 The owner's requested next-step recommendation is saved as [Proposed next research phase: movement, turnover, and rank structure](RESEARCH_AGENDA_CODEX_2026-10-12.md). It is PLANNING ONLY, with nothing adopted or registered. Its empirical and mathematical support is in [the variance–structure follow-up](variance_structure/REPORT.md), including the [A10 comparison audit](variance_structure/A10_REVIEW.md). This addition is navigation for later work; the completed debate and its signed decision above are unchanged.
+
+## Proof-work documentation — 2026-10-12
+
+The [mathematical proof prompt package](proof_prompts/README.md) records three focused targets, suggested Astra execution conditions, an independent referee prompt, and tagged primary sources on recent proof workflows. It is proposed work, not a claim that new theorems have been proved. No proof run, model change, new data contact, or agenda adoption occurred.
