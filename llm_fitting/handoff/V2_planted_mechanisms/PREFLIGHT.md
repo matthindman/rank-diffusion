@@ -39,3 +39,14 @@
 - The sandbox initially lists the main checkout, not this assigned copy.
   Scoped execution escalation is used for writes/runs here. Nothing is written
   through the data symlink into Claude's checkout or onto the external drive.
+
+- Execution-only refinement before recovery: independent native profiles may run
+  concurrently, bounded by the shared three-slot heavy lock. Each stage waits
+  for all profiles before the next; seed counts and all scientific choices stay
+  as declared. Full parameter files contain empirical seed ladders and remain
+  local, with hashes and compact profile summaries committed for review.
+
+- The queue was rechecked during V2. Main had amended the brief with two
+  additional cases after branching. Its explicit dated-addendum instruction
+  is followed: original running code/choices remain fixed; added cases and
+  predictions are committed before their first run. No A-task results read.

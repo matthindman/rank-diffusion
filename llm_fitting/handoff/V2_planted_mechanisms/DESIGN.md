@@ -232,3 +232,66 @@ high-strength signatures in controlled cases, replacement identity, the
 registered zero-floor/tie mapping, and reporting/statistical calculations.
 The full repository health check passes before commits. Results are committed
 separately from the pre-run design and evaluator code.
+
+## Dated addendum — two additional cases from main, 2026-10-12
+
+Read from main 2016d486, brief amendment fdc7508, after the original design
+and evaluator commits. The amendment explicitly says to add a dated
+addendum if DESIGN is already fixed. At this point the original 57 native
+baseline checks have passed and recovery jobs have begun. No native planted
+diagnostic output or recovery parameter value has been inspected; progress
+logs contain only status/timing. A1/A2 results remain unopened.
+
+The original experiments, strengths, seeds, predictions and stopping rule
+stand. Add these cases, with 20 seeds 1000–1019 per native profile:
+
+1. **Current-rank ladder attraction**, strengths .02 and .10 per week:
+   mu <- mu + strength * (L[rank(mu)] - mu) + original lasting shock.
+   L is the fixed extended period-0 ladder; ranks are among lasting levels
+   before the update. There is no endpoint-home pull in this case.
+   Replacements and all other layers retain their frozen rules.
+2. **Annual cycle**, mean peak amplitudes .5 and 1.5 in log-activity units.
+   Each endpoint receives A = mean_amplitude * exp(-.7²/2 + .7 Z), with
+   Z standard normal, and an independent uniform phase on [0,2pi).
+   Add A*sin(2pi*t/52 + phase) at observation, on top of the baseline.
+   A and phase persist for the endpoint's life and are redrawn at rebirth.
+   The cycle does not enter the latent rank used to index coefficients.
+   Cycle variance is added; it is not compensated by removing baseline noise.
+
+The extra cases use a separately versioned extension of our own independent
+simulator, with a new independent cycle random stream. The original
+simulator and running checkpoints are unchanged. The extension must be
+bit-identical to the original for every original mechanism on controlled
+fixtures; controlled tests must also detect both new mechanisms at high
+strength. This preserves the original native simulator cross-check rather
+than changing its implementation while recovery is running.
+
+Run the same residual functions, envelopes, all-pair separation tables and
+availability rules on the added cases. In addition, fit the S4 estimator to
+all 20 seeds of both added cases and both already-declared random-walk
+strengths. Compare fitted kappa profiles, per-seed group-median kappa and
+grid-edge fractions with the original 20 baseline fits. The fitted home
+reversion is a diagnostic under a misspecified fitted model; the
+current-rank attraction coefficient is not an endpoint-home kappa truth.
+No bias-to-.02/.10 recovery claim will be made for it. Retain all fitted
+profiles and report the same seed-spread separation labels for fitted
+kappa summaries, including every pair. The Gaussian, off, other tail and
+slow-memory cases do not receive additional fits under this addendum.
+
+Additional predictions (original P1–P9 unchanged):
+- P10: high-strength current-rank attraction yields a mean per-seed median
+  middle-group fitted kappa at least 25% below the baseline fit on at least
+  two native profiles.
+- P11: high-strength current-rank attraction is separated from high-strength
+  pure random walk by middle-group robust dispersion at h26 on at least two
+  profiles, using the original >=2 pooled-SD and disjoint-band rule.
+- P12: for the high-amplitude cycle, middle block13 momentum slope at gap4
+  exceeds that at gap2 by at least .5 on at least two profiles. This is the
+  predeclared quarter-year/half-year/full-year signature.
+- P13: the high-amplitude cycle raises the mean per-seed median middle
+  fitted kappa by at least .005 above the baseline fitted value on at least
+  two profiles.
+
+All four predictions can fail. Native profile/length confounding remains;
+a distinguishable fixed-parameter case is not nuisance-robust identification.
+The added fits and diagnostics are exploratory and consume no movement gate.
