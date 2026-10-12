@@ -6,6 +6,7 @@ Design and predictions: llm_fitting/runs/2026-10-12_A1A2_anatomy/DESIGN.md.
     python llm_fitting/phase1_anatomy.py a1 facebook_a
     python llm_fitting/phase1_anatomy.py a2 reddit_comments_ext
     python llm_fitting/phase1_anatomy.py report
+    python llm_fitting/phase1_anatomy.py benchmark
 """
 import json
 import sys
@@ -170,16 +171,54 @@ def report():
                 lines.append(f"  {key:16s} data {ev:.5f}  sim {sv.mean():.5f} "
                              f"[q10 {np.quantile(sv, .1):.5f}, q90 {np.quantile(sv, .9):.5f}]"
                              f"  data/sim {ratio:.2f}")
-        j = _join(c["emp"]["dispersion"], [s["dispersion"] for s in c["sims"]],
-                  ("group", "h"), "robust_var")
-        lines.append("robust spread of h-week changes: data / sim mean (sim SD)")
-        for g in ("head", "middle", "shell"):
-            cells = [f"h{h}: {v['emp']:.3f}/{v['sim']:.3f} ({v['sd']:.3f})"
-                     for (gg, h), v in j.items() if gg == g]
-            lines.append(f"  {g:7s} " + "  ".join(cells))
+        e, sm = c["emp"]["main"], [s["main"] for s in c["sims"]]
+        gap = e["rate"] - np.mean([x["rate"] for x in sm])
+        lines.append("share of the shortfall (data rate minus sim rate) by class: " + ", ".join(
+            f"{k} {100 * (e['rate_' + k] - np.mean([x['rate_' + k] for x in sm])) / gap:.0f}%"
+            for k in ("slide", "excursion", "lasting", "censored")))
+        lines.append("share of data events by class: " + ", ".join(
+            f"{k} {100 * e['rate_' + k] / e['rate']:.1f}%"
+            for k in ("slide", "excursion", "lasting", "censored"))
+            + f"; repeat exits {100 * e['rate_repeat'] / e['rate']:.0f}%")
+        for key, label in (("robust_var", "robust spread (MAD^2)"), ("var", "variance")):
+            j = _join(c["emp"]["dispersion"], [s["dispersion"] for s in c["sims"]],
+                      ("group", "h"), key)
+            lines.append(f"{label} of h-week changes, full-window universe: "
+                         f"data / sim mean (sim SD)")
+            for g in ("head", "middle", "shell"):
+                cells = [f"h{h}: {v['emp']:.3f}/{v['sim']:.3f} ({v['sd']:.3f})"
+                         for (gg, h), v in j.items() if gg == g]
+                lines.append(f"  {g:7s} " + "  ".join(cells))
+            mid = {h: v for (gg, h), v in j.items() if gg == "middle"}
+            if 26 in mid and 78 in mid:
+                rs = [next(q[key] for q in s["dispersion"] if q["group"] == "middle" and q["h"] == 78)
+                      / next(q[key] for q in s["dispersion"] if q["group"] == "middle" and q["h"] == 26)
+                      for s in c["sims"]]
+                lines.append(f"  middle, 78 weeks over 26: data {mid[78]['emp'] / mid[26]['emp']:.2f}, "
+                             f"sim {np.mean(rs):.2f} (SD {np.std(rs, ddof=1):.2f}; a random walk gives 3)")
     text = "\n".join(lines)
     (OUT / "report_tables.txt").write_text(text + "\n")
     print(text)
+
+
+def benchmark(K=3_500, seeds=5):
+    """q99/q90 (entity scale, middle group) for a Gaussian random walk at each
+    A1 panel length.  The large-sample value is 1.57; with each endpoint's
+    scale estimated from overlapping changes it is higher and rises with h."""
+    out = {}
+    for T in (86, 136, 212):
+        vals = {}
+        for seed in range(seeds):
+            rng = np.random.default_rng(seed)
+            home = np.sort(rng.normal(0, 1.5, K))[::-1]
+            X = home[None, :] + np.cumsum(rng.normal(0, 0.05, (T, K)), axis=0)
+            R = (-X).argsort(axis=1).argsort(axis=1) + 1.0
+            for r in ra.tails_by_horizon(R, X, K):
+                if r["group"] == "middle" and r["mode"] == "entity":
+                    vals.setdefault(r["h"], []).append(r["r9990"])
+        out[T] = {h: round(float(np.mean(v)), 3) for h, v in vals.items()}
+        print(T, out[T])
+    (OUT / "gaussian_walk_benchmark.json").write_text(json.dumps(out, indent=1))
 
 
 if __name__ == "__main__":
@@ -188,5 +227,7 @@ if __name__ == "__main__":
         a1(sys.argv[2])
     elif cmd == "a2":
         a2(sys.argv[2])
+    elif cmd == "benchmark":
+        benchmark()
     else:
         report()

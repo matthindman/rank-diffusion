@@ -5780,3 +5780,224 @@ bounded. **Files.** `llm_fitting/phase1_a5.py`;
 `llm_fitting/runs/2026-10-12_A5_full_amplitude/` (DESIGN.md, cells,
 summary.json, REPORT.md). Command: `python llm_fitting/phase1_a5.py run`,
 then `report`.
+
+## 2z-at. 2026-10-12 — EXPLORATORY MEASUREMENT (work plan A4): the band profiles of the three volatilities reproduce between halves of the entities and are not straight lines in rank; the reversion-rate profile does not reproduce and sits on its slowest grid value at 31–52% of knots. Four of eight sub-predictions failed; nothing adopted, no simulation, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; design,
+predictions and runner committed at a2728b7 before any fit, results at
+adec301._
+
+**Tier.** Exploratory diagnostic on DEVELOPMENT data; fits only. Phase 1 of
+the work plan adopted in §2z-ar. First measurement against open residual 7
+(parsimony of the band profiles).
+
+**Question.** How much of each fitted profile over about 55 rank knots is
+structure that reproduces, how much of that a low-dimensional form
+captures, and whether κ is identified band by band. Nine fits of the frozen
+structure stacks: FB Era A, long submissions and comments, each on the full
+universe and on two random halves of the entities.
+
+**Result.** "Reliability" is the half-sample correlation of a profile
+across knots, stepped up to full size. "Line share" is the R² of a straight
+line in the rank coordinate over the reliability.
+
+| panel | profile | reliability | line share | scaling exponent |
+|---|---|---|---|---|
+| FB Era A | log σ_perm | 0.84 | 0.12 | −0.03 |
+| | log σ_trans | 0.44 | 1.14 | −0.08 |
+| | log σ_obs | 0.78 | 0.76 | −0.18 |
+| | log κ | 0.34 | 0.10 | |
+| | log V | 0.69 | 0.15 | |
+| Reddit submissions, long | log σ_perm | 0.74 | 0.69 | −0.03 |
+| | log σ_trans | 0.89 | 0.76 | −0.12 |
+| | log σ_obs | 0.94 | 0.79 | −0.23 |
+| | log κ | none (half-sample correlation −0.44) | | |
+| | log V | 0.63 | 0.86 | |
+| Reddit comments | log σ_perm | 0.77 | 0.54 | −0.05 |
+| | log σ_trans | 0.89 | 0.79 | −0.12 |
+| | log σ_obs | 0.97 | 0.56 | −0.14 |
+| | log κ | 0.07 | | |
+| | log V | 0.52 | 0.55 | |
+
+Share of knots with κ at the slowest grid value, 0.005: FB 31%, long
+submissions 52%, comments 44% (50% in the top third of knots). No knot is at
+the fastest value; the largest κ used is 0.07 on FB and comments and 0.02 on
+long submissions, where κ takes three values. Seen while tabulating and not
+in the design: σ_obs is exactly zero at 15 of 54 knots on FB, 18 of 54 on
+long submissions and 21 of 55 on comments.
+
+**What the measurements show.**
+
+1. The volatility profiles are mostly reproducible structure (0.74–0.97,
+   except σ_trans on FB at 0.44).
+2. A straight line in rank captures 54–79% of the reproducible share for
+   five of the nine volatility profiles and 12% for σ_perm on FB. Post hoc,
+   polynomials of up to six parameters do not close the gap: for σ_perm on
+   FB the R² stays at 0.13 against a reliability of 0.84.
+3. κ is not identified band by band. V = σ_perm²/(2κ) reproduces better
+   than κ on every panel.
+4. Volatility depends weakly on size: exponents −0.03 to −0.23, far from
+   the −0.5 of counting noise.
+
+**Predictions (DESIGN.md), scored.** (1) A line reaches 0.8 of reliability
+for σ_trans and σ_obs on all three panels: FAILED (one of six). (2) A line
+reaches 0.6 of reliability for σ_perm: FAILED on two panels; κ reliability
+under 0.5 on at least two panels: HELD. (3) σ_obs exponent between −0.6 and
+−0.4 on the Reddit panels: FAILED (−0.23, −0.14). (4) σ_perm and σ_trans
+exponents within 0.1 of each other: HELD. (5) At least 30% of knots at a
+grid edge, and at least half of the top third on comments at the slowest
+value: HELD. (6) log V more reliable than log κ: HELD.
+
+**Verdict.** No adoption rule applies. For the plan: candidate C-P as
+written (each profile replaced by a scaling curve of a few numbers) is not
+licensed. What is licensed is narrower: replacing κ(z) by one or two
+numbers, and stating transport between eras in V. The head κ of 0.0050 used
+as the reference in §2z-q is the slowest value the grid allows, so the 4–8×
+"shift" in κ recorded there (open residual 3) is at least partly a boundary
+estimate moving off its boundary. Fewer, wider bands remain an open form of
+compression.
+
+**Not run.** Any refit with fewer bands; V by era on the extension panel;
+the sensitivity of each estimate to each moment. **Files.**
+`llm_fitting/phase1_a4.py`; `llm_fitting/runs/2026-10-12_A4_profiles/`
+(DESIGN.md, summary.json, posthoc_polynomials.json, REPORT.md). Command:
+`python llm_fitting/phase1_a4.py`.
+
+## 2z-au. 2026-10-12 — EXPLORATORY MEASUREMENT (work plan A1, A2): the missing departures are repeat crossings by endpoints already at the boundary, not sudden lasting exits, which the simulation over-produces; an endpoint's own changes are fat-tailed at every horizon and the simulation's are near Gaussian; the data spreads faster with horizon. Four of ten predictions held in full, five in part, one failed; nothing adopted, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; statistics,
+tests, design and predictions committed at f284b9b before any cell; results
+committed with this entry._
+
+**Tier.** Exploratory diagnostic on DEVELOPMENT data, in sample for A1; A2
+uses the train-only cohort and scoring windows of §2z-ac and §2z-ae P7. Not
+yet interpretable as mechanism evidence: the planted-mechanism study that
+says which of these statistics can separate the candidates (Codex, V2) has
+not run.
+
+**Question.** Open residuals 1 and 4. A1: do the fat tails of movement fade
+with horizon (passing component) or persist? A2: are the departures the
+simulation fails to make slow slides, short excursions or sudden lasting
+exits?
+
+**Method.** `llm_fitting/residual_anatomy.py` (known-answer tests in
+`tests/test_residual_anatomy.py`), one code path for data and simulation.
+A1: FB Era A, long submissions, comments; full-window universe; frozen
+structure stacks; 20 seeds; h-week changes net of the common factor, scaled
+by each endpoint's own robust scale. A2: comments extension and long
+submissions with the settings of `exit_audit.py --aligned` and `--p7`; 30
+seeds; each exit of the cohort (train permanent rank ≤ K/2) classed as a
+slide (median rank over the previous 13 weeks beyond 0.75 K), an excursion
+(back within 13 weeks), a lasting exit, or censored.
+
+**Result, A1.** q99/q90 of an endpoint's own |h-week change|, middle rank
+group; "walk" is a Gaussian random walk of the same length.
+
+| panel | h | data | simulation (seed SD) | walk |
+|---|---|---|---|---|
+| FB Era A | 1 / 13 / 26 | 2.22 / 1.92 / 1.90 | 1.69 / 1.65 / 1.65 (0.01) | 1.63 / 1.72 / 1.83 |
+| Long submissions | 1 / 13 / 52 | 2.13 / 2.17 / 2.06 | 1.73 / 1.63 / 1.63 (0.01) | 1.59 / 1.64 / 1.76 |
+| Comments | 1 / 13 / 52 | 1.90 / 1.89 / 1.85 | 1.68 / 1.62 / 1.64 (0.01) | 1.60 / 1.68 / 1.82 |
+
+Fraction of a big one-week move (beyond 2 robust SDs) still in place after
+13 weeks, middle group, data / simulation: rises 0.49 / 0.55, 0.60 / 0.60,
+0.56 / 0.58; drops 0.58 / 0.47, 0.56 / 0.47, 0.54 / 0.50 (FB, submissions,
+comments).
+
+**Result, A2.** Rates per cohort-week at risk; brackets are the 10th–90th
+percentile over seeds.
+
+| | comments ext., data | simulation | long submissions, data | simulation |
+|---|---|---|---|---|
+| all exits | 0.00800 | 0.00350 [0.00283, 0.00410] | 0.00851 | 0.00311 [0.00214, 0.00408] |
+| slides | 0.00512 | 0.00156 | 0.00584 | 0.00175 |
+| excursions | 0.00269 | 0.00142 | 0.00248 | 0.00114 |
+| lasting exits | 0.00011 | 0.00040 [0.00027, 0.00050] | 0.00010 | 0.00016 [0.00006, 0.00026] |
+| first exits | 0.00161 | 0.00127 | 0.00180 | 0.00089 |
+| repeat exits | 0.00639 | 0.00223 | 0.00671 | 0.00221 |
+| back inside within 13 weeks | 0.950 | 0.830 | 0.936 | 0.903 |
+| within-train split, all exits | 0.00832 | 0.00343 | 0.00642 | 0.00360 |
+
+Spread of h-week changes, middle group, full-window universe, data /
+simulation at h = 13, 26, 52, 78. Robust (MAD²): comments extension 0.181 /
+0.300, 0.266 / 0.420, 0.417 / 0.574, 0.671 / 0.677; long submissions 0.081 /
+0.117, 0.144 / 0.177, 0.275 / 0.274, 0.464 / 0.352. Variance: comments
+extension 0.385 / 0.417, 0.521 / 0.579, 0.704 / 0.785, 1.036 / 0.923; long
+submissions 0.236 / 0.250, 0.337 / 0.364, 0.508 / 0.542, 0.751 / 0.678.
+
+**What the measurements show.**
+
+1. The departure deficit is not a deficit of sudden lasting exits. They are
+   1.2–1.4% of the data's events, and the simulation makes 1.6 to 3.6 times
+   as many as the data has.
+2. Slides are 64–69% of the data's events and 76–79% of the shortfall. Four
+   in five data events are repeat exits. First exits are 1.3 times the
+   simulation's on comments and 2.0 times on submissions; repeat exits are
+   2.9 and 3.0 times.
+3. On comments the deficit is as large inside the training window (2.42×)
+   as in the recorded split (2.29×). On submissions it falls from 2.74× to
+   1.79×.
+4. The data spreads faster with horizon. The simulation's variance is
+   within 12% of the data's to 52 weeks and 10–21% short at 78 in every
+   rank group on both panels. In the robust measure the simulation is 23–66%
+   too wide at 13 and 26 weeks and then nearly stops growing, while the
+   data's grows about in proportion to the horizon.
+5. An endpoint's own changes are fat-tailed at every horizon measured (at
+   least 20 seed SDs above the simulation in the middle group at each one).
+   The simulation's are 0.06–0.14 above the Gaussian-walk value at one
+   week; the data's are 0.30–0.59 above. With endpoints pooled instead, the
+   one-week gap shrinks from 31% to 14% on FB and from 23% to 6% on
+   submissions, and is unchanged on comments (13%, 14%).
+6. Big drops are kept 0.04–0.11 more than simulated after 13 weeks on every
+   panel; big rises are not kept more on any.
+
+**Predictions (DESIGN.md), scored.** A1: (1) one-week excess of 5–20% on all
+three panels: direction HELD, size FAILED on two (31%, 23%, 13%). (2) Excess
+at 13 weeks at least as large as at one week on FB and comments: HELD on
+comments (0.22 → 0.27), FAILED on FB (0.53 → 0.27, then 0.25 at 26 weeks);
+simulation within 0.10 of the Gaussian-walk value at 13 weeks: HELD. The
+stated kill condition, an excess gone by about 4 weeks, was not met on any
+panel. (3) Big moves keep at least 0.05 more in the data on two panels: HELD
+for drops, FAILED for rises. (4) Drops kept more than rises in the data on
+FB and comments, and no asymmetry in the simulation: HELD on FB, FAILED on
+comments; the simulation has the opposite asymmetry on all three panels,
+which was not anticipated. A2: (1) recorded rates reproduce: HELD, and the
+data rate equals `exit_audit.score_matrix` exactly. (2) Slides more than
+half of events: HELD. (3) At least 60% of the shortfall in slides plus
+lasting exits: HELD, all of it slides. (4) Lasting exits under-produced by
+more than excursions: FAILED on both panels; they are over-produced. (5)
+Within-train ratio smaller and above 1.3: HELD on submissions, FAILED on
+comments. (6) Spread at 78 weeks over 26 larger in the data: HELD (robust
+2.52 against 1.61 and 3.21 against 1.98; variance 1.99 against 1.59 and
+2.23 against 1.87).
+
+**Verdict.** No adoption rule applies. For the plan: candidate C-T (fat
+tails in the lasting shocks) loses the departure argument it was proposed
+on, since the data has fewer sudden lasting exits than the simulation. Its
+remaining support, tails that persist with horizon, would also follow from
+an endpoint's volatility changing over time; V2 plants both. Findings 2 and
+4 point at the lasting level and at reversion to a fixed home: in the data
+an established endpoint can move to the boundary and stay there. With §2z-at
+(κ at its slowest grid value in a third to a half of bands) this makes the
+form of the lasting layer the leading question for decision point D1.
+Finding 5 is consistent, on FB and submissions, with the conjecture of
+§2z-as that the amplitude spread s absorbs tail weight that sits inside
+endpoints; it is not established.
+
+**Not shown.** Whether slides are slow drift or one step down followed by
+flicker at the boundary: the classes count events, and one relocation makes
+many. Whether the persistent tails are lasting shocks or changing
+volatility. Why the simulation keeps rises more than drops (possibly
+endpoints that stay down leaving the recorded range; not checked). Small
+moves on the two Reddit panels show a steady loss of ground by the middle
+group relative to the panel mean, four to five times the simulation's;
+recorded as an observation beside §2p.
+
+**Not run.** Any gate evaluation; any model change; FB in A2 (no scoring
+window at 86 weeks); the 104-week horizon. Follow-up measurements are
+designed separately as A7. **Files.** `llm_fitting/residual_anatomy.py`,
+`tests/test_residual_anatomy.py`, `llm_fitting/phase1_anatomy.py`;
+`llm_fitting/runs/2026-10-12_A1A2_anatomy/` (DESIGN.md, cells, logs,
+report_tables.txt, gaussian_walk_benchmark.json, REPORT.md). Commands:
+`python llm_fitting/phase1_anatomy.py a1 <panel>`, `a2 <panel>`, `report`,
+`benchmark`.

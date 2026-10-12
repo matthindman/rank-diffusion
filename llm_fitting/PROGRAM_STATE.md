@@ -34,7 +34,8 @@ diagnostics on DEVELOPMENT data do not wait for it.
 background, and replaces §2x in that role. Claude leads and Codex/Astra
 validates independently under `coordination/PROTOCOL.md`; Codex's tasks
 are in `coordination/QUEUE.md`. Phase 1 has no model code and no candidate
-gate evaluations.
+gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
+(A1, A2).
 
 ## Evidence to date
 
@@ -53,9 +54,13 @@ gate evaluations.
    permanent rank ≤ K/2, weekly exits from the top-K are under-produced
    2.3× on comments and 2.74× on submissions (3.3–3.4× for ≤ K/4). Empirical
    events are about 98.6% crossings by still-observed entities; simulated
-   ones are 14–52% permanent deaths. Whether crossings are short
-   excursions, slow drift toward the boundary, or one-way declines is
-   unmeasured (§2z-ac, §2z-ae P7, §2z-ai).
+   ones are 14–52% permanent deaths (§2z-ac, §2z-ae P7, §2z-ai). Measured
+   2026-10-12 (§2z-au): 64–69% of the data's events are exits by endpoints
+   already sitting near the boundary, four in five are repeat exits, and
+   sudden lasting exits are 1.2–1.4% of events and over-produced by the
+   simulation. On comments the deficit is as large inside the training
+   window. Whether a slide is slow drift or one step down followed by
+   flicker is not yet measured.
 2. **Head share.** S(1) over-produced on FB Era A (about 2.7×), on the
    comments extension, and on the Instagram rescue; under-produced on long
    submissions. The sign difference shows heterogeneity and does not isolate
@@ -65,7 +70,10 @@ gate evaluations.
    panel length in question (§2z-q, §2z-s, §2z-ae, §2z-ai).
 4. **No endpoint-level predictive score exists.** The gate and
    `--dist-scores` both score pooled displacement distributions; frozen
-   parameters under-disperse upper movement tails (§2z-q, §2z-ai).
+   parameters under-disperse upper movement tails (§2z-q, §2z-ai). An
+   endpoint's own changes are fat-tailed at every horizon from 1 to 52
+   weeks and the simulation's are near Gaussian; the simulation's variance
+   is 10–21% short at 78 weeks (§2z-au).
 5. **VR13** slightly too persistent in simulation; partly a property of the
    scored functional (§2v, §2y, §2z-ae P9).
 6. **Reversion-rate heterogeneity** κ_i is real (log-SD about 0.30) and did
@@ -74,7 +82,11 @@ gate evaluations.
    about 55 knots have never been tested against a low-dimensional form
    (§1, §2z-ai). A first measurement on the component side exists:
    the forward ladder of §2z-ap. It does not test the band profiles, and it
-   has no leave-one-out.
+   has no leave-one-out. The band profiles were measured on 2026-10-12
+   (§2z-at): the volatility profiles reproduce and are not straight lines
+   in rank; the κ profile does not reproduce and sits on its slowest grid
+   value at 31–52% of knots, so part of the κ shift in residual 3 is a
+   boundary estimate.
 8. **Breadth.** Two platforms and three metrics, plus a censored Instagram
    demonstration.
 
@@ -105,9 +117,10 @@ By keyword search of MODEL_STATUS on 2026-10-08 (verify before relying on
 it): seasonality or annual periodicity; cross-sectional dependence beyond
 the single common factor; within-entity volatility clustering; whether large
 drops sit in item supply or in per-item engagement on FB and Reddit (the
-count columns exist); dispersion beyond 52 weeks; excursion durations and
-return times; recovery of the full pipeline on its own simulated data; a
-moment-sensitivity exhibit; the gate's ability to reject a wrong model.
+count columns exist); recovery of the full pipeline on its own simulated
+data (Codex task V2); a moment-sensitivity exhibit; the gate's ability to
+reject a wrong model. Dispersion to 78 weeks and return times of departures
+were measured in §2z-au.
 
 ## Data
 
