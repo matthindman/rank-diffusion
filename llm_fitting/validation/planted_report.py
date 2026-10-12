@@ -157,6 +157,13 @@ def main():
     text+="Launchers use caffeinate and heavy_lock. Native profiles run through the shared lock; each seed writes an atomic, source-identified checkpoint. "
     text+="Full empirical seed ladders and large per-seed fitted objects stay local. Compact seed evidence, source/input hashes, tables and logs are provided. "
     text+="A1/A2 real-panel findings were not opened before this handoff.\n\n"
+    profiles=[]
+    for panel in pc.PANELS:
+        d=pc.read(out/panel/"parameters.json")
+        profiles.append(dict(panel=panel,weeks=d["T"],K=d["K"],slots=d["parameters"]["N"]))
+    text+=md(pd.DataFrame(profiles))+"\n\n"
+    text+="These are three native profile/length combinations. Counts of saved cells include repeated uses of the same baseline paths; "
+    text+="they are not counts of independent datasets.\n\n"
     text+="## Baseline cross-check\n\n"
     text+="Twenty production seeds 0–19 and twenty independent seeds 1000–1019 per profile; 19 macro statistics each. "
     text+="All 57 pass the predeclared 20,000-permutation, Bonferroni .05 family rule. Minimum adjusted p is 1 on every profile. "
@@ -240,7 +247,9 @@ def main():
     text+="because attempt filenames collided; panel/stage/PID names fixed this, and the worker restarted. "
     text+="The comments worker was later restarted after an exact eligibility optimization passed native and controlled equivalence checks. "
     text+="Complete seed cells were retained; fits lacking their companion diagnostic were archived unused and replayed. "
-    text+="A redundant queued long-panel diagnostics request was cancelled before execution. Immutable STARTED records from terminated processes "
+    text+="A redundant queued long-panel diagnostics request was cancelled before execution. After all 120 comments added-case fits completed, "
+    text+="its automatic follow-on diagnostic worker was cancelled while waiting on the separate original-diagnostics worker's stage lock, "
+    text+="releasing a shared compute slot without cancelling scientific work. Immutable STARTED records from terminated processes "
     text+="are resolved by separate attempt-event records, not rewritten as successful. No incomplete seed or partial aggregate is interpreted. "
     text+="The eligibility wrapper preserves the union of the two declared cohorts, original absence floor, identity order and every numeric diagnostic/count. "
     text+="Runtime wrapper hashes identify mixed execution versions; the scientific producer hashes are constant. "

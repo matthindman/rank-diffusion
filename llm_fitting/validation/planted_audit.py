@@ -21,14 +21,14 @@ def audit(out):
     wrappers={p:historical_hashes(p) for p in (
         "llm_fitting/validation/planted_warning_guard.py",
         "llm_fitting/validation/planted_efficient_run.py")}
-    counts={};failed=[];used_wrappers={}
+    counts={};failed=[];used_wrappers={};risk_counts={};zero_risk=[]
     for panel in pc.PANELS:
         phash=pc.digest(out/panel/"parameters.json")
         plans=[("crosscheck",[(c,s) for c,ss in (("production",range(20)),("independent",range(1000,1020))) for s in ss]),
                ("recovery",[(c,s) for c in ("baseline","zero_temperament") for s in range(1000,1020)]),
                ("diagnostics",[(c,s) for c in study.CONDITIONS+extension.ADDITIONS for s in range(1000,1020)]+[("calibration",s) for s in range(2000,2039)]),
                ("extension_fits",[(c,s) for c in extension.FIT_CONDITIONS for s in range(1000,1020)])]
-        counts[panel]={}
+        counts[panel]={};risk_counts[panel]=[]
         for stage,jobs in plans:
             n=0
             for c,seed in jobs:
@@ -44,6 +44,11 @@ def audit(out):
                     w=d[key]
                     if w["sha256"] not in wrappers.get(w["path"],{}):raise RuntimeError(f"Unknown wrapper: {path}")
                     used_wrappers[w["sha256"]]=dict(path=w["path"],commit=wrappers[w["path"]][w["sha256"]])
+                if stage=="diagnostics" and d.get("status")=="RAN-OK":
+                    raw=d["result"]["raw"]
+                    risk=(int(raw["departure"][0]["exposure"]),int(raw["fate"][0]["n"]))
+                    risk_counts[panel].append(risk)
+                    if min(risk)==0:zero_risk.append(str(path))
                 n+=1
             actual={p.name for p in (out/panel/stage).glob("*.json")}
             expected_names={f"{c}_{seed:04d}.json" for c,seed in jobs}
@@ -67,6 +72,8 @@ def audit(out):
     # is the explicit interruption event, never an invented successful completion.
     return dict(status="COMPLETE_WITH_FAILED_SEEDS" if failed else "PASS",
                 counts=counts,failed_seed_records=failed,wrappers=used_wrappers,attempts=attempts,
+                minimum_risk_counts={p:dict(departure_exposure=min(a[0] for a in v),fate_cohort=min(a[1] for a in v)) for p,v in risk_counts.items()},
+                zero_risk_cells=zero_risk,
                 eligibility_core_matches_native_tested_version=True,
                 eligibility_equivalence_sha256=pc.digest(out/"eligibility_equivalence.json"),
                 audit_sha256=pc.digest(__file__),
