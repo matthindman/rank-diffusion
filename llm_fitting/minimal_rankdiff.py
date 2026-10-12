@@ -1136,11 +1136,17 @@ def _tdraw(rng, df: float, n: int) -> np.ndarray:
 
 def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=True,
              factor_head_damp: float = 1.0, kappa: float | None = None, track: int = 4000,
-             top_record: int | None = None, track_ids: bool = False) -> dict:
+             top_record: int | None = None, track_ids: bool = False,
+             seed_ladder: np.ndarray | None = None) -> dict:
     # kappa: None -> per-knot MD-estimated kappa_z when available, else p.kappa
+    # seed_ladder (2026-10-12, owner-approved opt-in, MODEL_STATUS 2z-ba): sorted
+    # log values to seed the homes from instead of p.w0 (the first week's
+    # observed ladder); see time_median_ladder.  None = p.w0, the committed
+    # behaviour.  Only this simulator takes it: p.w0, and so the gate's
+    # calibration step, are untouched.
     rng = np.random.default_rng(seed)
     N = p.N
-    mu = _extend(p.w0, N)                       # permanent level
+    mu = _extend(p.w0 if seed_ladder is None else np.asarray(seed_ladder, dtype=float), N)  # permanent level
     home = mu.copy()                            # OU anchor (rank "home")
     xi = np.zeros(N)                            # transitory deviation
     ids = np.arange(N, dtype=np.int64)
@@ -1261,6 +1267,24 @@ def simulate(p: RankParams, T: int, seed: int = 0, *, use_factor=True, use_exit=
     if tids is not None:
         out["tids"] = tids
     return out
+
+
+def time_median_ladder(df: pd.DataFrame, n: int | None = None) -> np.ndarray:
+    """The rank-size ladder averaged over the window: at each rank, the median
+    over weeks of the value observed at that rank that week.
+
+    An alternative to seeding the structure simulation from the first week's
+    sorted observed values (`p.w0`), which carries that one week's
+    idiosyncrasy into every simulated week (MODEL_STATUS 2o, 2z-av, 2z-az).
+    It is a statistic of the panel with nothing chosen.  Length: the smallest
+    weekly count, capped at n.  Like any observed ladder it still contains
+    the widening that noise adds to sorted values.
+    """
+    weeks = [np.sort(g.to_numpy(dtype=float))[::-1] for _, g in df.groupby("period")["X"]]
+    L = min(len(w) for w in weeks)
+    if n is not None:
+        L = min(L, int(n))
+    return np.median(np.vstack([w[:L] for w in weeks]), axis=0)
 
 
 def _extend(w0: np.ndarray, N: int) -> np.ndarray:
@@ -1425,7 +1449,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
                  stat_factor: bool = False, two_scale: bool = False,
                  mix_hetero: bool = False, mix_b_fix: float | None = None,
                  md_vr_long: bool = False, nnls: bool = True,
-                 eul_level: bool = False, **sim_kw) -> dict:
+                 eul_level: bool = False, seed_ladder: str = "first-week",
+                 **sim_kw) -> dict:
     # kappa None: hand-set legacy default 0.15 UNLESS the MD estimator supplies
     # a per-knot kappa_z (then the simulator uses that -- one less knob)
     if kappa is None and md_lags is None:
@@ -1449,7 +1474,8 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
             + (" stat-factor" if stat_factor else "")
             + (" two-scale" if two_scale else "")
             + (" mix-b" if mix_hetero else "")
-            + (" NNLS" if nnls else "") + (" eul-level" if eul_level else ""))
+            + (" NNLS" if nnls else "") + (" eul-level" if eul_level else "")
+            + (" seed=time-median" if seed_ladder == "time-median" else ""))
     print(f"\n{'='*72}\n{name.upper()}  | periods={T} mean_N={mean_n:.0f} "
           f"entities={df['entity_id'].nunique():,} top_k={top_k}{uni}{opts}\n{'='*72}")
 
@@ -1494,6 +1520,11 @@ def run_platform(name: str, reps: int = 5, obs_frac: float = 0.4, kappa: float |
     if t_tails:
         print(f"  transitory tails: t_df = {p.t_df:.1f}"
               + ("  (Gaussian -- no excess within-entity kurtosis)" if not np.isfinite(p.t_df) else ""))
+    if seed_ladder == "time-median":
+        # opt-in: homes seeded from the window's median ladder, not the first week's
+        sim_kw = dict(sim_kw, seed_ladder=time_median_ladder(df, int(np.asarray(p.w0).size)))
+    elif seed_ladder != "first-week":
+        raise ValueError(f"unknown seed_ladder {seed_ladder!r}")
     sims = [diagnostics(*_sim_struct(simulate(p, T, seed=s, kappa=kappa,
                                               top_record=score_k, **sim_kw)),
                         top_k, score_k=score_k)
@@ -1574,6 +1605,12 @@ if __name__ == "__main__":
     ap.add_argument("--md-vr-long", action="store_true",
                     help="extend the D(h) moment set to h=26,52 (long panels; separates "
                          "a directional slow component from medium wander -- see 2p)")
+    ap.add_argument("--seed-ladder", choices=("first-week", "time-median"),
+                    default="first-week",
+                    help="structure simulation only: seed the homes from the first "
+                         "week's sorted observed values (default, committed) or from "
+                         "the median over weeks of the value at each rank (opt-in, "
+                         "MODEL_STATUS 2z-ba); the gate is unaffected")
     ap.add_argument("--stat-factor", action="store_true",
                     help="STATIONARY common factor: apply F as a measured AR(1) level at "
                          "observation instead of integrating it into mu (the empirical "
@@ -1629,4 +1666,5 @@ if __name__ == "__main__":
                      mix_b_fix=args.mix_b_fix, md_vr_long=args.md_vr_long,
                      nnls=not args.legacy_clip, eul_level=args.eul_level,
                      use_factor=not args.no_factor, use_exit=not args.no_exit,
-                     factor_head_damp=args.factor_head_damp)
+                     factor_head_damp=args.factor_head_damp,
+                     seed_ladder=args.seed_ladder)

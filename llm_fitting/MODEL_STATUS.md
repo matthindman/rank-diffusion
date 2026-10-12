@@ -6525,3 +6525,36 @@ simulation or gate evaluation belongs to the debate.
 **Still open from the decision document.** The comparison margin; whether
 the 80-seed values become the recorded reference gates; the wording around
 b = 1; candidates 3 and 4.
+
+## 2z-bb. 2026-10-12 — IMPLEMENTED, opt-in (owner-approved in §2z-ba): `--seed-ladder time-median` seeds the homes of the structure simulation from the window's median ladder. Default unchanged and bit-identical; the gate cannot reach it. No stack re-frozen
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; code,
+tests and this entry in one commit._
+
+**What changed.** `minimal_rankdiff.py`: `time_median_ladder(df, n)` (at
+each rank, the median over weeks of the value observed at that rank);
+`simulate(..., seed_ladder=None)` uses a given ladder in place of `p.w0`;
+`run_platform(seed_ladder="first-week" | "time-median")` and the
+command-line flag `--seed-ladder`. `p.w0` is not altered, so the cohort
+simulators behind the gate and its calibration step, which read `p.w0`,
+are untouched; a test asserts none of them takes the option.
+
+**Verification.** `tests/test_seed_ladder.py` (4 tests): output identical
+with the option absent, `None`, or given `p.w0`; with a ladder given, output
+identical to simulating the fitted parameters with that ladder as `w0`,
+which is how §2z-az was run; known answers for the helper; the gate
+functions have no such argument. On the real panels the helper returns
+exactly the ladder used in §2z-az (FB and short submissions, maximum
+difference 0). The recorded FB structure command at 20 seeds gives 15/15
+and churn 0.024 with the option off and 15/15 and 0.029 with it on, the
+values in §2z-ay and §2z-az. Health check passes (research suite 447,
+package 8, legacy guard 14/15 and 0.013).
+
+**Evidence for the option** is §2z-av and §2z-az, at 20 seeds on five
+panels; nothing new is measured here.
+
+**Not done, and the owner's to decide.** Re-freezing the structure stacks
+to use the option; `frozen-specs.md` is unchanged until then. Applying a
+seeding change in the gate's calibration step (not approved; it would
+spend gate evaluations). A censoring-aware ladder for Instagram is not
+needed for this variant, which was neutral there (§2z-az).
