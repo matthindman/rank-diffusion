@@ -59,7 +59,15 @@ during this task; until then build parts 1 and 2 below).
    - a reversible "off" regime with an onset and a return hazard;
    - a lasting layer with slower-than-exponential memory (for example two
      reversion rates);
-   - passing shocks bounded in the far tail.
+   - passing shocks bounded in the far tail;
+   - (added 2026-10-12, before you started this task) an endpoint whose own
+     volatility changes over time: log-volatility as a slow AR(1) around
+     its amplitude, with the average variance unchanged and Gaussian
+     shocks. The tail statistics cannot be read without it: scale mixing
+     over time fattens an endpoint's own changes at every horizon, as
+     fat-tailed lasting shocks do;
+   - (added the same day) a lasting level with no reversion at all, a pure
+     random walk, as the limit of the slower-memory case.
    For each, run the statistics in `residual_anatomy.py` on the simulated
    panels and report, per statistic and panel length: the separation from
    the baseline in units of seed spread, which pairs of mechanisms it

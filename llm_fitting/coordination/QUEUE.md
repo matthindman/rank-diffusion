@@ -17,3 +17,4 @@ sent as direct calls.
 
 - 2026-10-12 — queue opened with V1–V3 (MODEL_STATUS §2z-ar).
 - 2026-10-12 — `residual_anatomy.py` is on `main` (f284b9b): V2 part 4 is unblocked.
+- 2026-10-12 — V2 brief amended on `main` before V2 started: two more planted alternatives (time-varying endpoint volatility; a random-walk lasting level). Read the brief from `main`.
