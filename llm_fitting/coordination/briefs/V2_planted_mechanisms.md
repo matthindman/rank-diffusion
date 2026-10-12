@@ -68,6 +68,22 @@ during this task; until then build parts 1 and 2 below).
      fat-tailed lasting shocks do;
    - (added the same day) a lasting level with no reversion at all, a pure
      random walk, as the limit of the slower-memory case.
+   - (added 2026-10-12 after you branched and before your `DESIGN.md` was
+     committed; if the design is already fixed when you read this, add it
+     as a dated addendum case and say so) a lasting level pulled toward
+     the level the ladder assigns to the rank it holds NOW, with no pull
+     toward where it started: each week, level += strength x (ladder value
+     at its current rank among lasting levels - level) + shock. Two
+     strengths. Endpoints can change places for good while the set of
+     levels stays near the ladder. The question for this case: can the
+     statistics tell it from the baseline's pull toward a fixed home, and
+     from the pure random walk, and does the estimator's fitted reversion
+     rate distinguish the three?
+   - (added the same time) an endpoint-specific annual cycle on top of the
+     baseline: amplitude lognormal across endpoints, phase uniform, two
+     sizes. `momentum(..., gaps=...)` and `long_dispersion` are the
+     statistics that should see it; the fitted reversion rate is the
+     estimand it may distort.
    For each, run the statistics in `residual_anatomy.py` on the simulated
    panels and report, per statistic and panel length: the separation from
    the baseline in units of seed spread, which pairs of mechanisms it
