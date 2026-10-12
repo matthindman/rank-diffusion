@@ -1,0 +1,10 @@
+{
+  "status": "CANCELLED_DUPLICATE_BEFORE_SCIENTIFIC_EXECUTION",
+  "stage": "diagnostics",
+  "panel": "reddit_comments",
+  "pid": 55818,
+  "command": "/Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python -u llm_fitting/validation/planted_efficient_run.py study diagnostics --panel reddit_comments --out llm_fitting/runs/2026-10-12_V2_planted_mechanisms",
+  "utc": "2026-10-12T05:02:49.277369+00:00",
+  "reason": "All 120 extension fits are complete; this automatic follow-on waits on the stage lock held by the independent original-diagnostics worker. Release its shared heavy slot; original worker continues.",
+  "completed_extension_fits": 120
+}

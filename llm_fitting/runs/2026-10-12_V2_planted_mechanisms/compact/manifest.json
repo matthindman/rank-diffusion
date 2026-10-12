@@ -1,0 +1,14 @@
+{
+  "diagnostics": {
+    "files": 1197,
+    "sha256": "49de3cbb9827d5eacc07ac4e511e858778449d21ae2c594eda65e9f2f9e25e57"
+  },
+  "extension_fits": {
+    "files": 360,
+    "sha256": "e2db088422c828f3d759123c970c22dbb7ae31539c9d4c70e9ea8237bb118670"
+  },
+  "recovery": {
+    "files": 120,
+    "sha256": "b0ff63555c4419042fa5e0c8d001c3136c5bb6a7efc57524b8642a640936b8f7"
+  }
+}

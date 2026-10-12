@@ -1,0 +1,917 @@
+{
+  "standing": "Complete V2 handoff, no change adopted",
+  "files": {
+    "llm_fitting/handoff/V2_planted_mechanisms/DESIGN.md": {
+      "sha256": "196eb746d742eb963c4cfbaeb574b611994cb90fbee0d9e5756b6361362d81c3",
+      "bytes": 18470
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/EXPOSURE_ROWS.md": {
+      "sha256": "bf1c259b1d767ab85a00085f90b2de9198e82b00ee346a6047308ada6f655a78",
+      "bytes": 1320
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/GATE_ROWS.md": {
+      "sha256": "a0b817b3e43d1a8dfc2fece54a0ddce2682f1132bac008ebd70336016ade694c",
+      "bytes": 308
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_ADDENDUM.log": {
+      "sha256": "ee7a8b6fc63fb16627e69ac8eaa1db76b9377f6495c42b0d40cd2dbe393c2ebc",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_ATTEMPT_IDS.log": {
+      "sha256": "0dfb4ba1121000a15aa5b9bc8238eacc2cd8d1e051a83ab889157714c4042615",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_ELIGIBILITY.log": {
+      "sha256": "89bf14f9870b7891512e797983d7cad1a3acfc1d4f2b3d04ab5a58daf33852c1",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_EVALUATOR.log": {
+      "sha256": "11db6d1091d85ae1b3ee1800c33e4c9bd99fa2dd48a2e509b295aab300661302",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_EXTENSION.log": {
+      "sha256": "60d18a77da19797235ad9689cb461f9fc11752a0d65ed7fa4c4e7bb5dba67b6d",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_FINAL.log": {
+      "sha256": "4bda3885b40549a06cfd729672c10fe783defd965260d16a7ec407723595e304",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_FINAL_EXECUTION.log": {
+      "sha256": "b7b4bd00cbac5668705ba5066933c586cec6bcaf6420778faa7ba91d0c916950",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_FINAL_REPORT_CODE.log": {
+      "sha256": "dc6da4d678e59401cc99dc08a4957a8a05bd83351f39ece1cd2227876d5fb999",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_HANDOFF.log": {
+      "sha256": "74f7a50b05e614072da666f3295bf85fa04d12c5f346328c198dd55c9fb5c18c",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_INITIAL.log": {
+      "sha256": "a5342a09a14ba1345f047ea3e1651fc26991955fc25a9d23efdab1e657180a96",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_REPORT_AUDIT.log": {
+      "sha256": "16a83eb61437c5e786505fde24d1e2b690ca78c0b7afb5747da54bf563866235",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_STAGE_LOCK.log": {
+      "sha256": "650bb875a2cd3be7b881865c7f58c14410404542f031c259527a01b13c7d62d1",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_STUDY.log": {
+      "sha256": "fff3421cc9c032a1f9c0f644aac99f9ca8f42ea2b9e7d2ae5e9e4eeb669b7b8d",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/HEALTH_WARNING_GUARD.log": {
+      "sha256": "2bf2ba8a54ff3f00f40b070a82a403f6ea2fc08bd2db91f5ba1a30ad97e57230",
+      "bytes": 536
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/PREFLIGHT.md": {
+      "sha256": "6f4b5185a57f3bbd11350cb64438683dc4fbc1cc6f204723634009cfe1e47cc5",
+      "bytes": 6517
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/REPORT.md": {
+      "sha256": "70d00efee47daf99c4c851c422f707a26037b7922453a31386f41647f9f46e36",
+      "bytes": 42204
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/STATUS_ENTRY.md": {
+      "sha256": "d762104ebd3295b62fabec57cd42aed4a9d6895ae0752e0b2b5112d59bda9c2c",
+      "bytes": 12266
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/archive_tables.py": {
+      "sha256": "fd6dbd2529cf64f3f0bf4b0c9361f4ba40b24d09eff1fdab28df5b7df046bbea",
+      "bytes": 2202
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/finalize.sh": {
+      "sha256": "e14ad9bc785334ec690f0850e18e7f4d62311f2b4080b2f90ad995ea8d079ea7",
+      "bytes": 652
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/launch_complete.sh": {
+      "sha256": "5dc06e323e6f5e3583f96ac295bfa84a5062209c343342f78d1dd7d3453fd7b9",
+      "bytes": 743
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/launch_complete_efficient.sh": {
+      "sha256": "ff1f2040e8c5391e6a31f7bf56210585424f2bbe128f72def02452e883870e9b",
+      "bytes": 747
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/launch_crosscheck.sh": {
+      "sha256": "dcd6102f87ad021089670c03bb1ed3c41d69250d8d9cd39788d4975c1e8c3a23",
+      "bytes": 692
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/launch_extension.sh": {
+      "sha256": "c7dc3cd5f4cbdc7931cd85340e2f86cc31942b9f9505e04cbd84f55927039e93",
+      "bytes": 558
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/launch_study.sh": {
+      "sha256": "dff127635d48117dc541f17d4b49e06efd4da7f553aa178fccb396077e17fbae",
+      "bytes": 1097
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/run_panel_efficient.sh": {
+      "sha256": "f808181aaf3a5ba270508d3142c89867c0ba77fa294418f2994bdc56c01e810a",
+      "bytes": 521
+    },
+    "llm_fitting/handoff/V2_planted_mechanisms/run_panel_guarded.sh": {
+      "sha256": "fbff248d8cbbf9f342e5d9ac3b58ccb7c8c0e63b47c16a57e06d429d50171fa4",
+      "bytes": 521
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/.gitignore": {
+      "sha256": "90dd5526133aa75c0a42c136081022fb3bc971fbabf403d891d7b087a2cb1666",
+      "bytes": 175
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/TABLE_ARCHIVE.md": {
+      "sha256": "1c3294afcf22a2f3293ef2ba541a69a70c9d16ff0625fc285e44667a9dc1ed6f",
+      "bytes": 2156
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/analysis_provenance.json": {
+      "sha256": "baae6a69c052e36305fba8f38458364ad687ea3a6fb1e7e53cfe4ddd9ac8114b",
+      "bytes": 1397
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/annual_cycle_gap_contrast.csv": {
+      "sha256": "a3f7323de89a252133bf2c111c6172a5342e07e169098706ce65ce3fe0b2a454",
+      "bytes": 1752
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/archive_tables.log": {
+      "sha256": "468aa8db3cffe62d760d1bc398f47d5296e1a31762bc2072a46509c13dad7f01",
+      "bytes": 1041
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791775161822938000.json": {
+      "sha256": "7431b6f773acf53af906da143bc186efb5aa0628e65a5c575f96b485acba4b4e",
+      "bytes": 748
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791775201935115000.json": {
+      "sha256": "5950cd58b8d81644159f228bb60e0d594356bc771071ee7c4d787dfd8899730c",
+      "bytes": 753
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791775371485645000.json": {
+      "sha256": "a034d00cca7ec09ebed5cf17e3bfcfa0edae222876e75912d77665d138d55c6e",
+      "bytes": 761
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791775629896985000.json": {
+      "sha256": "67ac9ac8ca8a081a1b684bd3ed767e9291f6069ab8e8181cea1c708077334d61",
+      "bytes": 746
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791775666296634000.json": {
+      "sha256": "34bb3b54ab32fc2bf3796da8121ed689f2f8b455c6eda6df20fa24909d4b4b77",
+      "bytes": 980
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791775666296882000.json": {
+      "sha256": "37b4720b8804a25dbc97f91a0ab1c743027549799d674741000cb31c6c6c4098",
+      "bytes": 975
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791775666297236000.json": {
+      "sha256": "8e4613dd253649b371a141030f819e158aef6e9ff5666f2c79b692a5af578e2b",
+      "bytes": 988
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791776455719132000.json": {
+      "sha256": "dddfc107a4289b4e7fee5f23a1cf3973e6f77e14adfdb4ad0339aea57e5d9b41",
+      "bytes": 1219
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791776455719244000.json": {
+      "sha256": "5e2bcc128d8a1c95350402b4ca4420721ad93620236b6e80d9a5c1c15116db91",
+      "bytes": 1214
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791776735887378000.json": {
+      "sha256": "921f3605e8536036bcd7938b07a9c226bad265562463afd0412956a849cdcd0e",
+      "bytes": 979
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791777090789084000.json": {
+      "sha256": "10ec0aa603f9fd6668a692588934e6b179bcfbf679d279239d4c58f71bb9160e",
+      "bytes": 1208
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791777090789085000.json": {
+      "sha256": "9ae17612430d1b2beb77238b632e02d8899775d6c6dcb640ffbc8fb0b5d1ae82",
+      "bytes": 1203
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791777091448243000.json": {
+      "sha256": "f621b882f30a6de91b37a8f91100ad3403dd7a55130d31c2ae0e0ce333d2455d",
+      "bytes": 1441
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791777091516952000.json": {
+      "sha256": "fe3231120b0f28ce3d47d76867722e4529058ed137e512b7caebef1fa03a5a23",
+      "bytes": 1447
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791777460293131000_recovery_reddit_submissions_long_51298.json": {
+      "sha256": "512933a2c9a1f5c62bde4f8d8921309e17dd91f6aaee193cd6a316a10d2bb968",
+      "bytes": 1216
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791777461056715000_extension_reddit_submissions_long_51300.json": {
+      "sha256": "a0ed0b65bbb91de357652757f522c43f9e046d73df18bef1fed63d12f1d9e888",
+      "bytes": 1454
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791777995136272000_recovery_reddit_comments_51697.json": {
+      "sha256": "de05189ed8c1cb71f146f393acd795f4678bf2e2fc0b301f650d224769750b7d",
+      "bytes": 1477
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791777995859522000_extension_reddit_comments_51699.json": {
+      "sha256": "eaf42f136f6179825a6415b4e24e5c0107b6a8110ecb12b3f59673c275f1d74a",
+      "bytes": 1715
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791778085839828000_diagnostics_facebook_a_51784.json": {
+      "sha256": "f97b8f8b68040dabf3587f6853c13975ada7cb6c526bb1895fca590939d46948",
+      "bytes": 1475
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791778907494346000_diagnostics_reddit_comments_52280.json": {
+      "sha256": "cefcb15557be28982465fbee0f9e40ad1681fa4f33aae2307a0f52a2308652f9",
+      "bytes": 1480
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791780405757035000_diagnostics_reddit_submissions_long_55003.json": {
+      "sha256": "7578ffa80997cc9d6a36ad6abb124879aaaa510a1a808dcd30b6ebd09cff2f6f",
+      "bytes": 1488
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/attempt_id_collision.json": {
+      "sha256": "4bbbdccf64fa2504ff5deb44e843ae12359a3ba80aa5721642dbd8e6682bdbad",
+      "bytes": 450
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/duplicate_comments_stage_cancelled.json": {
+      "sha256": "ccf2c892b33685ed592b57cefb196a2a9f3dfba35c462e2cc232781fc5405fe1",
+      "bytes": 689
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/duplicate_long_queue_cancelled.json": {
+      "sha256": "68696192cdb5aa57cfa5c68fb06ccab7cf37141d11501904feab91f4195ae6f3",
+      "bytes": 315
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/eligibility_transition.json": {
+      "sha256": "59fdf3527b4dbcbd14c1c2c94953cea9155c8f7d7e9c6f78d735a7c28f9d9281",
+      "bytes": 527
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/warning_capture_interruption.json": {
+      "sha256": "c367b9a9b132bd2047adc0824ff58e03acdde2a133b102c03994ac9053b631d1",
+      "bytes": 1174
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/audit.json": {
+      "sha256": "a4dd1d67d92b32828d1ca5a57e83b1f7417a20e9107ba28c9885d9beef9f5e6c",
+      "bytes": 6567
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/compact/diagnostics_seeds.jsonl.gz": {
+      "sha256": "49de3cbb9827d5eacc07ac4e511e858778449d21ae2c594eda65e9f2f9e25e57",
+      "bytes": 21536423
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/compact/extension_fits_seeds.jsonl.gz": {
+      "sha256": "e2db088422c828f3d759123c970c22dbb7ae31539c9d4c70e9ea8237bb118670",
+      "bytes": 1156510
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/compact/facebook_a_parameters.json": {
+      "sha256": "698eb9303b11c1529824ebcd3ec576b54fe6f13a87c01240d6476502a1960313",
+      "bytes": 16992
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/compact/manifest.json": {
+      "sha256": "c942a2b558aaac942e4ccd770fabaeafce5eb86b5174fe2b59b09bb00fbc2e9f",
+      "bytes": 373
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/compact/recovery_seeds.jsonl.gz": {
+      "sha256": "b0ff63555c4419042fa5e0c8d001c3136c5bb6a7efc57524b8642a640936b8f7",
+      "bytes": 491710
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/compact/reddit_comments_parameters.json": {
+      "sha256": "35cfe4e4b2acbbea656efe66fb7041620405be857052cf97f8117198ec117242",
+      "bytes": 17781
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/compact/reddit_submissions_long_parameters.json": {
+      "sha256": "486687ad7689d23cfdc86ba4aaa36bc3d839b53648bdcb801e7e11bcd9e032ad",
+      "bytes": 17942
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/crosscheck.csv": {
+      "sha256": "089579b10822fec060e8f6f90768acd54f7400784c0c96eee50468931324ca1d",
+      "bytes": 16981
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/crosscheck.log": {
+      "sha256": "610eea7d78c285572f90eb4687cc94cf299f31294a6af0a14331eb9ded7eb23a",
+      "bytes": 4918
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/crosscheck_summary.json": {
+      "sha256": "d548077f31ea82178e6069eaadb32883cb7eeadcb0b73473bd5d843ed375a9ad",
+      "bytes": 26890
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/diagnostic_any_flag.csv": {
+      "sha256": "f3aa9e27a06d1840cf81e79a1be8a7868e8345e18506e416d6b46db1a3ab6c54",
+      "bytes": 3726
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/diagnostic_effects.csv.gz": {
+      "sha256": "28342827579ceaaf39f087cf14da52f8162f8c5e67d51b1ca6f8e0890bec8599",
+      "bytes": 1417099
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/diagnostic_failures.json": {
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/diagnostic_pairs.csv.gz": {
+      "sha256": "02c626838f7627fb0ae3d50876f58927a658b3575e772d55b8596ba195159c7e",
+      "bytes": 13216101
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/diagnostic_rates.csv.gz": {
+      "sha256": "df00ae875e393b3ccac317c7eaf9a3b5b751dd0608881acdc67854816ed18079",
+      "bytes": 2790019
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/diagnostics_facebook_a.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/diagnostics_reddit_comments.log": {
+      "sha256": "6620793cd085545debb854d37a855fdc89febba22fd0b756fa215f29b4f20f01",
+      "bytes": 618
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/diagnostics_reddit_submissions_long.log": {
+      "sha256": "6620793cd085545debb854d37a855fdc89febba22fd0b756fa215f29b4f20f01",
+      "bytes": 618
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/efficient_reddit_comments.log": {
+      "sha256": "b57dfa1371df3f5a444589b3bf19c316360e38ce474ad93397eb63916e5eadee",
+      "bytes": 10869
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/efficient_reddit_comments_diagnostics.log": {
+      "sha256": "86db6e2cef2cd7e7c05325725c456ebb9e66ac5629e49ba8bef9625f02ebf00e",
+      "bytes": 18224
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/efficient_reddit_submissions_long_diagnostics.log": {
+      "sha256": "b1bcab2c051fc5ef0b96813ccd256479fee65b8389441ee06145e09754402118",
+      "bytes": 720
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/eligibility_equivalence.json": {
+      "sha256": "7020a694cc294140e5decc5a085bada0dd3de8db67567f8c16041b6bf7946fc9",
+      "bytes": 1456
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/extension_analysis_provenance.json": {
+      "sha256": "60e6090d781abc0b0a82520d0ff25d0f7cc03a94217cb9ecc79208a86c936b74",
+      "bytes": 1231
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/extension_facebook_a.log": {
+      "sha256": "fb89e82fbb26eceec4aff9e018b5dbdbfdd6a0f95c97541499883b60ee2072ce",
+      "bytes": 62
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/extension_failures.json": {
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/extension_reddit_comments.log": {
+      "sha256": "e06ba9b6803111f6addf803390a2721b9db6e6d13bfda5007ea69a5d516e09b9",
+      "bytes": 68
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/extension_reddit_submissions_long.log": {
+      "sha256": "0e420eeca79d199d7a9e6cf9d60fe296a1c10ad29922e6c55e4d2272f022fc99",
+      "bytes": 900
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1000.json": {
+      "sha256": "e3d39240c4f4f16981648b25c1c0551fc2e0a44ca6f4de083b6c149ae1b25926",
+      "bytes": 1499
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1001.json": {
+      "sha256": "23ae7b8df682e1aade90b91bd2ba821866bbc43303974a3f7a4a6d0f196f56a3",
+      "bytes": 1499
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1002.json": {
+      "sha256": "26c4b0d3ae63124f564fc2929b0b6018caa9ae6e3e618224efedda886b7d57de",
+      "bytes": 1485
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1003.json": {
+      "sha256": "343e9588c66f92420e7acfe1ee5311a2d4550bd282e9853d02d0efb0d8511044",
+      "bytes": 1498
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1004.json": {
+      "sha256": "3f8c52ab6bc6a5efbc6678d603f3862012cc7b2dcbf2b1f61a2f7a72c141807d",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1005.json": {
+      "sha256": "6f936be7dd2e9d0a18dd193ecf05c55c21c85e7b414bd3bf83f91f0825ea4424",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1006.json": {
+      "sha256": "dcdbeef990b2d3b6cdd26b6b3bdae9da1da9988ba1d1b7ca8c6ed59babc55cd2",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1007.json": {
+      "sha256": "7e9cf91ff606289ed4dee6fa26eacf1b6e6e80ce5e916e42a4421aa04d8b0ee9",
+      "bytes": 1499
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1008.json": {
+      "sha256": "f4634682d1fd4de6457133851c6423e2f1ca314d17d4f71176566b5863a9f0f7",
+      "bytes": 1483
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1009.json": {
+      "sha256": "ab8cde2c520b0601435d441aa792385a76a8af9ada228b968f885fe85b3c1101",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1010.json": {
+      "sha256": "cb308cad8531a4db6449621e8632f100f9a58cb075465d5e3b3882ed599535f9",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1011.json": {
+      "sha256": "2bc55a9cbe7525e680f7460600549863b9555562022fe3b9499f9712d6f1d067",
+      "bytes": 1497
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1012.json": {
+      "sha256": "76b1cfd7077583bc0e11184a4e9eb8d80a76a31cc2fa2599445f359adbad26f3",
+      "bytes": 1498
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1013.json": {
+      "sha256": "cbeca92cc09c5210911473a243a8456703e0a52aae5aec0818cff4458e7d3f35",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1014.json": {
+      "sha256": "541779cb639138a77fcdfbb543f4a1fb0984ebe38c22e38d9ff758bd6803f22d",
+      "bytes": 1497
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1015.json": {
+      "sha256": "3ea1401ba5271d1a72048a5176a19a5be060522a586b72e34a6b21acedd3ae1b",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1016.json": {
+      "sha256": "63ef045a325678f767a15b46e0b7ef76dd069186df1164c9354027fd13a7304d",
+      "bytes": 1501
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1017.json": {
+      "sha256": "02ad6d650706f2cc7b46227ace404ebe13a867a68042e762d6a9e54c619b7f3c",
+      "bytes": 1501
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1018.json": {
+      "sha256": "57a72475f9fb1d347700b1afdd070c1208fcc24b3ee9185b718917f2f59092ba",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/independent_1019.json": {
+      "sha256": "b0638bdfefff3b3b20355dc52649b04cb600dda759aac5beb5f71a7f784e3fc3",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0000.json": {
+      "sha256": "fa0a86633a51cc11fa20a182dfbdf376600685f237f6b9346a365c7806e2bee9",
+      "bytes": 1487
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0001.json": {
+      "sha256": "2339a40d1f1e6e57414efa45546fea28f485d2d299272e5d1c9f9bdb883f43e4",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0002.json": {
+      "sha256": "5044062defe2c44657e686433473d51afd8f616ae4d67e70456356038006ccbb",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0003.json": {
+      "sha256": "09ba16a075e0b2fd8d4d7bbeb86ba668d4c6de0daae77fd4846d56aeb9100edc",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0004.json": {
+      "sha256": "11223c46faa69543726b9a8ab04aff9bc0b3ff2b0189fcc44f62e27a57247196",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0005.json": {
+      "sha256": "a242fd1f055c9130fd051fb833d3234685e22841045083ba7a576da84dc344b6",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0006.json": {
+      "sha256": "7ef876edfb91ef4d123699bf0c379a846bec37f3d93b2deddc331ca6143a0790",
+      "bytes": 1491
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0007.json": {
+      "sha256": "a3a30d46b79d34f4d600be7d029da2672e09973fc6cc213ce7c112072594b6dd",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0008.json": {
+      "sha256": "7dfe3245f8de44e21f438bdc6f8c485db67ec03ec7044df60a0e67f5588c66be",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0009.json": {
+      "sha256": "af92c51744fb79d26611091273f6499cb083097222afcc6ef5d93267af94e944",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0010.json": {
+      "sha256": "9de308b435627b1ee3bbd65bb2ae15ce3115c98fe0c436d30c3e57ba3bae9e35",
+      "bytes": 1485
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0011.json": {
+      "sha256": "6cac2627ad78dd11dcda98ee68e32c30753198f1464dcd625d49956c727ac016",
+      "bytes": 1492
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0012.json": {
+      "sha256": "f76455e5f6ae48b1d9f2dfa4d7bdad7922949216a5265b07bc0a88d57d3f6fee",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0013.json": {
+      "sha256": "ee1b693d1ccaf6f0d27bcdb3b8f07e92210439345c78e192580bb51cf73e09a9",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0014.json": {
+      "sha256": "59763de60c1df00f590a93b3229fe1e9b940048bdfeb89c121bfff015b929485",
+      "bytes": 1492
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0015.json": {
+      "sha256": "634c286553f0131c817c84255bdc051886bb9578f84aba1ee8154609a90e71cf",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0016.json": {
+      "sha256": "17a31288e2fb9dbcac1de566f601894817fe9a4df5b07c8bf1e7a8dce9f7c423",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0017.json": {
+      "sha256": "2c45cfe5b064bd9db45fc0c5bfa4d7f8d31e4cc7facd1f50c5670a2579242f44",
+      "bytes": 1491
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0018.json": {
+      "sha256": "4cf18b545bd75ffb6fe5fc3a7be5f3a4d869fbbded077173a980c85c283fde05",
+      "bytes": 1484
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/facebook_a/crosscheck/production_0019.json": {
+      "sha256": "25d6c3c4813bc3b70c375abc6abb6171e5ef03996b93704d6619d7c073cb97eb",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/finalize.log": {
+      "sha256": "32c937c7bad9dda8d9ea4d23d43bcea3067eda3e57819b4d45a0c9a2a0a1d1c6",
+      "bytes": 532
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/fitted_kappa_knots.csv.gz": {
+      "sha256": "e9df95853c9aff4f6dd69aad6fdaae1c9d3cf75c4d1c652baa6a04d010bc67ed",
+      "bytes": 159549
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/fitted_kappa_pairs.csv": {
+      "sha256": "6af4ea26a649ef723424b45e9810e1b1d6d24ed36767c05a48132d1731727e53",
+      "bytes": 67599
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/fitted_kappa_seeds.csv": {
+      "sha256": "f74b3e00ce07330c2640656a8bce4c1ef9eead000bbe176be516be2f12bcf38e",
+      "bytes": 139465
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/fitted_kappa_summary.csv": {
+      "sha256": "96823b31b637e08f89a608ba1d9643731c9a3ddad0783e15f1b5f87fb526120c",
+      "bytes": 19999
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/guarded_facebook_a.log": {
+      "sha256": "20bbb7800b2768902d6613a9760023755c1a7e7f0713496e55a3c59acd839ac5",
+      "bytes": 28149
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/guarded_reddit_comments.log": {
+      "sha256": "a211ead2779565b34b0e9ad15f670d8bf5f1a59ca8aa968326841f5812a194ee",
+      "bytes": 2194
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/guarded_reddit_submissions_long.log": {
+      "sha256": "751eef0121642a952b789f929645b91030c8c095b95592f59878b6c1d81be835",
+      "bytes": 1257
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/guarded_reddit_submissions_long_retry.log": {
+      "sha256": "158da5cbbfc5d3dc143ea84df2c8637a2053ac16e9ee123f84113e0014e131d8",
+      "bytes": 35016
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/predictions.json": {
+      "sha256": "cc5ed8446f4f28d5a45058672c6cf54d9d1ccba75edb363983a9f7cfcb2570be",
+      "bytes": 3442
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/recovery_extras.csv": {
+      "sha256": "c212740b34b889da5dc69f7139085d815de37e59f28c5884821842ee2e2faaca",
+      "bytes": 9730
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/recovery_facebook_a.log": {
+      "sha256": "9e6ae5b7bf2b89fa84e120365734c33165db58ec4c9c227bb1c7761020330bac",
+      "bytes": 1960
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/recovery_groups.csv": {
+      "sha256": "d51fe02823560f9816c5febe9684aff84446e9263e97bdfb4865948718f90cd4",
+      "bytes": 28028
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/recovery_knots.csv": {
+      "sha256": "808aa6fc8dcf1ea0e77631c0230be915a364d0816c240a532559ac323269e26b",
+      "bytes": 888209
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/recovery_reddit_comments.log": {
+      "sha256": "415a252404f43c21d6674892daa731aa580b9fb14df506b16257cd4bbb51646e",
+      "bytes": 2200
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/recovery_reddit_submissions_long.log": {
+      "sha256": "ec8e7bd715c233ffa038b45e91977ba0c7575a9ab83fecb1c2ef7bd643fa9863",
+      "bytes": 2520
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/recovery_summary.json": {
+      "sha256": "dc9d0b5449d1f11daad1a1c682eb004940f33941e28250c80cae24ffbbc9b23c",
+      "bytes": 2071760
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/recovery_summary.log": {
+      "sha256": "4c2bfb111b0fe3d868f29d7e75a8c2053f8c665daa78d9f06cb23802aa625f38",
+      "bytes": 44
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1000.json": {
+      "sha256": "a4134afd8993d4cca430c3ecad782b9c4a7bbae49e28f91db256bcd8dffcf0ad",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1001.json": {
+      "sha256": "ca8b81ba18f4da7b4ecf97162ba0bd917a30facd863add9108d9ff8cd405b2a4",
+      "bytes": 1497
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1002.json": {
+      "sha256": "cd2ff74da9ddd1ca0df90777bf9feddc0bef649fc369364816759547be1535e0",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1003.json": {
+      "sha256": "3a9e1a4b6f2581d4e3d39e6a443ffbf3d53fc00900e74e9ab199beb6002a3f84",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1004.json": {
+      "sha256": "0d7937e86cf970b30d025e1cf96551f6a112734beafa7cb0415201b846cc9bca",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1005.json": {
+      "sha256": "657cf21516c969e81e8191d2f62812de7d2f948f4af4bde2e22f394634224d52",
+      "bytes": 1483
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1006.json": {
+      "sha256": "ff26ab6736634ac313e3e001e548a2052c9f30b4f0862174d8416293fc34f09e",
+      "bytes": 1498
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1007.json": {
+      "sha256": "3b976634832d20b89d914594908823965626e2377c579821ead59e4add419e94",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1008.json": {
+      "sha256": "63d22bedef3574954cc7916494430bfd10aebcc35e51e713d4ffdd4a2ed9fa4d",
+      "bytes": 1485
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1009.json": {
+      "sha256": "00edae32f491a33ea55d2afac8ba6ea0288d0bf371fe2cd65645cc8e0d405663",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1010.json": {
+      "sha256": "6a23a5e88d7aeeae9e03de904313956e6537dbc8d60f08707e82311e0aef21fa",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1011.json": {
+      "sha256": "ed7bf304b518b9d476d95440afefc974f40c9568cdf2c89de316c70ebf817856",
+      "bytes": 1498
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1012.json": {
+      "sha256": "eb1dbe3182d1cf754a08656910f24656dc16d416cf5dfee86299e8f55093da35",
+      "bytes": 1497
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1013.json": {
+      "sha256": "23b933ce202b5d48cffdb09f030586d1892970ba2e8865d648bd264f2a1a3605",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1014.json": {
+      "sha256": "6f839c1c841ccd0d0bb6f32f014768a13e9309a5353371fd2fe04278c96a8c57",
+      "bytes": 1486
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1015.json": {
+      "sha256": "b9d9789d8a3da2920b1524f143371cb5c0a002e12a4e8c94d25e53cc548d6e71",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1016.json": {
+      "sha256": "d454e86ac60feda3ea3ead517da976eff705873dfad79c0c4f74324bf15107b0",
+      "bytes": 1484
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1017.json": {
+      "sha256": "6044da353587f569d19705cdfe2ae30619b26dbeace4a14f528c8221dd71fd1d",
+      "bytes": 1497
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1018.json": {
+      "sha256": "b3be11bddbb27b6543c3029fe6be373ff3cf90bc7f03fe51a93d55a1eb339763",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/independent_1019.json": {
+      "sha256": "d13699defafad0cf873a2eb08a63adbec4f97866edc84fc5215a8cacda159187",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0000.json": {
+      "sha256": "b9eee81bd7ea74f31141238e4f32b13ef739e6573a2b0e2102256b6eef3aa8c8",
+      "bytes": 1490
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0001.json": {
+      "sha256": "33ad44c852bf335a3368694eb072a50b2d995e317062d310116390336adea3fd",
+      "bytes": 1492
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0002.json": {
+      "sha256": "51c1ae26eb55a5eb34efdb5cc4f588470a74f4fc22cb6c96774f80f3aa1fe954",
+      "bytes": 1482
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0003.json": {
+      "sha256": "52d06de77b0749141bed88278a4d869744b2da0e34a549258de69db428cfe178",
+      "bytes": 1492
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0004.json": {
+      "sha256": "05b3a123a64500fc61113f7907295c53347d575fce9fe491651ba22b29ccfc6b",
+      "bytes": 1472
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0005.json": {
+      "sha256": "31a00c48a98caec1c07ac058a0f5b0ae9861ede1176bd84bc745ae3a0b6e25d9",
+      "bytes": 1491
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0006.json": {
+      "sha256": "b0e38c0a92e0a6e29a2b58b19bbe3f5595d6d644f5019f3ce3109a6bcde8f7ac",
+      "bytes": 1491
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0007.json": {
+      "sha256": "54305fc2cff4108641a633c08841460af0ada56a6bf7c8dc002ce28db7641dcb",
+      "bytes": 1489
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0008.json": {
+      "sha256": "a1d8e789e43326be11f44cd1cb0981cc1133a13bc9dd20a0a0e4556b33a456a4",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0009.json": {
+      "sha256": "5f8625f7519681747d7b2e17066e5b5f742de97736cfca461b2950a33088047a",
+      "bytes": 1491
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0010.json": {
+      "sha256": "c0a953d6a4b807dca255f1059739b2779096d52acdb57469565b1855c9d1a6bc",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0011.json": {
+      "sha256": "e044869dc1a73faa9b1b58c4b423825914820f5d75a11734d1d056e766dd41d5",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0012.json": {
+      "sha256": "ebdce72c2387b6b564be81ceb1da3050a01d1a18124bb9bdcfaa13d545d0e635",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0013.json": {
+      "sha256": "7eb3b799641543f72cf9c82841e37bf850c067de921014e49a3dafd751feddd2",
+      "bytes": 1480
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0014.json": {
+      "sha256": "935185373eb372f5473e8d55acdc52c66a109e3830014b1d32dce2da1cc5cb07",
+      "bytes": 1483
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0015.json": {
+      "sha256": "1786fb153669add23f000c1840b5f08ae7f2e21ead67c6eca59e3a073b0da411",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0016.json": {
+      "sha256": "4652275afdc3d17e74c8890dc679fc919bd52e66f6da933c71c1928239510af3",
+      "bytes": 1490
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0017.json": {
+      "sha256": "1f5ed3ba960d9b55d613e90fdd0df3c6d71bf36ecf98827f28288293d5d542f9",
+      "bytes": 1489
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0018.json": {
+      "sha256": "90f77ec1b856fda31aa51b8916ff8cd9cdfa376db04a845db18fa0b3f0ad2d09",
+      "bytes": 1491
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_comments/crosscheck/production_0019.json": {
+      "sha256": "7a669c5644c467c8eb9fdd2b7bafadb4b3cb542e0e1973d0075c4e301e722258",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1000.json": {
+      "sha256": "417e43f5c65a0be97d271fb023d8a5d15df3b430e7d1550233a86efd262b7428",
+      "bytes": 1492
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1001.json": {
+      "sha256": "19c87f5b5b90bb15bbbe8b423359d1f96bab93ac7c64d005993f0621f810f05b",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1002.json": {
+      "sha256": "a2733ad9f46116fe10768b6612be6b02a7101d41e1051a8d03515c51f1851ac0",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1003.json": {
+      "sha256": "ac44fdd74e94900e7a7e6e8d11e0192fa271a56b05d173b6cf894ccf14a09faf",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1004.json": {
+      "sha256": "907abb491ecafe7ccc34af718365c2b88bdd439166c3997baf85fe84e823d13a",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1005.json": {
+      "sha256": "793848bffc4aa9bc8fa567724138ee28854ccb825ff0c5d5f911a3a5681aa762",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1006.json": {
+      "sha256": "8e778616a534aa6a363c9438fbcd436b1b23844716c34c3fb28d2d19d3d6067d",
+      "bytes": 1486
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1007.json": {
+      "sha256": "510bec2cc331ed1ec49626155bbac17951e4b9278ec3bc1f06860c95f23a1084",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1008.json": {
+      "sha256": "215b42a1d80a19a79a5ec780f558a06d9dbaeee1ea8a7ca7d43bb2e8a3f269ce",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1009.json": {
+      "sha256": "21c7b6d6969299303a0112b480f64c3a7ff803d416c3410e37e402d9bee28646",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1010.json": {
+      "sha256": "602b020524ed86b8a96742bfcddf72ec4d02d39539599d2853679f7bcc4eeedc",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1011.json": {
+      "sha256": "151efe365e7b4bbfad025003d7f751b7b43870c2b086dd447d49b5a215d7add8",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1012.json": {
+      "sha256": "0bf005a83bb80059433bd861a291b62f42b31c72fb66c25665446a8d903e1789",
+      "bytes": 1483
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1013.json": {
+      "sha256": "6319895bb4d0d72633c7d289a080f97419783680d0ae8f5bd4b65394e298348c",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1014.json": {
+      "sha256": "170ee3c574442628fe90746abf34fac0012bffe4ec68b2cac9369faa94030a28",
+      "bytes": 1496
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1015.json": {
+      "sha256": "321e84e9e8eabc30fcb1f8f896aff60d362d66fb053637029bd874b0fd3c2412",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1016.json": {
+      "sha256": "71c6e81b92735869bdea27e3429b7f5263a68634584ae2780921d11035be62e0",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1017.json": {
+      "sha256": "35dd87a759ec2d3e0c49b971948ce15b126f1eeafac40fab2c8044b6e27b1944",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1018.json": {
+      "sha256": "60aeeb8e05b55e27af5e872d61f98d61f1cb656e77b302d8124e5422351af6fb",
+      "bytes": 1488
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/independent_1019.json": {
+      "sha256": "24d4c4013b9a010b16660bfb1fe226d4437fd0b37e7316243e69e6e37d682980",
+      "bytes": 1498
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0000.json": {
+      "sha256": "1ea03f5bc28cd388ce6c46936af99af496519862e19d690a38d15ee5995c6bb4",
+      "bytes": 1491
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0001.json": {
+      "sha256": "758060a2f91915c0a8c5e62f2761864bdccdf46f28a89abf695673c8a4c93327",
+      "bytes": 1492
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0002.json": {
+      "sha256": "a21c4a3806e54376c9ef53c7b2f324e14706c51e91a4d324491d5b3597586e5c",
+      "bytes": 1490
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0003.json": {
+      "sha256": "bd620a1bce94e3020888cd674fc1acbdb98b015916b59feac37979d9439f8cad",
+      "bytes": 1476
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0004.json": {
+      "sha256": "08806dbb0491a80339333e4dd53700bbc021129580f61113a4572c3ba64aae9c",
+      "bytes": 1490
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0005.json": {
+      "sha256": "b68d980e5715b091fa60fb18d0c46266e11a716e3d9f79236f956e4d4998f077",
+      "bytes": 1492
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0006.json": {
+      "sha256": "e4f583172855820ae4773f4f068f5e16291c27c109b75464aaf0e6c322311f76",
+      "bytes": 1492
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0007.json": {
+      "sha256": "9e1c57c36366457465c96c5b9131dfb6f62e05f144e4fa70897d7a6a10d5897a",
+      "bytes": 1490
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0008.json": {
+      "sha256": "eebda43b93223219485ca28285650db0b5fe05706a70eb7dff0ceff3126324db",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0009.json": {
+      "sha256": "db57c55234ee2e9dd1febf262c073f3d9c77bc21b1fb40ab3708164d7726825d",
+      "bytes": 1487
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0010.json": {
+      "sha256": "b4da323f997d5b29bb7478d60faf31e305953a5454bc0cf7279fa84151f2592e",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0011.json": {
+      "sha256": "445da4df779207ee7ac5e46e71733597ab04f1d95144c51863876191edf5a5e3",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0012.json": {
+      "sha256": "d401313b87897120dc6048c28262f358debba4a5655f1d78b77011c0c37b5223",
+      "bytes": 1492
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0013.json": {
+      "sha256": "a6cd9a47941310e4967f61d55ddf161513efd2e738c0ed249a8a219dcbe375c2",
+      "bytes": 1474
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0014.json": {
+      "sha256": "fcb156250ffb4ba6b9defb120bf63c3315e46b6d4188663dd5def77b31217e44",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0015.json": {
+      "sha256": "03e1596e03e5c08b14df81a83bce967c5b2df6af6974e382e266837191360902",
+      "bytes": 1493
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0016.json": {
+      "sha256": "9a0a20dfb519f6c076af9155fa0896564ebe9f832a6b6577c5b02421779ee087",
+      "bytes": 1495
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0017.json": {
+      "sha256": "a7bdcf82e445845b8fb8cb9f22c7170c9d3410eb03d23ecd5c8d4882943859c1",
+      "bytes": 1494
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0018.json": {
+      "sha256": "37186d93c2e4898711c4038646244b5ebf4f6c5b9704c995eb8caa33e20920e6",
+      "bytes": 1490
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/reddit_submissions_long/crosscheck/production_0019.json": {
+      "sha256": "fcad4fbcb064161427043d2ca10d946ee528a4405b6903555e92503fd2d8c408",
+      "bytes": 1492
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/report_provenance.json": {
+      "sha256": "329267d098eb93c55c695cac6c67cebbb93dfc3cadd8597cf7bb799768ffc6ef",
+      "bytes": 992
+    },
+    "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/table_archive.json": {
+      "sha256": "468aa8db3cffe62d760d1bc398f47d5296e1a31762bc2072a46509c13dad7f01",
+      "bytes": 1041
+    }
+  }
+}

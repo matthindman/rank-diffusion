@@ -1,0 +1,7 @@
+{
+  "status": "CANCELLED_BEFORE_EXECUTION",
+  "stage": "diagnostics",
+  "panel": "reddit_submissions_long",
+  "reason": "Normal long-panel pipeline retains its slot through diagnostics; a queued duplicate would only wait on the stage lock and occupy shared capacity.",
+  "utc": "2026-10-12T04:23:19.139750+00:00"
+}

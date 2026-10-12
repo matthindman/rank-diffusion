@@ -1,0 +1,9 @@
+{
+  "status": "FAILED_BEFORE_SCIENTIFIC_WORK",
+  "stage": "recovery_checkpoint_replay",
+  "panel": "reddit_submissions_long",
+  "reason": "Concurrent time_ns attempt filename collision with comments replay. No new fit/simulation ran.",
+  "log": "guarded_reddit_submissions_long.log",
+  "utc": "2026-10-12T03:54:07.524529+00:00",
+  "remedy": "Opt-in wrapper namespaces attempt paths by stage, panel and PID; original sources and science unchanged."
+}

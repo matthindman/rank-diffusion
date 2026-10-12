@@ -1,0 +1,11 @@
+{
+  "status": "INTERRUPTED_FOR_EXACT_OPTIMIZATION",
+  "stage": "extension",
+  "panel": "reddit_comments",
+  "pid": 50939,
+  "utc": "2026-10-12T04:06:34.444398+00:00",
+  "discarded_incomplete_seed_fits": [],
+  "reason": "Every native diagnostic and count matched; comments diagnostic runtime 29.56 to 5.61 seconds.",
+  "completed_seed_policy": "Retain completed atomic seeds with producer hashes; interpret only the full completed final study. Incomplete seed is regenerated.",
+  "equivalence": "eligibility_equivalence.json"
+}

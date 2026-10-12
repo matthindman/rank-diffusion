@@ -1,0 +1,25 @@
+{
+  "eligibility_wrapper": {
+    "criterion": "union of declared full-window and train-only cohorts; original N+1 floor",
+    "path": "llm_fitting/validation/planted_efficient_run.py",
+    "sha256": "8a6c592bf20ad0c64c786d965d3fc14f11671e531b9caf98add0512728b5336c"
+  },
+  "execution_wrapper": {
+    "path": "llm_fitting/validation/planted_warning_guard.py",
+    "sha256": "bc78fef8b6a79b09bee0ea7900c577ea950ff0a09239c4a08fa689c7a5d93991",
+    "warning_capture": "once, not occurrence counts"
+  },
+  "panel": "reddit_comments",
+  "sources": {
+    "llm_fitting/community_metrics.py": "383da5e0f496f9ca3ee7027bca38b5dd15ac0ffce0ea9d97fc0ec95b71ae1dc0",
+    "llm_fitting/ladder_explainer.py": "3063ad14ac23f10067fb92d4ffcce46d725dd0381c6582f30d1ded46cfd20943",
+    "llm_fitting/minimal_rankdiff.py": "8bae37435c134d928987249c4ef968360c9fc447999aee451ffb83642a0f4c6a",
+    "llm_fitting/rankdiff_kalman.py": "764d9fccf107e8acd633363e05252b3c504cf8a601dad70cb72a1729de4c35a2",
+    "llm_fitting/residual_anatomy.py": "f26116dd0b5c2d0e70ea98d0bfb8a58a440f5f744b4ca49832bca95057653453",
+    "llm_fitting/validation/planted_crosscheck.py": "6482d56b78aab19f7ea215c7e337669f8c874d7e61854935b0653b808a73f622",
+    "llm_fitting/validation/planted_sim.py": "d2a6e4de03c66c6b48d2ca643641f232d9f29a4e6a4d97625ca6bb9e7926ecc7",
+    "llm_fitting/validation/planted_study.py": "36ffcee050b92a7e06baba323d412e33b552df526b3d09d8d6a956e972793760"
+  },
+  "stage": "diagnostics",
+  "status": "RAN-OK"
+}

@@ -1,0 +1,36 @@
+{
+  "checks": [
+    {
+      "every_numeric_value_and_count_equal": true,
+      "optimized_seconds": 0.863020658493042,
+      "optimizer_sha256": "753d3f2bff827b97088c9f2fb20940e489a7fa62d51fd1a2b567fad788a35265",
+      "original_seconds": 1.8570318222045898,
+      "panel": "facebook_a",
+      "reference_sha256": "3e5c12e19bc553927a9a473f0a3c0850247a85e3f68656c5086c4795d6ea829e",
+      "retained_identities": 2870,
+      "total_identities": 24697
+    },
+    {
+      "every_numeric_value_and_count_equal": true,
+      "optimized_seconds": 5.60851788520813,
+      "optimizer_sha256": "753d3f2bff827b97088c9f2fb20940e489a7fa62d51fd1a2b567fad788a35265",
+      "original_seconds": 29.55613088607788,
+      "panel": "reddit_comments",
+      "reference_sha256": "8cfd8e7965709aa4ae6b9e5914e62ecdf6ae3b353808a6baf6d608ea1e3d0eb1",
+      "retained_identities": 9867,
+      "total_identities": 265516
+    },
+    {
+      "every_numeric_value_and_count_equal": true,
+      "optimized_seconds": 3.698091983795166,
+      "optimizer_sha256": "753d3f2bff827b97088c9f2fb20940e489a7fa62d51fd1a2b567fad788a35265",
+      "original_seconds": 7.894896030426025,
+      "panel": "reddit_submissions_long",
+      "reference_sha256": "24cb177097e34b9b637e675ac44b3a50ab20e70207d2510c3b392a8aa4e2bc37",
+      "retained_identities": 4507,
+      "total_identities": 27952
+    }
+  ],
+  "kind": "software equivalence; not new independent scientific replications",
+  "status": "PASS"
+}

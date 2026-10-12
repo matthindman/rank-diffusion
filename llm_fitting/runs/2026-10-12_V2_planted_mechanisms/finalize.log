@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "counts": {
+    "facebook_a": {
+      "crosscheck": 40,
+      "recovery": 40,
+      "diagnostics": 399,
+      "extension_fits": 120
+    },
+    "reddit_comments": {
+      "crosscheck": 40,
+      "recovery": 40,
+      "diagnostics": 399,
+      "extension_fits": 120
+    },
+    "reddit_submissions_long": {
+      "crosscheck": 40,
+      "recovery": 40,
+      "diagnostics": 399,
+      "extension_fits": 120
+    }
+  },
+  "failed_seed_records": []
+}
+Matplotlib is building the font cache; this may take a moment.

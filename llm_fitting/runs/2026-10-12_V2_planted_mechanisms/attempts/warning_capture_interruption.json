@@ -1,0 +1,39 @@
+{
+  "status": "INTERRUPTED_NOT_INTERPRETED",
+  "reason": "Quadratic repeated-warning counting in metadata; no diagnostic checkpoint completed. SIGINT was ignored by background children, so SIGTERM was used.",
+  "running": [
+    {
+      "stage": "extension",
+      "panel": "facebook_a",
+      "pid": 50366
+    },
+    {
+      "stage": "extension",
+      "panel": "reddit_comments",
+      "pid": 50365
+    },
+    {
+      "stage": "diagnostics",
+      "panel": "facebook_a",
+      "pid": 50602
+    }
+  ],
+  "queued_cancelled": [
+    {
+      "stage": "extension",
+      "panel": "reddit_submissions_long"
+    },
+    {
+      "stage": "diagnostics",
+      "panel": "reddit_comments"
+    },
+    {
+      "stage": "diagnostics",
+      "panel": "reddit_submissions_long"
+    }
+  ],
+  "utc": "2026-10-12T03:47:58.708214+00:00",
+  "recovery": "All 120 baseline/zero-temperament fits finished successfully before diagnostics; preserved.",
+  "discarded_cells": "Two completed extension fit cells moved to abandoned/warning_capture; not used. Identical seeds will be replayed.",
+  "scientific_changes": "None. Opt-in wrapper changes repeated warning capture and stamps its source hash."
+}

@@ -1,0 +1,26 @@
+{
+  "diagnostic_effects.csv": {
+    "csv_sha256": "d99a13d1dcef85db453117118ade143e3f8660724262493289ac6fc2c6a85615",
+    "gzip_sha256": "28342827579ceaaf39f087cf14da52f8162f8c5e67d51b1ca6f8e0890bec8599",
+    "csv_bytes": 7121542,
+    "gzip_bytes": 1417099
+  },
+  "diagnostic_pairs.csv": {
+    "csv_sha256": "38ebdb1a73bd5c487d253043bcc6ff06b98e6701b9bfa4c325777f1b414305af",
+    "gzip_sha256": "02c626838f7627fb0ae3d50876f58927a658b3575e772d55b8596ba195159c7e",
+    "csv_bytes": 79079786,
+    "gzip_bytes": 13216101
+  },
+  "diagnostic_rates.csv": {
+    "csv_sha256": "71093ea8a2df8f149cbc9b18e748372680bffaf7a00d5e32837f8ea5984f6dad",
+    "gzip_sha256": "df00ae875e393b3ccac317c7eaf9a3b5b751dd0608881acdc67854816ed18079",
+    "csv_bytes": 12582366,
+    "gzip_bytes": 2790019
+  },
+  "fitted_kappa_knots.csv": {
+    "csv_sha256": "fd4ebbb70670ec6be1bd0f66b61b3137146bc242c9daf799dfdfc2639bad84e3",
+    "gzip_sha256": "e9df95853c9aff4f6dd69aad6fdaae1c9d3cf75c4d1c652baa6a04d010bc67ed",
+    "csv_bytes": 1967920,
+    "gzip_bytes": 159549
+  }
+}
