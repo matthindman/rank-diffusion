@@ -1,0 +1,12 @@
+interpreter: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3
+python 3.11.6  pandas 2.2.2  numpy 2.0.1
+== research suite (tests/)
+464 passed, 1 warning, 13 subtests passed in 46.08s
+== sealed-data guard
+sealed list: 2 sealed, 0 released, 0 approved runners
+Claude Code hook: wired in .claude/settings.json
+== package suite (Python/rankdiff/tests)
+8 passed in 40.76s
+== legacy guard (facebook legacy panel, defaults; expect 14/15, churn 0.013)
+  >>> v4.3-style score: 14/15   |   mean churn error: 0.013
+HEALTH CHECK: PASS

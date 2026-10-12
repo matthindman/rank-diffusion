@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/Users/hindman/Documents/GitHub/rank-diffusion-codex/llm_fitting/validation/planted_warning_guard.py", line 40, in <module>
+    if __name__=="__main__":main()
+                            ^^^^^^
+  File "/Users/hindman/Documents/GitHub/rank-diffusion-codex/llm_fitting/validation/planted_warning_guard.py", line 39, in main
+    with bounded_warnings():runner.main()
+                            ^^^^^^^^^^^^^
+  File "/Users/hindman/Documents/GitHub/rank-diffusion-codex/llm_fitting/validation/planted_study.py", line 118, in main
+    pc.write(attempt,dict(stage=args.stage,panel=args.panel,status="STARTED",sources=sources()))
+  File "/Users/hindman/Documents/GitHub/rank-diffusion-codex/llm_fitting/validation/planted_warning_guard.py", line 26, in write
+    return original_write(path,data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hindman/Documents/GitHub/rank-diffusion-codex/llm_fitting/validation/planted_crosscheck.py", line 45, in write
+    os.replace(temp,path)
+FileNotFoundError: [Errno 2] No such file or directory: 'llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791777090789084000.json.tmp' -> 'llm_fitting/runs/2026-10-12_V2_planted_mechanisms/attempts/1791777090789084000.json'

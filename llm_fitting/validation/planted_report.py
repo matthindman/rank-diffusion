@@ -246,7 +246,7 @@ def main():
     text+="A warning-only wrapper bounded capture without changing mathematical functions. One long-panel restart then failed before scientific work "
     text+="because attempt filenames collided; panel/stage/PID names fixed this, and the worker restarted. "
     text+="The comments worker was later restarted after an exact eligibility optimization passed native and controlled equivalence checks. "
-    text+="Complete seed cells were retained; fits lacking their companion diagnostic were archived unused and replayed. "
+    text+="Complete seed cells were retained; no incomplete-fit cell needed archiving at that transition. "
     text+="A redundant queued long-panel diagnostics request was cancelled before execution. After all 120 comments added-case fits completed, "
     text+="its automatic follow-on diagnostic worker was cancelled while waiting on the separate original-diagnostics worker's stage lock, "
     text+="releasing a shared compute slot without cancelling scientific work. Immutable STARTED records from terminated processes "

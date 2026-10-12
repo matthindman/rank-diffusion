@@ -1,0 +1,4 @@
+waiting for a heavy-job slot; held by:
+  pid 50359 since 2026-10-12 12:40:55 in /Users/hindman/Documents/GitHub/rank-diffusion-codex :: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u llm_fitting/validation/planted_extension.py --panel facebook_a --out llm_fitting/runs/2026-10-12_V2_planted_mechanisms
+  pid 49777 since 2026-10-12 12:27:45 in /Users/hindman/Documents/GitHub/rank-diffusion-codex :: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u llm_fitting/validation/planted_study.py recovery --panel reddit_comments --out llm_fitting/runs/2026-10-12_V2_planted_mechanisms
+  pid 50360 since 2026-10-12 12:40:55 in /Users/hindman/Documents/GitHub/rank-diffusion-codex :: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u llm_fitting/validation/planted_extension.py --panel reddit_comments --out llm_fitting/runs/2026-10-12_V2_planted_mechanisms

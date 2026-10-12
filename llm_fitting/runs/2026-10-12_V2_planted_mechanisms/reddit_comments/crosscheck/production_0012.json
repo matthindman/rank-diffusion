@@ -1,0 +1,35 @@
+{
+  "kind": "production",
+  "parameter_sha256": "ca26212007b3b53e4ca8713113af7d7336c3b7a8836822e05c8bbed978de5bcd",
+  "seconds": 3.1641290187835693,
+  "seed": 12,
+  "sources": {
+    "llm_fitting/community_metrics.py": "383da5e0f496f9ca3ee7027bca38b5dd15ac0ffce0ea9d97fc0ec95b71ae1dc0",
+    "llm_fitting/ladder_explainer.py": "3063ad14ac23f10067fb92d4ffcce46d725dd0381c6582f30d1ded46cfd20943",
+    "llm_fitting/minimal_rankdiff.py": "8bae37435c134d928987249c4ef968360c9fc447999aee451ffb83642a0f4c6a",
+    "llm_fitting/rankdiff_kalman.py": "764d9fccf107e8acd633363e05252b3c504cf8a601dad70cb72a1729de4c35a2",
+    "llm_fitting/validation/planted_crosscheck.py": "6482d56b78aab19f7ea215c7e337669f8c874d7e61854935b0653b808a73f622",
+    "llm_fitting/validation/planted_sim.py": "d2a6e4de03c66c6b48d2ca643641f232d9f29a4e6a4d97625ca6bb9e7926ecc7"
+  },
+  "statistics": {
+    "ACF1": -0.3602151116610948,
+    "ACF2": -0.04181127827914927,
+    "RACF1": 0.7130104511256161,
+    "RACF13": 0.26497057640529686,
+    "RACF4": 0.5372710133794761,
+    "S1": 0.15945142170745844,
+    "S10": 0.3357675780307116,
+    "S100": 0.6375112031947845,
+    "VR13": 0.19890674276949646,
+    "VR2": 0.6403615067759136,
+    "VR4": 0.40313464226796364,
+    "VR8": 0.26956078440894077,
+    "outfluxK": 0.12857362962962962,
+    "rPers1": 110.23703703703704,
+    "rPers13": 101.17886178861788,
+    "rPers4": 106.0530303030303,
+    "rR2_1": 0.9480284835211038,
+    "rR2_13": 0.8687661711904104,
+    "rR2_4": 0.9200864939953804
+  }
+}

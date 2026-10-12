@@ -1,0 +1,11 @@
+*/parameters.json
+*/recovery/
+*/diagnostics/
+*/extension_fits/
+abandoned/
+*.tmp
+locks/
+diagnostic_effects.csv
+diagnostic_pairs.csv
+diagnostic_rates.csv
+fitted_kappa_knots.csv

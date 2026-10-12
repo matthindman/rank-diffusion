@@ -1,0 +1,227 @@
+{
+  "attempts": [
+    {
+      "file": "1791775161822938000.json",
+      "panel": "facebook_a",
+      "stage": "run",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791775201935115000.json",
+      "panel": "reddit_comments",
+      "stage": "run",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791775371485645000.json",
+      "panel": "reddit_submissions_long",
+      "stage": "run",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791775629896985000.json",
+      "panel": null,
+      "stage": "summarize",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791775666296634000.json",
+      "panel": "reddit_comments",
+      "stage": "recovery",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791775666296882000.json",
+      "panel": "facebook_a",
+      "stage": "recovery",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791775666297236000.json",
+      "panel": "reddit_submissions_long",
+      "stage": "recovery",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791776455719132000.json",
+      "panel": "reddit_comments",
+      "stage": "extension",
+      "status": "STARTED"
+    },
+    {
+      "file": "1791776455719244000.json",
+      "panel": "facebook_a",
+      "stage": "extension",
+      "status": "STARTED"
+    },
+    {
+      "file": "1791776735887378000.json",
+      "panel": "facebook_a",
+      "stage": "diagnostics",
+      "status": "STARTED"
+    },
+    {
+      "file": "1791777090789084000.json",
+      "panel": "reddit_comments",
+      "stage": "recovery",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791777090789085000.json",
+      "panel": "facebook_a",
+      "stage": "recovery",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791777091448243000.json",
+      "panel": "facebook_a",
+      "stage": "extension",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791777091516952000.json",
+      "panel": "reddit_comments",
+      "stage": "extension",
+      "status": "STARTED"
+    },
+    {
+      "file": "1791777460293131000_recovery_reddit_submissions_long_51298.json",
+      "panel": "reddit_submissions_long",
+      "stage": "recovery",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791777461056715000_extension_reddit_submissions_long_51300.json",
+      "panel": "reddit_submissions_long",
+      "stage": "extension",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791777995136272000_recovery_reddit_comments_51697.json",
+      "panel": "reddit_comments",
+      "stage": "recovery",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791777995859522000_extension_reddit_comments_51699.json",
+      "panel": "reddit_comments",
+      "stage": "extension",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791778085839828000_diagnostics_facebook_a_51784.json",
+      "panel": "facebook_a",
+      "stage": "diagnostics",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791778907494346000_diagnostics_reddit_comments_52280.json",
+      "panel": "reddit_comments",
+      "stage": "diagnostics",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "1791780405757035000_diagnostics_reddit_submissions_long_55003.json",
+      "panel": "reddit_submissions_long",
+      "stage": "diagnostics",
+      "status": "RAN-OK"
+    },
+    {
+      "file": "attempt_id_collision.json",
+      "panel": "reddit_submissions_long",
+      "stage": "recovery_checkpoint_replay",
+      "status": "FAILED_BEFORE_SCIENTIFIC_WORK"
+    },
+    {
+      "file": "duplicate_comments_stage_cancelled.json",
+      "panel": "reddit_comments",
+      "stage": "diagnostics",
+      "status": "CANCELLED_DUPLICATE_BEFORE_SCIENTIFIC_EXECUTION"
+    },
+    {
+      "file": "duplicate_long_queue_cancelled.json",
+      "panel": "reddit_submissions_long",
+      "stage": "diagnostics",
+      "status": "CANCELLED_BEFORE_EXECUTION"
+    },
+    {
+      "file": "eligibility_transition.json",
+      "panel": "reddit_comments",
+      "stage": "extension",
+      "status": "INTERRUPTED_FOR_EXACT_OPTIMIZATION"
+    },
+    {
+      "file": "warning_capture_interruption.json",
+      "panel": null,
+      "stage": null,
+      "status": "INTERRUPTED_NOT_INTERPRETED"
+    }
+  ],
+  "audit_sha256": "fe9abeef6eae76f7993fadc16f43c5efd8a95451c85317197ed78874b591f347",
+  "counts": {
+    "facebook_a": {
+      "crosscheck": 40,
+      "diagnostics": 399,
+      "extension_fits": 120,
+      "recovery": 40
+    },
+    "reddit_comments": {
+      "crosscheck": 40,
+      "diagnostics": 399,
+      "extension_fits": 120,
+      "recovery": 40
+    },
+    "reddit_submissions_long": {
+      "crosscheck": 40,
+      "diagnostics": 399,
+      "extension_fits": 120,
+      "recovery": 40
+    }
+  },
+  "eligibility_core_matches_native_tested_version": true,
+  "eligibility_equivalence_sha256": "7020a694cc294140e5decc5a085bada0dd3de8db67567f8c16041b6bf7946fc9",
+  "failed_seed_records": [],
+  "minimum_risk_counts": {
+    "facebook_a": {
+      "departure_exposure": 28401,
+      "fate_cohort": 813
+    },
+    "reddit_comments": {
+      "departure_exposure": 160064,
+      "fate_cohort": 2817
+    },
+    "reddit_submissions_long": {
+      "departure_exposure": 74916,
+      "fate_cohort": 836
+    }
+  },
+  "note": "Complete atomic seed cells only. Interrupted parent attempts are documented separately; no incomplete seed enters a table.",
+  "status": "PASS",
+  "wrappers": {
+    "753d3f2bff827b97088c9f2fb20940e489a7fa62d51fd1a2b567fad788a35265": {
+      "commit": "7abf973aa624deb9687f0502b3b3e48c7ae7c4bc",
+      "path": "llm_fitting/validation/planted_efficient_run.py"
+    },
+    "8a54056e5391e6c223eb13b42bb3da1c5599e22dd9628ea0b3db606c5a3f28e5": {
+      "commit": "ef056f4247f20822fde77c390397e7c8eefff225",
+      "path": "llm_fitting/validation/planted_warning_guard.py"
+    },
+    "8a6c592bf20ad0c64c786d965d3fc14f11671e531b9caf98add0512728b5336c": {
+      "commit": "13e77747ab5a9445ede66bae29665265c2c7d259",
+      "path": "llm_fitting/validation/planted_efficient_run.py"
+    },
+    "abb457f647bb8f9aafa729ca906c4076a9ffc76b4aae67eea920f2dea592c289": {
+      "commit": "be8ab3809f054f1d37fdba0d459574031a41a9e3",
+      "path": "llm_fitting/validation/planted_warning_guard.py"
+    },
+    "ac3a7a40b5d5193619e1fb33a6fe1929ff09bd1df48e52f196281d6332e12185": {
+      "commit": "1891aa051494225d2edf4ca34c8fd18f90ae1933",
+      "path": "llm_fitting/validation/planted_warning_guard.py"
+    },
+    "bc78fef8b6a79b09bee0ea7900c577ea950ff0a09239c4a08fa689c7a5d93991": {
+      "commit": "13e77747ab5a9445ede66bae29665265c2c7d259",
+      "path": "llm_fitting/validation/planted_warning_guard.py"
+    }
+  },
+  "zero_risk_cells": []
+}

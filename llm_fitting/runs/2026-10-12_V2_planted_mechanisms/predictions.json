@@ -1,0 +1,67 @@
+[
+  {
+    "detail": "All 57 discrepancy checks pass; minimum Bonferroni-adjusted p=1 on each profile.",
+    "id": "P1",
+    "status": "PASS"
+  },
+  {
+    "detail": "Mean kappa edge fraction >=.25 on >=2 profiles; facebook_a=0.67593, reddit_comments=0.48545, reddit_submissions_long=0.45648",
+    "id": "P2",
+    "status": "PASS"
+  },
+  {
+    "detail": "V relative RMSE < kappa on >=2 profiles; {\"facebook_a\": {\"V\": {\"median\": 0.8980033444682574, \"included\": 54, \"excluded\": 0}, \"kappa_z\": {\"median\": 0.9205960722217674, \"included\": 54, \"excluded\": 0}}, \"reddit_comments\": {\"V\": {\"median\": 0.7428220533343508, \"included\": 55, \"excluded\": 0}, \"kappa_z\": {\"median\": 1.74352605101627, \"included\": 55, \"excluded\": 0}}, \"reddit_submissions_long\": {\"V\": {\"median\": 0.5142939596968706, \"included\": 54, \"excluded\": 0}, \"kappa_z\": {\"median\": 0.9404954380408499, \"included\": 54, \"excluded\": 0}}}",
+    "id": "P3",
+    "status": "PASS"
+  },
+  {
+    "detail": "Positive s at true zero in >=25% of seeds on >=2 profiles; facebook_a=1, reddit_comments=1, reddit_submissions_long=1",
+    "id": "P4",
+    "status": "PASS"
+  },
+  {
+    "detail": "Strong off: absence-exit detection >=.8 on >=2 profiles; facebook_a=1, reddit_comments=1, reddit_submissions_long=1",
+    "id": "P5",
+    "status": "PASS"
+  },
+  {
+    "detail": "Strong volatility: middle ratio <=-2 matched-control SD on >=2 profiles; facebook_a=-57.079, reddit_comments=-103.67, reddit_submissions_long=-156.2",
+    "id": "P6",
+    "status": "PASS"
+  },
+  {
+    "detail": "Strong fat lasting: head anchored tail >=1 baseline SD on >=2 profiles; facebook_a=2.3558, reddit_comments=5.2589, reddit_submissions_long=12.848",
+    "id": "P7",
+    "status": "PASS"
+  },
+  {
+    "detail": "Strong bounded fast: head q9999 reduction >=20% on >=2 profiles; facebook_a=0.12477, reddit_comments=0.18132, reddit_submissions_long=0.19191",
+    "id": "P8",
+    "status": "FAIL"
+  },
+  {
+    "detail": "T86 slow-memory/RW pairs: [{\"condition_a\":\"slow_memory_0\",\"condition_b\":\"random_walk_0\",\"label\":\"separated\",\"separation\":3.1813974737},{\"condition_a\":\"slow_memory_0\",\"condition_b\":\"random_walk_1\",\"label\":\"separated\",\"separation\":4.2174900463},{\"condition_a\":\"slow_memory_1\",\"condition_b\":\"random_walk_0\",\"label\":\"overlapping\",\"separation\":2.3289071497},{\"condition_a\":\"slow_memory_1\",\"condition_b\":\"random_walk_1\",\"label\":\"separated\",\"separation\":3.2957057971}]",
+    "id": "P9",
+    "status": "FAIL"
+  },
+  {
+    "detail": "Strong current-rank attraction: fitted middle kappa <=.75 baseline on >=2 profiles; facebook_a=0.37524, reddit_comments=0.40436, reddit_submissions_long=0.62832",
+    "id": "P10",
+    "status": "PASS"
+  },
+  {
+    "detail": "Strong current-rank attraction vs strong RW, h26 middle dispersion: {\"facebook_a\": \"unresolved\", \"reddit_comments\": \"unresolved\", \"reddit_submissions_long\": \"unresolved\"}",
+    "id": "P11",
+    "status": "FAIL"
+  },
+  {
+    "detail": "Strong cycle: middle b13 slope gap4-minus-gap2 >=.5 on >=2 profiles; facebook_a=1.8131, reddit_comments=1.8491, reddit_submissions_long=1.9038",
+    "id": "P12",
+    "status": "PASS"
+  },
+  {
+    "detail": "Strong cycle: fitted middle kappa rises >=.005 on >=2 profiles; facebook_a=-0.027971, reddit_comments=-0.012459, reddit_submissions_long=-0.0029578",
+    "id": "P13",
+    "status": "FAIL"
+  }
+]
