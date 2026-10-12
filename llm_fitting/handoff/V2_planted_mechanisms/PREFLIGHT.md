@@ -63,3 +63,10 @@
   stage, panel and PID in the wrapper. Two already-running workers retain
   their loaded wrapper and cached old source hash; the old version is in git.
   The retry is only the failed long-panel worker, with identical seed sets.
+
+- An optional eligibility wrapper is being verified to reduce diagnostics to
+  the union of identities eligible for the already-declared full-window and
+  train-only cohorts. It retains the original N+1 floor and identity counts.
+  Controlled cases match every numeric output exactly; native equivalence
+  checks must pass before use. This is an execution optimization, with no
+  new selection criterion, model change, or changed diagnostic definition.
