@@ -26,9 +26,18 @@ left side is the change in the SHAPE of the ladder, and
     shape change  =  -G + R + F,      G = occupant loss relative to the centre.
 
 A stationary shape with no flow has G = R: what the occupants of the top k lose
-is what reordering puts back.  In a diffusion R is half the local time of the
-gap between ranks k and k+1, and its small-step value is k v / (2 S), with v
-the variance of the changes near rank k and S the local slope of the ladder.
+is what reordering puts back.
+
+R is the ENDPOINT reordering gain over the interval.  It keeps the names that
+held the top k at the first period, so it nets out everything that crossed
+and crossed back, and it is not additive over sub-intervals: the path
+(1, -1) -> (-1, 1) -> (1, -1) has R = 0 overall and R = 4 in two steps.  It is
+not the accumulated local time of the gap between ranks k and k+1; only for a
+short interval in a diffusion does its expectation approach half of that, and
+then its small-step value is k v / (2 S), with v the variance of the changes
+near rank k and S the local slope.  Whether k v / (2 S) tracks R at a given
+horizon is something to measure and to validate on planted panels, not a
+theorem (Codex's review R4, finding 2).
 """
 from __future__ import annotations
 
@@ -71,6 +80,15 @@ def _order(L):
 def ladder(L, n=None):
     v = np.sort(L[np.isfinite(L)])[::-1]
     return v if n is None else v[:n]
+
+
+def certified(level_row, bound, rank):
+    """True if the top `rank` of a block ladder built from tracked endpoints is
+    exact: the level at that rank is strictly above the most an untracked
+    endpoint could have (bound; -inf when no untracked endpoint can exist)."""
+    v = ladder(level_row)
+    rank = int(np.ceil(rank))
+    return bool(v.size >= rank and v[rank - 1] > bound)
 
 
 def local_slope(lad, lo, hi):
@@ -125,7 +143,10 @@ def topk_accounting(L0, L1, ks, k_centre):
 
 
 def diffusion_gain(L0, L1, k, k_centre, width=np.sqrt(2.0)):
-    """Small-step prediction of the reordering gain at rank k: k v / (2 S).
+    """Small-step value of the reordering gain at rank k: k v / (2 S).  The
+    endpoints are chosen by their rank at the first period, so v is affected by
+    selection on that period's noise: this is a diagnostic of the observed
+    positions, not a structural variance by permanent rank.
 
     v: variance of the changes (about their own mean) of the endpoints ranked in
     (k / width, k * width] at the first period and observed at the second;
@@ -192,19 +213,29 @@ def cohort_bins(pr, K, pres=None, pres_floor=0.7, min_edge=12):
     return labels, which
 
 
-def cohort_drift(M, c, which, n_bins, b_start, b_end, n_boot=400, seed=0):
+def cohort_drift(M, c, which, n_bins, b_start, b_end, n_boot=400, seed=0, return_draws=False):
     """Mean and mean squared change, between two later periods, of cohorts fixed
     beforehand.  Change = (M[b_end] - c[b_end]) - (M[b_start] - c[b_start]).
 
-    `which` must be built from periods strictly before b_start.  A level with no
-    restoring drift then has zero expected change in every bin, whatever the
-    selection.  Endpoints with a level at b_start and none at b_end are
-    counted as attrition, not dropped silently.  5-95% endpoint bootstrap.
+    `which` must be built from periods strictly before b_start.
+
+    The estimand is SURVIVOR-CONDITIONAL: the mean over cohort members with a
+    level at both periods.  Members with a level at b_start and none at b_end
+    are counted as attrition; their changes are unobserved and nothing here
+    corrects for selection on survival.  Selection on an earlier period does
+    not by itself make the mean free of that period's noise: a component that
+    is still correlated with the selection period when the change is measured
+    decays over it (review R4, finding 1).
+
+    5-95% endpoint bootstrap per bin.  With return_draws, also the bootstrap
+    means [n_boot, n_bins] (NaN for a bin with fewer than five survivors), so
+    that a weighted sum over bins can be given a joint interval.
     """
     rng = np.random.default_rng(seed)
     d = (M[b_end] - c[b_end]) - (M[b_start] - c[b_start])
     start = np.isfinite(M[b_start])
     rows = []
+    draws = np.full((n_boot, n_bins), np.nan)
     for j in range(n_bins):
         m = (which == j) & start
         x = d[m & np.isfinite(d)]
@@ -212,23 +243,30 @@ def cohort_drift(M, c, which, n_bins, b_start, b_end, n_boot=400, seed=0):
                    attrition=float(1 - x.size / max(m.sum(), 1)))
         if x.size >= 5:
             bs = x[rng.integers(0, x.size, (n_boot, x.size))].mean(axis=1)
+            draws[:, j] = bs
             row.update(mean=float(x.mean()), q05=float(np.quantile(bs, 0.05)),
                        q95=float(np.quantile(bs, 0.95)), msq=float((x * x).mean()),
                        var=float(x.var()))
         rows.append(row)
-    return rows
+    return (rows, draws) if return_draws else rows
 
 
 def carrier_regression(M, c, b_pos, b_start, b_end, mask, b_home=None, n_boot=400, seed=0):
-    """Which information predicts the later change?  OLS of the change from
-    b_start to b_end (relative to the centre) on the level at b_pos and, when
-    b_home is given, the level at the still earlier period b_home, both
-    relative to the centre.  All predictors precede b_start, so noise in them
-    cannot manufacture a restoring slope.
+    """Predictive associations of the later change with two earlier levels.
 
-      no restoring force            both slopes zero
-      drift that depends on where the endpoint is     slope on b_pos negative, on b_home zero
-      return toward the endpoint's own earlier level  slope on b_pos negative, on b_home positive
+    OLS of the change from b_start to b_end (relative to the centre) on the
+    level at b_pos and, when b_home is given, the level at the still earlier
+    period b_home, both relative to the centre.
+
+    The slopes are descriptive.  Their SIGNS DO NOT IDENTIFY A MECHANISM
+    (review R4, finding 1): a level with drift that depends on position only
+    gives a negative slope on b_pos and a positive one on b_home once it is
+    averaged into blocks (-0.34 and +0.07 for an OU at 0.01 per week in
+    52-week blocks), and a random walk plus a slowly decaying component gives
+    the same pattern as a personal home.  Placing the predictors before the
+    interval removes selection on the interval's own noise and nothing more.
+    What a pattern of slopes means is decided against planted rivals at the
+    same block lengths, never from this table.
     """
     rng = np.random.default_rng(seed)
     y = (M[b_end] - c[b_end]) - (M[b_start] - c[b_start])
@@ -249,32 +287,47 @@ def carrier_regression(M, c, b_pos, b_start, b_end, mask, b_home=None, n_boot=40
                 **{nm + "_q95": float(np.quantile(bs[:, i], 0.95)) for i, nm in enumerate(names)})
 
 
-def predictable_loss(M, c, which, drift_rows, b_start, ks):
+def predictable_loss(M, c, which, drift_rows, b_start, b_end, ks, draws=None, outside_bin=None):
     """How much of the occupants' loss was predictable from the earlier window?
 
-    For each k: minus the sum, over the endpoints holding the top k at b_start,
-    of the mean change of the cohort bin each belongs to (drift_rows from
-    cohort_drift with the same b_start).  Compare with R from topk_accounting
-    over the same pair of periods: the ratio is the share of the reordering
-    gain that drift measured without the starting position accounts for.
-    Also returns the 5% and 95% values from the bins' bootstrap brackets.
+    For each k, over S_k = the endpoints holding the top k at b_start that have
+    a level at b_end and belong to a cohort bin (not `outside_bin`):
+
+        G_pred    minus the sum over S_k of the mean change of each one's bin
+        G_cohort  minus the sum over S_k of their actual changes
+
+    Both cover the same endpoints, the survivors that topk_accounting's G also
+    covers; exits and occupants from outside the cohort are counted, not
+    weighted (review R4, finding 4).  The outside bin is left out because the
+    tracked set admits it with later information.
+
+    With `draws` from cohort_drift(return_draws=True), q05 and q95 are the
+    quantiles of the weighted sum over the same bootstrap draws: a joint
+    interval, conditional on the realized centre, on who occupies the top k
+    and on R (finding 5).  Without draws no interval is given.
     """
     mean = np.array([r.get("mean", np.nan) for r in drift_rows])
-    lo = np.array([r.get("q05", np.nan) for r in drift_rows])
-    hi = np.array([r.get("q95", np.nan) for r in drift_rows])
+    d = (M[b_end] - c[b_end]) - (M[b_start] - c[b_start])
     o = _order(M[b_start])
+    survive = np.isfinite(M[b_end])
+    member = np.ones(which.size, dtype=bool) if outside_bin is None else (which != outside_bin)
     out = []
     for k in ks:
-        w = np.bincount(which[o[:k]], minlength=mean.size).astype(float)
+        occ = o[:k]
+        S = occ[survive[occ] & member[occ]]
+        w = np.bincount(which[S], minlength=mean.size).astype(float)
         use = w > 0
-        if np.any(use & ~np.isfinite(mean)):
-            out.append(dict(k=int(k), G_pred=np.nan, G_pred_lo=np.nan, G_pred_hi=np.nan,
-                            bin_counts=w.astype(int).tolist()))
-            continue
-        out.append(dict(k=int(k), G_pred=float(-(w[use] * mean[use]).sum()),
-                        G_pred_lo=float(-(w[use] * hi[use]).sum()),
-                        G_pred_hi=float(-(w[use] * lo[use]).sum()),
-                        bin_counts=w.astype(int).tolist()))
+        row = dict(k=int(k), n_cohort_survivors=int(S.size),
+                   n_outside=int((survive[occ] & ~member[occ]).sum()),
+                   n_exit=int((~survive[occ]).sum()), bin_counts=w.astype(int).tolist(),
+                   G_cohort=float(-d[S].sum()), G_pred=None, G_pred_q05=None, G_pred_q95=None)
+        if S.size and not np.any(use & ~np.isfinite(mean)):
+            row["G_pred"] = float(-(w[use] * mean[use]).sum())
+            if draws is not None:
+                dist = -(draws[:, use] @ w[use])
+                row["G_pred_q05"] = float(np.quantile(dist, 0.05))
+                row["G_pred_q95"] = float(np.quantile(dist, 0.95))
+        out.append(row)
     return out
 
 

@@ -63,15 +63,16 @@ general) and §2z-bn (Claude's review: no gap found; the consequence is to
 measure matched finite-horizon moments and crossings instead).
 The per-endpoint export for Codex's V3 (A6) is on `main`.
 
-**Where the adopted agenda stands (§2z-bq).** Its first deliverable, one
-protocol for steps 1 and 2, is drafted and waits for Codex's review (queue
-row R4): `MTS_PROTOCOL_STEPS_1_2_2026-10-13.md`. The statistics and the
-runner are built and tested on synthetic panels only
-(`balance_accounting.py`, `mts_step1.py`). **Nothing has been run on any
-panel**, and the runner refuses a registered panel until the review is
-answered. Step 2, planted rivals and a recovery map, is Codex's task V4. The
-protocol's first decision is whether step 3 (predicting slopes with no
-constant taken from the ladder) is identified on development data.
+**Where the adopted agenda stands (§2z-bq, §2z-bs, §2z-bt).** Its first
+deliverable, one protocol for steps 1 and 2, was drafted, reviewed by Codex
+(R4: six findings, all accepted) and revised to v2 before anything ran:
+`MTS_PROTOCOL_STEPS_1_2_2026-10-13.md`, with `balance_accounting.py` and
+`mts_step1.py`. What the review settled: a regression on earlier levels
+does not identify what holds the ladder; the reordering gain is not local
+time; the protocol's last section is a feasibility screen, and
+identification of slopes is claimed only if Codex's planted study (V4)
+recovers held-out slopes. Step 1's results, once run, are in the newest
+record entries after §2z-bt.
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate

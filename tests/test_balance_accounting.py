@@ -143,22 +143,24 @@ def test_return_to_own_level_is_detected():
     assert reg["pos_q95"] < 0 and reg["home_q05"] > 0, reg
 
 
-def test_predictable_loss_and_occupancy_shapes():
+def test_predictable_loss_covers_the_same_survivors_with_a_joint_interval():
     X = lasting_plus_noise("rw", n=3000, seed=5)
     K = 600
     R = weekly_ranks(X)
     M = ba.block_means(X, 52)
+    M[2, ba._order(M[1])[5]] = np.nan              # one occupant of the top k leaves the record
     c = ba.centre_series(M, K)
     pr, pres = ba.perm_rank(R, 0, 52)
     labels, which = ba.cohort_bins(pr, K, pres)
-    rows = ba.cohort_drift(M, c, which, len(labels), 1, 2)
+    rows, draws = ba.cohort_drift(M, c, which, len(labels), 1, 2, return_draws=True)
     ks = [K // 8, K // 2, K]
-    pl = ba.predictable_loss(M, c, which, rows, 1, ks)
+    pl = ba.predictable_loss(M, c, which, rows, 1, 2, ks, draws=draws, outside_bin=len(labels) - 1)
     acc = ba.topk_accounting(M[1], M[2], ks, K)
     for p, a in zip(pl, acc):
-        assert sum(p["bin_counts"]) == p["k"]
-        assert p["G_pred_lo"] <= p["G_pred"] <= p["G_pred_hi"]
-        assert np.isfinite(a["R"])
+        assert p["n_cohort_survivors"] + p["n_outside"] + p["n_exit"] == p["k"]
+        assert sum(p["bin_counts"]) == p["n_cohort_survivors"]
+        assert p["n_exit"] == a["n_exit"] == 1
+        assert p["G_pred_q05"] <= p["G_pred"] <= p["G_pred_q95"]
     occ = ba.occupancy(which, len(labels), M[2], ks)
     assert len(occ) == len(labels) and all(len(o) == len(ks) for o in occ)
     assert occ[0][-1] > 0.9 and occ[-1][0] < 0.05
@@ -173,34 +175,123 @@ def test_block_means_presence_rule():
         ba.topk_accounting(X[0], X[1], [10], 3)
 
 
+def long_frame(X):
+    import pandas as pd
+    R = weekly_ranks(X)
+    per, ent = np.nonzero(np.isfinite(X))
+    df = pd.DataFrame(dict(entity_id=[f"e{j:05d}" for j in ent], period=per, X=X[per, ent], rank=R[per, ent]))
+    df["N"] = df.groupby("period")["entity_id"].transform("size")
+    return df
+
+
 def test_runner_end_to_end_on_a_synthetic_long_panel():
     """mts_step1.analyse on a long panel: the identity closes in every cell,
-    the structure is JSON-ready, and the registered-panel entry point refuses
-    to start before the protocol is reviewed."""
+    the structure is JSON-ready, every prediction gets one of the four
+    statuses, and the registered-panel entry point refuses to start before
+    the protocol is reviewed."""
     import json
-
-    import pandas as pd
 
     import mts_step1 as m1
 
     X = lasting_plus_noise("rw", n=3000, T=160, seed=7)
     X[:, -50:][:40] = np.nan                       # 50 endpoints enter late
-    T, n = X.shape
-    R = weekly_ranks(X)
-    per, ent = np.nonzero(np.isfinite(X))
-    df = pd.DataFrame(dict(entity_id=[f"e{j:05d}" for j in ent], period=per, X=X[per, ent], rank=R[per, ent]))
-    df["N"] = df.groupby("period")["entity_id"].transform("size")
-    res = m1.analyse(df, K=300, block=40, horizons=(1, 13), boundaries=(1.0,), boot=50)
+    res = m1.analyse(long_frame(X), K=300, block=40, horizons=(1, 13), boundaries=(1.0,), boot=50)
     json.dumps(res, default=float)
     cell = res["boundaries"]["1.0"]
-    assert res["blocks"]["n"] == 4 and res["n_tracked"] <= n
+    assert res["blocks"]["n"] == 4 and res["n_tracked"] <= X.shape[1]
+    assert min(res["blocks"]["certified_top"]) >= 300
     for w in cell["weekly"].values():
         assert w["max_abs_resid"] < 1e-9
     pairs = cell["blocks"]["pairs"]
     assert len(pairs) == 4                          # select 0: (1,2), (1,3), (2,3); select 1: (2,3)
+    assert sum(p["role"].startswith("primary") for p in pairs) == 1
+    assert sum(p["role"].startswith("replicate") for p in pairs) == 1
     for p in pairs:
         for a in p["accounting"]:
             assert abs(a["resid"]) < 1e-9 * a["k"]
     assert any("home" in p.get("carriers", {}) for p in pairs)
+    sc = m1.score(res, "reddit")
+    sc.pop("_slide_no_gap")
+    assert set(sc) == {"A1", "A2", "A2b", "A3", "A4", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B9", "B10", "screen"}
+    assert all(v["status"] in ("PASS", "FAIL", "INCONCLUSIVE", m1.NA) for v in sc.values())
+    assert sc["A1"]["status"] == "PASS"
+    assert sc["B4"]["status"] != "FAIL"            # a random walk: no association with the earlier level
+    json.dumps(sc, default=float)
     with pytest.raises(SystemExit):
         m1.run("facebook_a", reviewed=False)
+
+
+# ---- Codex's review R4: each counterexample kept as a test --------------------------------------
+def test_reordering_gain_is_not_additive_over_subintervals():
+    path = np.array([[1.0, -1.0], [-1.0, 1.0], [1.0, -1.0]])
+    gain = lambda a, b: ba.topk_accounting(a, b, [1], 2)[0]["R"]
+    assert gain(path[0], path[2]) == 0.0
+    assert gain(path[0], path[1]) + gain(path[1], path[2]) == 4.0
+
+
+def test_carrier_signs_do_not_identify_a_mechanism():
+    """Position-only OU in 52-week blocks (exact covariances): the slope on the
+    still earlier block is positive with no personal home anywhere.  A random
+    walk plus a slowly decaying component gives the same pattern."""
+    kappa, block = 0.01, 52
+    t = np.arange(block)
+    cov = np.array([np.exp(-kappa * np.abs(t[:, None] - (t[None, :] + j * block))).mean() for j in range(4)])
+    beta = np.linalg.solve([[cov[0], cov[1]], [cov[1], cov[0]]], [cov[2] - cov[1], cov[3] - cov[2]])
+    assert beta[0] < -0.3 and beta[1] > 0.05
+    X = lasting_plus_noise("rw", n=6000, T=208, seed=1000, sd_step=0.005, phi=0.98, sd_noise=0.6)
+    K = 1000
+    M = ba.block_means(X, 52)
+    c = ba.centre_series(M, K)
+    pr, pres = ba.perm_rank(weekly_ranks(X), 0, 52)
+    labels, which = ba.cohort_bins(pr, K, pres)
+    reg = ba.carrier_regression(M, c, 1, 2, 3, which < len(labels) - 1, b_home=0)
+    assert reg["pos_q95"] < 0 and reg["home_q05"] > 0
+    # and the cohort chosen on block 0 falls from block 1 to 2 with no drift in the lasting level
+    rows = ba.cohort_drift(M, np.zeros(4), which, len(labels), 1, 2)
+    inside = [r for r in rows[:-1] if "mean" in r]
+    assert sum(r["n"] * r["mean"] for r in inside) / sum(r["n"] for r in inside) < -0.02
+
+
+def test_cohort_drift_is_survivor_conditional_and_says_so():
+    M = np.array([np.zeros(100), np.zeros(100), np.r_[np.ones(50), np.full(50, np.nan)]])
+    row = ba.cohort_drift(M, np.zeros(3), np.zeros(100, dtype=int), 1, 1, 2)[0]
+    assert row["mean"] == 1.0 and row["attrition"] == 0.5 and row["n_start"] == 100 and row["n"] == 50
+
+
+def test_predictable_loss_weights_survivors_only():
+    M = np.array([[10.0, 9.0, 8.0, 7.0], [9.0, np.nan, 7.0, 6.0]])
+    c = ba.centre_series(M, 3)
+    change = -1.0 - (c[1] - c[0])
+    acc = ba.topk_accounting(M[0], M[1], [2], 3)[0]
+    pred = ba.predictable_loss(M, c, np.zeros(4, dtype=int), [dict(mean=change)], 0, 1, [2])[0]
+    assert pred["n_exit"] == acc["n_exit"] == 1 and pred["n_cohort_survivors"] == 1
+    assert pred["G_pred"] == pytest.approx(acc["G"]) and pred["G_cohort"] == pytest.approx(acc["G"])
+
+
+def test_interval_of_a_weighted_sum_is_joint_not_a_sum_of_brackets():
+    rng = np.random.default_rng(0)
+    draws = rng.standard_normal((40000, 2))
+    M = np.array([[2.0, 1.0], [2.0, 1.0]])
+    rows = [dict(mean=0.0), dict(mean=0.0)]
+    p = ba.predictable_loss(M, np.zeros(2), np.array([0, 1]), rows, 0, 1, [2], draws=draws)[0]
+    half = (p["G_pred_q95"] - p["G_pred_q05"]) / 2
+    assert half == pytest.approx(ba.Z90 * np.sqrt(2), rel=0.03)      # 2.33, not 3.29
+
+
+def test_uncertified_tracking_is_not_adjudicated():
+    """480 endpoints rotate through the weekly top 48 and are otherwise zero;
+    one more is always 9 and so is never tracked with K = 12, though its block
+    mean is the largest.  Nothing that depends on the block ladder is scored."""
+    import mts_step1 as m1
+
+    K, block, T = 12, 10, 30
+    X = np.zeros((T, 481))
+    for t in range(T):
+        X[t, (t % 10) * 48:(t % 10 + 1) * 48] = 10 + np.arange(48) * 0.001
+    X[:, -1] = 9
+    res = m1.analyse(long_frame(X), K, block, horizons=(), boundaries=(1.0,), boot=20)
+    assert res["blocks"]["certified_top"] == [0, 0, 0]
+    pairs = res["boundaries"]["1.0"]["blocks"]["pairs"]
+    assert pairs and all("not_adjudicated" in p and "accounting" not in p for p in pairs)
+    sc = m1.score(res, "reddit")
+    assert sc["screen"]["status"] == m1.NA and sc["B1"]["status"] == m1.NA

@@ -7634,3 +7634,130 @@ not published.
 
 **Not changed.** Anything else. The remaining open decisions are in
 `PROGRAM_STATE.md`.
+
+## 2z-bs. 2026-10-13 — R4 protocol review: PLANNING ONLY, nothing adopted; six corrections requested before movement-to-structure step 1 runs
+
+_Provenance: OpenAI Codex (GPT-6), 2026-10-13; started from
+a75b9c204d648a9da5dcf90ca1db9469658a6bab. The skills at that commit governed
+the review. Claude to assign the final section letter on integration._
+
+**Read and scope.** Draft v1 of MTS_PROTOCOL_STEPS_1_2_2026-10-13.md, its
+two modules and eight tests; adopted agenda (§2z-bp), draft record (§2z-bq),
+program/coordination documents, relevant skills, the theory note, and the
+primary rank-semimartingale formula. Review at the owner's direct request.
+Protocol and code unchanged. No scored empirical predictions.
+
+**Recommendation.** Revise before empirical M1. The endpoint accounting is
+correct, but six findings affect interpretation or execution: earlier/noisy
+predictors do not uniquely identify personal-home versus positional drift;
+finite endpoint reordering is not accumulated local time; the four-part
+screen does not establish slope identification; attrition makes the drift
+survivor-conditional while predicted loss weights all initial occupants;
+summed marginal interval endpoints are not a 5–95% interval for the sum;
+failed tracking certification does not invalidate scored output. Full
+locations, evidence and repairs are in `handoff/R4_mts_protocol/REPORT.md`.
+
+**Executable evidence.** Design committed before checks as a0251b1.
+Exact population covariance for a position-only OU sampled weekly and
+averaged into 52-week blocks gives carrier coefficients −0.344160 and
++0.073999 without name-specific homes. A single constructed random-walk
+plus persistent-noise panel (6,000 endpoints, 208 weeks, K=1000, seed 1000,
+400 endpoint bootstrap draws) gives recent coefficient −0.2482
+[−0.3076, −0.2032] and older coefficient +0.2297 [0.1787, 0.2944]. This is
+a counterexample, not an empirical estimate or multi-seed recovery result;
+it does not estimate real-panel false-identification rates. A round trip
+gives endpoint R=0 versus subdivided R=4. Deterministic missingness and
+normal-sum examples expose the weighting and interval issues. A rotating
+top-4K fixture has untracked block maximum 9 versus tracked 2K level 1.0045,
+but the runner still emits an ordinary accounting pair.
+
+**Execution.** The check script initially failed at import because its root
+was one directory too high; corrected the import path and reran the same
+checks successfully. No run was killed. Outputs and exact reproduction
+commands are in REPORT.md, checks.py and CHECK_RESULTS.json. Initial health
+check: 499 research tests passed (2 warnings, 13 subtests), 8 package tests
+passed, sealed guard wired, legacy 14/15 and churn 0.013. Final health check:
+PASS, again 499 research tests (2 warnings, 13 subtests), 8 package tests,
+sealed guard wired, legacy 14/15 and churn 0.013; log in HEALTH_CHECK.txt.
+
+**Not run / not changed.** No empirical M1 panel analysis or output read;
+no V4 recovery/classification study; no candidate or Gate v1 evaluation;
+no sealed data; no production edit, default, threshold, protocol adoption,
+stack or claim change. Required health checks alone use existing DEVELOPMENT
+fixtures and the legacy panel, declared in EXPOSURE_ROWS.md. GATE_ROWS.md is
+empty. V4 requires the author's corrected-statistic version before its full
+design is frozen. Nothing adopted and nothing pushed.
+
+_Integration note (Claude Opus 5.5, 2026-10-13): the entry above is Codex's `llm_fitting/handoff/R4_mts_protocol/STATUS_ENTRY.md`, appended verbatim apart from its section letter, under the two-agent protocol (§2z-ar). Before the merge (5bfbc02) I reran its `checks.py` against the code on `main`; the output is identical to its committed `CHECK_RESULTS.json`. Its exposure row records only the routine health checks and is not added to the ledger. My answers and the corrections are in §2z-bt._
+
+## 2z-bt. 2026-10-13 — CORRECTIONS after Codex's review R4 (§2z-bs): all six findings accepted; the protocol for steps 1 and 2 is REVISED to v2 and its statistics changed, before anything was run on any panel. PLANNING ONLY; nothing adopted; no fit, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-13; started from
+commit 5bfbc02. It corrects §2z-bq, which stays as written with this pointer._
+
+**What §2z-bq had wrong, each shown by Codex with a counterexample I
+reproduced.**
+
+1. The carrier regression's signs do not identify a mechanism. A level with
+   drift that depends on position only gives slopes of −0.344 and +0.074 on
+   the two earlier 52-week blocks (exact covariances), and a random walk plus
+   a component with a 34-week half-life gives −0.25 and +0.23, the pattern I
+   had assigned to a personal home. Predictors placed before the interval do
+   not remove a component that is still correlated with them.
+2. The reordering gain R over a finite interval is not half the accumulated
+   local time. It keeps the initial names and nets out re-crossings: a round
+   trip has R = 0 overall and 4 in two steps. The small-step value k v / (2S)
+   is an approximation to it, not an identity.
+3. The four-part rule for "step 3 is identified" could pass with a predictable
+   share precisely near zero, counted an interval that includes zero as
+   support for no effect, scored a term that is zero by definition, and
+   counted one outcome pair twice. I had also stated the theory note's bound
+   backwards: it is an upper bound on the slope's relative error.
+4. Cohort means were over survivors while the predicted loss weighted every
+   initial occupant.
+5. The interval for the predictable share summed marginal 5% and 95% points
+   (±3.29 where the joint value is ±2.33 in Codex's example).
+6. The tracking certification was recorded and not enforced.
+
+**What changed** (`MTS_PROTOCOL_STEPS_1_2_2026-10-13.md` v2;
+`handoff/R4_mts_protocol/ANSWERS.md` has the full table).
+
+- The sign table is withdrawn. The regression is reported as predictive
+  associations and is not read until step 2 shows what rivals without a
+  personal home produce at these block lengths.
+- A gap is in the design. For a cohort chosen on block 0 the primary change is
+  block 2 to 3; block 1 to 2 is read against it. A new prediction, B10, scores
+  whether the two slides agree, which separates a slide that persists from
+  decay of what selected the cohort.
+- R is the endpoint reordering gain; the protocol separates the exact
+  identity from the small-step approximation.
+- Cohort quantities are survivor-conditional and say so; the predicted loss
+  covers exactly the survivors G covers, with a joint bootstrap interval that
+  is declared conditional on the realized ladder.
+- Block ladders fail closed: a centre, rank or band that is not certified
+  exact is returned as NOT ADJUDICATED.
+- Presence for a block level and for cohort membership is raised from 70% to
+  90%. The tracked "outside" group is labelled retrospective and enters no
+  predicted quantity.
+- Section 8 is a feasibility screen. Identification is claimed only within
+  Codex's rival class and only if held-out slopes are recovered there.
+- `mts_step1.score` implements every scoring rule and the screen; "no effect"
+  passes only inside a stated margin.
+
+**The prediction count** is now fourteen scored items per panel (A1, A2, A2b,
+A3, A4, B1–B7, B9, B10) and one across platforms (B8). B10 and the scoring
+rules were written before any run.
+
+**Tests.** `tests/test_balance_accounting.py` now has fourteen tests,
+including each of Codex's counterexamples.
+
+**Not done.** No analytic bound on the dependence between a selection block
+and a later change. No validation of the map S = v / (2s); that is asked of
+V4. No second review round: the coordination protocol gives one.
+
+**Next.** Step 1 runs at v2 on the three development panels. V4 is open for
+Codex at this version, blind to step 1's output.
+
+**Commands.** `python -m pytest tests/test_balance_accounting.py -q`. Health
+check before the commit: research suite 505 passed, package suite 8 passed,
+legacy guard 14/15 and churn 0.013.

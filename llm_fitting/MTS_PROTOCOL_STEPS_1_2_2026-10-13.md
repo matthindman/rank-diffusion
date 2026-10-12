@@ -2,27 +2,29 @@
 
 _2026-10-13. Claude (Opus 5.5). First deliverable of the agenda
 `RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md`, which the owner adopted
-on 2026-10-13._
+on 2026-10-13 (MODEL_STATUS §2z-bp)._
 
-**Status: DRAFT v1, FOR REVIEW. Nothing has been run on any panel.** The agenda
-requires this protocol to be reviewed before anything runs. Codex reviews it
-under queue row R4. The runner refuses to start on a registered panel without
-a flag that is to be used only after that review is answered. The statistics
-and the runner exist and are tested on synthetic panels only
-(`balance_accounting.py`, `mts_step1.py`, `tests/test_balance_accounting.py`).
+**Status: v2, REVISED AFTER REVIEW. This is the version that runs.** Draft v1
+(commit 1741db3) was reviewed by Codex under queue row R4
+(`handoff/R4_mts_protocol/REPORT.md`): six findings, each with an executable
+counterexample, all reproduced and all accepted. What changed and why is in
+`handoff/R4_mts_protocol/ANSWERS.md`. The changes were made before any
+statistic was computed on any panel. One round of review and one round of
+fixes, as the coordination protocol provides; Codex has not re-reviewed v2.
 
 DEVELOPMENT data only. No fit, no simulation of the frozen model, no gate
-evaluation, no sealed data. Everything here is descriptive; it can establish
-what holds the ladder in an accounting sense and cannot by itself establish a
-mechanism.
+evaluation, no sealed data. Everything here is descriptive. It can say what
+holds the ladder in an accounting sense. It cannot by itself establish a
+mechanism, and after the review it does not try to read one from a
+regression.
 
 ## 1. The question this step answers
 
 The record has one relation between movement and structure: lasting variance
 divided by twice the ladder's local slope is close to one constant across
 ranks (§2z-bf, §2z-bj). The constant was read off the ladder, so nothing
-independent measures it (§2z-bh). Step 1 measures it independently, and says
-who carries it.
+independent measures it (§2z-bh). Step 1 measures it from named changes and
+says, as far as the data can, what it is made of.
 
 ## 2. The accounting
 
@@ -43,76 +45,111 @@ k_c positions, the left side becomes the change in the ladder's **shape** and
     shape change = −G + R + F,      G = what the occupants of the top k lose
                                         relative to the centre.
 
-This holds for any process and any horizon. It is the finite-horizon form of
-the balance the agenda is built on. In a diffusion R is half the local time of
-the gap between ranks k and k+1, and for small steps R = k v / (2 S), with v
-the variance of the changes near rank k and S the local slope. So
-G = R = k v / (2S) is the relation S = u a / (2G) of the agenda, with each of
-the three sides now measured separately:
+This holds for any process and any horizon.
 
-| term | what it is | measured from |
+**What R is and is not.** R is the endpoint reordering gain over the
+interval. It keeps the names that held the top k at the start, so it nets out
+everything that crossed and crossed back, and it is not additive over
+sub-intervals. It is not the accumulated local time of the gap between ranks
+k and k+1. Only for a short interval in a diffusion does its expectation
+approach half of that, and then its small-step value is k v / (2S), with v the
+variance of the changes near rank k and S the local slope. So:
+
+| term | what it is | status |
 |---|---|---|
-| G / k | occupant loss per endpoint | named changes |
-| R / k | reordering gain per endpoint | who replaced whom |
-| v / (2S) | the small-step value of R / k | variance and slope, as in §2z-bf |
+| G / k | occupant loss per endpoint | exact, from named changes |
+| R / k | endpoint reordering gain per endpoint | exact, from who replaced whom |
+| v / (2S) | small-step value of R / k, the quantity of §2z-bf | an approximation whose error at each horizon is measured here (A2, B9) and must be validated on planted panels before it is inverted to predict a slope |
 
-Following Claude's review of the first proof result (§2z-bn), every term is a
-finite-horizon quantity measured for the same endpoints over the same
-interval. No instantaneous variance is estimated.
+Every term is a finite-horizon quantity measured for the same endpoints over
+the same interval (§2z-bn). No instantaneous variance is estimated. The
+variance in v / (2S) is taken over endpoints chosen by their rank at the start
+of the interval, so it is affected by selection on that time's noise; it is a
+diagnostic of observed positions, not a structural variance by permanent
+rank.
 
-**The centre and what "drift" then means.** The centre is positional: the
-mean level of whoever holds the top k_c at each time. If no endpoint has any
-restoring force and the ladder holds its shape because others climb in from
-below, every occupant still loses ground against that centre, at one common
-rate. I call that the **common slide**. It is the Atlas picture, and it needs
-no force on anyone. The measurements below keep three things apart that the
-single symbol G would merge:
+**The centre and the common slide.** The centre is positional: the mean level
+of whoever holds the top k_c at each time. If no endpoint has any restoring
+force and the ladder holds its shape because others climb in from below, every
+occupant still loses ground against that centre, at one common rate. I call
+that the **common slide**. The measurements below keep apart:
 
-1. the common slide: the mean change, against the centre, of a cohort fixed
-   beforehand;
-2. drift that depends on position: differences in that mean change between
-   rank bins of the cohort;
-3. return toward an endpoint's own earlier level: whether, given where an
-   endpoint was, its still earlier level predicts its later change.
+1. the slide of a cohort fixed beforehand: its mean change against the
+   centre;
+2. differences in that mean change between rank bins of the cohort;
+3. how the change is associated with the cohort's earlier levels;
+4. flow.
 
-Flow is the fourth carrier.
+A cohort's slide can also contain the decay of whatever made its members rank
+high on the selection block and has not yet died out. The design separates the
+two by time: a slide persists at one rate; decay shrinks with distance from
+the selection block (prediction B10).
 
 ## 3. Declarations
 
 **Panels.** `facebook_a` (K = 3,500; 86 weeks), `reddit_comments_ext`
 (K = 12,500; 213 weeks), `reddit_submissions_long` (K = 5,000; 212 weeks),
-loaded with `minimal_rankdiff.load_panel`. The 136-week comments panel is the
-first part of the comments extension and is not run separately. Instagram is
-left out (censored).
+loaded with `minimal_rankdiff.load_panel`. Instagram is left out (censored).
 
 **Level.** `log1p` of the weekly metric, as loaded. No common factor is
 removed; the centre does that work.
 
-**Population and boundary.** Positions are ranks among everything the
+**Population and tracking.** Positions are ranks among everything the
 instrument observed that week. Endpoints ever inside the weekly top 4K are
-tracked. The runner records, for each block, the highest level an untracked
-endpoint could have had and the level at rank 2K, so that exactness of the
-block ladder down to 2K can be checked. Centres and cohort cutoffs at K/2, K
+tracked. Weekly ladders are exact down to 4K by construction. A block ladder
+is exact only down to the rank whose level is strictly above the most an
+untracked endpoint could have had in that block (the largest weekly level at
+rank 4K + 1). The runner computes that certified rank per block and **fails
+closed**: any pair whose centre is not certified in both blocks, any cell
+whose k is not, and any small-step value whose rank band is not, is returned
+as NOT ADJUDICATED and never as a number. Centres and cohort cutoffs at K/2, K
 and 2K; K is primary.
 
-**Blocks.** Whole blocks counted back from the end of the panel, so the
-earliest weeks are dropped: 52 weeks on the two Reddit panels (four blocks),
-which averages out the annual cycle of §2z-aw; 26 weeks on Facebook (three
-blocks; this also drops the election weeks at the start of Era A). A block
-level is the mean over the weeks an endpoint is present, and is undefined
-below 70% presence.
+The tracked set uses later weeks. Cohort members are unaffected, because a
+permanent rank inside the cutoff on the selection block already implies
+tracking. Everything else that is tracked is there because it reached the top
+4K at some time, possibly later. That "outside" group is reported, is labelled
+retrospective, and enters no predicted quantity.
+
+**Blocks.** Whole blocks counted back from the end of the panel: 52 weeks on
+the Reddit panels (four blocks), 26 weeks on Facebook (three blocks; this
+drops the election weeks at the start of Era A). A block level is the mean
+over the weeks an endpoint is present and is undefined below 90% presence. A
+block mean is a filter, not a level: it averages an annual cycle out only when
+coverage is complete, and it passes slow components through. Both limits are
+handled by design (whole-year blocks, the presence rule, B10) and by step 2,
+not assumed away.
 
 **Cohorts and information.** A cohort is defined on one block only, by
-absence-penalized permanent rank over that block, in octave bins of rank down
-to the cutoff, plus one bin for everything else. Its changes are measured
-between two later blocks. Nothing from the later blocks enters its
-definition.
+absence-penalized permanent rank over that block with at least 90% presence,
+in octave bins of rank down to the cutoff. Its changes are measured between
+two later blocks.
+
+**Which comparisons count.** For a cohort chosen on block 0 of four blocks:
+
+| change | role |
+|---|---|
+| block 2 to block 3 | **primary**: one whole block lies between selection and the start |
+| block 1 to block 2 | no gap: read against the primary (B10) |
+| block 1 to block 3 | long, no gap: reported |
+
+The cohort chosen on block 1 and measured from block 2 to 3 uses the same
+outcome blocks as the primary. It is reported as a replicate cohort and is not
+counted as a second result. Facebook has three blocks: one pair, block 1 to 2,
+with no gap and no still-earlier block. Predictions that need a gap or an
+earlier block are NOT ADJUDICATED on Facebook; they do not pass by default.
+
+**Survivors.** A cohort bin's mean change is over members with a level at both
+blocks. That is a survivor-conditional quantity. Members who leave the record
+are counted as attrition, their changes are unobserved, and nothing corrects
+for selection on survival. The predicted loss below weights exactly the
+survivors that G also covers.
 
 **Identifiers.** Facebook ids are page names; a rename reads as an exit and an
 entry and lands in F. On Facebook absence is not behavior, so F there is a
 property of the collection.
 
-## 4. Part A — weekly positions (a check of the instrument, and one measurement)
+## 4. Part A — weekly positions
 
 For horizons 1, 4, 13, 26 and 52 weeks (those under half the panel), origins
 every half horizon, and k from the centre's k down by halving to 12: G, R, F,
@@ -121,166 +158,170 @@ of k, the step size √v / S, and the share of occupants replaced. Reported as
 rates per endpoint per week: mean over origins, and the range over four
 consecutive calendar segments.
 
-On observed weekly positions the identity must close to rounding in every
-cell. That is the check of the code. The comparison of R with k v / (2S) at one
-week is the measurement: it says how well the small-step relation holds when
-both sides carry the passing swings.
+The identity must close to rounding in every cell; that checks the code. The
+comparison of R with k v / (2S) at one week is a measurement: how well the
+small-step relation holds when both sides carry the passing swings.
 
-## 5. Part B — block levels (the measurement)
+## 5. Part B — block levels
 
-Between blocks, for every pair with the cohort's block strictly earlier:
+For every counted pair:
 
 - the same accounting on block levels;
-- **cohort drift:** per bin, the mean and the mean squared change against the
-  centre, the attrition, and a 5–95% endpoint bootstrap (400 draws);
+- **cohort drift:** per bin, the survivors' mean and mean squared change
+  against the centre, the attrition, and a 5–95% endpoint bootstrap (400
+  draws);
 - **occupancy:** the share of each cohort bin inside the top k at the start
   block;
-- **the predictable share:** minus the sum, over the occupants of the top k
-  at the start block, of the mean change of the cohort bin each belongs to,
-  divided by R. It is the part of the reordering gain accounted for by drift
-  measured without using the starting position;
-- **carriers:** for adjacent blocks, the regression of the change on the level
-  one block before the start and, where a still earlier block exists, on that
-  level too, all against the centre, within the cohort.
+- **the predictable share:** over the occupants of the top k at the start
+  block that survive and belong to the cohort, minus the sum of the mean
+  change of the bin each belongs to, divided by R. Its interval is the 5–95%
+  range of that weighted sum over the same bootstrap draws for all bins. It is
+  conditional on the realized centre, on who occupies the top k and on R. It
+  is not the uncertainty of a future slope. The same sum is also reported as a
+  share of those survivors' actual loss. Where R is not positive the share is
+  not computed;
+- **predictive associations:** for adjacent blocks, the regression of the
+  change on the level one block before the start and, where a still earlier
+  block exists, on that level too, all against the centre, within the cohort.
 
-How the carrier regression reads:
+**The associations are not read as mechanisms.** Draft v1 gave a table of
+signs (no force: zero, zero; position: negative, zero; own level: negative,
+positive). The review showed it is false: a level with drift that depends on
+position only gives −0.34 and +0.07 once it is averaged into 52-week blocks,
+with no personal home anywhere, and a random walk plus a component with a
+half-life of 34 weeks gives −0.25 and +0.23. Putting the predictors before the
+interval removes selection on the interval's own noise and nothing more. What
+a pattern of slopes means is decided in step 2, against planted rivals at
+these block lengths, and a personal home is read only if its slope lies
+outside what the rivals without one produce.
 
-| | slope on the level one block earlier | slope on the still earlier level |
-|---|---|---|
-| no restoring force | zero | zero |
-| drift that depends on position | negative | zero |
-| return toward own earlier level | negative | positive |
+## 6. Predictions and how each is scored
 
-Every predictor precedes the interval over which the change is measured, so
-noise in a predictor cannot produce a restoring slope. The synthetic tests
-confirm zero slopes on a random walk with autocorrelated noise and the third
-row on a reverting level.
+Written before any run; B10 and the scoring rules were added in v2, also
+before any run. Statuses: PASS, FAIL, INCONCLUSIVE, NOT ADJUDICATED. A
+prediction of "no effect" passes only if its interval lies inside a stated
+margin; an interval that merely includes zero is INCONCLUSIVE. The rules are
+implemented in `mts_step1.score` and tested on synthetic panels. "KR" means k
+from K/16 to K; the centre's own k is left out wherever the shape term is
+scored, because the shape term is zero there by definition.
 
-## 6. Predictions, written before any run
-
-Each has a direction and a rough size. Scored PASS, FAIL or PARTIAL in the
-write-up. I expect some to fail; B3, B5 and B8 are the ones I am least sure
-of.
-
-Part A
+Part A (per panel, centre K)
 
 - **A1** (code): the identity's residual is below 1e-9 per endpoint-week in
-  every cell.
-- **A2**: at one week, R over k v / (2S) is between 0.6 and 1.2 for k from
-  K/16 to K on all three panels, and below 1 at the head, where changes are
-  fat-tailed.
-- **A3**: the occupants' loss per week at one week is at least five times
-  the loss per week at the longest horizon, at k = K/4, on every panel. This
-  is the prediction made in §2z-bn: at one week the restoring drift is mostly
-  passing swings decaying.
-- **A4**: at horizons up to 13 weeks the shape term is under a tenth of R for
-  k ≥ K/16.
+  every cell computed.
+- **A2**: at one week R over k v / (2S) is between 0.6 and 1.2 at every k in
+  KR. **A2b**: it is below 1 at every k below K/16.
+- **A3**: at k = K/4 the occupants' loss per week at one week is at least five
+  times the loss per week at the longest horizon run (§2z-bn's prediction).
+- **A4**: at horizons up to 13 weeks the shape term is under a tenth of R at
+  every k in KR.
 
-Part B
+Part B (per panel, primary pair, centre K)
 
-- **B1**: the block-level reordering gain per endpoint per week, for k from
-  K/16 to K/2, is within a factor 1.5 of the constants of §2z-bf: 0.0018 to
-  0.0045 on the Reddit panels, 0.0045 to 0.010 on Facebook.
-- **B2** (the independent measurement of the constant): on the Reddit panels
-  every cohort bin from K/64 to K has a negative mean change against the
-  centre over 52 weeks, and the pooled value per week is within a factor 2 of
-  the reordering gain at K.
-- **B3**: the common slide dominates position-dependent drift: in at least
-  five of the seven octave bins the bin's mean differs from the pooled cohort
-  mean by less than 30% of the pooled mean, or the difference is inside the
-  bin's bracket.
-- **B4**: no return toward own level at a year: the slope on the still
-  earlier level is below 0.10 per 52 weeks or its bracket includes zero.
-  Reversion at 0.01 per week, the middle of the range considered in §2z-bn,
-  would give about 0.2.
-- **B5**: the predictable share is between 0.5 and 1.2 for k from K/4 to K on
-  the Reddit panels.
-- **B6**: flow is under 15% of R for k ≤ K/2 on Reddit and larger at 2K; on
-  Facebook entrants are near zero.
-- **B7**: over one block step the shape term is under 30% of R for
-  k ≥ K/16.
-- **B8**: the common slide per week on Facebook is 1.3 to 3 times that on
-  Reddit (the constant is about twice as large there, §2z-bh).
-- **B9**: on block levels R over k v / (2S) is between 0.5 and 1.1; block
-  steps are not small against the slope.
+- **B1**: the reordering gain per endpoint per week at K/16, K/8, K/4 and K/2
+  is inside 0.0018–0.0045 on Reddit, 0.0045–0.010 on Facebook (a factor 1.5
+  around the constants of §2z-bf).
+- **B2** (Reddit; the independent measurement of the constant): each of the
+  seven octave bins from (K/128, K/64] to (K/2, K] has a negative mean change
+  with its 95% point below zero, and the pooled slide per week is between 0.5
+  and 2 times the reordering gain per endpoint per week at K. FAIL if any
+  bin's 5% point is above zero or the ratio is outside; otherwise
+  INCONCLUSIVE.
+- **B3**: little difference between bins. A bin passes if the interval of its
+  mean minus the pooled mean lies within ±30% of the pooled mean, fails if it
+  lies wholly outside. PASS with five of seven bins passing, FAIL with three
+  failing, otherwise INCONCLUSIVE.
+- **B4** (Reddit): the association with the still earlier level is small: its
+  interval lies within ±0.10 per 52 weeks. FAIL if it lies wholly beyond.
+  This scores a predictive association; see §5.
+- **B5** (Reddit): the predictable share is between 0.5 and 1.2 at K/4, K/2
+  and K. FAIL if any interval lies wholly outside; INCONCLUSIVE if a point is
+  outside and its interval is not.
+- **B6**: on Reddit |F| is under 15% of R at every k up to K/2. On Facebook
+  entrants are under 1% of k at every k up to K/2.
+- **B7**: the shape term is under 30% of R at every k in KR.
+- **B8** (across platforms): the slide per week on Facebook is 1.3 to 3 times
+  the mean on the two Reddit panels. It can only be computed on the no-gap
+  pairs, whose block lengths differ, so it is weak evidence either way and is
+  labelled so.
+- **B9**: R over k v / (2S) is between 0.5 and 1.1 at every k in KR.
+- **B10** (Reddit; added in v2): the slide per week from block 1 to 2 is
+  between 0.7 and 1.5 times the slide from block 2 to 3. Above 1.5 means the
+  no-gap slide is mostly decay of what selected the cohort.
 
-What would change my reading most: a clearly positive slope on the earlier
-level (B4 failing) would revive a personal home; a predictable share near
-zero with a stable shape (B5 failing low) would mean the occupants' loss is
-selection on what is left of the passing swings in a block mean, and that the
-block length is too short for this design.
+I expect some to fail; B3, B5, B8 and B10 are the ones I am least sure of.
 
 ## 7. Precision, runs and stopping
 
-One run per panel with the committed runner, as declared. Two declared
-secondary runs, reported whatever they show: 26-week blocks on the Reddit
-panels, read only for pairs of blocks a whole year apart; and the 136-week
-comments window alone. Any other variation of block length, horizon,
-boundary, bin or presence rule is a new design, written and dated before it
-runs. No number from one panel chooses a setting for another.
+One run per panel with the committed runner. Two declared secondary runs,
+reported and not scored: 26-week blocks on the Reddit panels and the 136-week
+comments window, both computed only for pairs of blocks a whole number of
+years apart. Any other variation of block length, horizon, boundary, bin or
+presence rule is a new design, written and dated before it runs. No number
+from one panel chooses a setting for another.
 
-Uncertainty is of three kinds and is labelled as such: the endpoint bootstrap
-on cohort means; the range across calendar segments and across block pairs;
-and, from step 2, the spread across seeds of each statistic under each planted
-rival. Sampling uncertainty of G, R and F for one pair of blocks is not
-defined (they are totals over the realized ladder); their variation over
-block pairs and planted seeds stands in for it.
+Uncertainty is of three kinds and is labelled: the endpoint bootstrap on
+cohort means and on the predictable share, conditional as stated in §5; the
+range across calendar segments and across the counted pairs; and, from step
+2, the spread across seeds under each planted rival. Dependence across
+endpoints and over time is not removed by any of them.
 
-## 8. The first decision: is step 3 identified on development data?
+## 8. A feasibility screen, not an identification result
 
-Step 3 would predict local slopes from measured movement, with no constant
-taken from the ladder. On the development panels it is identified only if all
-four hold on both platforms:
+Step 3 would predict local slopes from measured movement with no constant
+taken from the ladder. The map it would use is S_k = v_k / (2 s), with s the
+common slide per week of a cohort fixed beforehand and v_k the variance per
+week of changes near rank k. Whether that map recovers slopes is not
+something step 1 can show. Step 1 can only say whether trying is worthwhile.
+The screen passes on a panel if all of these hold on the primary pair:
 
-1. A1 holds.
-2. The common slide is determined: the 5–95% bracket of the predictable share
-   at K/4, K/2 and K has half-width at most 0.25. The theory note's bound makes
-   the relative error of a predicted slope at least the relative error of the
-   drift.
-3. Two block pairs of the same panel agree within their brackets where two
-   exist.
-4. In step 2 the statistics of §5 tell the planted rivals apart at the real
-   panel sizes: no rival is taken for another in more than 20% of seeds by the
-   rule fixed in Codex's design.
+1. A1.
+2. The predictable share at K/4 and K/2 is material and determined: its
+   interval lies inside 0.5 to 1.5 and has half-width at most 0.25. A share
+   that is precisely near zero fails.
+3. The shape is stable (B7).
+4. Flow is small: |F| under 15% of R up to K/2.
+5. The small-step bridge holds within 0.5 to 1.5 over KR.
+6. Two pairs of one cohort agree (B10).
 
-If any fails, the result of this phase is a stated requirement (longer panels,
-more endpoints, or a different instrument) or a narrower claim. It is not
-another model fitted to the same ladder.
+Any FAIL fails the screen; any part that is INCONCLUSIVE or NOT ADJUDICATED
+makes it INCONCLUSIVE. Facebook cannot pass part 6 with three blocks.
+
+A screen that passes licenses step 3 to be attempted. Identification is
+claimed only within the class of rivals of step 2, and only if step 2 shows
+that held-out slopes are recovered from movement-only inputs across that
+class, with error rates and their uncertainty fixed in Codex's design. The
+theory note's bound is an upper bound: the relative error of a predicted slope
+is at most the sum of the relative errors of variance and drift, inflated as
+the drift error approaches one. It is not a lower bound, and equal errors in
+both cancel.
+
+If the screen fails, the result of this phase is a stated requirement (longer
+panels, more endpoints, a different instrument) or a narrower claim. It is
+not another model fitted to the same ladder.
 
 ## 9. Step 2 — planted rivals (Codex, brief V4)
 
-Processes that give a similar ladder and similar variance and differ in what
-holds the ladder, at the real panel lengths and sizes, with the real noise,
-annual cycle, selection and missingness, passed through `mts_step1.analyse`
-unchanged:
-
-1. the frozen model itself (a personal home);
-2. fixed identities with no dependence on position and no home;
-3. growth stabilised by replacement from below, with no dependence on state;
-4. drift that depends on position only;
-5. a level with no stabiliser at all;
-6. a slow and a fast component of equal stationary variance, on which the
-   statistics must give the same answer whichever is called the signal.
-
-Codex writes its design, predictions and classification rule first, and does
-not read step 1's empirical output until its recovery map is committed. The
-map reports, per rival and statistic, the distribution over seeds, and both
-recovery and false identification.
+As in the brief, with what the review adds: the rival set includes a
+position-only OU and random walks with persistent noise at the measured
+memory; the classes to be told apart are those that differ in what a slope
+prediction would need, so the relabelled slow and fast components are an
+invariance check and not two classes; the study reports error rates with
+their uncertainty and the recovery of held-out slopes from movement-only
+inputs. It runs `mts_step1.analyse` and `mts_step1.score` at this version.
+Codex does not read step 1's empirical output until its recovery map is
+committed.
 
 ## 10. Limits known in advance
 
-- The small-step value k v / (2S) is an approximation; R is not. Where they
-  differ, R is the fact.
-- A block mean still carries some of the passing swings. Cohort means are
-  protected from it by construction; G on block positions is not, which is
-  why the predictable share is reported separately from G.
-- Three or four blocks give one to three pairs. Calendar replication is thin
-  and Facebook has one pair and no still-earlier block, so the third carrier
-  cannot be separated there.
-- Tracking is exact for the top 2K only if no untracked endpoint could have
-  reached it; the runner reports the margin and the result is void for any k
-  where it fails.
+- R is exact and is not local time; v / (2S) is an approximation.
+- Cohort means are survivor-conditional, and their selection block's noise can
+  still be decaying when the change is measured. B10 measures that on Reddit;
+  nothing measures it on Facebook.
+- Three counted pairs on Reddit share blocks and are not independent. Facebook
+  has one.
 - Nothing here distinguishes endpoints by type.
+- The associations of §5 await step 2 before they mean anything.
 
 ## 11. Commands and outputs
 
@@ -290,6 +331,7 @@ recovery and false identification.
     python llm_fitting/mts_step1.py report
 
 run under `caffeinate -dims`, through `scripts/heavy_lock.py` if a panel takes
-more than five minutes. Output: `llm_fitting/runs/2026-10-13_M1_balance/cells/`,
-with a `REPORT.md` in that folder scoring every prediction, and a dated entry
-in MODEL_STATUS. Data contact is logged in `EXPOSURE_LEDGER.md`.
+more than five minutes. Output: `llm_fitting/runs/2026-10-13_M1_balance/cells/`
+and `report_tables.md` (tables, validity flags and every score, written by the
+runner), a `REPORT.md` in that folder, and a dated entry in MODEL_STATUS. Data
+contact is logged in `EXPOSURE_LEDGER.md`.

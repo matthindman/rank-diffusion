@@ -20,8 +20,8 @@ package your own agenda put second.
 ## Read first
 
 `RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md` (now adopted);
-`MTS_PROTOCOL_STEPS_1_2_2026-10-13.md` (the protocol for steps 1 and 2; if you
-have reviewed it under R4 you know it); `llm_fitting/balance_accounting.py`
+`MTS_PROTOCOL_STEPS_1_2_2026-10-13.md` (v2, revised after your review;
+`handoff/R4_mts_protocol/ANSWERS.md` says what changed); `llm_fitting/balance_accounting.py`
 and `llm_fitting/mts_step1.py`; `tests/test_balance_accounting.py`;
 `references/evidence-standards.md` §3; your own `planted_sim.py` and the V2
 report.
@@ -50,7 +50,11 @@ report.
    - a level with no stabiliser at all;
    - a slow and a fast component of equal stationary variance. The statistics
      must give the same answer whichever of the two is called the signal;
-     say whether they do.
+     say whether they do. This is an invariance check, not two classes;
+   - (added 2026-10-13 after your review R4) a level with drift that depends
+     on position only and no personal home, as a plain OU, and random walks
+     with persistent noise at the memory the frozen fits and the long panels
+     support. These are your own counterexamples; they belong in the map.
    If you think a rival is missing that would embarrass the design, add it
    and say why.
 3. **One code path.** Every planted panel goes through
@@ -58,6 +62,9 @@ report.
    protocol. Do not re-implement the statistics for this task; a separate
    blind re-implementation of the accounting identity is welcome as a check
    and goes in `llm_fitting/validation/`.
+   The classes to be told apart are those that differ in what a slope
+   prediction would need (what the common slide is and whether the map
+   S = v / (2s) recovers the slope), not every label above.
 4. **The recovery map.** Per rival, panel size and statistic, the
    distribution over seeds (at least 20, seeds 1000 and up) of: the
    per-endpoint rates g, r, f and the shape term at each horizon and k; the
@@ -65,7 +72,14 @@ report.
    centre and their spread across bins; the two carrier slopes; the
    predictable share. Then a classification rule, fixed in `DESIGN.md` before
    any panel is generated, that names a rival from those statistics, and its
-   confusion matrix: recovery and false identification.
+   confusion matrix: recovery and false identification, with the uncertainty
+   of each rate. Also the status that `mts_step1.score` returns for every
+   prediction and for the screen under each rival, and the coverage of the
+   predictable share's interval.
+   **Held-out slopes** (added after R4): for each rival, predict the local
+   slopes of a block's ladder from movement-only inputs by the map of the
+   protocol's section 8, and report the error against the planted truth. The
+   protocol claims identification only where this succeeds.
 5. **The questions the map must answer.**
    - Does a pure random walk with realistic passing swings ever show a
      restoring slope or a difference between bins? How often?
