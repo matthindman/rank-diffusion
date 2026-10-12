@@ -146,3 +146,28 @@ If 8 fails (the data's largest rises among large endpoints are as extreme
 as the simulation's), the spike weeks are not a far-tail problem, and the
 July reading (who sits near the top, and with what amplitude) is what is
 left.
+
+## Addendum 2, 2026-10-12, after §2z-av and before the cells below
+
+§2z-av found that seeding the homes from sorted endpoint means repairs the
+top-1 share on the two Reddit panels, and said the change "needs its own
+card comparison on all five panels" before it can be put to the owner. This
+is that comparison, run as an intervention like the rest of A3 (the seed
+ladder is replaced in the fitted parameters; no model code): `run_c`, 20
+seeds, three arms (first week as fitted; time-median ladder; endpoint
+means), on FB Era A, comments, long submissions, short submissions and the
+Instagram rescue, with the card, the macro index and the ladder statistics
+computed by the ladder run's own functions.
+
+Predictions:
+
+13. Under endpoint-mean seeding the card changes by at most one row on each
+    of the four uncensored panels.
+14. The macro index falls on comments and on long submissions, with a
+    seed band excluding zero on at least one of them, and does not rise by
+    more than 0.10 on FB or on short submissions.
+15. On Instagram the endpoint-mean arm is worse than the base on the macro
+    index (the censoring bias seen in §2z-av) and the time-median arm is
+    within 0.10 of the base.
+16. Ladder drift under endpoint-mean seeding is nearer the data's than the
+    base arm's on at least three of the four uncensored panels.

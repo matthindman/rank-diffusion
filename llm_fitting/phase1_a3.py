@@ -8,6 +8,7 @@ llm_fitting/runs/2026-10-12_A3_head_share/DESIGN.md.
 
     python llm_fitting/phase1_a3.py run facebook_a
     python llm_fitting/phase1_a3.py run_b facebook_a     # addendum: far tails, bounded shocks
+    python llm_fitting/phase1_a3.py run_c facebook_a     # addendum 2: the structure card under each seeding
     python llm_fitting/phase1_a3.py report
 """
 import contextlib
@@ -205,6 +206,72 @@ def run_b(panel):
         finished=time.strftime("%Y-%m-%d %H:%M:%S")), indent=1, default=float))
 
 
+# --------------------------------------------------------------------------- #
+# Addendum 2 (DESIGN.md): the structure card under each seeding
+# --------------------------------------------------------------------------- #
+CARD_PANELS = ("facebook_a", "reddit_comments", "reddit_submissions_long", "reddit", "instagram")
+CARD_ARMS = ("base", "seed_ladder", "seed_means")
+
+
+def run_c(panel):
+    cfg = le.PANELS[panel]
+    spec = le.spec_for(panel, "struct", cfg["struct_path"][-1])
+    df = mrd.restrict_universe(mrd.load_panel(mrd.PLATFORMS[cfg["struct"]]),
+                               cfg["K"], buffer_mult=4)
+    K, T = int(df.attrs["score_k"]), int(df["period"].max()) + 1
+    top_k = max(10, int(round(0.01 * K)))
+    p = le._fit(df, spec)
+    ev, er, et, ers = mrd.empirical_structures(df, top_k, topid_k=K)
+    M = int(min(ers.shape[1], min(p.N, 2000)))
+    emp = le._stats(ev, er, et, ers, top_k, K, M)
+    ladders = seed_ladders(df, int(np.asarray(p.w0).size))
+    arms, t0 = {}, time.time()
+    for arm in CARD_ARMS:
+        pa = arm_params(p, arm, ladders)
+        arms[arm] = [le._stats(*mrd._sim_struct(mrd.simulate(pa, T, seed=s, kappa=None,
+                                                             top_record=K)), top_k, K, M)
+                     for s in range(SEEDS)]
+        mean = le._seed_mean(arms[arm])
+        npass, ntot, churn = mrd._score(emp, mean, top_k)
+        print(f"[{panel}] {arm:12s} card {npass}/{ntot}, churn {churn:.3f}, index "
+              f"{le.macro_index(emp, mean, top_k)[0]:.2f} ({time.time() - t0:.0f}s)", flush=True)
+    (OUT / "cells").mkdir(parents=True, exist_ok=True)
+    (OUT / "cells" / f"a3c__{panel}.json").write_text(json.dumps(dict(
+        panel=panel, K=K, T=T, top_k=top_k, M=M, seeds=SEEDS, emp=emp, arms=arms,
+        commit=le._commit(), finished=time.strftime("%Y-%m-%d %H:%M:%S")), indent=1, default=float))
+
+
+def report_c(lines):
+    rng = np.random.default_rng(0)
+    for panel in CARD_PANELS:
+        f = OUT / "cells" / f"a3c__{panel}.json"
+        if not f.exists():
+            continue
+        c = json.loads(f.read_text())
+        e, tk = c["emp"], c["top_k"]
+        lines.append(f"\n## structure card by seeding, {panel} ({c['seeds']} seeds)")
+        base_idx = None
+        for arm, rows in c["arms"].items():
+            mean = le._seed_mean(rows)
+            npass, ntot, churn = mrd._score(e, mean, tk)
+            idx, blocks = le.macro_index(e, mean, tk)
+            band = ""
+            if arm != "base":      # seeds resampled jointly with the base arm
+                d = []
+                for _ in range(400):
+                    j = rng.integers(0, len(rows), len(rows))
+                    d.append(le.macro_index(e, le._seed_mean(rows, j), tk)[0]
+                             - le.macro_index(e, le._seed_mean(c["arms"]["base"], j), tk)[0])
+                band = (f"  index minus base {idx - base_idx:+.3f} "
+                        f"[{np.quantile(d, .05):+.3f}, {np.quantile(d, .95):+.3f}]")
+            else:
+                base_idx = idx
+            lines.append(f"{arm:12s} card {npass}/{ntot}  churn {churn:.3f}  index {idx:.2f}  blocks "
+                         + " ".join(f"{b} {v:.2f}" for b, v in blocks.items())
+                         + f"  S1/data {mean['S1'] / e['S1']:.2f}  ladder drift "
+                         f"{mean['ladder_drift']:.3f} (data {e['ladder_drift']:.3f})" + band)
+
+
 def report_b(lines):
     for panel in PANELS:
         f, f0 = OUT / "cells" / f"a3b__{panel}.json", OUT / "cells" / f"a3__{panel}.json"
@@ -286,6 +353,7 @@ def report():
                 f"{np.mean([r['gap12'] for r in rows]):.3f}    "
                 f"{np.mean([r['S1_top5pct_weeks'] for r in rows]):.3f}")
     report_b(lines)
+    report_c(lines)
     text = "\n".join(lines)
     (OUT / "report_tables.txt").write_text(text + "\n")
     print(text)
@@ -296,5 +364,7 @@ if __name__ == "__main__":
         run(sys.argv[2])
     elif sys.argv[1] == "run_b":
         run_b(sys.argv[2])
+    elif sys.argv[1] == "run_c":
+        run_c(sys.argv[2])
     else:
         report()
