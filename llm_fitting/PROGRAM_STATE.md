@@ -41,7 +41,10 @@ off: the home both pulls endpoints back, which the data contradicts, and
 holds the ladder, which it needs), §2z-az (the card under two seedings),
 §2z-bc (Codex's V2: independent simulator, recovery, planted mechanisms)
 and §2z-bd (what V2 changes in the entries before it), §2z-be (the debate
-on candidate 2, closed).
+on candidate 2, closed), §2z-bf (A9: lasting variance over the ladder's
+local slope is close to constant across ranks), §2z-bg (Codex's V3:
+endpoint scores at nominal rows; a timing discrepancy in the gate's
+conditional simulator, flagged for the owner).
 The per-endpoint export for Codex's V3 (A6) is on `main`.
 
 ## Evidence to date

@@ -41,10 +41,16 @@ with `numpy.savez_compressed`; read with `numpy.load(path)` (no pickle).
 | `train_presence` | (N,) | float | share of train weeks observed |
 | `origin_rank` | (N,) | uint32 | observed within-universe rank in the last train week, `T0 − 1`; 0 = not observed that week |
 | `obs_rank` | (test_len, N) | uint32 | observed within-universe rank in test week `w` (panel period `T0 + w`); 0 = not observed that week |
-| `sim_rank` | (reps, test_len, N) | uint32 | simulated rank in test week `w`; 0 = the endpoint has exited in that rep |
+| `sim_rank` | (reps, test_len, N) | uint32 | the rows the gate scores: row `w` is `w + 2` weekly transitions from the filtered end-of-train state; 0 = the endpoint has exited in that rep |
+| `sim_rank_aligned` | (reps, test_len, N) | uint32 | the same simulated paths one transition earlier: row `w` is `w + 1` transitions from the end-of-train state and lines up with test week `w`. `sim_rank_aligned[:, w+1] == sim_rank[:, w]` |
 
-The forecast origin is the last train week, so the horizon of row `w` is
-`w + 1` weeks.
+**Correction, 2026-10-12 (found by Codex in V3).** This file first said that
+row `w` of `sim_rank` had a horizon of `w + 1` weeks. It does not. The
+gate's conditional simulator applies one weekly transition at its step 0
+and drops that row, so its first recorded row is two transitions from the
+end-of-train state. The gate is left as committed. For a forecast compared
+with a calendar week, use `sim_rank_aligned`: the forecast origin is the
+last train week and the horizon of its row `w` is `w + 1` weeks.
 
 ## Things to know before scoring
 

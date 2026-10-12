@@ -630,7 +630,16 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
       simulated universe, in slot order) and export["rank"] (T_sim x N,
       0 once the member has exited and its slot been refilled).  Read-only:
       no random draw is added, so the returned values are the same with or
-      without it."""
+      without it.
+
+    TIMING (found by Codex, V3, 2026-10-12; MODEL_STATUS 2z-bg).  The loop
+      applies a weekly transition at step 0 before that step is dropped, so
+      the first recorded row, and export["rank"][0], is TWO transitions from
+      the filtered end-of-train state, not one as the paragraph above
+      implies.  The gate's behaviour is left exactly as committed.  The
+      export also returns export["rank_aligned"]: the rows of steps
+      0..T_sim-1, so that row w is w+1 transitions from the end-of-train
+      state and lines up with test week w.  rank_aligned[w+1] == rank[w]."""
     rng = np.random.default_rng(seed)
     levels = _filtered_levels(df_tr, p)
     mu = levels.to_numpy().copy()
@@ -667,7 +676,7 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
     cohort_slots = cohort_ids = None
     cranks = []; topids = []
     KT = 300
-    own = np.arange(N, dtype=np.int64); eranks = []
+    own = np.arange(N, dtype=np.int64); eranks = []; eranks_aligned = []
     for t in range(T_sim + 1):
         morder = np.argsort(-mu); prank = np.empty(N, np.int64); prank[morder] = np.arange(1, N + 1)
         zp = np.log(np.clip((prank - 0.5) / N, Z_CLIP, 1.0))
@@ -696,6 +705,8 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
                     sqw[ex] = mrd._sqw(sqv[ex], mix_b, ts)
         X = mu + xi + (xi2 if two else 0.0) + so * sqv * rng.standard_normal(N)
         order = np.argsort(-X); rank = np.empty(N, np.int64); rank[order] = np.arange(1, N + 1)
+        if export is not None and t < T_sim:
+            eranks_aligned.append(np.where(ids == own, rank, 0).astype(np.uint32))
         if t == 0:
             continue  # step 0 anchors at the last train week; record from step 1
         if cohort_slots is None:
@@ -708,6 +719,7 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
     if export is not None:
         export["entity_id"] = levels.index.to_numpy()
         export["rank"] = np.array(eranks)
+        export["rank_aligned"] = np.array(eranks_aligned)
     return np.array(cranks), np.array(topids)
 
 
@@ -845,6 +857,7 @@ def _write_endpoint_export(out_dir, platform, T0, test_len, top_k, df_tr, df_te,
     SCHEMA.md.  Ranks are within the split's member universe; 0 = not there."""
     ids = reps[0]["entity_id"]
     sim = np.stack([r["rank"] for r in reps])                # reps x test_len x N
+    sim_aligned = np.stack([r["rank_aligned"] for r in reps])  # one transition earlier
     n_tr = int(df_tr["period"].max()) + 1
     Rtr = (df_tr.pivot(index="period", columns="entity_id", values="rank")
            .reindex(index=range(n_tr), columns=ids).to_numpy())
@@ -864,7 +877,7 @@ def _write_endpoint_export(out_dir, platform, T0, test_len, top_k, df_tr, df_te,
         train_perm_rank=np.nanmean(pen, axis=0), train_presence=pres.mean(axis=0),
         origin_rank=np.nan_to_num(Rtr[-1], nan=0.0).astype(np.uint32),
         obs_rank=np.nan_to_num(Rte, nan=0.0).astype(np.uint32),
-        sim_rank=sim.astype(np.uint32))
+        sim_rank=sim.astype(np.uint32), sim_rank_aligned=sim_aligned.astype(np.uint32))
     print(f"    endpoint export: {path}  ({sim.shape[0]} reps x {sim.shape[1]} weeks "
           f"x {sim.shape[2]} members)")
     return path
