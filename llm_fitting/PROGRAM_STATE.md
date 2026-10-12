@@ -35,8 +35,9 @@ background, and replaces §2x in that role. Claude leads and Codex/Astra
 validates independently under `coordination/PROTOCOL.md`; Codex's tasks
 are in `coordination/QUEUE.md`. Phase 1 has no model code and no candidate
 gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
-(A1, A2), §2z-av (A3), §2z-aw (A7, follow-ups added to the plan). The
-per-endpoint export for Codex's V3 (A6) is on `main`.
+(A1, A2), §2z-av (A3), §2z-aw (A7, follow-ups added to the plan), §2z-ax
+(Codex's V1, the gate as an instrument). The per-endpoint export for
+Codex's V3 (A6) is on `main`.
 
 ## Evidence to date
 
@@ -190,9 +191,14 @@ is in the newest data-operation entries of MODEL_STATUS.
 - A standing margin for judging a candidate change against the current
   model on the gate. The owner decided on 2026-10-11 to wait before setting
   a number (§2z-am). Until then the skill uses the registered convention
-  (0.05, 20 reps) as a labelled stand-in; the paired-seed noise of the gate
-  has not been measured, and that measurement is what a number should rest
-  on.
+  (0.05, 20 reps) as a labelled stand-in. Measured on 2026-10-12 by Codex
+  (§2z-ax): two 20-simulation evaluations of the same frozen stack differ
+  by up to 0.018 (FB), 0.030 (comments), 0.022 (short submissions) and
+  0.032 (long submissions) at the 95% level, and 0.013–0.025 at 40
+  simulations; the error itself falls 0.008–0.022 from 3 to 20 simulations,
+  mostly as the bias of an absolute error. Noise between a candidate and
+  the incumbent on shared seeds is not yet measured: no candidate has been
+  run.
 - Whether to replace the kurtosis-based t-df moment.
 - The b = 1 implementation gap between the main law and the frozen movement
   stacks (`frozen-specs.md` §5). §2z-ap adds measurements on both sides (the
