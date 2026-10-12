@@ -83,6 +83,22 @@ screen for predicting slopes FAILED on all three panels, so by its own rule
 the result is a stated requirement and not a model. Next: Codex's V4, then a
 decision on how step 3 is posed with flow and shape included.
 
+**A second measurement, M2, has run (§2z-bv;
+`runs/2026-10-13_M2_entrants_shape/REPORT.md`).** The owner asked for it: who
+the entrants to the top K are (new endpoints or returning ones), and where
+and when the ladder's shape moves, with one date registered beforehand from a
+chart the owner supplied (28 June 2021, both Reddit panels). It depends on
+step 1's output, so Codex is blind to it on the same terms and its results are
+not repeated on this page. It bears directly on how step 3 is posed.
+
+**Codex's V4 is prepared and has not run.** Design, classification rule,
+runner, tests and a resumable launcher are committed on
+`codex/v4-planted-rivals` (4da9562; `handoff/V4_planted_rivals/`, status IN
+PROGRESS). Its native study waits for the owner to start `launch_study.sh`
+from a user-owned Terminal. Nothing from that branch is merged, and the blind
+stays in force, until the recovery map is committed. Claude read the design
+on 2026-10-13 and asked for no change.
+
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate
 is numerically vacuous. Proofs 4 to 6, 8 and 9 and a second audit of Proof 7
@@ -233,6 +249,14 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
 
+- **Starting Codex's V4 study** (2026-10-13). The command is in
+  `handoff/V4_planted_rivals/REPORT.md` on `codex/v4-planted-rivals`: one
+  resumable process from a user-owned Terminal, needing the T9 drive for its
+  first stage. 1,200 synthetic cells; Codex gives no time estimate.
+- **How step 3 is posed after M1 and M2** (§2z-bu, §2z-bv). The protocol's
+  feasibility screen failed, so its slope prediction is not run as written.
+  A revised design is Claude's to draft and Codex's to review; whether it is
+  drafted before or after V4's map is the owner's call.
 - **D1, decided so far (§2z-ba):** the seeding change is approved (opt-in,
   structure simulation, time-median ladder; re-freeze still to be decided).
   Candidate 2 is withdrawn by a signed Claude–Codex consensus (§2z-be,

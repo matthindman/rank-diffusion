@@ -7891,3 +7891,236 @@ llm_fitting/mts_step1.py report`. Outputs: `runs/2026-10-13_M1_balance/`
 (`cells/`, `logs/`, `report_tables.md`, `REPORT.md`). No run was killed.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-bv. 2026-10-13 — EXPLORATORY MEASUREMENT (M2, asked for by the owner): who the entrants to the top K are, and where and when the ladder's shape moves. On Reddit 81–87% of entrants are endpoints new to the record, and almost no exit is a disappearance; the shape moves as a tilt that is monotone in rank, lower ranks rising faster, most of it before mid-2021; at the date registered from the owner's chart, 28 June 2021, the share of the first-ranked submissions position falls from 8.3% to 4.3% in one quarter and ranks 250 to 1,000 step up with it; comments show a smaller, less sharply dated version. 18 of 25 scored predictions passed, 7 failed; nothing adopted, no fit, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-13; design,
+predictions and runner committed at 62b795e before any run; results committed
+with this entry. Codex: this entry reports output that depends on step 1; do
+not read it until your V4 recovery map is committed._
+
+**Tier.** Exploratory and descriptive, DEVELOPMENT data, in sample. Data only.
+No fit, no simulation, no gate evaluation. The statistics have known-answer
+tests on synthetic panels (`tests/test_mts_step1b.py`, 7 tests). A new design
+under section 7 of `MTS_PROTOCOL_STEPS_1_2_2026-10-13.md`, not a change to it.
+
+**The owner's request and context.** "OK: design and measure who the entrants
+are (new endpoints or returning ones), and where and when the ladder's shape
+moves." Then, while the design was being written: "for context, we know in
+some cases the kinds of things that reshape the ladder. We can see easily in
+the fuller Reddit data when things changed: in response to a few top subreddit
+running away with more and more market share, the new recommendation algorithm
+immediately stopped them from growing further, and everything gradually
+produced the new, differently shaped curve that was less steep in the upper
+head." Asked for the date, the owner was not sure and supplied a chart used
+before, "Change in submission karma share by subreddit rank" (monthly, NSFW
+excluded, ranks 1 to 5,000), with a dotted line captioned "June 28, 2021
+algorithm change". **That date was registered for both Reddit panels before
+any run.** Its only source is the caption; it was not checked against Reddit's
+announcements.
+
+**Question.** Step 1 (§2z-bu) failed its feasibility screen because flow is not
+small and the ladder's shape moves. Where does the flow come from, and is the
+shape change a steady drift or a set of episodes?
+
+**Method.** `runs/2026-10-13_M2_entrants_shape/DESIGN.md`; runner
+`llm_fitting/mts_step1b.py`. Panels, level, tracking, blocks, presence rule and
+certification as in step 1: four 52-week blocks on Reddit beginning
+2018-12-31, 2019-12-30, 2020-12-28 and 2021-12-27; three 26-week blocks on
+Facebook Era A. An entrant to the top k of a block is an endpoint with no
+block level in the block before, classed by its earlier record: new (first
+seen during the earlier block), silent, intermittent (under half of its
+weeks), nearly continuous (50–89%). Shape: for every week, the mean level of
+bands of current rank, against the top-K centre and against the platform's
+weekly total; trends by least squares; log shares of the platform total at the
+chart's ranks; trends before and after the registered date. Trend intervals
+come from a circular moving-block bootstrap (13 weeks, 400 draws), which in
+synthetic checks covers a true zero trend 75–81% of the time at a nominal 90%
+for moderately persistent residuals and 54–63% for strongly persistent ones.
+Every scored "interval excluding zero" therefore uses an interval doubled
+about the estimate, which covered at least 90% in the same checks. Every
+scored cell is certified exact.
+
+**Result: entrants** (top K; pairs with a full earlier year of history).
+
+| | comments 2020→21 | comments 2021→22 | submissions 2020→21 | submissions 2021→22 | Facebook, blocks 1→2 |
+|---|---|---|---|---|---|
+| entrants | 1,200 | 812 | 339 | 231 | 95 |
+| as a share of K | 9.6% | 6.5% | 6.8% | 4.6% | 2.7% |
+| new to the record | 84% | 81% | 87% | 81% | 34% |
+| silent through the earlier block | 0% | 0.2% | 0% | 0.4% | 0% |
+| intermittent | 3% | 6% | 3% | 5% | 13% |
+| nearly continuous | 13% | 13% | 10% | 14% | 54% |
+| median rank at which they sit | 8,174 | 7,999 | 3,127 | 3,520 | 2,033 |
+
+1. **On Reddit the entrants are new endpoints.** 71–87% across k = K/4, K/2,
+   K and 2K, carrying 72–89% of the entrants' gain. "New" means no archived
+   item since December 2018; the instrument holds no creation dates.
+2. **Exits are not disappearances.** In the pair with two later years to
+   return in, 7 of 258 exits from the top K on comments and 0 of 112 on
+   submissions are never seen again. The rest are endpoints still posting
+   that fell under 90% presence.
+3. **The top K three years on.** In 2022, 63.0% (comments) and 59.6%
+   (submissions) of the top K were in the 2019 cohort; 13.2% and 10.9% had not
+   been seen through 2019; 10.0% and 8.6% were partly present in 2019; the
+   rest ranked beyond K in 2019.
+4. **Facebook differs in kind**, as a fixed list should: a third of 95 entrants
+   are new ids and half are pages that missed the presence rule.
+
+**Result: shape.** Trend per year of each band's mean level against the top-K
+mean (nominal interval for the top band):
+
+| band of current rank | comments | submissions |
+|---|---|---|
+| top K/128 | −0.220 (−0.263 to −0.181) | −0.298 (−0.324 to −0.272) |
+| K/128 to K/64 | −0.179 | −0.192 |
+| K/64 to K/32 | −0.155 | −0.193 |
+| K/32 to K/16 | −0.119 | −0.162 |
+| K/16 to K/8 | −0.078 | −0.128 |
+| K/8 to K/4 | −0.045 | −0.061 |
+| K/4 to K/2 | −0.009 | −0.005 |
+| K/2 to K | +0.044 | +0.058 |
+| K to 2K | +0.121 | +0.124 |
+| 2K to 4K | +0.223 | +0.216 |
+
+5. **A tilt, monotone in rank and nearly the same on both panels.** In
+   absolute level the top-K mean rises (+0.33 a year on comments, +0.21 on
+   submissions; the platform total +0.16 and +0.04), the ranks from 2K to 4K
+   rise by +0.56 and +0.43, and the top band rises on comments (+0.11) and
+   falls slightly on submissions (−0.08, doubled interval including zero). The
+   middle and the bottom grow; the top does not collapse.
+6. **Most of it precedes the registered date.** Block means of the top-K
+   level: comments 7.61, 8.13, 8.40, 8.61; submissions 9.68, 10.16, 10.29,
+   10.31. Top band minus that: comments 6.07, 5.64, 5.47, 5.42; submissions
+   5.12, 4.96, 4.57, 4.27. The trend of the top-K level is +0.46 a year before
+   the date and +0.25 after on comments, +0.41 and +0.03 on submissions. The
+   rise of the ranks beyond K against the centre nearly stops after it (K to
+   2K: +0.30 to +0.01 on comments, +0.23 to +0.07 on submissions). The exact
+   accounting for the first pair of blocks, which step 1 could not compute,
+   has a shape term at K/16 of −0.0078 a week on comments, against −0.0015 and
+   +0.0002 for the two later pairs.
+7. **The registered date on submissions.** Thirteen-week means of the log
+   share of the platform total, shown as shares, for the quarters beginning
+   2020-09-28, 2020-12-28, 2021-03-29, **2021-06-28**, 2021-09-27, 2021-12-27
+   and 2022-09-26: rank 1: 10.1%, 8.6%, 8.3%, **4.3%**, 2.7%, 2.2%, 1.2%; top
+   five positions: 17.7%, 15.8%, 13.8%, **8.7%**, 6.7%, 7.0%, 4.6%; the five
+   names at the top over the 26 weeks before the date: 16.8%, 14.5%, 13.7%,
+   **8.3%**, 5.8%, 5.6%, 3.5%. Rank 1 rises from 4.5% in early 2019 to a peak
+   of 10.3% in the quarter beginning 2020-06-29; the trend of its log share
+   is +0.29 a year before the date and −1.05 after (doubled intervals 0.06 to
+   0.51 and −1.35 to −0.77). This reproduces the owner's chart, which I had
+   seen before the run. Rank 1 had stopped growing a year before the date and
+   the top five were falling for two to three quarters before it.
+8. **The middle steps up in the same quarter; the top then keeps falling.** In
+   log share, ranks 250, 500 and 1,000 on submissions rise by 0.10, 0.13 and
+   0.14 in the quarter beginning 2021-06-28, the largest quarterly step of
+   each series, and are close to flat afterwards. Rank 1's loss of four points
+   of share accounts for 0.04 of that by arithmetic. Ranks 3 to 25 change by
+   −0.01 to −0.19, no more than in earlier quarters; rank 5,000 rises by
+   about 0.06 a quarter before and after. Rank 1 goes on falling for a year
+   and a half (4.3% to 1.2%). Against the top-K mean the step in the middle
+   is invisible, because the mean steps with it: for the bands from K/64 to
+   K/4 the trend against the centre only slows after the date (by 0.05 to
+   0.07 a year), and the half-change measure of the design gives 10.5 weeks
+   for the top band, 26.5 for the next and 43.5 to 52.5 for the bands down to
+   K/4, where a single step at the date would give 6.5 and a steady trend
+   about 33. S8 passes by its rule, and I do not read it as a response
+   running down the ladder: the share series say the redistribution to the
+   middle was immediate.
+9. **Comments: a smaller and less sharply dated version.** Rank 1's share
+   falls steadily from 12.4% to 4.0% over the panel; its largest quarterly
+   step (−0.22 in log share) is in the quarter after the date's. Rank 5 has
+   its largest step (−0.26) in the quarter of the date and stays down. The top
+   five step down one quarter early (16.1% to 14.1% in the quarter beginning
+   2021-03-29). Ranks 250 to 1,000 edge up by 0.01 to 0.07 a quarter over the
+   three quarters from 2021-03-29. The top band's trend against the centre is
+   −0.39 a year before the date and −0.13 after, which is why S7 failed. The
+   half-change measure is uninformative there: every band reaches half within
+   the first quarter because little changes against the centre after the
+   date.
+10. **Facebook has no tilt.** The whole ladder falls (top-K mean −0.17 a year,
+    platform total −0.21); the top band falls slightly faster than the centre
+    (−0.08 against it); the bottom of the tracked list, 2K to 4K, falls by
+    −0.41 against the centre, which is a fixed panel decaying. Leaving out the
+    ten flagged weeks moves no trend by more than 0.02. The top band's largest
+    quarterly step is in the quarter beginning 2021-06-28 (−0.13 of five
+    steps); with five steps and another platform, I read nothing into it.
+
+**Hypotheses these measurements weigh against.** That the flow term of step 1
+is endpoints coming back (E1, E2: almost none are). That entry is matched by
+exit from the record (item 2). That the shape change of 2019–2022 is the
+recommendation change (items 6 and 9: the broad tilt precedes it and comments
+show no break in that trend; items 7 and 8: on submissions the first rank and
+the middle ranks do move at the date). That the response to the dated change
+is a slow relaxation down the ladder (item 8: the middle moved in the same
+quarter; only the top's own decline is drawn out). That the top is collapsing (item 5).
+
+**Predictions scored** (`DESIGN.md`; `mts_step1b.score`, fixed beforehand).
+
+| | Facebook | comments | submissions |
+|---|---|---|---|
+| E1 new endpoints are 25–60% of entrants | — | FAIL (84%, 81%) | FAIL (87%, 81%) |
+| E2 silent endpoints under 10% | — | PASS | PASS |
+| E3 entrants sit beyond K/2 | — | PASS | PASS |
+| E4 at least 10% of the last block's top K unseen through the first | — | PASS (13.2%) | PASS (10.9%) |
+| E5 fewer than 30% of exits gone from the record | — | PASS (2.7%) | PASS (0%) |
+| E6 Facebook: new ids under 30% of entrants | FAIL (34%) | — | — |
+| S1 every band above K/4 falls against the centre, more toward the head | — | PASS | PASS |
+| S2 the centre rises; the top falls by less, if at all | — | PASS | PASS |
+| S3 larger change from block 0 to 1 than from 2 to 3 | — | PASS | PASS |
+| S4 no 13-week step above 30% of the movement at (K/32, K/16] | FAIL (34%) | PASS | PASS |
+| S5 Facebook: centre falls, top falls by less | FAIL | — | — |
+| S6 submissions: the chart's pattern at rank 1 and rank 5,000 | — | — | PASS |
+| S7 comments: the top band's trend is lower after the date | — | FAIL | — |
+| S8 the top band moves first after the date | — | FAIL | PASS |
+
+"—": stated for other panels. The shape predictions S1–S5 were informed by
+step 1's tables and S6 by the chart; they are reproductions. E1, the one
+uninformed prediction about who the entrants are, failed on both panels: I
+expected a mix of new and returning endpoints.
+
+**Reading** (mine; not tested).
+
+1. Flow is births. Over these four years Reddit's top K is a growing
+   population, 5–10% of K a year arriving from outside the record and almost
+   nothing leaving it, not a stationary one with matched entry and exit.
+2. The shape change is mostly growth from below, strongest in 2019–2020, plus
+   one dated episode on submissions in which the first rank halves and the
+   middle ranks step up together.
+3. Step 1's primary pair (cohort of 2019, measured 2021 to 2022) sits after
+   both, in the calmest part of the panel. How much of a cohort's slide in the
+   earlier years is the centre outgrowing it is not separated here.
+4. A stationary balance is the wrong frame for 2019–2022. An account of the
+   ladder from movement has to carry growth in the number of endpoints and in
+   the level of the lower ranks; the agenda's theory note has the dilution
+   term, and it is not small.
+5. The 2021 episode is a dated outside change with a measured response by
+   rank: one event, one metric, and not yet compared with what any model
+   predicts. The immediate step in the middle looks like a reallocation of
+   exposure and not like diffusion; the drawn-out part is the top's decline.
+
+**What it does not show.** Why new communities arrive at this rate, why the
+lower ranks grew, or what the recommendation change did. That "new" means
+newly created. That the growth of 2019–2020 is not partly the archive's
+coverage: that was not examined. Whether the registered date is right.
+Anything after 2022 or about a sealed panel.
+
+**Not run.** Any comparison with a model. The recovery study (V4, Codex),
+whose design and runner are prepared on `codex/v4-planted-rivals` (4da9562)
+and whose native study has not started. I read that design and asked for no
+change. Its ten rivals were fixed before step 1 ran, as they had to be, and
+none has a growing population, levels rising from below, or a dated change
+at the top; a recovery map from them will not cover the regime items 1, 5 and
+7 describe. A second set of rivals is to be queued after the blind is lifted,
+not before, so that V4's rule stays uninformed by these results. Any fit,
+simulation or gate evaluation.
+
+**Commands.** `caffeinate -dims python scripts/heavy_lock.py -- python -u
+llm_fitting/mts_step1b.py run <panel>` for `facebook_a`,
+`reddit_submissions_long`, `reddit_comments_ext`; `python
+llm_fitting/mts_step1b.py report`. Outputs:
+`runs/2026-10-13_M2_entrants_shape/` (`cells/`, `logs/`, `report_tables.md`,
+`REPORT.md`). No run was killed. No deviation from the design; the design was
+extended once before any run, when the owner supplied the chart.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
