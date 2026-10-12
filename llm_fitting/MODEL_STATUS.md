@@ -7386,3 +7386,215 @@ is flagged for the owner, not acted on.
 
 **Not done.** A blind referee pass; a check of the sources; any
 measurement.
+
+## 2z-bo. 2026-10-12 — REVIEW of Proof 7 (five bounded daily-count statistics, finite-record identification), at the owner's request: no gap found under its stated assumptions; no existing development instrument supplies its experiment; its certificate is numerically vacuous and its five features are weak on rank feedback. PLANNING ONLY, nothing adopted; one bounded schema-and-scalars check on DEVELOPMENT panels; no fit, simulation or gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; work done in the
+debate working copy on `codex/d1-debate` starting from `9335360`, reading the canonical
+records from `main` at `5384430`; appended here on 2026-10-13 with the audit files
+copied to `main` unchanged. Requested by the owner by relaying the brief
+`proof_prompts/PROOF_7_REVIEW_APPLICABILITY_PROMPT.md`. The reviewer did not write
+Proof 7 and had not seen it before. Design saved before any sensitivity number was
+computed (`handoff/D1_debate/proof7_audit/v2_claude/DESIGN.md`)._
+
+**Tier.** Review of a mathematical result, with deterministic calculations on the
+stated model and a documentary audit of instruments. No empirical claim. Agreement
+between this review and any other model's is not evidence.
+
+**What was read.** `PROOF_7_RESULT.md` (SHA-256 `ba3b4ef1…e60be5`) in full, against its
+prompt and the referee prompt; the exposure ledger; `DATA_INVENTORY.md`,
+`DATA_PHASE2_REPORT.md`, `instrument_eras.py` and the four panel builders; the record's
+entries on instrument eras, censoring, departures, tails and the annual cycle (§2g
+addendum, §2z-c, §2z-o, §2z-aa, §2z-ac, §2z-ae, §2z-au, §2z-aw, §2z-bf); pages 1–5 and
+9–12 of Scheutzow's lecture notes for the Girsanov, Novikov and weak-solution
+statements.
+
+**1. Mathematical validity: NO GAP FOUND UNDER STATED ASSUMPTIONS.** Lemmas 1–7,
+Theorems 1–2 and Propositions 8–9 were re-derived by hand. Forty-three executable
+checks of the identities and explicit inequalities pass (closed forms to 1e-15, the
+determinant identity to 1e-14, two planted errors detected), and an independent
+finite-difference solver that recomputes the self-consistent density reproduces the
+rank-feedback derivative of the day means to 2e-6. Two side remarks in the report's §8
+are asserted without written proofs and are not load-bearing. Nine wording or looseness
+corrections, none changing the statement. The self-consistent term is 0.5% of the
+rank-feedback derivative at the edge of the proof's parameter box and 23–24% at half
+the admissible bound. A corollary was proved: retaining newborns to the end of the
+third complete day instead of the fourteenth leaves the law of the three counts used
+unchanged and multiplies retention by `exp(11 lambda)`; it is a separate proposed
+design. A model's review is not certification.
+
+**2. Empirical applicability: none of the existing development instruments.** The
+experiment needs daily event counts, a true birth mark, a true survival flag and
+recorded zeros, with the entry law and death rate known. Reddit 2018–2022 and
+2024-07..2025-01 carry genuine daily event counts (items created per subreddit-day) that
+no fit has used, and fail on birth, survival, zeros and both known inputs; the modeled
+metric is clipped signed karma. Facebook Era A carries post counts and fails on birth
+by construction (frozen enrolment) and on the rest; its modeled metric is a snapshot of
+interaction totals. Instagram fails every requirement. The Reddit bridge and Wikipedia
+were not audited (sealed). Eligible independent retained records: zero. Measured in one
+bounded check: no file contains a zero row (minimum item or post count is 1); 0.19% of
+comment subreddit-days in 2019-06 have negative karma. At the proof's base point the
+five features see the entry mean, the OU variance and the OU rate through two
+quantities only, so the known entry law cannot be replaced by an estimate from the same
+features.
+
+**3. Numerical usefulness: none established.** At the proof's suggested nominal point
+(`a* = k* = v* = 1`, with `lambda = 1`, `mu_0 = 0`, `v_0 = 1` chosen as a theoretical
+benchmark) the certified ball has radius `10^-402,641`, the stability constant is
+`10^1,326,345`, and the sampling term of the error bound falls below what the ball
+already guarantees only for more than `10^3,457,972` retained records. Two sharpenings
+the proof already licenses give `10^-3,007`, `10^9,776` and `10^25,565`. With the true
+constants at the base point in the same formulas the radius is at most `1.2e-7` and the
+break-even sample at least `10^48` (`10^25` with a variance-based concentration step):
+the form of the certificate is the obstacle. Without a certificate, in the
+small-epsilon limit under iid sampling, the five features need `7e9` to `6e16` retained
+records for a 95% half-width of 10% of scale on the binding movement parameter over
+eight declared benchmarks; rank feedback is the weak direction. For reference (post
+hoc): the Fisher information in the latent path allows that precision on rank feedback
+with 75 to `1.2e4` records over fourteen days, and an idealized calculation on daily
+log-activity without count noise needs 2 to 34 times that. Platform relevance of every
+benchmark is not established.
+
+**Proposed (nothing adopted).** Stop tightening this certificate and stop work toward
+birth-cohort instruments for it. If the line continues, pose a different instrument
+first: established endpoints over fixed lags, features that difference out an
+endpoint's own level, entry law unknown; the assumptions it would rest on are listed in
+`SENSITIVITY.md` §6. One measurement on development data would say whether that is
+worth posing; it was not authorized here and was not run.
+
+**Not run.** The features at fixed positive `epsilon` (no evaluator built). A rigorous
+enclosure of the low-order Jacobian. Any simulation, fit, gate evaluation or health
+script. Any contact with sealed data. One run was killed for slowness and rerun after a
+caching fix; nothing was read from the killed run.
+
+**Deviations from the design** are tabled in `RUN_RECORD.md` (six, none affecting a
+reported figure; five post hoc calculations added after the owner asked mid-task for
+assumptions that would tighten practical use, labelled as such).
+
+**Commands** (from `llm_fitting/handoff/D1_debate/proof7_audit/v2_claude/`, scratch
+environment except where noted): `stageA_checks.py`, `pde_check.py`, `certificate.py`,
+`sensitivity.py`, `info_bounds.py`, `convergence_check.py`, `posthoc_variants.py`;
+`instrument_scalars.py` with the registered interpreter. Outputs are the JSON files of
+the same names.
+
+**Ledgers.** No gate evaluation. Data contact: `CONTACT_LOG.md` in the same folder (six
+rows, all DEVELOPMENT, footers and scalars only; no status changed).
+
+**Files.** `handoff/D1_debate/proof7_audit/v2_claude/` on `main`: `REVIEW.md`,
+`REPAIRS_AND_PROPOSALS_v1.md`, `INSTRUMENT_AUDIT.md`, `SENSITIVITY.md`, `DECISION.md`,
+`RUN_RECORD.md`, the scripts and their outputs.
+
+**What is not yet in this record.** The result reviewed here, `PROOF_7_RESULT.md`, and
+the other count-identification results (Proofs 4 to 6, 8 and 9) are uncommitted files in
+Codex's debate working copy; none has a record entry. This entry therefore precedes the
+entry for the result it reviews, which is identified by its SHA-256 above. A second audit
+of Proof 7 by another session is in the same working copy; this review was written
+without reading it, and the two have not been compared.
+
+## 2z-bp. 2026-10-13 — OWNER DECISION: the movement-to-structure agenda of §2z-bl is ADOPTED as the working agenda; it replaces Phase 2 of the work plan of §2z-ar. No model, stack, gate, threshold, protocol or claim change; no gate evaluation or sealed data spent
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-13; started from
+commit 5384430._
+
+**The decision, in the owner's words.** "adopt and implement the
+movement-to-structure plan. take the next steps you think warranted."
+
+**What preceded it.** The owner asked where the program stands against its
+goal, a model that explains the relationship between macro structure and
+individual movement. My answer, in the conversation: the evidence is at the
+first of the three levels of §2z-be (conditional dynamics); the ladder is an
+input to the frozen model, not something it produces; the one finding that
+links movement to structure is the variance-to-slope regularity of §2z-bf,
+whose constant nothing independent measures; and the count-identification
+proofs written on 2026-10-12 do not bear on closing that gap (§2z-bo). I
+recommended three things: adopt this agenda; stop the count-identification
+proofs, keep the first proof result and have the typed-renewal result
+(branch `codex/typed-renewal-proof`, unreviewed) read by a mathematician;
+and keep the sealed data for a test designed before it is opened.
+
+**What it adopts and supersedes.**
+
+- `RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md` is the working
+  agenda. It replaces Phase 2 of `WORKPLAN_CLAUDE_2026-10-12.md`
+  ("candidates, one at a time"), whose candidates were withdrawn or narrowed
+  at D1 (§2z-ba, §2z-be). Phase 1 of the work plan is complete and stays on
+  the record. `AGENTS.md` and `PROGRAM_STATE.md` now point to the agenda.
+- The agenda's own order holds: one protocol for steps 1 and 2, reviewed
+  before anything runs on the panels; its first decision is whether step 3 is
+  identified on development data.
+- "Take the next steps you think warranted" is read as authority for
+  reversible work under the agenda and for recording this session, not for
+  any gated item.
+
+**What it does not decide.** Whether the proof targets continue or stop: the
+agenda says they run only if the owner asks, and my second recommendation
+above has not been answered. Any design for sealed data. The 15 candidate gate
+evaluations of the work plan: none is spent and none is released by this
+decision. The rest of D1 (re-freeze with the seeding option, the margin, the
+reference gates).
+
+**What stays the owner's.** Every gated item in the skill: frozen stacks,
+Gate v1, margins, protocols, re-freezes, paper claims, sealed data, pushes.
+
+## 2z-bq. 2026-10-13 — PLANNING ONLY: the measurement protocol for steps 1 and 2 of the adopted agenda is DRAFTED FOR REVIEW, and its statistics and runner are built and tested on synthetic panels. Nothing run on any panel; nothing adopted beyond §2z-bp; no fit, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-13; started from
+commit 5384430. Same session as §2z-bo and §2z-bp._
+
+**What was read.** The agenda page and Codex's theory note
+(`handoff/D1_debate/variance_structure/THEORY.md`); the A9 and A10 designs and
+runners (§2z-bf, §2z-bh, §2z-bk); the review of the first proof result
+(§2z-bn); `residual_anatomy.py`; the pitfall catalogue.
+
+**What is proposed.** `MTS_PROTOCOL_STEPS_1_2_2026-10-13.md`, draft v1. Its
+core is an exact accounting between two times: the change in the mean level
+of the top k positions equals the named change of the endpoints that held
+them, plus what reordering puts back, plus flow. Against a positional centre
+this is: change of shape = minus the occupants' loss, plus the reordering
+gain, plus flow. It holds for any process at any horizon, so nothing
+instantaneous is estimated (§2z-bn). In a diffusion the reordering gain is
+half the local time between ranks k and k+1 and its small-step value is
+k v / (2S), the quantity whose ratio was found constant in §2z-bf. The
+protocol measures the three sides separately and keeps four carriers apart:
+a slide common to a whole cohort fixed beforehand, which needs no force on
+anyone; drift that differs between rank bins; return toward an endpoint's own
+earlier level; and flow. Cohorts are defined on one block and measured
+between two later blocks, 52-week blocks on the Reddit panels and 26-week
+blocks on Facebook. Thirteen predictions are written with direction and
+size. The protocol fixes the rule for its first decision, whether step 3 is
+identified on development data.
+
+**One idea in the protocol goes beyond the agenda page and is mine.** If no
+endpoint has a restoring force and the top of the ladder is refilled from
+below, every occupant still loses ground against a positional centre at one
+common rate. The constant of §2z-bf would then be the rate at which the top K
+outgrows its incumbents, measurable from named changes. A closed universe of
+4K cuts that supply off, which would be one reading of why the simulation
+with reversion switched off loses the ladder (§2z-ay). This is a hypothesis
+with a prediction attached (B2 and B3 of the protocol), not a result.
+
+**Built.** `llm_fitting/balance_accounting.py` (the accounting, cohort
+drift, the carrier regression, the predictable share; no fit, nothing tuned)
+and `llm_fitting/mts_step1.py` (one code path for real and planted panels;
+it refuses a registered panel without `--reviewed`).
+`tests/test_balance_accounting.py`, eight known-answer tests on synthetic
+panels: the identity closes with entry and exit; a planted position drift in
+its stationary state gives occupant loss, reordering gain and the small-step
+value all equal to the planted rate within 2%; a random walk with
+autocorrelated noise shows no difference between cohort bins and no slope on
+either earlier level, while its one-week occupant loss is 13 times its
+26-week loss per week; a reverting level gives a negative slope on position
+and a positive one on the earlier level. These are unit tests of the code,
+not the recovery study.
+
+**For Codex** (queue rows R4 and V4): a one-round review of the protocol and
+the code, and step 2 of the agenda, planted rivals and a recovery map through
+the same code, blind to step 1's output until the map is committed
+(`coordination/briefs/V4_planted_rivals.md`).
+
+**Not run.** Any statistic on any real panel. The recovery study. Any fit,
+simulation of the frozen model, or gate evaluation.
+
+**Commands.** `python -m pytest tests/test_balance_accounting.py -q`. Health
+check before the commit: research suite 499 passed, package suite 8 passed,
+legacy guard 14/15 and churn 0.013.

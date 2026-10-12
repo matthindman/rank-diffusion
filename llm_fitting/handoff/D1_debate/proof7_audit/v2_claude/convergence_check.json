@@ -1,0 +1,42 @@
+{
+ "B1": {
+  "jacobian_relchange": 4.84050800319397e-14,
+  "sigma_min_relchange": 2.44051309864169e-13,
+  "covariance_relchange": 1.5951433774650214e-15
+ },
+ "B2": {
+  "jacobian_relchange": 5.6735547316476874e-09,
+  "sigma_min_relchange": 1.1892510136141736e-07,
+  "covariance_relchange": 1.735556487317573e-15
+ },
+ "B3": {
+  "jacobian_relchange": 5.623410327454065e-14,
+  "sigma_min_relchange": 2.1007279959316743e-12,
+  "covariance_relchange": 4.656143882308113e-16
+ },
+ "B4": {
+  "jacobian_relchange": 7.434439882937685e-15,
+  "sigma_min_relchange": 2.1755218214698983e-11,
+  "covariance_relchange": 4.944912448863676e-16
+ },
+ "B5": {
+  "jacobian_relchange": 5.619005626113424e-14,
+  "sigma_min_relchange": 9.437755013682737e-11,
+  "covariance_relchange": 5.171619713960014e-16
+ },
+ "B6": {
+  "jacobian_relchange": 5.618342468545141e-14,
+  "sigma_min_relchange": 5.803448740045956e-13,
+  "covariance_relchange": 3.828256461631405e-16
+ },
+ "B7": {
+  "jacobian_relchange": 5.623410327454065e-14,
+  "sigma_min_relchange": 2.3013910716301546e-12,
+  "covariance_relchange": 4.2478793988426363e-16
+ },
+ "B8": {
+  "jacobian_relchange": 5.623410327454065e-14,
+  "sigma_min_relchange": 1.4153451354806898e-11,
+  "covariance_relchange": 4.2644695342884516e-13
+ }
+}

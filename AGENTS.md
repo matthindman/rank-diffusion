@@ -84,8 +84,9 @@ model files (`minimal_rankdiff.py`, `rankdiff_kalman.py`), and appends
 Codex's record entries from its handoff folders, so for Codex the handoff
 entry stands in for the append asked for above. Heavy jobs go through
 `scripts/heavy_lock.py`. The working agenda is
-`llm_fitting/WORKPLAN_CLAUDE_2026-10-12.md`; Codex's tasks are in
-`llm_fitting/coordination/QUEUE.md`.
+`llm_fitting/RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md` (adopted
+2026-10-13; it replaces Phase 2 of `llm_fitting/WORKPLAN_CLAUDE_2026-10-12.md`);
+Codex's tasks are in `llm_fitting/coordination/QUEUE.md`.
 
 ## Package track
 

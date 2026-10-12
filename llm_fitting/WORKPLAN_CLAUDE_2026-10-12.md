@@ -10,6 +10,11 @@ through §2z-ap, and the ladder explainer of 2026-10-12. Every number below
 is quoted from MODEL_STATUS or from
 `runs/2026-10-12_ladder/summary.json`; none is new.
 
+_2026-10-13: Phase 2 of this plan ("candidates, one at a time") is replaced
+by `RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md`, which the owner
+adopted that day (MODEL_STATUS §2z-bp). Phase 1 is complete. The gate budget
+of this plan is unspent and is not released by that decision._
+
 How the two agents work together is in `coordination/PROTOCOL.md`; the
 tasks for Codex are in `coordination/briefs/`.
 

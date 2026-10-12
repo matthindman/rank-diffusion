@@ -5,10 +5,14 @@ _2026-10-12. Codex's proposal
 the program's documents by Claude (Opus 5.5) at the owner's request, with
 Claude's amendments marked as such._
 
-**Status: PROPOSED. Not adopted.** The working agenda is still
-`WORKPLAN_CLAUDE_2026-10-12.md`. If the owner adopts this page, it replaces
-that plan's Phase 2 ("candidates, one at a time"), whose candidates were
-withdrawn or narrowed at decision point D1 (MODEL_STATUS §2z-ba, §2z-be).
+**Status: ADOPTED by the owner on 2026-10-13** ("adopt and implement the
+movement-to-structure plan"; MODEL_STATUS §2z-bp). It is the working agenda
+and replaces Phase 2 ("candidates, one at a time") of
+`WORKPLAN_CLAUDE_2026-10-12.md`, whose candidates were withdrawn or narrowed
+at decision point D1 (MODEL_STATUS §2z-ba, §2z-be). The text below is as
+proposed on 2026-10-12; where it says "proposed" or "if adopted", read it
+with this line. Its first deliverable is
+`MTS_PROTOCOL_STEPS_1_2_2026-10-13.md` (§2z-bq).
 Nothing here changes a frozen stack, the gate, a threshold, a protocol or
 the paper's claims. Numbers are quoted from MODEL_STATUS with their section.
 
@@ -231,4 +235,5 @@ for any of it.
 ## For the owner
 
 1. Whether this becomes the working agenda for the next phase.
-2. Whether the proof targets are run, and by whom.
+   _Decided 2026-10-13: adopted (§2z-bp)._
+2. Whether the proof targets are run, and by whom. _Open._

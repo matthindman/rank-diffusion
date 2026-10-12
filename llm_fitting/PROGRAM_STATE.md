@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-12.** This page is a digest for starting a session quickly.
+**As of 2026-10-13.** This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -28,10 +28,13 @@ work; do not treat either as binding until MODEL_STATUS records an adoption.
 Adoption sets priorities and any registered plan. Measurements and
 diagnostics on DEVELOPMENT data do not wait for it.
 
-**The working agenda for the development phase is
-`WORKPLAN_CLAUDE_2026-10-12.md`, adopted by the owner on 2026-10-12
-(§2z-aq, §2z-ar).** It narrows the two October agendas, which stay as
-background, and replaces §2x in that role. Claude leads and Codex/Astra
+**The working agenda is
+`RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md`, adopted by the owner
+on 2026-10-13 (§2z-bp).** Its question is whether movement and turnover
+measured without the ladder explain the ladder. It replaces Phase 2 of
+`WORKPLAN_CLAUDE_2026-10-12.md`, which was adopted on 2026-10-12 (§2z-aq,
+§2z-ar), narrowed the two October agendas and replaced §2x; Phase 1 of that
+plan is complete and its results are listed below. Claude leads and Codex/Astra
 validates independently under `coordination/PROTOCOL.md`; Codex's tasks
 are in `coordination/QUEUE.md`. Phase 1 has no model code and no candidate
 gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
@@ -60,13 +63,21 @@ general) and §2z-bn (Claude's review: no gap found; the consequence is to
 measure matched finite-horizon moments and crossings instead).
 The per-endpoint export for Codex's V3 (A6) is on `main`.
 
-**A proposal for the phase after D1 exists and is not adopted:**
-`RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md` (Codex's six steps
-with Claude's amendments marked; §2z-bl). It would replace Phase 2 of the
-work plan. Its question is whether movement and turnover measured without
-the ladder explain the ladder. Until the owner adopts it, no step of it is
-started; its first deliverable would be one measurement-and-recovery
-protocol.
+**Where the adopted agenda stands (§2z-bq).** Its first deliverable, one
+protocol for steps 1 and 2, is drafted and waits for Codex's review (queue
+row R4): `MTS_PROTOCOL_STEPS_1_2_2026-10-13.md`. The statistics and the
+runner are built and tested on synthetic panels only
+(`balance_accounting.py`, `mts_step1.py`). **Nothing has been run on any
+panel**, and the runner refuses a registered panel until the review is
+answered. Step 2, planted rivals and a recovery map, is Codex's task V4. The
+protocol's first decision is whether step 3 (predicting slopes with no
+constant taken from the ladder) is identified on development data.
+
+**The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
+found, no existing instrument supplies its experiment, and its certificate
+is numerically vacuous. Proofs 4 to 6, 8 and 9 and a second audit of Proof 7
+are uncommitted in Codex's debate working copy and are not in the record.
+The typed-renewal result on `codex/typed-renewal-proof` is unreviewed.
 
 ## Evidence to date
 
@@ -216,10 +227,13 @@ is in the newest data-operation entries of MODEL_STATUS.
   structure simulation, time-median ladder; re-freeze still to be decided).
   Candidate 2 is withdrawn by a signed Claude–Codex consensus (§2z-be,
   `handoff/D1_debate/CONSENSUS.md`).
-- **Whether the proposed next phase becomes the working agenda**
-  (`RESEARCH_AGENDA_MOVEMENT_TO_STRUCTURE_2026-10-12.md`, §2z-bl), and
-  whether Codex's three proof targets are run
-  (`handoff/D1_debate/proof_prompts/`).
+- **Whether the proof line continues.** Claude recommended on 2026-10-13
+  (§2z-bp) to stop the count-identification proofs, keep the first proof
+  result, and have the typed-renewal result read by a mathematician. The
+  owner adopted the agenda and has not ruled on this.
+- **The design of the sealed-data test of step 3**: measure movement on a
+  new panel and predict its ladder with no constant taken from it. It has
+  to be committed before any sealed folder is opened (agenda, step 3).
 - **The rest of D1.** `D1_CANDIDATES_CLAUDE_2026-10-12.md` now carries
   Codex's review (§2z-bi) and a current decision list in its second status
   section: the re-freeze of the structure stacks with the seeding option;
