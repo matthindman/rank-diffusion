@@ -1,0 +1,7 @@
+# Local empirical parameter inputs and verbose restart files; compact evidence
+# and tables are generated only after the complete fixed grid is terminal.
+inputs/
+cells/
+predictions/
+study.lock
+*.tmp

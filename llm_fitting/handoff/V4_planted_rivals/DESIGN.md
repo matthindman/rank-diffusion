@@ -219,3 +219,29 @@ output with `planted_sim.simulate` is tested. No production or V2 file is
 edited. The additional held-out block is obtained by deterministic replay
 from the seed only AFTER the forecast is saved, with prefix equality
 tested. No threshold, seed count, class, prediction, or score changes.
+
+## Pre-study nuisance correction — 2026-10-13
+
+Only small artificial code fixtures have run; no V4 study panel, calibration
+seed, native absence profile, or empirical M1 outcome has been opened or
+generated. The overall absence-rate shortcut is replaced before the study.
+An overall rate applied to every endpoint would penalize the head's
+permanent ranks by roughly N times that rate and could empty its cohort
+bins for an artificial reason. That does not implement the brief's real
+nuisance requirement. The earlier overall rates remain in the input
+manifest for provenance and are not used by native cells.
+
+Use the native registered DEVELOPMENT panels at their declared T to measure
+only the absence probability in fixed permanent-rank bins: edges 0 and
+K*2^j for j=-8,...,3. Permanent rank includes each absent week's N+1 floor.
+Within each populated bin retain mean absence and median permanent rank;
+interpolate probability linearly in log permanent rank, with constant
+extrapolation beyond the measured knots. Each simulated identity retains
+the probability at its initial rank; a new birth uses the reservoir's
+bottom rank. Weeks remain independently missing conditional on that
+probability. This reproduces rank variation, not temporal clustering or
+birth/death selection. No X change, balance, M1 score, ladder or residual
+is retained from this preparation. The sealed-data guard protects every
+input; a missing T9 drive stops preparation. The profiles, loader/producer
+hashes and contact rows must accompany the result. Thresholds, classes,
+seed counts, stopping and all eight predictions remain fixed.

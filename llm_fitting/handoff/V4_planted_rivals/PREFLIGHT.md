@@ -31,3 +31,11 @@ Long execution must follow AGENTS.md: use a user-owned Terminal when another
 agent session is active or its activity cannot be determined. A resumable
 launcher is delivered before requesting that launch. No partial or killed
 run supplies a scientific result.
+
+Pre-study update, 2026-10-13: DESIGN's dated nuisance correction supersedes
+the aggregate-rate shortcut above. Native cells require absence profiles
+measured by permanent-rank band on the declared DEVELOPMENT panels; the
+preparation has not run. The overall V2 rates remain only as provenance.
+The data-intake skill governs this narrowly scoped preparation. The owner's
+request selected V4, so this session does not initiate other queue rows
+while its execution dependency remains outstanding.
