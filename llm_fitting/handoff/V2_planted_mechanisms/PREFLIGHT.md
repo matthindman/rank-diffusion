@@ -81,3 +81,8 @@
   scripts also activate the verified eligibility wrapper. Existing extension
   processes keep their loaded code and cached hash; no further interruption
   is needed. Each new checkpoint stamps both wrappers when both are active.
+
+- Completed Facebook frees a shared compute slot. Original comments diagnostics
+  may run independently of its added-case fits. A per-panel diagnostic file
+  lock prevents duplicate checkpoint writers if the normal pipeline catches
+  up. This changes scheduling only; all fixed seed sets and outputs stand.

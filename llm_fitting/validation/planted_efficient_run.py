@@ -8,7 +8,7 @@ matches residual_anatomy.from_sim exactly. Runtime-only opt-in wrapper.
 """
 from contextlib import contextmanager
 from pathlib import Path
-import sys
+import fcntl,sys
 import numpy as np
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/"llm_fitting"))
@@ -59,6 +59,19 @@ def eligible_statistics():
     try:yield
     finally:study.diagnostics=original;pc.write=original_write
 
+@contextmanager
+def diagnostic_lock(argv,mode):
+    """Serialize duplicate diagnostic workers while allowing separate fits."""
+    if mode!="study" or len(argv)<2 or argv[1]!="diagnostics":
+        yield
+        return
+    out=Path(argv[argv.index("--out")+1]);panel=argv[argv.index("--panel")+1]
+    directory=out/"locks";directory.mkdir(parents=True,exist_ok=True)
+    with (directory/f"diagnostics_{panel}.lock").open("a+") as handle:
+        fcntl.flock(handle,fcntl.LOCK_EX)
+        try:yield
+        finally:fcntl.flock(handle,fcntl.LOCK_UN)
+
 def main():
     if len(sys.argv)<2 or sys.argv[1] not in ("study","extension"):
         raise SystemExit("Usage: planted_efficient_run.py {study|extension} [runner args]")
@@ -66,5 +79,5 @@ def main():
     if mode=="study":runner=study
     else:
         from validation import planted_extension as runner
-    with bounded_warnings(),eligible_statistics():runner.main()
+    with diagnostic_lock(sys.argv,mode),bounded_warnings(),eligible_statistics():runner.main()
 if __name__=="__main__":main()

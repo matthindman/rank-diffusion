@@ -29,3 +29,14 @@ def test_eligibility_reduction_matches_every_statistic_and_count(mechanism):
         a=study.diagnostics(s,300)
         with eligible_statistics():b=study.diagnostics(s,300)
     assert pc.clean(a)==pc.clean(b)
+
+def test_diagnostic_lock_prevents_duplicate_stage_writers(tmp_path):
+    import fcntl
+    from validation.planted_efficient_run import diagnostic_lock
+    argv=["runner","diagnostics","--out",str(tmp_path),"--panel","a"]
+    with diagnostic_lock(argv,"study"):
+        with (tmp_path/"locks"/"diagnostics_a.lock").open("a+") as f:
+            with pytest.raises(BlockingIOError):
+                fcntl.flock(f,fcntl.LOCK_EX|fcntl.LOCK_NB)
+    with (tmp_path/"locks"/"diagnostics_a.lock").open("a+") as f:
+        fcntl.flock(f,fcntl.LOCK_EX|fcntl.LOCK_NB)
