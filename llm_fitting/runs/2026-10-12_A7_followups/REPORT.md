@@ -184,9 +184,25 @@ useful result here: it is what exposed the annual cycle.
   the simulation** (finding 4). It was hidden because deaths and
   relocations both count as departures.
 
+## Added after the report was first committed: the cycle's share of the variance
+
+Data only, post hoc (`posthoc_cycle_variance.json`). The variance of
+26-week changes sits 0.010 to 0.036 above the straight line through its
+values at 13 and 52 weeks, in each of nine panel-by-group cells. That bulge
+is what a reverting level produces. Subtracting the annual cycle's share,
+with the cycle's variance estimated from the covariance of quarterly
+changes one year apart, removes it in all nine (−0.020 to +0.003), and
+brings the 78-week variance from 0.006–0.123 above the line to within
+−0.009 to +0.027 of it. The simulation has the same bulge (0.012–0.042)
+and is 0.05–0.12 below the line at 78 weeks. So in the data the variance
+grows in a straight line from 13 to 78 weeks once the cycle is allowed
+for, and the reversion the model fits is, on this evidence, the cycle. The
+stronger test, a refit with the cycle filtered out on data and simulation
+alike, is not run.
+
 ## Not shown, not run
 
-How much of the fitted reversion is the cycle. Whether the cycle is a fixed
+The refit with the cycle filtered out. Whether the cycle is a fixed
 pattern per endpoint or drifts. Whether the cohort's loss of ground is
 newer endpoints rising. Slides against steps beyond the first-exit classes.
 FB at a year. Any gate evaluation, any model change.

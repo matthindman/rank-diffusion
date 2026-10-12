@@ -6256,3 +6256,34 @@ year. Any gate evaluation, any model change. **Files.**
 (DESIGN.md, cells, logs, report_tables.txt, two posthoc_momentum JSON
 files, REPORT.md). Commands: `python llm_fitting/phase1_anatomy.py a7
 <panel>`, `a7b <panel>`, `a7c <panel>`, `report7`.
+
+**Addendum, 2026-10-12, same session: a first, data-only answer to verdict
+item (ii).** Post hoc and descriptive; no refit. Variance of h-week changes
+(full-window universe, as in §2z-au) against the straight line through its
+values at 13 and 52 weeks, and the same after subtracting the annual
+cycle's share, 2S(1 − cos(2πh/52)), with the cycle's variance S estimated
+from the covariance of quarterly block-mean changes one year apart
+(`runs/2026-10-12_A7_followups/posthoc_cycle_variance.json`).
+
+| | 26 weeks against the line | cycle's share removed | 78 weeks against the line | cycle's share removed |
+|---|---|---|---|---|
+| long submissions: head / middle / shell | +0.010 / +0.010 / +0.018 | +0.003 / −0.009 / −0.017 | +0.006 / +0.062 / +0.087 | −0.009 / +0.024 / +0.016 |
+| comments extension | +0.036 / +0.029 / +0.027 | −0.004 / −0.019 / −0.020 | +0.085 / +0.120 / +0.123 | +0.005 / +0.022 / +0.027 |
+| comments (136 weeks) | +0.034 / +0.015 / +0.023 | −0.006 / −0.018 / −0.018 | | |
+| simulation, long submissions | +0.012 / +0.016 / +0.019 | | −0.048 / −0.059 / −0.067 | |
+| simulation, comments extension | +0.029 / +0.039 / +0.042 | | −0.084 / −0.107 / −0.122 | |
+
+The variances themselves are 0.15 to 1.6, so these are departures of a few
+percent. In the data the bulge at half a year, which is what a reverting
+level produces and what the fit can read as reversion, is accounted for by
+the cycle in all nine cells, and with the cycle's share removed the
+variance is close to a straight line in the horizon from 13 to 78 weeks: a
+random walk plus a constant passing part. The simulation keeps a bulge of
+the same size and falls 0.05–0.12 below the line at 78 weeks. The cycle's
+variance estimated from changes two years apart is 55–115% of the one-year
+estimate, so the pattern is stable over the panel. Caveats: the subtraction
+assumes a sinusoid of period one year; the estimate uses 13-week block
+means; a refit with the cycle filtered out of the long-difference moments,
+on data and simulation alike, is still the stronger test and is not run.
+The next entry tests the other side: what the fitted model does with its
+reversion switched off.
