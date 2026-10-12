@@ -561,3 +561,47 @@ def amplitude_coherence(R, X, K, h_long=13, groups=GROUPS, pres_floor=0.7,
         rows.append(dict(group=g, h=int(h_long), rel_short=r1, rel_long=rL, cross=cross,
                          coherence=float(cross / np.sqrt(r1 * rL)) if ok else np.nan))
     return rows
+
+
+def far_tail(R, X, K, groups=GROUPS + (("top2pct", 0.0, 0.02),), pres_floor=0.7,
+             min_changes=12, floor=None):
+    """The far tail of one-week changes, beyond where q99/q90 looks.
+
+    A share of activity held by the top endpoint is a maximum over endpoints
+    and weeks, so it is moved by the rarest draws, which the 99th percentile
+    does not see.  Per rank group, for one-week changes net of the common
+    factor: the 99.9th and 99.99th percentile and the largest of the rises
+    and of the drops, in units of the endpoint's own robust scale (`z_...`)
+    and in log units (`raw_...`), and the share of changes beyond 6 and 10
+    robust SDs.
+    """
+    T = R.shape[0]
+    pr, pres = perm_rank(R, 0, T, floor)
+    base = (pr <= K) & (pres >= pres_floor)
+    Y = defactor(X, base)
+    d1 = Y[1:] - Y[:-1]
+    s_i, med_i = _mad_scale(d1)
+    good = (np.isfinite(d1).sum(axis=0) >= min_changes) & (s_i > 0)
+    rows = []
+    for g, m in _groups(pr, K, groups).items():
+        cols = m & base & good
+        if cols.sum() < 5:
+            continue
+        raw = d1[:, cols]
+        z = (raw - med_i[cols]) / s_i[cols]
+        ok = np.isfinite(z)
+        z, raw = z[ok], raw[ok]
+        if z.size < 200:
+            continue
+        row = dict(group=g, n=int(z.size), entities=int(cols.sum()),
+                   beyond6=float(np.mean(np.abs(z) > 6)),
+                   beyond10=float(np.mean(np.abs(z) > 10)))
+        for name, v in (("z", z), ("raw", raw)):
+            row[f"{name}_q999_up"] = float(np.quantile(v, 0.999))
+            row[f"{name}_q9999_up"] = float(np.quantile(v, 0.9999))
+            row[f"{name}_max_up"] = float(v.max())
+            row[f"{name}_q999_dn"] = float(-np.quantile(v, 0.001))
+            row[f"{name}_max_dn"] = float(-v.min())
+        rows.append(row)
+    return rows
+

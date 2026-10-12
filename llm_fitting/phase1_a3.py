@@ -7,8 +7,10 @@ are recomputed over 20 seeds.  Design and predictions:
 llm_fitting/runs/2026-10-12_A3_head_share/DESIGN.md.
 
     python llm_fitting/phase1_a3.py run facebook_a
+    python llm_fitting/phase1_a3.py run_b facebook_a     # addendum: far tails, bounded shocks
     python llm_fitting/phase1_a3.py report
 """
+import contextlib
 import json
 import sys
 import time
@@ -20,6 +22,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ladder_explainer as le  # noqa: E402
 import minimal_rankdiff as mrd  # noqa: E402
+import residual_anatomy as ra  # noqa: E402
 
 OUT = Path("llm_fitting/runs/2026-10-12_A3_head_share")
 PANELS = ("facebook_a", "instagram", "reddit_comments", "reddit_submissions_long")
@@ -134,6 +137,111 @@ def run(panel):
         finished=time.strftime("%Y-%m-%d %H:%M:%S")), indent=1, default=float))
 
 
+# --------------------------------------------------------------------------- #
+# Addendum (DESIGN.md): the far tail of the passing shocks
+# --------------------------------------------------------------------------- #
+BOUNDS = (12.0, 8.0, 6.0)
+
+
+@contextlib.contextmanager
+def bounded_t(c):
+    """Passing shocks drawn as before and clipped at +-c innovation SDs, then
+    rescaled to unit variance.  Same random stream as the unbounded run, so a
+    bounded arm differs from the base arm only where a draw exceeded c."""
+    from scipy import integrate, stats
+    orig, cache = mrd._tdraw, {}
+
+    def unit_sd(df):
+        if df not in cache:
+            b = c * np.sqrt(df / (df - 2.0))
+            var, _ = integrate.quad(lambda x: x * x * stats.t.pdf(x, df), -b, b)
+            cache[df] = float(np.sqrt(var + 2.0 * b * b * stats.t.sf(b, df)))
+        return cache[df]
+
+    def draw(rng, df, n):
+        if not np.isfinite(df):
+            return orig(rng, df, n)
+        b = c * np.sqrt(df / (df - 2.0))
+        return np.clip(rng.standard_t(df, n), -b, b) / unit_sd(df)
+
+    mrd._tdraw = draw
+    try:
+        yield
+    finally:
+        mrd._tdraw = orig
+
+
+def run_b(panel):
+    cfg = le.PANELS[panel]
+    spec = le.spec_for(panel, "struct", cfg["struct_path"][-1])
+    df = mrd.restrict_universe(mrd.load_panel(mrd.PLATFORMS[cfg["struct"]]),
+                               cfg["K"], buffer_mult=4)
+    K, T = int(df.attrs["score_k"]), int(df["period"].max()) + 1
+    p = le._fit(df, spec)
+    ers = mrd.empirical_structures(df, max(10, int(round(0.01 * K))), topid_k=K)[3]
+    M = int(min(ers.shape[1], min(p.N, 2000)))
+    emp = head_stats(ers, M)
+    emp_far = ra.far_tail(*ra.from_long(df)[:2], K)
+    arms, far, t0 = {"base": []}, [], time.time()
+    for s in range(SEEDS):
+        sim = mrd.simulate(p, T, seed=s, kappa=None, top_record=K, track=p.N,
+                           track_ids=True)
+        arms["base"].append(head_stats(sim["ranksize"], M))
+        far.append(ra.far_tail(*ra.from_sim(sim), K))
+    print(f"[{panel}] base S1 {np.mean([r['S1'] for r in arms['base']]):.4f} "
+          f"(data {emp['S1']:.4f}) ({time.time() - t0:.0f}s)", flush=True)
+    for c in BOUNDS:
+        name = f"bound{c:g}"
+        with bounded_t(c):
+            arms[name] = [head_stats(mrd.simulate(p, T, seed=s, kappa=None,
+                                                  top_record=K)["ranksize"], M)
+                          for s in range(SEEDS)]
+        print(f"    {name:10s} S1 {np.mean([r['S1'] for r in arms[name]]):.4f} "
+              f"({time.time() - t0:.0f}s)", flush=True)
+    (OUT / "cells").mkdir(parents=True, exist_ok=True)
+    (OUT / "cells" / f"a3b__{panel}.json").write_text(json.dumps(dict(
+        panel=panel, K=K, T=T, M=M, seeds=SEEDS, emp=emp, arms=arms,
+        emp_far=emp_far, sim_far=far, t_df=float(p.t_df), commit=le._commit(),
+        finished=time.strftime("%Y-%m-%d %H:%M:%S")), indent=1, default=float))
+
+
+def report_b(lines):
+    for panel in PANELS:
+        f, f0 = OUT / "cells" / f"a3b__{panel}.json", OUT / "cells" / f"a3__{panel}.json"
+        if not f.exists():
+            continue
+        c = json.loads(f.read_text())
+        e = c["emp"]
+        base = np.array([r["S1"] for r in c["arms"]["base"]])
+        gauss = (np.mean([r["S1"] for r in json.loads(f0.read_text())["arms"]["gauss"]])
+                 if f0.exists() else np.nan)
+        lines.append(f"\n## bounded passing shocks, {panel} (t df {c['t_df']:.1f}; "
+                     f"data S1 {e['S1']:.4f}, Gaussian arm {gauss:.4f})")
+        for arm, rows in c["arms"].items():
+            v = np.array([r["S1"] for r in rows])
+            d = v - base
+            lines.append(
+                f"{arm:10s} S1 {v.mean():.4f} ({v.std(ddof=1):.4f})  /data {v.mean() / e['S1']:5.2f}  "
+                f"paired diff {d.mean():+.4f} ({d.std(ddof=1):.4f})  "
+                f"share of the Gaussian arm's change {100 * d.mean() / (gauss - base.mean()):5.0f}%  "
+                f"top-5%-weeks {np.mean([r['S1_top5pct_weeks'] for r in rows]):.3f} "
+                f"(data {e['S1_top5pct_weeks']:.3f})")
+        lines.append("far tail of one-week changes: data / sim median over seeds [sim min, max]")
+        for er in c["emp_far"]:
+            sims = [next((r for r in s if r["group"] == er["group"]), None) for s in c["sim_far"]]
+            sims = [r for r in sims if r]
+            if not sims:
+                continue
+            cells = []
+            for key in ("z_q999_up", "z_q9999_up", "z_max_up", "z_max_dn",
+                        "raw_q999_up", "raw_max_up", "beyond6", "beyond10"):
+                sv = np.array([r[key] for r in sims])
+                fmt = "{:.2e}" if key.startswith("beyond") else "{:.2f}"
+                cells.append(f"{key} " + fmt.format(er[key]) + "/" + fmt.format(np.median(sv))
+                             + " [" + fmt.format(sv.min()) + ", " + fmt.format(sv.max()) + "]")
+            lines.append(f"  {er['group']:8s} (n {er['n']:,})  " + "  ".join(cells))
+
+
 def report():
     lines = []
     for panel in PANELS:
@@ -167,6 +275,7 @@ def report():
                 f"{np.mean([r['S100'] for r in rows]) / e['S100']:5.2f}    "
                 f"{np.mean([r['gap12'] for r in rows]):.3f}    "
                 f"{np.mean([r['S1_top5pct_weeks'] for r in rows]):.3f}")
+    report_b(lines)
     text = "\n".join(lines)
     (OUT / "report_tables.txt").write_text(text + "\n")
     print(text)
@@ -175,5 +284,7 @@ def report():
 if __name__ == "__main__":
     if sys.argv[1] == "run":
         run(sys.argv[2])
+    elif sys.argv[1] == "run_b":
+        run_b(sys.argv[2])
     else:
         report()

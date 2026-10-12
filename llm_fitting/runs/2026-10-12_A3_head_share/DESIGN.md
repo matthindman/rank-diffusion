@@ -95,3 +95,54 @@ the t can do.
 These are attributions inside one fitted model. An arm that removes the
 excess shows which component carries it in the simulation; it does not show
 that the component is wrong in the data.
+
+## Addendum, 2026-10-12, after the first cells and before the cells below
+
+Seen in the first cells (three panels finished, comments running): in the
+simulation the 5% of weeks with the highest top-1 share carry 41% of the
+summed share on FB, 35% on Instagram and 19% on long submissions; in the
+data 8–9% on all three. With the passing component off the simulation's
+figure is at the data's. The simulated top is heavy because of rare spike
+weeks. Also seen, while checking the bounded draw below: two million
+unit-variance draws from the fitted t (4.3 degrees of freedom) have a
+largest value of 128 standard deviations.
+
+That reconciles two results that looked opposed: the data's own changes
+are fatter-tailed than the simulation's out to the 99th percentile
+(§2z-x, §2z-y, §2z-au), and Gaussian shocks remove two thirds of the FB
+head excess (§2z-w, reproduced here). A top-1 share is a maximum over
+about a million endpoint-weeks, so it is set by draws far beyond the 99th
+percentile, where a power-law tail and the data may differ in the other
+direction. That is a conjecture until the far tail is measured.
+
+Added, as `run_b`, on the same four panels, 20 seeds:
+
+- `far_tail` (in `residual_anatomy.py`, with a known-answer test): the
+  99.9th and 99.99th percentile and the largest of the one-week rises, in
+  units of the endpoint's own robust scale and in log units, and the share
+  of changes beyond 6 and 10 robust SDs, by rank group and for the top 2%
+  of K; data and simulation through one function.
+- Passing shocks bounded at 12, 8 and 6 innovation SDs and rescaled to
+  unit variance, from the same random stream as the base arm. The three
+  bounds were fixed here before any run. They are a grid for a diagnostic,
+  not candidates: a bound taken into the model would have to come from a
+  declared moment of the far tail.
+
+Predictions:
+
+8. In the head group and in the top 2%, the data's largest standardized
+   one-week rise is smaller than the simulation's median largest rise on
+   FB, Instagram and comments.
+9. In the shell group the share of changes beyond 6 robust SDs is at
+   least as large in the data as in the simulation on the three long
+   panels (the data's tails are fatter where endpoints are small).
+10. On FB a bound at 8 gives at least half of the Gaussian arm's reduction
+    in the top-1 share, and a bound at 6 at least three quarters.
+11. On FB the top-5%-weeks share falls below 0.25 at a bound of 8.
+12. A bound at 12 changes the top-1 share by less than its seed SD on long
+    submissions.
+
+If 8 fails (the data's largest rises among large endpoints are as extreme
+as the simulation's), the spike weeks are not a far-tail problem, and the
+July reading (who sits near the top, and with what amplitude) is what is
+left.

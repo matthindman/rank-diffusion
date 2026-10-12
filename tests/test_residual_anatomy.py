@@ -254,3 +254,14 @@ def test_amplitude_coherence_one_amplitude_against_two():
     c2 = rows(ra.amplitude_coherence(R, two, n, h_long=h), group="middle")[0]["coherence"]
     assert abs(c1 - 1.0) < 0.05
     assert abs(c2 - truth) < 0.08 and c2 < 0.85
+
+
+def test_far_tail_separates_gaussian_from_t_shocks_beyond_the_99th_percentile():
+    R, X = panel(n=2000, T=160, kind="rw")
+    g = rows(ra.far_tail(R, X, 2000), group="middle")[0]
+    R, X = panel(n=2000, T=160, kind="rw", df=4.3)
+    t = rows(ra.far_tail(R, X, 2000), group="middle")[0]
+    assert g["beyond6"] < 1e-5 and g["z_max_up"] < 7.5        # 127,000 Gaussian draws: about 4.5 to 6
+    assert t["beyond6"] > 5e-4 and t["z_max_up"] > 12
+    assert t["raw_max_up"] > 2 * g["raw_max_up"]
+
