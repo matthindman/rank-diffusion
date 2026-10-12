@@ -11,6 +11,34 @@ sys.path.insert(0,str(Path(__file__).resolve().parent))
 import gate_instrument as gi
 
 
+def pooled_hist_quantile(values, counts, weights, q=.5):
+    """Exact pooled quantile without a draws-by-all-ranks dense matrix.
+
+    Binary search each draw's weighted cumulative histogram. This uses
+    O(draws * seeds) temporary memory, even for the large Reddit universe.
+    """
+    values=np.asarray(values)
+    counts=np.asarray(counts,dtype=np.int64)
+    weights=np.asarray(weights,dtype=np.int64)
+    total=weights@counts.sum(axis=1)
+    if not len(values):
+        return np.full(len(weights),np.nan)
+    cdf=counts.cumsum(axis=1)
+    at=(total-1)*q
+    def select(target):
+        lo=np.zeros(len(weights),dtype=int)
+        hi=np.full(len(weights),len(values)-1,dtype=int)
+        while np.any(lo<hi):
+            mid=(lo+hi)//2
+            below=(weights*cdf[:,mid].T).sum(axis=1)<=target
+            lo=np.where(below,mid+1,lo)
+            hi=np.where(below,hi,mid)
+        return values[np.minimum(lo,len(values)-1)]
+    low=np.floor(at)
+    result=(1-(at-low))*select(low)+(at-low)*select(np.ceil(at))
+    return np.where(total>0,result,np.nan)
+
+
 def moments_from_bank(path, horizons, draws):
     """Exact pooled medians / seed-RACF medians / mean collisions per draw."""
     records=[]
@@ -25,9 +53,7 @@ def moments_from_bank(path, horizons, draws):
         counts=np.zeros((80,len(values)),float)
         for i,r in enumerate(records):
             counts[i,np.searchsorted(values,r[f'v{h}'])]=r[f'n{h}']
-        # Integer counts below 2**53, exactly representable in float matmul.
-        pooled=weights@counts
-        result[f'dRank{h}']=gi.histogram_quantile(values,pooled,.5)
+        result[f'dRank{h}']=pooled_hist_quantile(values,counts,weights,.5)
     rfs=np.array([r['racf'] for r in records])
     result['RACF1']=np.nanmedian(rfs[draws],axis=1)
     cc=np.array([r['collisions'] for r in records])
@@ -68,7 +94,7 @@ def analyse_panel(root,panel,B=2000):
     for n in gi.REPS_GRID:
         rng=np.random.default_rng(20261012+n)
         draws=rng.integers(0,80,size=(2*B,n))
-        full_c=[]; fixed_c=[]; fixed_jensen=[]; split_out=[]; null_scores=[]
+        full_c=[]; fixed_c=[]; fixed_jensen=[]; fixed_centers=[]; split_out=[]
         for split in splits:
             origin=split['origin'];horizons=split['horizons']
             train=[];test=[]
@@ -93,10 +119,15 @@ def analyse_panel(root,panel,B=2000):
             mean_sim={k:np.array([np.mean(test[fixed_index][k])]) for k in keys}
             center_c,_=contribution_arrays(split['emp'],mean_sim,keys)
             fixed_jensen.append(fc.mean(axis=0)-center_c[0])
+            fixed_centers.append(center_c[0])
             e=c.sum(axis=1);d=e[:B]-e[B:]
             split_out.append(dict(origin=origin,score=summary(e),null_difference=summary(d),
                 resolution95=float(np.quantile(np.abs(d),.95)),
                 fixed_score=summary(fc.sum(axis=1)),
+                fixed_mean_moment={k:float(mean_sim[k][0]) for k in keys},
+                fixed_bank80_moment={k:split['sim'][k] for k in keys},
+                fixed_center_error=float(center_c.sum()),
+                fixed_jensen=dict(zip(keys,fc.mean(axis=0)-center_c[0])),
                 scale_frequencies={str(sc):float(np.mean(selected==i)) for i,sc in enumerate(gi.SCALES)},
                 moment_mean=dict(zip(keys,c.mean(axis=0))),
                 moment_variance_share=dict(zip(keys,gi.variance_shares(c)))))
@@ -109,7 +140,10 @@ def analyse_panel(root,panel,B=2000):
             moment_mean=dict(zip(keys,total.mean(axis=0))),
             moment_error_share=dict(zip(keys,total.mean(axis=0)/score.mean())),
             moment_variance_share=dict(zip(keys,shares)),
-            fixed_jensen=dict(zip(keys,np.mean(fixed_jensen,axis=0))))
+            fixed_jensen=dict(zip(keys,np.mean(fixed_jensen,axis=0))),
+            fixed_center_error=float(np.mean(fixed_centers,axis=0).sum()),
+            calibration_reselection_effect=float(score.mean()-fixed_score.mean()),
+            bank80_score=float(result['result']['model_rel']))
         out['reps'][str(n)]=rep
         gi.write_json(Path(root)/'analysis'/f'{panel}.json',out)
         print(panel,n,rep['score'],flush=True)

@@ -109,3 +109,67 @@ def test_calibration_preserves_first_tie_and_train_moment(tmp_path):
         assert gi.rk._calibrate_scale(params(),panel(),[1,4],15,reps=3)==1.
     assert w.state['cal_index']==9
     assert w.state['train_moments']['dRank1']==5.
+
+
+def test_weighted_histogram_search_matches_expanded_pool():
+    import gate_instrument_analysis as ga
+    rng=np.random.default_rng(901)
+    values=np.arange(73.)
+    counts=rng.integers(0,8,size=(7,len(values)))
+    weights=rng.integers(0,4,size=(33,7))
+    weights[0]=0
+    for q in (.1,.5,.9):
+        actual=ga.pooled_hist_quantile(values,counts,weights,q)
+        expected=gi.histogram_quantile(values,weights@counts,q)
+        np.testing.assert_array_equal(actual,expected)
+
+
+def test_vectorized_error_matches_frozen_gate_with_missing_moments():
+    import gate_instrument_analysis as ga
+    em={'dRank1':2.,'dRank4':4.,'RACF1':.4,'coll1':0.,'coll5':.019,'coll20':.02}
+    keys=list(em)
+    sims=[dict(em,dRank1=3.,coll20=.01),dict(em,RACF1=np.nan,dRank4=8.)]
+    arrays={k:np.array([s[k] for s in sims]) for k in keys}
+    actual,valid=ga.contribution_arrays(em,arrays,keys)
+    for row,sim in zip(actual,sims):
+        expected,active=gi.gate_components(em,sim,[1,4])
+        np.testing.assert_allclose(row,[expected[k] for k in keys])
+
+
+def test_bank_resampling_matches_literal_seed_repetition(tmp_path):
+    import gate_instrument_analysis as ga
+    records=[]
+    for i in range(80):
+        d={1:np.array([i%4]*((i%3)+1),float),4:np.array([i%7,i%9],float)}
+        record=gi.pack_rep(d,i/80,{'coll1':i/90,'coll5':i/95,'coll20':i/100})
+        records.append(record)
+        np.savez(tmp_path/f'seed_{1000+i:04d}.npz',**record)
+    draws=np.array([[0,0,2,79],[4,8,16,32],[79,1,1,1]])
+    actual=ga.moments_from_bank(tmp_path,[1,4],draws)
+    for i,draw in enumerate(draws):
+        dist,rf,cc=gi.pool_records([records[j] for j in draw],[1,4])
+        expected=gi.rk._moments(dist,rf,cc,[1,4])
+        for k in actual:
+            assert actual[k][i]==pytest.approx(expected[k],abs=1e-14)
+
+
+def test_full_analysis_decomposition_is_exact_on_known_fixture(tmp_path):
+    import gate_instrument_analysis as ga
+    em={'dRank1':2.,'dRank4':4.,'RACF1':.4,'coll1':0.,'coll5':.2,'coll20':.2}
+    root=tmp_path/'fixture/bank';root.mkdir(parents=True)
+    gi.write_json(root/'COMPLETE.json',{})
+    gi.write_json(root/'RESULT.json',{'result':{'model_rel':0.},'splits':[
+        {'origin':12,'horizons':[1,4],'emp':em,'sim':em,'scale':0.,'train_calibration':em}]})
+    def fake_bank(path,horizons,draws):
+        scale=float(Path(path).name.removeprefix('scale_'))
+        noise=(draws.mean(axis=1)-39.5)/40
+        return {k:v*(1+.05*scale+.1*noise) for k,v in em.items()}
+    with patch.object(ga,'moments_from_bank',side_effect=fake_bank):
+        result=ga.analyse_panel(tmp_path,'fixture',B=17)
+    assert result['floor']['coll1']['excluded_origins']==[12]
+    assert len(result['disjoint_blocks']['20']['scores'])==4
+    for r in result['reps'].values():
+        assert r['score']['mean']==pytest.approx(
+            r['calibration_reselection_effect']+sum(r['fixed_jensen'].values())+r['fixed_center_error'])
+        assert sum(r['moment_error_share'].values())==pytest.approx(1)
+        assert sum(r['moment_variance_share'].values())==pytest.approx(1)

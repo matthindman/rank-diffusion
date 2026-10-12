@@ -24,3 +24,21 @@
   the initial completed check demonstrated a duration below five minutes.
   This is not an interrupted experiment or a gate result. Its wait log is
   retained; all gate runs still use the heavy lock.
+
+- The brief describes seven scored moments, but the frozen gate includes
+  only horizons strictly shorter than its test window. Short submissions
+  has a 13-week test window, so dRank13 is structurally unavailable and the
+  maximum vector there has six moments. This is reported as unavailable,
+  not as a MOM_FLOOR exclusion, and the gate is not changed.
+
+- Before any seed-bank resampling, the analysis was made memory bounded by
+  exact weighted-CDF binary search rather than materializing a dense
+  bootstrap-by-rank histogram. A known-answer test checks identical pooled
+  quantiles. Additional output separates calibration reselection, Jensen
+  bias, and displacement of the mean simulated moment from the 80-seed
+  reference; the latter is a finite-bank diagnostic, not bias against truth.
+
+- One analysis health-check invocation mistakenly used zsh on the Bash
+  script. The research suite passed (423 tests + 13 subtests), then Bash's
+  PIPESTATUS access failed under zsh before package/guard execution. The
+  complete check is rerun with Bash; the failed harness log is retained.
