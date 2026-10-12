@@ -57,3 +57,9 @@
   All 120 completed baseline/s=0 recovery cells remain valid. An opt-in
   wrapper captures each warning message once, stamps its hash, and replays
   the identical seeds; no simulator/statistic/source identity is rewritten.
+
+- One guarded long-panel startup failed before scientific work because two
+  processes received the same time_ns attempt name. Attempt paths now include
+  stage, panel and PID in the wrapper. Two already-running workers retain
+  their loaded wrapper and cached old source hash; the old version is in git.
+  The retry is only the failed long-panel worker, with identical seed sets.

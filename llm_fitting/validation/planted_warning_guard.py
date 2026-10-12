@@ -7,7 +7,7 @@ checkpoint. Original sources and their identities remain unchanged.
 """
 from contextlib import contextmanager
 from pathlib import Path
-import sys,warnings
+import os,sys,warnings
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/"llm_fitting"))
@@ -22,6 +22,11 @@ def bounded_warnings():
     def simplefilter(action,*args,**kwargs):
         return original_filter("once" if action=="always" else action,*args,**kwargs)
     def write(path,data):
+        path=Path(path)
+        if path.parent.name=="attempts" and isinstance(data,dict):
+            # time_ns has finite clock resolution; concurrent workers can collide.
+            tag=f"{data.get('stage','event')}_{data.get('panel','all')}_{os.getpid()}"
+            path=path.with_name(path.stem+"_"+tag+path.suffix)
         if isinstance(data,dict):data={**data,"execution_wrapper":meta}
         return original_write(path,data)
     warnings.simplefilter=simplefilter;pc.write=write

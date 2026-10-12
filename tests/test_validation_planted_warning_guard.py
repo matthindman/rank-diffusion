@@ -33,3 +33,15 @@ def test_warning_guard_does_not_change_paths_or_numeric_operations():
         with warnings.catch_warnings():
             warnings.simplefilter("ignore");b=np.nanmedian(x,axis=0)
     np.testing.assert_array_equal(a,b)
+
+def test_attempt_names_distinguish_concurrent_workers_and_stages(tmp_path,monkeypatch):
+    f=tmp_path/"attempts"/"123456.json"
+    with guard.bounded_warnings():
+        monkeypatch.setattr(guard.os,"getpid",lambda:100)
+        pc.write(f,dict(stage="recovery",panel="a",status="STARTED"))
+        pc.write(f,dict(stage="recovery",panel="a",status="RAN-OK"))
+        monkeypatch.setattr(guard.os,"getpid",lambda:200)
+        pc.write(f,dict(stage="recovery",panel="b",status="STARTED"))
+    files=list(f.parent.glob("*.json"))
+    assert len(files)==2
+    assert {json.loads(p.read_text())["status"] for p in files}=={"STARTED","RAN-OK"}
