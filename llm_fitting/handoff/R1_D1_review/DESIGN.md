@@ -1,0 +1,15 @@
+# R1 design — one artifact review, no candidate experiment
+Date2026-10-12; OpenAI Codex. Base main191422962f3ba22fe6db11d19d860fd779cc42f0.
+Scope: the current D1 decision document and its cited code/run records, including V1/V2 and the newer corrections. V2 part4 was committed before reading A-task or D1 results. Candidate2 is withdrawn pending the separate debate; this review does not substitute for that debate.
+Read-only review of artifacts; no model edit, empirical refit, gate call, new data intake, or adoption. Author conclusions are treated as claims to check, not ground truth.
+Before any executable review check, commit this design. Static reading found:
+1. A4 thins identities but retains full-population ranks; the estimator recomputes N from the thinned frame. Check the resulting rank coordinates on a deterministic balanced fixture. Prediction: N halves, z shifts by log2 before clipping, about half of retained endpoints clip at z=0; full frame has none.
+2. ladder_drift is absolute log-activity drift. Check a common multiplicative activity change with fixed normalized rank-size shares. Prediction: drift>0 despite share and identity stability; this is a counterexample to its use alone as a shape-specific identifying moment, not proof that observed drift is all common.
+3. New §2z-bd claims no endpoint statistic separates random walk from rank attraction. Read the complete V2 pair table and enumerate strong-arm comparisons under its fixed descriptive rule. Prediction: P11's unresolved h26 middle dispersion cannot by itself justify that universal statement. Report full enumeration, not only a favorable statistic; no new statistical test.
+4. Check D1's reference-seed claim against V1 metadata and distinguish seed bands/MC precision from noninferiority or sampling uncertainty.
+5. Check current draft status against its operative recommendations and V2 corrections; no experiment needed.
+For each finding provide input/state, executable evidence where possible, consequence, what would settle it, and verified versus suspected status. Quantify only actual checks. Final review is one round; no re-review of unchanged artifacts or requested fixes. No exploratory strength/seed sweep.
+
+Queue clarification on main at branch creation: focus on candidates1,3,4, the margin and §2z-bd. Candidate2 is withdrawn and under a separate debate; the ladder-drift counterexample is a scope check of the supporting measurements, not a new vote on that candidate. A4's coordinate check bears on the reliability evidence and the compression reading cited by the dossier.
+
+Pre-execution disclosure: while finishing this preflight, read the same-session correction appended to §2z-bd on base main1914229. It already withdraws the universal endpoint-indistinguishability claim and reports55/649,42/763,68/781 separated strong-pair rows. The planned full-table audit is therefore an unblinded artifact verification of that correction, not a new blind replication or an unresolved finding. No strength, statistic or separation rule changes.
