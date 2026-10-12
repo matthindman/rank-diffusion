@@ -9,3 +9,7 @@ Verification: `git show main:llm_fitting/handoff/D1_debate/CLAUDE_1.md | shasum 
 No new empirical results, fits, simulations, gates, model code, data contact or health runs. No scored predictions apply to this literature-and-reasoning debate. No scientific job failed or was killed. Health checking was omitted because the owner's explicit no-model-runs and folder-only instructions supersede the standing script requirement; a health pass is not claimed. No push. Nothing was read or written in the separate Codex working copy.
 
 The scientific result is a clarified recommendation, not mechanism identification: both target constructions import the ladder; candidate 2 should not be selected now; design the discriminating measurements before choosing a lasting layer. The owner decides subsequent work.
+
+## Follow-up documentation — 2026-10-12
+
+The owner's requested next-step recommendation is saved as [Proposed next research phase: movement, turnover, and rank structure](RESEARCH_AGENDA_CODEX_2026-10-12.md). It is PLANNING ONLY, with nothing adopted or registered. Its empirical and mathematical support is in [the variance–structure follow-up](variance_structure/REPORT.md), including the [A10 comparison audit](variance_structure/A10_REVIEW.md). This addition is navigation for later work; the completed debate and its signed decision above are unchanged.
