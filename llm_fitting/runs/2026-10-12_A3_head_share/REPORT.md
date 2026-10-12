@@ -141,8 +141,11 @@ reading.
   panels and removes the one sign change in open residual 2. It changes a
   default of the structure simulation and every structure card, so it is
   the owner's decision and needs its own card comparison on all five
-  panels. It does not touch the gate: all four primary movement stacks
-  simulate from the filtered state, not from the seeded ladder. A censored
+  panels (addendum 2 below). *Corrected the same day:* confined to the
+  structure simulation it does not touch the gate; made inside the fit it
+  would, because the gate's forecasts start from the filtered state but its
+  calibration step on the training window runs the unconditional
+  simulation from the same seeded ladder. A censored
   panel needs a different estimate of the lasting ladder than a mean over
   observed weeks.
 - **The far tail of the passing shock is the FB and Instagram lever, and
