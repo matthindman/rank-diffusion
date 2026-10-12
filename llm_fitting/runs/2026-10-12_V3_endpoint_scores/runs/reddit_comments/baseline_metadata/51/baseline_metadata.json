@@ -1,0 +1,48 @@
+{
+  "panel": "reddit_comments",
+  "T0": 51,
+  "horizons": {
+    "1": {
+      "available": true,
+      "historical_pairs": 4473,
+      "kernel_pairs_by_bin": {
+        "0": 368700,
+        "1": 12500,
+        "2": 50000,
+        "3": 250000,
+        "4": 312500,
+        "5": 625000,
+        "6": 881300
+      },
+      "fallback_no_change_bins": []
+    },
+    "4": {
+      "available": true,
+      "historical_pairs": 4212,
+      "kernel_pairs_by_bin": {
+        "0": 351767,
+        "1": 11750,
+        "2": 47000,
+        "3": 235000,
+        "4": 293750,
+        "5": 587500,
+        "6": 823233
+      },
+      "fallback_no_change_bins": []
+    },
+    "13": {
+      "available": true,
+      "historical_pairs": 3445,
+      "kernel_pairs_by_bin": {
+        "0": 306279,
+        "1": 9500,
+        "2": 38000,
+        "3": 190000,
+        "4": 237500,
+        "5": 475000,
+        "6": 643721
+      },
+      "fallback_no_change_bins": []
+    }
+  }
+}

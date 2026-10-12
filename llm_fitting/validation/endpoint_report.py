@@ -65,9 +65,16 @@ def render(root,out,handoff):
     pred("P8",short.block13_lower.isna().all() and short.block26_lower.isna().all(),
          "All short-panel week-block intervals withheld.")
     gi.write_json(out/"predictions.json",preds)
+    plain=[]
+    for baseline in ("no_change","historical_mobility","rank_bin"):
+        q=c[(c.group=="all")&(c.metric=="crps")&(c.baseline==baseline)]
+        plain.append(f"Against {baseline}, the frozen model has lower mean coarsened-rank CRPS in {int((q.improvement>0).sum())}/{len(q)} all-cohort panel/horizon comparisons. These are nominal-row comparisons, not a corrected calendar forecast verdict.")
+    plain.append("The rank-bin advantage is smaller than the no-change advantage on every panel at nominal h4. It is not uniform across groups: the comments tail is worse than rank-bin at h4; long-submission middle and shell brackets include zero, as does its overall h13 bracket. The full table retains these results.")
+    plain.append("Event skill is mixed. At nominal h13 for established endpoints, the model's mean Brier score is lower than rank-bin on Facebook and comments, and higher on both submissions panels. Against no-change it is lower on Facebook, comments and long submissions, and higher on short submissions; several week-block brackets include zero. Short-panel historical/kernel comparisons at h13 have three common origins, versus five for no-change.")
+    plain.append("P7 fails in the opposite direction: predicted established outside-event frequencies exceed observed frequencies by0.01719 on comments and0.01589 on long submissions. This is any outside event within a forecast window under the conditional movement stack. It is not the repeat-departure intensity measured with the structural stack in A2, and the extra latent transition can affect it. It does not reverse that earlier residual.")
     lines=["# V3 — endpoint scores",f"**{LABEL}. Frozen nominal-row evaluation; calendar alignment is defective.**",
       "The scorer and all four operational tables are complete. A deterministic fixture proves that the first A6 simulation row contains two latent transitions from the filtered end-of-train state, while the observation is one week ahead. The frozen exports are retained exactly. Every h below means the export's nominal row label, not a verified calendar horizon. These results do not establish correctly aligned endpoint predictive skill and do not change any recorded gate verdict. Q1 in QUESTIONS.md asks Claude for a separate correctly timed export.",
-      "## Design and score convention",
+      "## Operational findings",*plain,"## Design and score convention",
       "Four primary DEVELOPMENT panels; five original origins each;20 simulation members,seeds0–19;2,000 gate bootstrap draws. DESIGN was committed at e5db2b8 before any V3 run; score/baseline/runner code was committed at291c41f before panel runs. Source,input,and full-parameter hashes fence restart caches. All simulated member ranks are scored at nominal1,4,13 where available. Rank0 or rank>K is the explicit outside categoryK+1, scored as log(K+1). This is a coarsened outcome score, not inference about ranks below K or cause of absence.",
       "Fair CRPS and Brier use off-diagonal ensemble corrections valid for iid predictive members conditional on fitted inputs. Fits and filtered states are shared across members. This omits parameter/state-estimation uncertainty. Outside-within-h includes any future absent/below-K week, even if the endpoint returns; origin is not part of the event. Observed absences may return, simulated deaths do not. Observed ranks count present members; simulated ranks count all occupied slots. No rescaling hides that observation-model difference.",
       "No-change repeats the observed origin state. Historical mobility symmetrically signs the gate's training absolute displacements and anchors them at the observed rank; it is a survivor-marginal lift, has no joint path, and gets no event Brier score. The rank-bin comparator transfers full training path snippets to the endpoint's exact origin rank, preserving absences and recalculating crossings. Empty-bin fallbacks and unavailable horizons are recorded. All stratification uses training permanent rank; established additionally requires70% presence. The origin-inside established group is separate.",
@@ -81,12 +88,12 @@ def render(root,out,handoff):
         [[r.panel,r.group,r.baseline,fmt(r.improvement),band(r),fmt(r.simulation_mcse),f"[{r.mc95_lower:.6f}, {r.mc95_upper:.6f}]"]
          for r in c[(c.group.isin(["head","middle","shell","tail"]))&(c.horizon==4)&(c.metric=="crps")].itertuples()]),
       "## Outside-event scores for established endpoints",
-      md(["panel","h","group","baseline","model Brier","baseline Brier","improvement","13w bracket","MCSE"],
+      md(["panel","h","group","baseline","model Brier","baseline Brier","improvement","13w bracket","MCSE","approx MC95 band"],
         [[r.panel,r.horizon,r.group,r.baseline,fmt(r.model),fmt(r.baseline_score),fmt(r.improvement),band(r),fmt(r.simulation_mcse),f"[{r.mc95_lower:.6f}, {r.mc95_upper:.6f}]"]
          for r in c[(c.group.isin(["established","established_origin_inside"]))&(c.horizon==13)&(c.metric=="brier")].itertuples()]),
       "Forecast versus observed event rates (equal-origin means):",
-      md(["panel","group","h","method","quantity","rate"],
-        [[r.panel,r.group,r.horizon,r.method,r.metric,fmt(r.value)] for r in
+      md(["panel","group","h","method","quantity","rate","origins"],
+        [[r.panel,r.group,r.horizon,r.method,r.metric,fmt(r.value),r.origins] for r in
          cal[(cal.group.isin(["established","established_origin_inside"]))&(cal.horizon==13)&cal.metric.isin(["event_probability","event_frequency"])].itertuples()]),
       "## Calibration",
       "Randomized finite-ensemble rank-PIT indicators integrate ties exactly; under exchangeability their expectation is .1,.5,.9 even at the outside atom. Raw quantile brackets, with continuous finite-order-statistic references, are also supplied. Departure-probability/frequency rows are diagnostics, not extra scoring rules.",

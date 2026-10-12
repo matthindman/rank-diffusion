@@ -1,0 +1,363 @@
+{
+  "status": "PASS",
+  "splits": 20,
+  "members": 20,
+  "entries": [
+    {
+      "panel": "facebook_a",
+      "T0": 21,
+      "test_len": 21,
+      "members": 14000,
+      "export_sha256": "e2878da4d4991a0fea7ca62829627b60b0e6fa09f7cf35c5b7c196532c9e4e3e",
+      "baseline_sha256": "030d0cc8e4a3a61ee5ee917ddd906f1f79970b04ddc39158bfee089be146a6a9",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "facebook_a",
+      "T0": 32,
+      "test_len": 21,
+      "members": 14000,
+      "export_sha256": "9a2e5b6f6e5105a5c3830773dec91a5bcec1dc3e9a21893e5156674a27329525",
+      "baseline_sha256": "d77694b4ebc9782b08ac814314148a5a978320f54de339342ce902099243061c",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "facebook_a",
+      "T0": 43,
+      "test_len": 21,
+      "members": 14000,
+      "export_sha256": "7381834f8db412a67fbaf69e3bdd4fe60358f91ef6fb2ca11add4a9dba10831b",
+      "baseline_sha256": "8de36cfd24409a9a95d494d4988b6866082b31e047964a7682500bef24d741dc",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "facebook_a",
+      "T0": 54,
+      "test_len": 21,
+      "members": 14000,
+      "export_sha256": "3a7ba379fb238c467506b4ccb5aa4ff9840de10aed90eb6e533958413b4c0d7c",
+      "baseline_sha256": "222e7f134908f640a804fda6151a80e2d6657743eab10b44f495a720e3742db9",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "facebook_a",
+      "T0": 65,
+      "test_len": 21,
+      "members": 14000,
+      "export_sha256": "2c391441a439941ace67e39c25a70cbebd7833c9f0ab44b2b2fa21c6ddf7e3b7",
+      "baseline_sha256": "2cace98e58e4d55d20f7dcc9a11e90d54fd5ed7a9a8a81b11146454bc60cef4b",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit_comments",
+      "T0": 34,
+      "test_len": 34,
+      "members": 50000,
+      "export_sha256": "107e040031a5ad36f666ab1bd5aeaf9f661b9e3e550a591c2ce82424d1140a47",
+      "baseline_sha256": "1f53de2e7e3d5175e30e7951e83de1e641cbb1f0bf1264231dda4a703135e960",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit_comments",
+      "T0": 51,
+      "test_len": 34,
+      "members": 50000,
+      "export_sha256": "f081cc13f35b608d7c5182e799344e301c75032bf2ff12fe94e2d20fedc88cf2",
+      "baseline_sha256": "5060d7c45a537ace0c2281560fc625ebf9d686869b08390bb45c28f825496217",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit_comments",
+      "T0": 68,
+      "test_len": 34,
+      "members": 50000,
+      "export_sha256": "53b29a339c3fd1a8ba9e3fa67ec868461e41cba561e90082c976abda26db3cfd",
+      "baseline_sha256": "abeb64bc3647370ea4aa0dc6860d963aac9236b3f99b7a9cafd930b3cd32c223",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit_comments",
+      "T0": 85,
+      "test_len": 34,
+      "members": 50000,
+      "export_sha256": "b8beb1d9171f4df709e4604f46e967d08a89f7a576377bd8dcc0099f4dab4076",
+      "baseline_sha256": "c248340810ab738d38724ce69b1a93f336a379fff4a1ddfc60b43adce077592e",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit_comments",
+      "T0": 102,
+      "test_len": 34,
+      "members": 50000,
+      "export_sha256": "a5bf1e45190d5a80aa9b45c9310d4206ab447c4682f85757c00bee33571db30d",
+      "baseline_sha256": "562e07e857688ebe8c70270f7e2dc39ba18f26f4ab0d5c65e1db7a4029f8c15c",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit",
+      "T0": 12,
+      "test_len": 13,
+      "members": 20000,
+      "export_sha256": "53e3bac196edafe412b7729a8de11f7f06ae02e9383d71b00cb67ad824a76308",
+      "baseline_sha256": "c5d87b5e3e31cf80a3fd15d40129f6d6cbbb813845692bac3c95a58c4bc4ac89",
+      "historical_horizons": [
+        1,
+        4
+      ],
+      "kernel_horizons": [
+        1,
+        4
+      ]
+    },
+    {
+      "panel": "reddit",
+      "T0": 13,
+      "test_len": 13,
+      "members": 20000,
+      "export_sha256": "085f054c0230046a855e46bdb8b739ad993e5c9904b9b68963b8847b37cb9284",
+      "baseline_sha256": "e17784eff88c5e7430e472354190af4d49ca623466bd4451b6f4fdc3f2d2252a",
+      "historical_horizons": [
+        1,
+        4
+      ],
+      "kernel_horizons": [
+        1,
+        4
+      ]
+    },
+    {
+      "panel": "reddit",
+      "T0": 14,
+      "test_len": 13,
+      "members": 20000,
+      "export_sha256": "4b946874dd4f9c4545488d41748674b516e692899c60bda6c854c39b816fcca8",
+      "baseline_sha256": "cb7a74d17d035194527a22b3a270318263035df7f287816e4246b46a9c5b402a",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit",
+      "T0": 16,
+      "test_len": 13,
+      "members": 20000,
+      "export_sha256": "ab8e12565908efd736229a5e552c134e9308c530f7eece826a8e2e81144dd3ca",
+      "baseline_sha256": "61fde8c8c417fe709946d2e8c37ba1d817c79b6539a8acf3041e8b15a3dc601c",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit",
+      "T0": 17,
+      "test_len": 13,
+      "members": 20000,
+      "export_sha256": "916fff6cec5bd38d1279960527f5e139728dba16f48f563773792ccdb7900089",
+      "baseline_sha256": "42709e4d7b9d626e8d6ee970cff32a7f72283e144de795fcc4c8ff5c82ec1084",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit_submissions_long",
+      "T0": 53,
+      "test_len": 53,
+      "members": 20000,
+      "export_sha256": "a4ce8c2ba04ee0b82d14104ab71383c5860a6610751ef383d501ab37b9f838c6",
+      "baseline_sha256": "1112d87400dc70015c2f5fb4486ed715ab0a28f407ddd8b63b1fb4333c69f335",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit_submissions_long",
+      "T0": 80,
+      "test_len": 53,
+      "members": 20000,
+      "export_sha256": "115bdf00fff4aa67e0bc3aeff2019339063c448f335138b8f12f3e7530810b22",
+      "baseline_sha256": "b28bb0d9c68b4f6dcb0647b3d8840e3dbe70fd5755c08cd9b9f2a5419f44e255",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit_submissions_long",
+      "T0": 106,
+      "test_len": 53,
+      "members": 20000,
+      "export_sha256": "a13cbf904474548c0e577eac81f998109c874cac4b53ace3ca50ea11162f8d85",
+      "baseline_sha256": "8173c8d2578d72f2dbbc4eb167239dd5fd8c89c82c92a523e457e232c4fc8bd0",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit_submissions_long",
+      "T0": 132,
+      "test_len": 53,
+      "members": 20000,
+      "export_sha256": "ed67a36b61b91f1c00ce5f811bce5ceb20637e098e73b2416404b8727a7a2a2a",
+      "baseline_sha256": "eb3d933200ffa868e7bcef9c1e33ec2589aebf6a296afe9320855e8c75b68fff",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    },
+    {
+      "panel": "reddit_submissions_long",
+      "T0": 159,
+      "test_len": 53,
+      "members": 20000,
+      "export_sha256": "ce3acc5e87e754f6295b916ba10b5f35a4f24a2ca8ed62fe66ffe8318102d423",
+      "baseline_sha256": "2fa86e2edb46e2b44ece42d35fb3b73afd0f02e6add2e4c16c4c7e90d7bed2b3",
+      "historical_horizons": [
+        1,
+        4,
+        13
+      ],
+      "kernel_horizons": [
+        1,
+        4,
+        13
+      ]
+    }
+  ]
+}

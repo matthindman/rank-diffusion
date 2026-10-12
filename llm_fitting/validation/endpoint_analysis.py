@@ -141,6 +141,7 @@ def main():
             table["mc95_lower"]=table[mean_col]-1.96*table.simulation_mcse
             table["mc95_upper"]=table[mean_col]+1.96*table.simulation_mcse
         table.insert(0,"evidence","supplementary, retrospective, development data")
+        table.insert(1,"horizon_convention","legacy export nominal; first simulation row contains two latent transitions")
         table.to_csv(args.out/(name+".csv"),index=False)
     manifest["sources"]={str(p):sha_file(p) for p in (Path(__file__),ROOT/"llm_fitting/validation/endpoint_scores.py")}
     (args.out/"analysis_manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")

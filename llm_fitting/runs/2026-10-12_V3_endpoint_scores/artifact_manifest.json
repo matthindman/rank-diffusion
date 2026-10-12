@@ -1,0 +1,170 @@
+{
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/analysis_manifest.json": {
+    "bytes": 6544,
+    "sha256": "a79825601f566ada5c4b492b7a36931e718a71bfd70b34bb8551fb7c7484be14"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/audit.json": {
+    "bytes": 8681,
+    "sha256": "0e4ebf88bc56c2948afbd0d59d4ff6d6212f4b5592ddbcd3c7a35e76d34c8fe8"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/calibration.csv": {
+    "bytes": 1352281,
+    "sha256": "400a35ffb8f59b972366472c0e90db760807c46b8ac217bcf21fea4f2e1921b4"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/comparisons.csv": {
+    "bytes": 214818,
+    "sha256": "2258f8cee5b2040021cba2499fe2e19d21aa34a13c218676260720a480e5d34f"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/environment.json": {
+    "bytes": 258,
+    "sha256": "18c1b8acd3bc7732dc4b2a506820c30fd9ce989f0799d315e82e4e74a24466a5"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/origin_calibration.csv": {
+    "bytes": 3937620,
+    "sha256": "6b3e26994885177f970d75730c29f3f8290373efb94255bad069595df82f46fd"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/origin_scores.csv": {
+    "bytes": 1885408,
+    "sha256": "4754eac45741ec1a35afb0e5aa8ed0460afa58d201c92496224198d337efaa07"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/predictions.json": {
+    "bytes": 1163,
+    "sha256": "e30593f8fa19354e4e96698f1ddc544b4263b4fbaf795dbc9f5da514c29d1034"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/provenance_check.json": {
+    "bytes": 1817,
+    "sha256": "464e38fdc2be9a9be017cc69e319f91bce62b64da9e4f8d41b864f3a78f3649b"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/facebook_a/COMPLETE.json": {
+    "bytes": 18270,
+    "sha256": "8afb646f63d61e3814c87ccb89469b51cae100516eb12c4d37a5f7af598e99f2"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/facebook_a/attempts/39fe06da-284c-45c2-a2a3-6539cccea3f7.json": {
+    "bytes": 18270,
+    "sha256": "8afb646f63d61e3814c87ccb89469b51cae100516eb12c4d37a5f7af598e99f2"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/facebook_a/baseline_metadata/21/baseline_metadata.json": {
+    "bytes": 922,
+    "sha256": "78133c6c9b491a208b540384028fe9a6e0ec3311d15f623b0c890dae56c89923"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/facebook_a/baseline_metadata/32/baseline_metadata.json": {
+    "bytes": 926,
+    "sha256": "7678be2e96367b6d4db22e6b4e3a826042d53adc7bea93ecf094d25e16aa88b3"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/facebook_a/baseline_metadata/43/baseline_metadata.json": {
+    "bytes": 933,
+    "sha256": "ad1948e86b6714f858f7a949d1f26a4ac4fd3ed9ca74e6501e60b29238d70be7"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/facebook_a/baseline_metadata/54/baseline_metadata.json": {
+    "bytes": 934,
+    "sha256": "5bb79040ec05d37c21aa7fd9da226a5c68e9d7d5e359c902645edc0a692800e0"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/facebook_a/baseline_metadata/65/baseline_metadata.json": {
+    "bytes": 936,
+    "sha256": "7efb866f113433937266371aaf34f49ed89dd38652d6d07b694b87bbac62aa10"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/facebook_a/gate.log": {
+    "bytes": 4397,
+    "sha256": "24f22f9e866c889dbfb960bda7ae0f5dd8d7d4a66cb2fd23b4c96e4042ffd3e8"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit/COMPLETE.json": {
+    "bytes": 16025,
+    "sha256": "79ff3e59dc157705e2d388910c1c4e2beceb5b2ef27e8a3d6aab24fcdb34bc54"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit/attempts/4ef0edff-55ed-4f88-8b17-61a646e29ed5.json": {
+    "bytes": 16025,
+    "sha256": "79ff3e59dc157705e2d388910c1c4e2beceb5b2ef27e8a3d6aab24fcdb34bc54"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit/baseline_metadata/12/baseline_metadata.json": {
+    "bytes": 716,
+    "sha256": "b6c15a35403bd5f6e7a8c947e778bfadff07dc0ccb5e5d4a90da223bd865b18a"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit/baseline_metadata/13/baseline_metadata.json": {
+    "bytes": 716,
+    "sha256": "a9e594d003190fac75679ef33b84155319a5113ed8bcacee83df304099b12c8b"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit/baseline_metadata/14/baseline_metadata.json": {
+    "bytes": 902,
+    "sha256": "41d9627ed1c67f86acc3598c0903687bf32cd9f37552814818cafb52c2a57be9"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit/baseline_metadata/16/baseline_metadata.json": {
+    "bytes": 910,
+    "sha256": "30c6d2b0554386f5e0830d7d07eb9a2effbbbafc3f73b01a87c6895bc842d3da"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit/baseline_metadata/17/baseline_metadata.json": {
+    "bytes": 911,
+    "sha256": "ef5f71a89ba7f959e0bc725c8eb73ab92872bdb3971e5058e8e8d8979dddf52f"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit/gate.log": {
+    "bytes": 4210,
+    "sha256": "42273d6045fde4e204123e1bde54f3deff32b25ae573755bc08c9dbf9069932b"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_comments/COMPLETE.json": {
+    "bytes": 18189,
+    "sha256": "62779e5f9d43a49a2d4fb2ab165898bd24a4373bd54bc9b09d5b53051da21cbc"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_comments/attempts/5597ecf0-67eb-4cda-bc6c-3acc9cbb13ee.json": {
+    "bytes": 18189,
+    "sha256": "62779e5f9d43a49a2d4fb2ab165898bd24a4373bd54bc9b09d5b53051da21cbc"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_comments/baseline_metadata/102/baseline_metadata.json": {
+    "bytes": 959,
+    "sha256": "621957659ec7faf4dd02e87fd389406d2de503fb6a1f3282fb50ea8bcb83ebc1"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_comments/baseline_metadata/34/baseline_metadata.json": {
+    "bytes": 948,
+    "sha256": "ee91c485236ca1746d4a3ceefd4e1d375b543d0a775b14168eb83399b8560c36"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_comments/baseline_metadata/51/baseline_metadata.json": {
+    "bytes": 950,
+    "sha256": "a064b54b42fae39a867346d1e86442e8faa3a1633dfc1059b6a9d3fabb2809a5"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_comments/baseline_metadata/68/baseline_metadata.json": {
+    "bytes": 953,
+    "sha256": "de6d3375dd052bc16ae73e61e2d4654f4ec1c337e4d8d7996a48223a2fcbeb77"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_comments/baseline_metadata/85/baseline_metadata.json": {
+    "bytes": 956,
+    "sha256": "7160ff36a3882df7079f61df8e301b5208c06d5b4c4be590df4f4f4c93ec8369"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_comments/gate.log": {
+    "bytes": 4379,
+    "sha256": "25a643b080a9a775f0270472bf535b1c5988ab1ee2e421cfc20c9a92d56f8eeb"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_submissions_long/COMPLETE.json": {
+    "bytes": 18446,
+    "sha256": "061a20f656a066c0137dfa80c54f5b270edf4d622b30f64623ee052599cabfb4"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_submissions_long/attempts/dc676f31-6730-4aa5-8c5f-4fe1d54960ea.json": {
+    "bytes": 18446,
+    "sha256": "061a20f656a066c0137dfa80c54f5b270edf4d622b30f64623ee052599cabfb4"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_submissions_long/baseline_metadata/106/baseline_metadata.json": {
+    "bytes": 958,
+    "sha256": "f321f811ed9a05e776494987831bb07d1ef3c54bd0fb336566f0e6b53ce2b6f5"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_submissions_long/baseline_metadata/132/baseline_metadata.json": {
+    "bytes": 962,
+    "sha256": "8904ae54d2993aeda1854b86a7429b857850b2e62d28a31226c17eead5b442ca"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_submissions_long/baseline_metadata/159/baseline_metadata.json": {
+    "bytes": 963,
+    "sha256": "b589f4dac34777044a5e372a071cc8122841ad1cedf9425462ad9e4e3700fdab"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_submissions_long/baseline_metadata/53/baseline_metadata.json": {
+    "bytes": 948,
+    "sha256": "ec3c957c13e5a12c8f01508dd7515176f56771cab55141ac526cf3055b2a207a"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_submissions_long/baseline_metadata/80/baseline_metadata.json": {
+    "bytes": 950,
+    "sha256": "45c59ff953c86f0ce46d6f290904a416a66bb03a28b9af835eb671d02515d804"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/runs/reddit_submissions_long/gate.log": {
+    "bytes": 4481,
+    "sha256": "3015c33047f9c6653e74215796f326a339e3f80044f2c174d414b9f2d5a8e647"
+  },
+  "llm_fitting/runs/2026-10-12_V3_endpoint_scores/scores.csv": {
+    "bytes": 251625,
+    "sha256": "302bb88592f1e29ef8f66f0d400544c3e94f5285d72cebe9af53e45f2624e68a"
+  }
+}
