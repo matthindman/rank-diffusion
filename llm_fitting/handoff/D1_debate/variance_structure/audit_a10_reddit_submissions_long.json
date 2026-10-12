@@ -1,0 +1,12 @@
+{
+  "panel": "reddit_submissions_long",
+  "source": "001fa74669cc7a135075b5b8d667b9a1d958ce14",
+  "T": 212,
+  "K": 5000,
+  "grid_size": 149,
+  "carry_forward_rmse_log_grid": 0.4623104060366736,
+  "carry_forward_rmse_uniform_rank": 0.1675375203076784,
+  "saved_variance_reconstruction_rmse": 0.5276982986167231,
+  "matched_rmse_ratio": 1.1414372069636314,
+  "seconds": 191.7250771522522
+}
