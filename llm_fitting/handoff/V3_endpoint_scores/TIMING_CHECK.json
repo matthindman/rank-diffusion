@@ -1,0 +1,15 @@
+{
+  "expected_first_week_ranks": [
+    1,
+    2,
+    3
+  ],
+  "exported_nominal_h1": [
+    2,
+    1,
+    3
+  ],
+  "permanent_updates": 2,
+  "first_week_matches_one_transition": false,
+  "construction": "a starts 3, b 2, c 1. Each lasting innovation is [-.75,0,0]; all other layers and exits zero."
+}
