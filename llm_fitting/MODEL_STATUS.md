@@ -6758,3 +6758,73 @@ removed by candidate 2 was flattering; the wrong-initial-state
 demonstration does not separate home from derived-ladder models; and the
 claim that no endpoint statistic separates a random walk from current-rank
 attraction was wrong (correction to §2z-bd).
+
+## 2z-bf. 2026-10-12 — EXPLORATORY MEASUREMENT (A9, owner-requested): the ratio of lasting variance to the local slope of the rank-size ladder is close to constant across rank octaves on four panels (coefficient of variation 0.12–0.25), about 0.003 per week on three Reddit panels and 0.0067 on Facebook. Four of five predictions held; the one that failed was my expectation that the ratio would not be constant. Descriptive; nothing adopted
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; design,
+predictions and runner committed at a07043f before the check ran; results
+committed with this entry. Requested by the owner after the consensus of
+§2z-be: "do the first concrete check"._
+
+**Tier.** Exploratory and descriptive, DEVELOPMENT data, in sample. Data
+only, plus the frozen structure fit for one secondary column. No model
+code, simulation or gate evaluation. No planted-data validation of the
+comparison exists.
+
+**Question.** In a rank-based diffusion with one relative drift g, the
+local log-log slope of the rank-size curve is σ²/(2g), where σ² is the
+variance per week of the lasting level. Is the ratio ρ = σ²/(2s) constant
+across ranks in the data?
+
+**Method.** Full-window universes of FB Era A, comments, long submissions
+and the comments extension. Octaves of permanent rank. σ²: the growth rate
+of the variance of h-week changes net of the common factor between 13 and
+52 weeks (13 and 26 on Facebook), with an endpoint bootstrap; it uses no
+fitted reversion rate. s: minus the regression slope of the time-median
+ladder on log rank within the bin.
+
+**Result.**
+
+| ranks (share of K) | FB Era A | comments | long submissions | comments extension |
+|---|---|---|---|---|
+| K/128 – K/64 | 0.0072 | 0.0029 | 0.0037 | 0.0031 |
+| K/64 – K/32 | 0.0048 | 0.0028 | 0.0031 | 0.0033 |
+| K/32 – K/16 | 0.0077 | 0.0032 | 0.0028 | 0.0030 |
+| K/16 – K/8 | 0.0061 | 0.0026 | 0.0031 | 0.0026 |
+| K/8 – K/4 | 0.0063 | 0.0025 | 0.0030 | 0.0025 |
+| K/4 – K/2 | 0.0066 | 0.0031 | 0.0028 | 0.0026 |
+| K/2 – K | 0.0068 | 0.0037 | 0.0032 | 0.0033 |
+| median; coefficient of variation (top bin excluded) | 0.0067; 0.25 | 0.0027; 0.25 | 0.0030; 0.12 | 0.0026; 0.17 |
+| log-log slope of ρ on rank | −0.06 | +0.10 | +0.01 | +0.04 |
+| Spearman correlation of s and σ² across bins | +0.71 | +0.96 | +0.90 | +0.95 |
+
+Variance rises 1.6 to 2.2 times and the slope 1.7 to 1.8 times from the
+octave near K/16 to the bottom octave. With the fitted σ_perm² in place of
+the model-free variance the coefficients of variation are 0.28, 0.29, 0.18
+and 0.40.
+
+**Predictions (DESIGN.md), scored.** (1) Variance rises toward the bottom:
+HELD. (2) The ladder steepens with rank on FB and long submissions: HELD,
+and on the comments panels. (3) Slope and variance positively related on
+at least three panels: HELD on four. (4) The one-constant form does not
+hold cleanly (coefficient of variation 0.2–0.6 on at least three panels):
+FAILED, it is 0.12 and 0.17 on two; the log-log slope of s on σ² below 1:
+HELD (0.58–0.76). (5) ρ between 0.001 and 0.01 per week: HELD.
+
+**Verdict.** No adoption rule applies. By the rule written beforehand, the
+simplest form of the hypothesis, that the profile of lasting variance and
+one number give the shape of the ladder, is supported at first pass and is
+a reasonable organising hypothesis for the diagnostic design recommended
+in §2z-be. It is not a derivation: the constant was read off the ladder
+and has to be measured from movement; two profiles that both rise toward
+the bottom can have a flat ratio without a causal link; the formula is for
+an idealised process and has no planted check here; the variance is
+indexed by permanent rank. The fitted σ_perm² tracks the ladder less well
+than the model-free variance, which is one more reason not to lean on the
+fitted reversion (§2z-bc).
+
+**Not run.** Any planted check; an independent measurement of the
+constant; Instagram; crossing rates. **Files.** `llm_fitting/phase1_a9.py`;
+`llm_fitting/runs/2026-10-12_A9_variance_ladder/` (DESIGN.md, cells,
+report_tables.txt, REPORT.md). Command: `python llm_fitting/phase1_a9.py
+run <panel>`, `report`.
