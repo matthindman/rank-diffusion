@@ -26,3 +26,8 @@ def test_rank_groups_include_tail():
     ranks=np.array([1,10,30,70,200.])
     z=np.log((ranks-.5)/400)
     assert list(group_for(z,400,100))==["head","head","middle","shell","tail"]
+
+
+def test_truth_is_retained_when_all_estimates_are_infinite():
+    s=summary([np.inf]*20,5.)
+    assert s["truth"]==5. and s["valid"]==0 and s["positive_infinity"]==20

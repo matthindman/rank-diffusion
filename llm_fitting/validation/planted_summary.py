@@ -21,6 +21,7 @@ def summary(a,truth=None):
     n=len(finite)
     out=dict(requested=len(a),valid=n,missing=int(np.isnan(a).sum()),
              positive_infinity=int(np.isposinf(a).sum()),negative_infinity=int(np.isneginf(a).sum()))
+    if truth is not None:out["truth"]=truth
     if not n:return out
     out.update(mean=finite.mean(),sd=finite.std(ddof=1) if n>1 else np.nan,
                q05=np.quantile(finite,.05),q50=np.median(finite),q95=np.quantile(finite,.95),
@@ -40,7 +41,11 @@ def load_rows(out,panel,stage,name,seeds):
     rows=[]
     for seed in seeds:
         r=pc.read(out/panel/stage/f"{name}_{seed:04d}.json")
-        if r["sources"]!=study.sources():raise RuntimeError("Source mismatch")
+        if stage=="extension_fits" or name.startswith(("ladder_attraction_","annual_cycle_")):
+            from validation import planted_extension as extension
+            expected=extension.sources()
+        else:expected=study.sources()
+        if r["sources"]!=expected:raise RuntimeError("Source mismatch")
         if r["parameter_sha256"]!=pc.digest(out/panel/"parameters.json"):raise RuntimeError("Parameter mismatch")
         rows.append(r)
     return rows
@@ -72,7 +77,12 @@ def recovery(out):
                     row=dict(panel=panel,condition=condition,parameter=name,knot=None,group="scalar",**summary(a,tr))
                     if np.isinf(a).any() or not np.isfinite(tr):
                         row["finite_conditional"]=True
-                        row["unconditional_mean"]=None;row["unconditional_bias"]=None
+                        for stat in ("mean","bias","sd","rmse","mcse_mean","mcse_sd","mcse_rmse"):
+                            row["finite_conditional_"+stat]=row.get(stat)
+                            row[stat]=None
+                        if not np.isfinite(tr):
+                            for stat in ("bias","rmse","mcse_rmse"):
+                                row["finite_conditional_"+stat]=None
                     records.append(row)
                 else:
                     for j in range(a.shape[1]):
@@ -110,21 +120,22 @@ def separation(a,b):
     label="degenerate" if not sd>0 else "unresolved" if snr<1 else "separated" if snr>=2 and (qa[1]<qb[0] or qb[1]<qa[0]) else "overlapping"
     return dict(label=label,separation=snr,delta=delta,pooled_sd=sd,n_a=len(aa),n_b=len(bb),
                 a_q05=qa[0],a_q95=qa[1],b_q05=qb[0],b_q95=qb[1])
-def diagnostic_tables(out):
+def diagnostic_tables(out,conditions=None):
+    conditions=study.CONDITIONS if conditions is None else conditions
     tables=[];pairs=[];effects=[];family=[];failures=[]
     for panel in pc.PANELS:
         rows={c:load_rows(out,panel,"diagnostics",c,range(2000,2039) if c=="calibration" else range(1000,1020))
-              for c in study.CONDITIONS+["calibration"]}
+              for c in conditions+["calibration"]}
         failures += [dict(panel=panel,stage="diagnostics",condition=c,seed=r["seed"],traceback=r["traceback"]) for c,rr in rows.items() for r in rr if r["status"]!="RAN-OK"]
         keys=sorted({k for rr in rows.values() for r in rr if r["status"]=="RAN-OK" for k in r["result"]["features"]})
         data={c:{k:np.array([r["result"]["features"].get(k) if r["status"]=="RAN-OK" else np.nan for r in rr],float) for k in keys} for c,rr in rows.items()}
-        anyflag={c:np.zeros(20,bool) for c in study.CONDITIONS}
-        anyavailable={c:np.zeros(20,bool) for c in study.CONDITIONS}
+        anyflag={c:np.zeros(20,bool) for c in conditions}
+        anyavailable={c:np.zeros(20,bool) for c in conditions}
         for key in keys:
             cal=data["calibration"][key];valid_cal=np.isfinite(cal)
             complete=valid_cal.sum()==39
             lo,hi=(cal.min(),cal.max()) if complete else (np.nan,np.nan)
-            for c in study.CONDITIONS:
+            for c in conditions:
                 a=data[c][key];valid=np.isfinite(a)
                 flags=valid&((a<lo)|(a>hi)) if complete else np.zeros(20,bool)
                 if complete:
@@ -140,17 +151,24 @@ def diagnostic_tables(out):
                         control_sd=sd,difference=delta.mean() if len(delta) else np.nan,
                         standardized_difference=delta.mean()/sd if len(delta) and sd>0 else np.nan,
                         mcse_difference=delta.std(ddof=1)/np.sqrt(len(delta)) if len(delta)>1 else np.nan))
-            for ca,cb in itertools.combinations(study.CONDITIONS,2):
+            for ca,cb in itertools.combinations(conditions,2):
                 pairs.append(dict(panel=panel,condition_a=ca,condition_b=cb,statistic=key,
                                   **separation(data[ca][key],data[cb][key])))
-        for c in study.CONDITIONS:
+        for c in conditions:
             family.append(dict(panel=panel,condition=c,**rate_interval(int(anyflag[c].sum()),int(anyavailable[c].sum()))))
     for name,table in (("diagnostic_rates",tables),("diagnostic_effects",effects),("diagnostic_pairs",pairs),("diagnostic_any_flag",family)):
         pd.DataFrame(table).to_csv(out/(name+".csv"),index=False)
     pc.write(out/"diagnostic_failures.json",failures)
     return tables,effects,pairs,family,failures
 def main():
-    ap=argparse.ArgumentParser();ap.add_argument("--out",type=Path,required=True);args=ap.parse_args()
-    recovery(args.out);diagnostic_tables(args.out)
-    pc.write(args.out/"analysis_provenance.json",dict(sources=study.sources(),summary_sha256=pc.digest(__file__)))
+    ap=argparse.ArgumentParser();ap.add_argument("--out",type=Path,required=True)
+    ap.add_argument("--include-extensions",action="store_true");args=ap.parse_args()
+    conditions=list(study.CONDITIONS)
+    if args.include_extensions:
+        from validation import planted_extension as extension
+        from validation.planted_extension_summary import fitted_kappa
+        conditions+=extension.ADDITIONS
+        fitted_kappa(args.out)
+    recovery(args.out);diagnostic_tables(args.out,conditions)
+    pc.write(args.out/"analysis_provenance.json",dict(sources=study.sources(),summary_sha256=pc.digest(__file__),conditions=conditions))
 if __name__=="__main__":main()
