@@ -244,8 +244,6 @@ is in the newest data-operation entries of MODEL_STATUS.
   whether the annual cycle and a limit on raw jump size wait.
 - Whether the frozen gate's conditional simulator, which takes two weekly
   steps before its first recorded week, should be changed (§2z-bg).
-- Whether Codex's two large V2 result archives (33 MB) go into the public
-  repository (§2z-bc).
 - Whether endpoint-level proper scores and named baselines become a
   registered supplementary evaluation for the new datasets.
 - Wikipedia protocol choices: entity key, primary window, universe rule and

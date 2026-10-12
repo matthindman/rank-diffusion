@@ -7598,3 +7598,39 @@ simulation of the frozen model, or gate evaluation.
 **Commands.** `python -m pytest tests/test_balance_accounting.py -q`. Health
 check before the commit: research suite 499 passed, package suite 8 passed,
 legacy guard 14/15 and churn 0.013.
+
+## 2z-br. 2026-10-13 — OWNER DECISION: `main` is pushed, and Codex's two large V2 result archives are published with it as part of the merged branch's history. No model, stack, gate, protocol or claim change
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-13; `main` at
+1741db3 plus this entry._
+
+**The decision, in the owner's words.** "push." Asked once about the archives
+below, with three options (push as is; hold; rebuild the unpushed history
+without them), the owner chose "Push as is".
+
+**What the push publishes.** The 66 commits made on `main` since the last
+push on 2026-10-12 (`origin/main` stood at 3db30e6, the A3 design commit), and
+the commit that carries this entry: the work of 2026-10-12 and 2026-10-13
+that followed it, including the six merged Codex branches.
+
+**The archives.** `runs/2026-10-12_V2_planted_mechanisms/compact/diagnostics_seeds.jsonl.gz`
+(21.5 MB) and `…/diagnostic_pairs.csv.gz` (13.2 MB). §2z-bc says they "were
+left off `main`". That is true of the files on `main` and was incomplete: the
+merge commit 98a6e15 has the tip of `codex/v2-planted-mechanisms` as a parent,
+so the archives are reachable from `main` and a push uploads them. They hold
+per-seed statistics of synthetic planted panels and comparisons between
+planted conditions; no panel data. This closes the open item "whether the
+two archives go into the public repository": they are in its history and are
+not in the tree. Pushed history is not rewritten.
+
+**Scan of the unpushed range before the push** (`origin/main..main`, after a
+fetch; 0 commits behind). 1,239 files changed, mostly JSON run cells, logs
+and Markdown. No credential pattern, no email address and no added line
+about the owner's other projects. No raw panel data: the CSV and compressed
+files are run summaries. Largest objects after the two archives: 3.9 MB.
+About 71 MB uncompressed in all. The two files held back on 2026-10-09
+(`lit_review/reports/` and the transfer memo) are still untracked and are
+not published.
+
+**Not changed.** Anything else. The remaining open decisions are in
+`PROGRAM_STATE.md`.
