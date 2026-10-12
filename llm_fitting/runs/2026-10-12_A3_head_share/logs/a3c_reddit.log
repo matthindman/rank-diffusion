@@ -1,0 +1,3 @@
+[reddit] base         card 14/15, churn 0.053, index 0.33 (11s)
+[reddit] seed_ladder  card 14/15, churn 0.043, index 0.29 (21s)
+[reddit] seed_means   card 14/15, churn 0.052, index 0.39 (32s)

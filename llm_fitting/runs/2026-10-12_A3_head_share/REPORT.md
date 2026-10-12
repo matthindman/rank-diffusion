@@ -156,11 +156,49 @@ reading.
   spike weeks need a high-amplitude endpoint and a far-tail draw together.
   Whether the amplitude spread is overstated is V2's question.
 
+## Addendum 2: the structure card under each seeding
+
+Run after the report above was committed; design and predictions 13–16 in
+`DESIGN.md` (b13bf01). Card rows passed, macro index in tolerance units
+(lower is better), and the simulated top-1 share over the data's; 20 seeds,
+bracket from resampling the seeds jointly with the base arm.
+
+| panel | first week (as fitted) | time-median ladder | endpoint means |
+|---|---|---|---|
+| FB Era A: card; index; index minus base [5%, 95%]; top-1 over data | 15/15; 1.09; 2.78 | 15/15; 0.86; −0.231 [−0.312, −0.161]; 2.54 | 15/15; 0.77; −0.317 [−0.408, −0.235]; 2.36 |
+| comments | 12/15; 0.86; 1.38 | 12/15; 0.65; −0.210 [−0.295, −0.125]; 0.87 | 12/15; 0.59; −0.265 [−0.320, −0.164]; 1.00 |
+| long submissions | 13/15; 0.55; 0.75 | 13/15; 0.45; −0.105 [−0.141, −0.067]; 1.08 | 12/15; 0.49; −0.061 [−0.088, −0.017]; 0.97 |
+| short submissions | 14/15; 0.33; 1.07 | 14/15; 0.29; −0.040 [−0.064, +0.009]; 1.00 | 14/15; 0.39; +0.059 [−0.008, +0.127]; 1.17 |
+| Instagram rescue | 8/15; 2.12; 3.66 | 8/15; 2.11; −0.013 [−0.096, +0.057]; 3.47 | 9/15; 2.25; +0.126 [+0.053, +0.197]; 4.18 |
+
+Ladder drift barely moves under either seeding (FB 0.115 → 0.126 and 0.125
+against the data's 0.267; long submissions 0.136 → 0.157 and 0.144 against
+0.501): it is a property of the dynamics, not of the start.
+
+Predictions: (13) the card changes by at most one row on the four
+uncensored panels under endpoint means: HELD (one row lost on long
+submissions). (14) The index falls on comments and long submissions, with
+a band excluding zero on at least one, and does not rise by more than 0.10
+on FB or short submissions: HELD. (15) On Instagram endpoint means are
+worse than the base and the time-median ladder is within 0.10 of it: HELD.
+(16) Ladder drift nearer the data's on at least three of the four
+uncensored panels: FAILED (two of four, and by almost nothing).
+
+What it adds to the consequences above: both seedings improve the index
+with a band excluding zero on FB, comments and long submissions. They
+differ elsewhere. The time-median ladder does no harm on any of the five
+panels. Endpoint means are better on FB and comments, worse on long
+submissions, and worse than the base on the 30-week panel (inside its band)
+and on the censored one (outside it). The argument from first principles
+favoured endpoint means; the table favours the time-median ladder as the
+one to propose, with the caution that choosing between two variants on
+in-sample cards is itself a selection.
+
 ## Not shown, not run
 
 Where the steadier part of the FB and Instagram excess comes from. A
 bounded arm in raw units (needs model code). Bounded-t and seeding arms in
-combination. The effect of any arm on the structure cards. Why the comments
+combination. The effect of the non-seeding arms on the structure cards. Why the comments
 arms with Gaussian shocks are so noisy (seed SD up to half the data's
 share: one endpoint holds the top there, with a gap of 1.24 log units to
 the second).

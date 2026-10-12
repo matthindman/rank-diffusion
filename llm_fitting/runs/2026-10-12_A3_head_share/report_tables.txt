@@ -94,3 +94,28 @@ far tail of one-week changes: data / sim median over seeds [sim min, max]
   middle   (n 350,265)  z_q999_up 7.99/3.99 [3.90, 4.10]  z_q9999_up 27.45/6.21 [5.91, 6.82]  z_max_up 174.61/14.69 [9.86, 29.87]  z_max_dn 206.22/13.64 [9.59, 23.54]  raw_q999_up 1.51/1.60 [1.50, 1.68]  raw_max_up 14.52/7.19 [5.43, 14.29]  beyond6 3.19e-03/2.32e-04 [1.77e-04, 2.88e-04]  beyond10 1.13e-03/2.06e-05 [2.65e-06, 4.89e-05]
   shell    (n 470,185)  z_q999_up 11.51/4.08 [3.97, 4.16]  z_q9999_up 31.50/6.29 [5.84, 6.94]  z_max_up 189.89/14.46 [11.87, 42.03]  z_max_dn 200.36/15.56 [10.39, 33.46]  raw_q999_up 3.17/2.31 [2.20, 2.48]  raw_max_up 10.24/10.56 [7.56, 22.69]  beyond6 5.36e-03/2.47e-04 [1.87e-04, 3.46e-04]  beyond10 2.35e-03/1.74e-05 [8.31e-06, 3.50e-05]
   top2pct  (n 14,981)  z_q999_up 6.79/4.00 [3.73, 4.33]  z_q9999_up 12.27/5.92 [5.31, 8.04]  z_max_up 19.19/7.39 [5.69, 14.46]  z_max_dn 14.33/7.85 [5.04, 15.55]  raw_q999_up 0.84/0.74 [0.58, 1.11]  raw_max_up 2.27/1.56 [1.06, 3.20]  beyond6 2.07e-03/2.42e-04 [0.00e+00, 4.42e-04]  beyond10 4.01e-04/0.00e+00 [0.00e+00, 1.25e-04]
+
+## structure card by seeding, facebook_a (20 seeds)
+base         card 15/15  churn 0.024  index 1.09  blocks ladder 2.97 variance 0.13 order 0.52 topset 0.74  S1/data 2.78  ladder drift 0.115 (data 0.267)
+seed_ladder  card 15/15  churn 0.029  index 0.86  blocks ladder 2.35 variance 0.14 order 0.41 topset 0.55  S1/data 2.54  ladder drift 0.126 (data 0.267)  index minus base -0.231 [-0.312, -0.161]
+seed_means   card 15/15  churn 0.031  index 0.77  blocks ladder 2.17 variance 0.17 order 0.31 topset 0.45  S1/data 2.36  ladder drift 0.125 (data 0.267)  index minus base -0.317 [-0.408, -0.235]
+
+## structure card by seeding, reddit_comments (20 seeds)
+base         card 12/15  churn 0.034  index 0.86  blocks ladder 1.33 variance 1.32 order 0.26 topset 0.52  S1/data 1.38  ladder drift 0.172 (data 0.258)
+seed_ladder  card 12/15  churn 0.042  index 0.65  blocks ladder 0.41 variance 1.23 order 0.40 topset 0.55  S1/data 0.87  ladder drift 0.167 (data 0.258)  index minus base -0.210 [-0.295, -0.125]
+seed_means   card 12/15  churn 0.038  index 0.59  blocks ladder 0.22 variance 1.28 order 0.38 topset 0.50  S1/data 1.00  ladder drift 0.158 (data 0.258)  index minus base -0.265 [-0.320, -0.164]
+
+## structure card by seeding, reddit_submissions_long (20 seeds)
+base         card 13/15  churn 0.075  index 0.55  blocks ladder 0.87 variance 0.71 order 0.60 topset 0.02  S1/data 0.75  ladder drift 0.136 (data 0.501)
+seed_ladder  card 13/15  churn 0.037  index 0.45  blocks ladder 0.26 variance 0.64 order 0.68 topset 0.21  S1/data 1.08  ladder drift 0.157 (data 0.501)  index minus base -0.105 [-0.141, -0.067]
+seed_means   card 12/15  churn 0.053  index 0.49  blocks ladder 0.38 variance 0.69 order 0.68 topset 0.22  S1/data 0.97  ladder drift 0.144 (data 0.501)  index minus base -0.061 [-0.088, -0.017]
+
+## structure card by seeding, reddit (20 seeds)
+base         card 14/15  churn 0.053  index 0.33  blocks ladder 0.28 variance 0.34 order 0.37 topset 0.33  S1/data 1.07  ladder drift 0.115 (data 0.220)
+seed_ladder  card 14/15  churn 0.043  index 0.29  blocks ladder 0.16 variance 0.31 order 0.38 topset 0.30  S1/data 1.00  ladder drift 0.079 (data 0.220)  index minus base -0.040 [-0.064, +0.009]
+seed_means   card 14/15  churn 0.052  index 0.39  blocks ladder 0.40 variance 0.34 order 0.41 topset 0.39  S1/data 1.17  ladder drift 0.112 (data 0.220)  index minus base +0.059 [-0.008, +0.127]
+
+## structure card by seeding, instagram (20 seeds)
+base         card 8/15  churn 0.062  index 2.12  blocks ladder 4.70 variance 1.25 order 1.35 topset 1.20  S1/data 3.66  ladder drift 0.535 (data 0.385)
+seed_ladder  card 8/15  churn 0.061  index 2.11  blocks ladder 4.66 variance 1.25 order 1.35 topset 1.18  S1/data 3.47  ladder drift 0.588 (data 0.385)  index minus base -0.013 [-0.096, +0.057]
+seed_means   card 9/15  churn 0.047  index 2.25  blocks ladder 5.23 variance 1.26 order 1.35 topset 1.16  S1/data 4.18  ladder drift 0.526 (data 0.385)  index minus base +0.126 [+0.053, +0.197]

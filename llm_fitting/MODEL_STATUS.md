@@ -6430,3 +6430,65 @@ Instagram; any gate evaluation. **Files.** `llm_fitting/phase1_a8.py`;
 `llm_fitting/runs/2026-10-12_A8_no_reversion/` (DESIGN.md, cells, logs,
 report_tables.txt, REPORT.md). Commands: `python llm_fitting/phase1_a8.py
 dep <panel>`, `struct <panel>`, `report`.
+
+## 2z-az. 2026-10-12 — EXPLORATORY MEASUREMENT (A3, second addendum): the structure card under two parameter-free seedings on five panels. Both improve the macro index on FB, comments and long submissions with bands excluding zero; the time-median ladder harms no panel; endpoint means are worse on the censored panel. Three of four predictions held; nothing adopted, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; design
+and predictions committed at b13bf01 before the cells; results committed
+with this entry. Continues §2z-av._
+
+**Tier.** Exploratory, in sample, DEVELOPMENT data. An intervention: the
+seed ladder is replaced in the fitted parameters of each panel's frozen
+structure stack; 20 seeds, same seeds in every arm; card and macro index by
+the functions of §2z-ap.
+
+**Result.** Card rows passed; macro index; index minus the as-fitted arm
+with a 5th–95th percentile bracket from resampling seeds jointly; simulated
+top-1 share over the data's.
+
+| panel | first week (as fitted) | time-median ladder | endpoint means |
+|---|---|---|---|
+| FB Era A: card; index; index minus base [5%, 95%]; top-1 over data | 15/15; 1.09; 2.78 | 15/15; 0.86; −0.231 [−0.312, −0.161]; 2.54 | 15/15; 0.77; −0.317 [−0.408, −0.235]; 2.36 |
+| comments | 12/15; 0.86; 1.38 | 12/15; 0.65; −0.210 [−0.295, −0.125]; 0.87 | 12/15; 0.59; −0.265 [−0.320, −0.164]; 1.00 |
+| long submissions | 13/15; 0.55; 0.75 | 13/15; 0.45; −0.105 [−0.141, −0.067]; 1.08 | 12/15; 0.49; −0.061 [−0.088, −0.017]; 0.97 |
+| short submissions | 14/15; 0.33; 1.07 | 14/15; 0.29; −0.040 [−0.064, +0.009]; 1.00 | 14/15; 0.39; +0.059 [−0.008, +0.127]; 1.17 |
+| Instagram rescue | 8/15; 2.12; 3.66 | 8/15; 2.11; −0.013 [−0.096, +0.057]; 3.47 | 9/15; 2.25; +0.126 [+0.053, +0.197]; 4.18 |
+
+**What the measurements show.** Both seedings lower the index on FB,
+comments and long submissions, with brackets excluding zero, and move the
+top-1 share toward the data on those panels. The time-median ladder is
+neutral on short submissions and Instagram. Endpoint means are worse than
+the as-fitted arm on Instagram (bracket excluding zero) and on the 30-week
+panel (bracket including zero), and lose one card row on long submissions.
+Ladder drift is not moved by seeding.
+
+**Predictions (DESIGN.md), scored.** (13) Card changes by at most one row
+on the four uncensored panels under endpoint means: HELD. (14) Index falls
+on comments and long submissions and does not rise by more than 0.10 on FB
+or short submissions: HELD. (15) Instagram: endpoint means worse, time-median
+within 0.10: HELD. (16) Ladder drift nearer the data's on three of four:
+FAILED.
+
+**Verdict.** No adoption rule applies; a seeding change is the owner's
+decision (it alters the structure-simulation default and every structure
+card). Of the two variants, the time-median
+ladder is the one this table supports proposing: it improves three panels
+and harms none. Choosing between two variants on in-sample cards is a
+selection and is stated as such in the decision document
+(`llm_fitting/D1_CANDIDATES_CLAUDE_2026-10-12.md`).
+
+**Correction to §2z-av.** Its verdict says the seeding change "does not
+touch the gate, whose four primary stacks simulate from the filtered
+state". That is true of the gate's forecasts and not of the gate as a
+whole: its calibration step on the training window (`_calibrate_scale`)
+runs the unconditional cohort simulation, which is seeded from the same
+first-week ladder. A seeding change confined to the structure simulation
+leaves the gate alone; one made inside the fit would reach the gate
+through the calibrated noise scale and would need gate evaluations. Found
+by reading the code while writing the decision document; no run depends
+on it.
+
+**Not run.** Any gate evaluation; a censoring-aware estimate of the lasting
+ladder. **Files.** `llm_fitting/phase1_a3.py` (`run_c`);
+`llm_fitting/runs/2026-10-12_A3_head_share/` (cells `a3c__*.json`, logs,
+`launch_a3c.zsh`, report_tables.txt, REPORT.md).

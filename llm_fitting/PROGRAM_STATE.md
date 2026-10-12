@@ -38,8 +38,8 @@ gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
 (A1, A2), §2z-av (A3), §2z-aw (A7, follow-ups added to the plan), §2z-ax
 (Codex's V1, the gate as an instrument), §2z-ay (A8, reversion switched
 off: the home both pulls endpoints back, which the data contradicts, and
-holds the ladder, which it needs). The per-endpoint export for Codex's V3
-(A6) is on `main`.
+holds the ladder, which it needs), §2z-az (the card under two seedings).
+The per-endpoint export for Codex's V3 (A6) is on `main`.
 
 ## Evidence to date
 
@@ -176,9 +176,15 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
 
-- At decision point D1 of the work plan: which candidates go ahead; the
-  comparison margin; whether the endpoint-level scores become a registered
-  supplement for the new data.
+- **Decision point D1 is ready for the owner:**
+  `D1_CANDIDATES_CLAUDE_2026-10-12.md` (draft; Codex's review is queued).
+  It asks six things: whether a parameter-free seeding change goes ahead
+  (§2z-av, §2z-az); whether a redesign of the lasting layer goes to its
+  design step (§2z-aw, §2z-ay); the comparison margin, now with its
+  measurement (§2z-ax); whether the 80-seed values become the recorded
+  reference gates; the wording around b = 1; and whether the annual cycle
+  and a limit on raw jump size wait. The plan's three original candidates
+  are withdrawn or narrowed there.
 - Whether endpoint-level proper scores and named baselines become a
   registered supplementary evaluation for the new datasets.
 - Wikipedia protocol choices: entity key, primary window, universe rule and
