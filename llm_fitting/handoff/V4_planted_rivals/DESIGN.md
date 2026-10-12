@@ -203,3 +203,19 @@ with source and input hashes. A whole-grid report requires every expected
 cell to have a terminal status; it must never describe a partial grid as a
 completed study. New execution fixes preserve failed attempts and do not
 alter the above scientific choices. Resource failure is reported openly.
+
+## Pre-generation implementation correction — 2026-10-13
+
+No V4 panel or fixture has yet been generated. The home benchmark uses the
+V2 independent simulator's exact kernel, including current-latent-rank
+passing coefficients, replacement amplitude resets, and its 40-step burn.
+The general 400-step passing-only warm-up above applies to the other
+rivals. Only the reservoir extension, IID observation mask, and Reddit
+annual overlay change the home arm. This corrects an ambiguity in the
+initial design: assigning fixed passing coefficients in that benchmark
+would no longer be the frozen model itself. A V4-local copy adds two
+read-only latent/amplitude output arrays; equality of every original
+output with `planted_sim.simulate` is tested. No production or V2 file is
+edited. The additional held-out block is obtained by deterministic replay
+from the seed only AFTER the forecast is saved, with prefix equality
+tested. No threshold, seed count, class, prediction, or score changes.
