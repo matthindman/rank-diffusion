@@ -6349,3 +6349,84 @@ Jensen, scale reselection and the score of the mean simulated moments are separa
 **Code and validation.** The two protected model files remain unchanged. New wrappers, analysis, report and plotting code are under validation/. Eleven targeted known-answer tests cover exact pooled histograms, original-simulator parity, cache restart, calibration ties, floor/missing moments, folded-normal bias/noise, covariance allocation and full analysis decomposition. The full check at the latest recorded pre-analysis commit passed 425 research tests + 13 subtests, 8 package tests and the legacy 14/15, churn 0.013 guard. Final handoff health is recorded in HEALTH_FINAL.log. AUDIT.json checks unchanged inputs/fits/empirical moments/source hashes, reconstructs full-bank calibration and scores, and verifies 28,800 seed files with digests.
 
 **Commands and archive.** Run from the assigned Codex copy with the registered Python 3.11 interpreter: `zsh llm_fitting/handoff/V1_gate_instrument/launch.zsh`, then `zsh llm_fitting/handoff/V1_gate_instrument/launch_analysis.zsh`; the launchers use heavy_lock.py and caffeinate. Plotting: `python llm_fitting/validation/gate_instrument_plot.py` with MPLCONFIGDIR inside the run directory. Archive: `llm_fitting/runs/2026-10-12_V1_gate_instrument/`; complete report, ledger rows, predictions and figures: `llm_fitting/handoff/V1_gate_instrument/`. Compact summaries/provenance are committed; full binary seed banks remain in the Codex working copy.
+
+## 2z-ay. 2026-10-12 — EXPLORATORY MEASUREMENT (A8; not in the work plan as adopted): the fitted model simulated with reversion to the home switched off. Direction moves to the data and relocation and departures move about half of the way; the rank-size ladder no longer holds (drift 1.4–3.4 times the data's, FB top-1 share 15 times). The home is doing two jobs. Three of seven predictions held in full, three in part, one failed; not a candidate, nothing adopted, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; design,
+predictions and runner committed at 7a16d1a before any cell (a two-seed
+smoke test to a scratch folder excepted, as the design says); results
+committed with this entry._
+
+**Tier.** Exploratory. An intervention in the fitted model on DEVELOPMENT
+data: every parameter as fitted, `simulate(..., kappa=0.0)`. Structure
+cells in sample, 20 seeds, same seeds in both arms; departure cells with
+the train-only cohort of §2z-au, 30 seeds. Not a refit and not a candidate.
+
+**Question.** §2z-at, §2z-au and §2z-aw point at reversion to a fixed home.
+What does the existing model do without it?
+
+**Result.** Data / as fitted / reversion off.
+
+| | comments extension | long submissions |
+|---|---|---|
+| exits of the established cohort per cohort-week | 0.00800 / 0.00350 / 0.00481 | 0.00851 / 0.00311 / 0.00449 |
+| excursions | 0.00269 / 0.00142 / 0.00130 | 0.00248 / 0.00114 / 0.00131 |
+| relocated to the boundary zone | 0.049 / 0.019 / 0.033 | 0.069 / 0.018 / 0.034 |
+| median shift in log permanent rank | 0.089 / −0.001 / 0.079 | 0.134 / 0.035 / 0.149 |
+| first exit sudden and lasting | 0.054 / 0.298 / 0.288 | 0.053 / 0.167 / 0.128 |
+
+| | FB Era A | long submissions | comments |
+|---|---|---|---|
+| direction, quarterly blocks half a year apart | −0.038 / −0.148 / −0.051 | −0.033 / −0.093 / −0.041 | −0.053 / −0.134 / −0.082 |
+| direction, whole-year blocks, adjacent; one apart | | +0.313 / −0.011 / +0.213; +0.007 / −0.206 / +0.020 | |
+| variance of 52-week changes, middle group | | 0.508 / 0.542 / 0.690 | 0.773 / 0.819 / 1.019 |
+| ladder drift | 0.267 / 0.115 / 0.907 | 0.501 / 0.136 / 1.145 | 0.258 / 0.172 / 0.370 |
+| top-1 share over the data's (seed SD) | 2.78 (0.61) → 14.7 (11.5) | 0.75 (0.16) → 4.02 (2.13) | 1.38 (0.49) → 0.99 (0.29) |
+| card rows passed; macro index | 15 → 14; 1.09 → 2.67 | 13 → 14; 0.55 → 1.43 | 12 → 12; 0.86 → 0.64 |
+
+**What the measurements show.**
+
+1. Without reversion the direction statistics are at or near the data's.
+   The annual cycle stays missing.
+2. Exits of the established cohort rise from 0.44 to 0.60 of the data's
+   rate (comments extension) and from 0.37 to 0.53 (long submissions);
+   relocation from 0.40 to 0.68 and from 0.26 to 0.49. The cohort's loss of
+   ground between windows, absent from the fitted model, is reproduced.
+3. Excursions, repeat exits and the over-production of sudden lasting exits
+   on comments do not move. Reversion is not their cause.
+4. The home was holding the ladder: without it ladder drift is 3.4, 2.3 and
+   1.4 times the data's and the top-1 share runs away on FB and long
+   submissions.
+5. As fitted the simulated ladder is too still: its drift is 0.43, 0.27 and
+   0.67 of the data's. The data sits between the two arms.
+6. The lasting volatility, estimated together with the reversion, is too
+   large without it: 52- and 78-week variance overshoots by 27–36% in the
+   middle group.
+
+**Predictions (DESIGN.md), scored.** (1) Departures to at least 0.60 of the
+data's on both: HELD on the comments extension, FAILED on long submissions
+(0.53). (2) Relocated share at least half the data's: HELD on the comments
+extension, short on long submissions (0.49). (3) Whole-year slopes within
+0.10 of a random walk's: HELD on long submissions; not run on the comments
+extension. (4) 78-week variance within 10% of the data's: FAILED (27%
+over); overshoot at 52 weeks: HELD. (5) Card loses at most two rows, index
+worse on two of three, ladder drift worse on all three: HELD. (6) FB top-1
+share changes by less than one seed SD: FAILED (2.8 → 14.7 times the
+data's). (7) Sudden lasting first exits stay over-produced on comments:
+HELD.
+
+**Verdict.** No adoption rule applies, and setting the reversion to zero is
+not a candidate. The home does two jobs: it pulls each endpoint back to
+where it started, which the data contradicts at the scale of a year, and it
+holds the ladder, which the data needs, though less tightly than the fitted
+model has it. A candidate for the lasting layer has to keep a pull on the
+ladder and drop the pull on the endpoint, with the lasting volatility
+re-estimated, and it will leave the boundary flicker and the deaths of
+finding 3 to be explained separately. This is the main input to the
+lasting-layer dossier for decision point D1.
+
+**Not run.** Any refit; the comments extension in the structure cells;
+Instagram; any gate evaluation. **Files.** `llm_fitting/phase1_a8.py`;
+`llm_fitting/runs/2026-10-12_A8_no_reversion/` (DESIGN.md, cells, logs,
+report_tables.txt, REPORT.md). Commands: `python llm_fitting/phase1_a8.py
+dep <panel>`, `struct <panel>`, `report`.

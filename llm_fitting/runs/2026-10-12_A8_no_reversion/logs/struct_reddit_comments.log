@@ -1,0 +1,2 @@
+[reddit_comments] base          card 12/15, churn 0.034, index 0.86 (159s)
+[reddit_comments] no_reversion  card 12/15, churn 0.049, index 0.64 (311s)

@@ -1,0 +1,2 @@
+[reddit_comments_ext] base          rate 0.00350 (data 0.00800) (127s)
+[reddit_comments_ext] no_reversion  rate 0.00481 (data 0.00800) (249s)

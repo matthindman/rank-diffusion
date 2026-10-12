@@ -36,8 +36,10 @@ validates independently under `coordination/PROTOCOL.md`; Codex's tasks
 are in `coordination/QUEUE.md`. Phase 1 has no model code and no candidate
 gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
 (A1, A2), §2z-av (A3), §2z-aw (A7, follow-ups added to the plan), §2z-ax
-(Codex's V1, the gate as an instrument). The per-endpoint export for
-Codex's V3 (A6) is on `main`.
+(Codex's V1, the gate as an instrument), §2z-ay (A8, reversion switched
+off: the home both pulls endpoints back, which the data contradicts, and
+holds the ladder, which it needs). The per-endpoint export for Codex's V3
+(A6) is on `main`.
 
 ## Evidence to date
 

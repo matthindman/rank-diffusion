@@ -1,0 +1,68 @@
+
+## structure, facebook_a (K=3500, T=86, 20 seeds)
+base          card 15/15  churn 0.024  index 1.09  blocks ladder 2.97 variance 0.13 order 0.52 topset 0.74  S1/data 2.78 (0.61)  ladder drift 0.115 (data 0.267)
+no_reversion  card 14/15  churn 0.068  index 2.67  blocks ladder 8.66 variance 0.19 order 1.05 topset 0.79  S1/data 14.74 (11.49)  ladder drift 0.907 (data 0.267)
+  variance of h-week changes, head    data / base / no_reversion:  h13 0.470 / 0.366 / 0.588   h26 0.611 / 0.443 / 0.825
+  variance of h-week changes, middle  data / base / no_reversion:  h13 0.700 / 0.631 / 0.738   h26 0.880 / 0.764 / 0.997
+  variance of h-week changes, shell   data / base / no_reversion:  h13 0.963 / 0.905 / 0.933   h26 1.205 / 1.079 / 1.197
+  direction, middle, 13-week blocks gap1: data -0.097 / -0.155 / +0.006
+  direction, middle, 13-week blocks gap2: data -0.038 / -0.148 / -0.051
+  direction, middle, 13-week blocks gap4: data +0.010 / -0.042 / +0.006
+
+## structure, reddit_submissions_long (K=5000, T=212, 20 seeds)
+base          card 13/15  churn 0.075  index 0.55  blocks ladder 0.87 variance 0.71 order 0.60 topset 0.02  S1/data 0.75 (0.16)  ladder drift 0.136 (data 0.501)
+no_reversion  card 14/15  churn 0.071  index 1.43  blocks ladder 4.64 variance 0.65 order 0.28 topset 0.16  S1/data 4.02 (2.13)  ladder drift 1.145 (data 0.501)
+  variance of h-week changes, head    data / base / no_reversion:  h13 0.155 / 0.142 / 0.193   h26 0.243 / 0.224 / 0.329   h52 0.391 / 0.350 / 0.590   h78 0.554 / 0.440 / 0.843
+  variance of h-week changes, middle  data / base / no_reversion:  h13 0.236 / 0.250 / 0.280   h26 0.337 / 0.364 / 0.422   h52 0.508 / 0.542 / 0.690   h78 0.751 / 0.677 / 0.953
+  variance of h-week changes, shell   data / base / no_reversion:  h13 0.400 / 0.396 / 0.403   h26 0.552 / 0.537 / 0.564   h52 0.801 / 0.759 / 0.861   h78 1.155 / 0.937 / 1.148
+  direction, middle, 13-week blocks gap1: data +0.094 / +0.033 / +0.083
+  direction, middle, 13-week blocks gap2: data -0.033 / -0.093 / -0.041
+  direction, middle, 13-week blocks gap4: data +0.119 / -0.046 / +0.000
+  direction, middle, 52-week blocks gap1: data +0.313 / -0.011 / +0.213
+  direction, middle, 52-week blocks gap2: data +0.007 / -0.206 / +0.020
+
+## structure, reddit_comments (K=12500, T=136, 20 seeds)
+base          card 12/15  churn 0.034  index 0.86  blocks ladder 1.33 variance 1.32 order 0.26 topset 0.52  S1/data 1.38 (0.49)  ladder drift 0.172 (data 0.258)
+no_reversion  card 12/15  churn 0.049  index 0.64  blocks ladder 0.50 variance 1.28 order 0.37 topset 0.39  S1/data 0.99 (0.29)  ladder drift 0.370 (data 0.258)
+  variance of h-week changes, head    data / base / no_reversion:  h13 0.269 / 0.258 / 0.299   h26 0.386 / 0.359 / 0.451   h52 0.520 / 0.466 / 0.701
+  variance of h-week changes, middle  data / base / no_reversion:  h13 0.389 / 0.441 / 0.471   h26 0.532 / 0.604 / 0.676   h52 0.773 / 0.819 / 1.019
+  variance of h-week changes, shell   data / base / no_reversion:  h13 0.602 / 0.633 / 0.676   h26 0.833 / 0.857 / 0.947   h52 1.227 / 1.189 / 1.431
+  direction, middle, 13-week blocks gap1: data -0.002 / -0.039 / +0.022
+  direction, middle, 13-week blocks gap2: data -0.053 / -0.134 / -0.082
+  direction, middle, 13-week blocks gap4: data +0.101 / -0.040 / -0.003
+
+## departures, reddit_comments_ext (K=12500, t0=136, 30 seeds): data / base / no_reversion
+  rate                 0.00800 / 0.00350 [0.00283, 0.00410] / 0.00481 [0.00368, 0.00574]
+  rate_slide           0.00512 / 0.00156 [0.00112, 0.00202] / 0.00295 [0.00217, 0.00376]
+  rate_excursion       0.00269 / 0.00142 [0.00102, 0.00189] / 0.00130 [0.00104, 0.00158]
+  rate_lasting         0.00011 / 0.00040 [0.00027, 0.00050] / 0.00045 [0.00031, 0.00057]
+  rate_first           0.00161 / 0.00127 [0.00111, 0.00141] / 0.00146 [0.00128, 0.00164]
+  rate_repeat          0.00639 / 0.00223 [0.00166, 0.00281] / 0.00335 [0.00234, 0.00411]
+  back_within_13       0.95002 / 0.82980 [0.79275, 0.88077] / 0.83952 [0.80572, 0.87712]
+  share_relocated      0.04905 / 0.01947 [0.00998, 0.02714] / 0.03317 [0.02547, 0.04062]
+  share_gone           0.00720 / 0.03042 [0.02085, 0.03722] / 0.03465 [0.02686, 0.04365]
+  share_time_outside   0.02610 / 0.02906 [0.02288, 0.03315] / 0.03615 [0.02966, 0.04251]
+  exits_per_exiting    4.97222 / 2.75925 [2.35416, 3.20105] / 3.29261 [2.78974, 3.64960]
+  shift_q50            0.08901 / -0.00139 [-0.01361, 0.01577] / 0.07871 [0.04573, 0.10757]
+  shift_q75            0.39841 / 0.20003 [0.17423, 0.21762] / 0.35308 [0.31868, 0.39209]
+  shift_q95            0.97124 / 0.60447 [0.54676, 0.66257] / 0.84589 [0.77136, 0.90344]
+  first_slide          0.21895 / 0.07375 [0.04158, 0.10936] / 0.16391 [0.10310, 0.22946]
+  first_lasting        0.05392 / 0.29773 [0.20328, 0.36840] / 0.28822 [0.19957, 0.35336]
+
+## departures, reddit_submissions_long (K=5000, t0=135, 30 seeds): data / base / no_reversion
+  rate                 0.00851 / 0.00311 [0.00214, 0.00408] / 0.00449 [0.00365, 0.00532]
+  rate_slide           0.00584 / 0.00175 [0.00112, 0.00235] / 0.00296 [0.00232, 0.00352]
+  rate_excursion       0.00248 / 0.00114 [0.00077, 0.00157] / 0.00131 [0.00095, 0.00170]
+  rate_lasting         0.00010 / 0.00016 [0.00006, 0.00026] / 0.00018 [0.00011, 0.00029]
+  rate_first           0.00180 / 0.00089 [0.00068, 0.00113] / 0.00123 [0.00106, 0.00142]
+  rate_repeat          0.00671 / 0.00221 [0.00135, 0.00294] / 0.00327 [0.00263, 0.00401]
+  back_within_13       0.93575 / 0.90262 [0.86480, 0.94623] / 0.89580 [0.86017, 0.92720]
+  share_relocated      0.06911 / 0.01830 [0.01076, 0.02812] / 0.03404 [0.02639, 0.04146]
+  share_gone           0.01206 / 0.01119 [0.00394, 0.01871] / 0.01176 [0.00614, 0.01717]
+  share_time_outside   0.03819 / 0.01574 [0.01018, 0.01985] / 0.02166 [0.01755, 0.02655]
+  exits_per_exiting    4.73852 / 3.49329 [2.85165, 4.11667] / 3.66817 [3.11014, 4.14439]
+  shift_q50            0.13397 / 0.03488 [0.01794, 0.05263] / 0.14910 [0.11733, 0.17987]
+  shift_q75            0.47158 / 0.23270 [0.21107, 0.26155] / 0.38785 [0.35210, 0.42308]
+  shift_q95            1.06340 / 0.67901 [0.57499, 0.74846] / 0.86967 [0.79977, 0.93061]
+  first_slide          0.28622 / 0.17339 [0.10231, 0.25132] / 0.28107 [0.16967, 0.36591]
+  first_lasting        0.05300 / 0.16667 [0.05094, 0.26551] / 0.12807 [0.07417, 0.19191]
