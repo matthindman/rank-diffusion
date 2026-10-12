@@ -1,0 +1,19 @@
+{
+  "panel": "reddit_submissions_long",
+  "phase": "bank",
+  "seed_start": 1000,
+  "reps": 80,
+  "boot": 2000,
+  "commit": "b98910e28bf70df204848c6db8612b9e1e6e0471",
+  "sources": {
+    "llm_fitting/minimal_rankdiff.py": "8bae37435c134d928987249c4ef968360c9fc447999aee451ffb83642a0f4c6a",
+    "llm_fitting/rankdiff_kalman.py": "6a44d0112e3480f88e0b86ef8e39dca840b2e737f4ae4e3d1f2c483bd196fe49",
+    "llm_fitting/validation/gate_instrument.py": "f267d03e528dc2edf6a1dc3b3cf3f45911b0205a9ea61e1c558cc65ae6c8f344"
+  },
+  "inputs": {
+    "data/ssd/derived/reddit_weekly_long.parquet": "57074a57077f9e66d5f24d70df736e33c6a54d9291c1197f5432d71e2f5c8259"
+  },
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "numpy": "2.0.1",
+  "started": 1791766956.314589
+}

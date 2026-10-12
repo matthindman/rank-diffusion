@@ -1,0 +1,2 @@
+{"time": 1791764033.330731, "command": ["llm_fitting/validation/gate_instrument.py", "run", "--panel", "reddit_submissions_long", "--phase", "reference"], "status": "STARTED"}
+{"time": 1791764033.330731, "command": ["llm_fitting/validation/gate_instrument.py", "run", "--panel", "reddit_submissions_long", "--phase", "reference"], "status": "RAN-OK", "finished": 1791765380.979091}

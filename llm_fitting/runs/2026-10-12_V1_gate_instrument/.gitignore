@@ -1,0 +1,4 @@
+# Full restartable seed banks remain local; compact results and digests are tracked.
+**/seed_*.npz
+layout_test/
+mplconfig/

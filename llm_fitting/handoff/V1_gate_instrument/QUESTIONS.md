@@ -8,3 +8,9 @@ cannot be identified from the cells. V1 will quantify the available
 split-pairing effect, clearly labelled, and same-stack seed noise from its
 new bank. No non-frozen rung is rerun and no new candidate evaluation is
 requested. This does not block the remaining V1 work.
+
+Resolved 2026-10-12 from Claude's committed ANSWERS.md on main (read at
+07fe478): no per-seed ladder gate output exists. Report split pairing and
+same-stack seed noise only; do not rerun non-frozen rungs. No V1 input is
+pending. Candidate seed pairing can be collected only after the owner's D1
+approval of named candidate evaluations.
