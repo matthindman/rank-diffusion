@@ -1,0 +1,94 @@
+{
+  "rank_coordinate": [
+    {
+      "N_half": 100,
+      "N_full": 200,
+      "half_clipped_fraction": 0.5,
+      "full_clipped_fraction": 0.0,
+      "unclipped_coordinate_shift_min": 0.693147180559945,
+      "unclipped_coordinate_shift_max": 0.6931471805599456,
+      "example_entity": "e048",
+      "half_z": -0.7236063880446539,
+      "full_z": -1.4167535686045991
+    },
+    {
+      "N_half": 100,
+      "N_full": 200,
+      "half_clipped_fraction": 0.5,
+      "full_clipped_fraction": 0.0,
+      "unclipped_coordinate_shift_min": 0.693147180559945,
+      "unclipped_coordinate_shift_max": 0.6931471805599454,
+      "example_entity": "e049",
+      "half_z": -0.7031975164134467,
+      "full_z": -1.3963446969733921
+    }
+  ],
+  "drift": {
+    "ladder_drift": 0.9999984980379018,
+    "max_share_change": 2.0816681711721685e-17,
+    "identity_ranks_change": false,
+    "common_activity_factor_last_vs_first": 2.718281828459045
+  },
+  "v2_pair": {
+    "source": "llm_fitting/runs/2026-10-12_V2_planted_mechanisms/diagnostic_pairs.csv.gz",
+    "commit": "6772c1d8c8d7b94159052e9b051649bf6797b318",
+    "sha256": "02c626838f7627fb0ae3d50876f58927a658b3575e772d55b8596ba195159c7e",
+    "rows": 2193,
+    "counts": [
+      {
+        "panel": "facebook_a",
+        "label": "overlapping",
+        "count": 84
+      },
+      {
+        "panel": "facebook_a",
+        "label": "separated",
+        "count": 55
+      },
+      {
+        "panel": "facebook_a",
+        "label": "unresolved",
+        "count": 510
+      },
+      {
+        "panel": "reddit_comments",
+        "label": "overlapping",
+        "count": 133
+      },
+      {
+        "panel": "reddit_comments",
+        "label": "separated",
+        "count": 42
+      },
+      {
+        "panel": "reddit_comments",
+        "label": "unresolved",
+        "count": 588
+      },
+      {
+        "panel": "reddit_submissions_long",
+        "label": "overlapping",
+        "count": 127
+      },
+      {
+        "panel": "reddit_submissions_long",
+        "label": "separated",
+        "count": 68
+      },
+      {
+        "panel": "reddit_submissions_long",
+        "label": "unresolved",
+        "count": 586
+      }
+    ],
+    "separated_rows": 165,
+    "rule": "V2 fixed descriptive labels; no new test or composite-nuisance refit"
+  },
+  "commit": "15ef4ced45a200cc535a0d39081b875dc116e15c",
+  "source_hashes": {
+    "llm_fitting/phase1_a4.py": "e87c4214d45118ad87fa9eae114b601b2969fd83666f0e91fee7907ca2131811",
+    "llm_fitting/minimal_rankdiff.py": "1e3f47c45baa786d29c0adae6d1ff267e681c8cbeda3a021c0d0f53c90acfa06",
+    "llm_fitting/community_metrics.py": "383da5e0f496f9ca3ee7027bca38b5dd15ac0ffce0ea9d97fc0ec95b71ae1dc0",
+    "llm_fitting/validation/review_d1_checks.py": "691e11f4569aac1c731b4ac243e4a4b5997925ecc2c52410414e2a30dded7072"
+  }
+}

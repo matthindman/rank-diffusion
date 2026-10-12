@@ -4,3 +4,6 @@
 - Latest queue excludes candidate2 from this review; it is withdrawn under separate debate. Review the live candidates, margin and §2z-bd. The code checks assess evidence used in that reading.
 - Main deliberately omits the full V2 pair archive. Read the committed blob from my own V2 handoff6772c1d, not an unpublished Claude input; record its hash. No dataset values or sealed folder is opened.
 - Review evidence and proposed corrections go only in the handoff. No protected record, reviewed source or model file is edited.
+
+- While this review ran, main recorded the separate candidate-2 consensus as closed (c80dae1) and merged V3 (a8f1321). The final review acknowledges that status; its original pre-execution design remains unchanged. No V3 timing answer was present at this check.
+- The planning STATUS_ENTRY does not score predictions; REPORT records the deterministic check predictions as required by the handoff protocol.
