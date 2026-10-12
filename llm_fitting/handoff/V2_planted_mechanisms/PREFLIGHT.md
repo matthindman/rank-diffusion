@@ -50,3 +50,10 @@
   additional cases after branching. Its explicit dated-addendum instruction
   is followed: original running code/choices remain fixed; added cases and
   predictions are committed before their first run. No A-task results read.
+
+- Execution interruption: repeated all-NaN warnings exposed quadratic warning-count
+  bookkeeping in my runner. Three diagnostic workers were terminated, three
+  queued jobs cancelled, and two prior extension fit cells archived unused.
+  All 120 completed baseline/s=0 recovery cells remain valid. An opt-in
+  wrapper captures each warning message once, stamps its hash, and replays
+  the identical seeds; no simulator/statistic/source identity is rewritten.
