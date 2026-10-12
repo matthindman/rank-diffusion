@@ -86,3 +86,11 @@
   may run independently of its added-case fits. A per-panel diagnostic file
   lock prevents duplicate checkpoint writers if the normal pipeline catches
   up. This changes scheduling only; all fixed seed sets and outputs stand.
+
+- During a check of main's integration state, a recent commit-title listing
+  incidentally exposed the qualitative A8 summary (reversion-off direction,
+  departures and ladder behavior). No A1/A2 report, D1 document, A8 report or
+  A-task run file was opened. All V2 strengths, seeds, statistics, predictions
+  and classification rules had already been committed; none changed. The
+  blindness claim is specifically no A1/A2 readings before part-4 commitment,
+  not a claim that no empirical result was ever visible in repository metadata.

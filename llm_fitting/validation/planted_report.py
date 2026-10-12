@@ -139,7 +139,10 @@ def main():
     text="# V2 — Independent simulation, parameter recovery and planted mechanisms\n\n"
     text+="2026-10-12 · Exploratory, conditional on frozen DEVELOPMENT fits. **No change adopted.**\n\n"
     text+="The independent simulator passes the fixed 57-comparison baseline discrepancy check. "
-    text+="Recovery and diagnostic findings below use all declared seeds and strengths. "
+    text+="All native baseline and zero-heterogeneity recovery fits are included. Reversion often lands at an estimator bound; "
+    text+="true zero heterogeneity is returned as positive on all 20 seeds of every profile. Facebook tail degrees of freedom "
+    text+="are returned as infinity on all baseline and zero-heterogeneity fits despite finite generating tails. "
+    text+="These are operational recovery failures, not failed execution. Diagnostic findings retain all declared strengths. "
     text+="A passed cross-check is not proof of equivalence; conditional diagnostic separation is not unique mechanism identification.\n\n"
     text+="## Design, provenance and execution\n\n"
     text+="Base main: 4ae73b43b852ac540cadd39808f27200885f1be7. OpenAI Codex. "
@@ -147,12 +150,17 @@ def main():
     text+="Protected models and frozen defaults unchanged. No movement-gate calls.\n\n"
     text+="Commands (registered Python 3.11.6):\n\n"
     text+="\u0060\u0060\u0060bash\nbash llm_fitting/handoff/V2_planted_mechanisms/launch_crosscheck.sh\nbash llm_fitting/handoff/V2_planted_mechanisms/launch_study.sh\n\u0060\u0060\u0060\n\n"
+    text+="For a restart of the full added-case/diagnostic study, use `bash llm_fitting/handoff/V2_planted_mechanisms/launch_complete_efficient.sh`; "
+    text+="it skips complete atomic cells and runs `planted_summary.py --include-extensions`. Then run `planted_audit.py` and "
+    text+="`planted_report.py`, each with `--out llm_fitting/runs/2026-10-12_V2_planted_mechanisms`; the report also takes "
+    text+="`--handoff llm_fitting/handoff/V2_planted_mechanisms`. All scripts live under `llm_fitting/validation/`.\n\n"
     text+="Launchers use caffeinate and heavy_lock. Native profiles run through the shared lock; each seed writes an atomic, source-identified checkpoint. "
     text+="Full empirical seed ladders and large per-seed fitted objects stay local. Compact seed evidence, source/input hashes, tables and logs are provided. "
     text+="A1/A2 real-panel findings were not opened before this handoff.\n\n"
     text+="## Baseline cross-check\n\n"
     text+="Twenty production seeds 0–19 and twenty independent seeds 1000–1019 per profile; 19 macro statistics each. "
     text+="All 57 pass the predeclared 20,000-permutation, Bonferroni .05 family rule. Minimum adjusted p is 1 on every profile. "
+    text+="S1/S10/S100 are shares within the simulator's recorded top min(N,2000), not empirical platform-wide shares. "
     text+="The full table is crosscheck.csv; it gives both mean ± SD, 5–95% seed bands, difference/MCSE and simultaneous permutation-null bands.\n\n"
     for p in pc.PANELS:
         q=frame[frame.panel==p].copy()
@@ -169,28 +177,49 @@ def main():
     scal=rec[rec.group=="scalar"].copy()
     text+=md(scal,["panel","condition","parameter","truth","mean","bias","sd","rmse","mcse_mean","valid","positive_infinity"])+"\n\n"
     text+="All knot-level biases, SDs, RMSEs, quantiles, MCSEs and valid counts are in recovery_knots.csv. "
-    text+="Recovery_groups.csv averages knots without pretending knots are independent simulation replications. "
-    text+="Recovery_extras.csv includes NNLS-zero fractions, kappa-edge fractions, sample sizes and s=0 positive-estimate rates. "
+    text+="recovery_groups.csv averages knots without pretending knots are independent simulation replications. "
+    text+="recovery_extras.csv includes NNLS-zero fractions, kappa-edge fractions, sample sizes and s=0 positive-estimate rates. "
     text+="MCSE of SD/RMSE uses the seed jackknife. Positive s frequency is not a nominal Type I error rate. "
+    text+="The column `valid` counts finite estimates; infinite degrees of freedom are valid boundary outputs, not failed fits. "
     text+="Infinite t degrees of freedom are retained as an atom; finite conditional summaries and 1/(df−4) are reported separately. "
     text+="V=sp²/(2 kappa) and its discrete counterpart are local functionals, not claims about global stationary endpoint variance.\n\n"
+    compare=[]
+    for p in pc.PANELS:
+        d=dict(panel=p)
+        for par in ("V","kappa_z"):
+            a=rec[(rec.panel==p)&(rec.condition=="baseline")&(rec.parameter==par)&rec.knot.notna()]
+            good=(a.truth>0)&np.isfinite(a.truth)&np.isfinite(a.rmse)
+            d[par+" median relative RMSE"]=float(np.median(a.loc[good,"rmse"]/a.loc[good,"truth"]))
+        compare.append(d)
+    text+=md(pd.DataFrame(compare))+"\n\n"
+    text+="V recovers better than kappa by this comparison, but its absolute error remains substantial. "
+    text+="The estimator does not yet justify interpreting fitted reversion, tail thickness or a small positive heterogeneity "
+    text+="estimate as a well-recovered mechanism. This conclusion is limited to these native frozen profiles and observation rules.\n\n"
     text+="## Fixed diagnostic display\n\n"
     text+="Baseline calibration uses 39 independent seeds 2000–2038. Evaluation uses 20 paired seeds 1000–1019 per condition. "
     text+="Strict outside-min/max rates are per-statistic; their nominal bound of 2/40=.05 is averaged over calibration sets. "
-    text+="The conditional binomial MCSE/Wilson interval does not include calibration-set uncertainty. "
+    text+="The conditional binomial MCSE/Wilson interval does not include calibration-set uncertainty. Baseline evaluation seeds "
+    text+="also entered the earlier cross-check; these intervals are descriptive references, not claimed post-selection coverage. "
     text+="The any-statistic baseline false-alarm rate is separately reported and is not a 5% global test.\n\n"
     for p in pc.PANELS:
         d=rates[(rates.panel==p)&rates.statistic.isin([x[1] for x in DISPLAY])].copy()
         d["display"]=d.statistic.map({k:v for v,k in DISPLAY})
-        pivot=d.pivot(index="display",columns="condition",values="detection_rate")
+        d["rate [95% Wilson]"]=d.apply(lambda r:f"{r.detection_rate:.2f} [{r.detection_lower:.2f}, {r.detection_upper:.2f}]" if np.isfinite(r.detection_rate) else "unavailable",axis=1)
+        pivot=d.pivot(index="display",columns="condition",values="rate [95% Wilson]")
         pivot=pivot.reindex([x[0] for x in DISPLAY]).reset_index()
-        text+="### "+LABELS[p]+" — fraction outside baseline envelope\n\n"+md(pivot)+"\n\n"
+        text+="### "+LABELS[p]+" — fraction outside baseline envelope\n\n"
+        columns=[c for c in pivot.columns if c!="display"]
+        for first in range(0,len(columns),6):
+            text+=md(pivot,["display"]+columns[first:first+6])+"\n\n"
     text+="See diagnostic_rates.csv for all statistics, means/SDs/seed bands, rates/MCSEs/Wilson intervals and missing denominators; "
     text+="diagnostic_effects.csv for signed baseline/control SD effects and paired MCSE; diagnostic_pairs.csv for every condition pair, "
     text+="its pooled-SD separation and 5–95% bands. Descriptive labels are unresolved (<1 SD), separated (>=2 SD and disjoint bands), "
     text+="or overlapping; degenerate/missing spreads remain labelled. Gaussian fixed-volatility controls isolate changing volatility "
     text+="from removal of the original passing t tail. All strengths are retained.\n\n"
     anyflag=pd.read_csv(out/"diagnostic_any_flag.csv")
+    text+="The separation labels are descriptive, not hypothesis tests; uncertainty in the 20-seed standardizing SD is not propagated. "
+    text+="Lasting t innovations with df=3 have no fourth moment, so variance-based SDs and MCSEs can be unstable; "
+    text+="quantile bands and robust diagnostics are supplied alongside them.\n\n"
     text+="Baseline any-statistic false-alarm rate:\n\n"+md(anyflag[anyflag.condition=="baseline"])+"\n\n"
     text+="## Added cases: fitted reversion and annual signatures\n\n"
     text+="The dated addendum fixes current-rank attraction at .02/.10 and annual mean peak amplitudes .5/1.5 log units. "
@@ -199,20 +228,33 @@ def main():
     text+="Both added cases and both random-walk strengths have 20 fits per profile.\n\n"
     fk=pd.read_csv(out/"fitted_kappa_summary.csv")
     text+=md(fk[fk.statistic=="middle"],["panel","condition","mean","sd","q05","q95","mcse_mean","valid"])+"\n\n"
-    text+="Fitted_kappa_knots.csv retains every fitted profile; fitted_kappa_pairs.csv gives every pair and group under the original separation rule. "
-    text+="Annual_cycle_gap_contrast.csv gives the paired gap4-minus-gap2 slope, SD and MCSE.\n\n"
+    text+="fitted_kappa_knots.csv retains every fitted profile; fitted_kappa_pairs.csv gives every pair and group under the original separation rule. "
+    text+="annual_cycle_gap_contrast.csv gives the paired gap4-minus-gap2 slope, SD and MCSE.\n\n"
     text+="## Predictions\n\n"+md(pd.DataFrame(pred))+"\n\n"
     failed=pc.read(out/"recovery_summary.json")["failures"]+pc.read(out/"diagnostic_failures.json")+pc.read(out/"extension_failures.json")
     text+="## Failures, limits and work not run\n\n"
     text+=f"Failed seed records: {len(failed)}. Every failed seed is preserved in the summary and denominator accounting. "
-    text+="See attempt JSON and launch logs for process status; no partial aggregate is interpreted. "
+    text+="The original diagnostic workers stalled in quadratic warning capture and were terminated; three queued workers were cancelled. "
+    text+="Two completed added-case fit cells from those attempts were archived unused and replayed; the 120 completed original recovery fits were retained. "
+    text+="A warning-only wrapper bounded capture without changing mathematical functions. One long-panel restart then failed before scientific work "
+    text+="because attempt filenames collided; panel/stage/PID names fixed this, and the worker restarted. "
+    text+="The comments worker was later restarted after an exact eligibility optimization passed native and controlled equivalence checks. "
+    text+="Complete seed cells were retained; fits lacking their companion diagnostic were archived unused and replayed. "
+    text+="A redundant queued long-panel diagnostics request was cancelled before execution. Immutable STARTED records from terminated processes "
+    text+="are resolved by separate attempt-event records, not rewritten as successful. No incomplete seed or partial aggregate is interpreted. "
+    text+="The eligibility wrapper preserves the union of the two declared cohorts, original absence floor, identity order and every numeric diagnostic/count. "
+    text+="Runtime wrapper hashes identify mixed execution versions; the scientific producer hashes are constant. "
+    text+="See audit.json, eligibility_equivalence.json, attempt events and launch logs.\n\n"
     text+="No empirical A1/A2 comparison, candidate gate, default change, daily-instrument recovery, parameter-refitted composite mechanism "
     text+="comparison, isolated panel-length factorial, or new-data confirmation was run. Native profile and length are confounded. "
     text+="Each diagnostic's finite-sample power is conditional on the frozen nuisance parameters. Tail disappearance from a statistic "
     text+="does not by itself establish the absence of a mechanism.\n\n"
     text+="## Reproduction and review files\n\n"
-    text+="Code: planted_sim.py, planted_crosscheck.py, planted_study.py, planted_summary.py and planted_report.py under validation/. "
-    text+="Synthetic known-answer tests cover covariance, all six mechanisms, replacement identities, loader mapping, permutation logic and reporting. "
+    text+="Code under validation/: planted_sim.py, planted_crosscheck.py, planted_study.py, planted_extended.py, planted_extension.py, "
+    text+="planted_summary.py, planted_extension_summary.py, planted_report.py and planted_audit.py; execution-only wrappers are "
+    text+="planted_warning_guard.py and planted_efficient_run.py. "
+    text+="Synthetic known-answer tests cover covariance, the baseline and all eight mechanisms, replacement identities, loader mapping, permutation logic and reporting. "
+    text+="`planted_plot.py --out <run folder>` regenerates recovery bands and the fixed diagnostic-rate display under `output/v2_plots/`; images stay out of git. "
     text+="The final HEALTH log records both suites and the 14/15, churn .013 legacy guard. "
     text+="Sources: [ADEMP and Monte Carlo reporting](https://pmc.ncbi.nlm.nih.gov/articles/PMC6492164/); "
     text+="[finite randomization p values](https://gksmyth.github.io/pubs/PermPValuesPreprint.pdf).\n"
