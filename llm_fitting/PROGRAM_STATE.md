@@ -38,7 +38,9 @@ gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
 (A1, A2), §2z-av (A3), §2z-aw (A7, follow-ups added to the plan), §2z-ax
 (Codex's V1, the gate as an instrument), §2z-ay (A8, reversion switched
 off: the home both pulls endpoints back, which the data contradicts, and
-holds the ladder, which it needs), §2z-az (the card under two seedings).
+holds the ladder, which it needs), §2z-az (the card under two seedings),
+§2z-bc (Codex's V2: independent simulator, recovery, planted mechanisms)
+and §2z-bd (what V2 changes in the entries before it).
 The per-endpoint export for Codex's V3 (A6) is on `main`.
 
 ## Evidence to date
@@ -99,12 +101,18 @@ The per-endpoint export for Codex's V3 (A6) is on `main`.
    in rank; the κ profile does not reproduce and sits on its slowest grid
    value at 31–52% of knots, so part of the κ shift in residual 3 is a
    boundary estimate.
+   Recovery on simulated data (§2z-bc): fitted reversion has a median
+   relative error of 0.9–1.7 and sits at a bound in 46–68% of bands; the
+   tail-thickness moment is not self-consistent; the amplitude spread is
+   recovered at its frozen value and reads 0.14–0.19 when the truth is 0.
 8. **Breadth.** Two platforms and three metrics, plus a censored Instagram
    demonstration.
-9. **Amplitude is not one fixed number per endpoint.** Volatility changes
-   between the halves of a panel, and long-run and short-run volatility
-   correlate about 0.85 across endpoints where one amplitude gives 1.00
-   (§2z-aw); forcing one amplitude inflates the FB head (§2z-as).
+9. **An endpoint's volatility changes over time.** The half-to-half
+   ratio is 0.80–0.85 in the data; only planted time-varying volatility
+   lowers it (§2z-aw, §2z-bd). Forcing one amplitude on the lasting and
+   passing parts inflates the FB head (§2z-as). The earlier reading that
+   long-run and short-run volatility are different amplitudes is not
+   established: that statistic detects the annual cycle (§2z-bd).
 10. **An annual cycle on Reddit** that the model does not have and that the
     long-difference moments straddle (§2z-aw).
 

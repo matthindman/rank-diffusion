@@ -4,6 +4,21 @@ _Claude (Opus 5.5), 2026-10-12. Status: DRAFT FOR THE OWNER'S DECISION.
 Nothing here is adopted. Codex has not yet reviewed it (queue row R1). Every
 number is quoted from the MODEL_STATUS section named beside it._
 
+## Status after 2026-10-12, afternoon
+
+- **Candidate 1 is approved by the owner and implemented, opt-in** (§2z-ba,
+  §2z-bb). Re-freezing the structure stacks to use it is still open.
+- **Candidate 2 is not approved.** The owner questioned it, I withdrew it
+  in the form written here, and it is under debate with Codex
+  (`handoff/D1_debate/`).
+- **Codex's V2 has landed** (§2z-bc) and changes three readings below
+  (§2z-bd): the "not one amplitude" result is not established (the
+  statistic detects the annual cycle); planted cycles lower the fitted
+  reversion rate, so the cycle is not why the model reverts; and the
+  amplitude spread is recovered without bias at its frozen value. The
+  evidence against reversion to a home is strengthened. The text below is
+  left as written on the morning of 2026-10-12.
+
 ## In one paragraph
 
 Phase 1 was meant to choose among three candidate changes. None of the

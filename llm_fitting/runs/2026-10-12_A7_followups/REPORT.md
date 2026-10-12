@@ -184,6 +184,17 @@ useful result here: it is what exposed the annual cycle.
   the simulation** (finding 4). It was hidden because deaths and
   relocations both count as departures.
 
+## Corrections after Codex's planted-mechanism study (MODEL_STATUS §2z-bd)
+
+Three readings in this report do not survive V2. Finding 6 (long-run and
+short-run volatility are not one amplitude) is not established: the
+statistic moves only under a planted annual cycle, so on the Reddit panels
+it detected the cycle. The sentence in the next section that the fitted
+reversion "is, on this evidence, the cycle" is contradicted: planted
+cycles lower the fitted reversion rate. And the consequence drawn for
+candidate C-A no longer rests on finding 6. Findings 1, 3 and 5 are
+strengthened; the numbers are in §2z-bd.
+
 ## Added after the report was first committed: the cycle's share of the variance
 
 Data only, post hoc (`posthoc_cycle_variance.json`). The variance of
