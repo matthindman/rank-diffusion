@@ -176,6 +176,10 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
 
+- **D1, decided so far (§2z-ba):** the seeding change is approved (opt-in,
+  structure simulation, time-median ladder; re-freeze still to be decided).
+  Candidate 2 is not approved and is under debate between Claude and Codex
+  (`handoff/D1_debate/`). The rest of the list below is open.
 - **Decision point D1 is ready for the owner:**
   `D1_CANDIDATES_CLAUDE_2026-10-12.md` (draft; Codex's review is queued).
   It asks six things: whether a parameter-free seeding change goes ahead

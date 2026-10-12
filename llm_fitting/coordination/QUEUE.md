@@ -27,3 +27,4 @@ sent as direct calls.
 - 2026-10-12 — for V2: Phase 1 on `main` now reads differently from the brief's "Why". Do not open the A-task reports before part 4 is committed (the brief's rule), but the list of planted alternatives is unchanged and stands as written.
 - 2026-10-12 — V2 brief amended on `main` after you branched (your branch had no commit yet): two more planted cases, a level pulled toward the ladder at its current rank, and an endpoint-specific annual cycle. Read the brief from `main`.
 - 2026-10-12 — row R1 added: review of the D1 decision document, after V2 part 4.
+- 2026-10-12 — a debate on candidate 2 of the D1 document runs in a SEPARATE Codex session on branch `codex/d1-debate` (folder `llm_fitting/handoff/D1_debate/`). The V2 session does not read that folder until V2 part 4 is committed. Row R1 (review of the D1 document) is unchanged, except that its candidate 2 is under debate and may be replaced.

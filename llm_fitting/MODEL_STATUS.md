@@ -6492,3 +6492,36 @@ on it.
 ladder. **Files.** `llm_fitting/phase1_a3.py` (`run_c`);
 `llm_fitting/runs/2026-10-12_A3_head_share/` (cells `a3c__*.json`, logs,
 `launch_a3c.zsh`, report_tables.txt, REPORT.md).
+
+## 2z-ba. 2026-10-12 — OWNER DECISION at decision point D1 (partial): the seeding change is approved; candidate 2 (the lasting layer) is NOT approved and goes to a structured debate between Claude and Codex; nothing else decided. No model, stack or gate change yet
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12. Records
+the owner's reply to `llm_fitting/D1_CANDIDATES_CLAUDE_2026-10-12.md`._
+
+**The owner's words.** "definitely do the seeding change." And on
+candidate 2: "I'm not sure about proposal 2, pulling to its current rank
+rather than a supposed home rank ... this means that the rank structure
+cannot emerge organically from the micro-level behavior, correct, which we
+would ideally like? If I want to publish this in PNAS, is this shift to
+pulling toward the current rank the right decision? ... we want to
+illustrate deep causes not just produce shallow predictions already baked
+into our modeling assumptions. give the prompt to Codex too to consider
+this and debate until you reach consensus."
+
+**How the seeding approval is read** (Claude's reading, stated to the owner
+the same day): an opt-in option of the structure simulation that seeds the
+homes from the time-median ladder (§2z-az), defaults unchanged and
+bit-identical with the option off; not applied in the gate's calibration
+step, so no gate evaluation is spent; a re-freeze of the structure stacks
+to use it remains the owner's separate decision. Not yet implemented at
+this entry.
+
+**Candidate 2.** Not approved. The question, a neutral evidence sheet and
+the rules of the debate are in `llm_fitting/handoff/D1_debate/`. Claude's
+first position was written before Codex's and is held back until Codex's
+is committed; its SHA-256 is in `CLAUDE_1.sha256`. No model code, fit,
+simulation or gate evaluation belongs to the debate.
+
+**Still open from the decision document.** The comparison margin; whether
+the 80-seed values become the recorded reference gates; the wording around
+b = 1; candidates 3 and 4.
