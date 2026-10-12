@@ -607,7 +607,7 @@ def _filtered_levels(df_tr, p):
 
 
 def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=None,
-                           cond_home="state"):
+                           cond_home="state", export=None):
     """CONDITIONAL forecast: simulate the ACTUAL member universe forward from
     its filtered end-of-train state (real gap structure, no burn-in), with each
     entity's own EB-shrunken temperament multiplier when vhat is given (else
@@ -623,7 +623,14 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
       "trainmean" : home = the entity's train-window mean level (its long-run
                   home under the entity-home OU reading); the STATE still
                   starts at the filtered end-of-train level.  The clean
-                  "current state + separate long-run home" semantics."""
+                  "current state + separate long-run home" semantics.
+
+    export (2026-10-12, work plan A6): pass a dict to also receive every
+      member's simulated rank at steps 1..T_sim -- export["entity_id"] (the
+      simulated universe, in slot order) and export["rank"] (T_sim x N,
+      0 once the member has exited and its slot been refilled).  Read-only:
+      no random draw is added, so the returned values are the same with or
+      without it."""
     rng = np.random.default_rng(seed)
     levels = _filtered_levels(df_tr, p)
     mu = levels.to_numpy().copy()
@@ -660,6 +667,7 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
     cohort_slots = cohort_ids = None
     cranks = []; topids = []
     KT = 300
+    own = np.arange(N, dtype=np.int64); eranks = []
     for t in range(T_sim + 1):
         morder = np.argsort(-mu); prank = np.empty(N, np.int64); prank[morder] = np.arange(1, N + 1)
         zp = np.log(np.clip((prank - 0.5) / N, Z_CLIP, 1.0))
@@ -695,17 +703,26 @@ def sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=0, cohort_k=200, vhat=No
         alive = ids[cohort_slots] == cohort_ids
         cr = rank[cohort_slots].astype(float); cr[~alive] = np.nan
         cranks.append(cr); topids.append(ids[order[:KT]])
+        if export is not None:
+            eranks.append(np.where(ids == own, rank, 0).astype(np.uint32))
+    if export is not None:
+        export["entity_id"] = levels.index.to_numpy()
+        export["rank"] = np.array(eranks)
     return np.array(cranks), np.array(topids)
 
 
 def sim_dist_cond(p, df_tr, T_sim, horizons, reps=3, coll_ranks=(1, 5, 20),
-                  kappa=0.0, vhat=None, cond_home="state"):
-    """Conditional counterpart of sim_dist."""
+                  kappa=0.0, vhat=None, cond_home="state", export=None):
+    """Conditional counterpart of sim_dist.  export: a list that receives one
+    per-member export dict per rep (see sim_cohort_conditional)."""
     pooled = {h: [] for h in horizons}
     racfs, colls = [], {c: [] for c in coll_ranks}
     for s in range(reps):
+        one = {} if export is not None else None
         cr, ti = sim_cohort_conditional(p, df_tr, T_sim, kappa, seed=s, vhat=vhat,
-                                        cond_home=cond_home)
+                                        cond_home=cond_home, export=one)
+        if export is not None:
+            export.append(one)
         d, rf = _rank_dist(cr, horizons)
         for h in horizons:
             pooled[h].append(d[h])
@@ -821,6 +838,38 @@ def _split_panel(df, T0, test_len):
     return df_tr, df_te
 
 
+def _write_endpoint_export(out_dir, platform, T0, test_len, top_k, df_tr, df_te,
+                           reps, stack):
+    """Work plan A6: one file per split with every member's predictive samples
+    and what was observed.  Schema: llm_fitting/handoff/A6_endpoint_export/
+    SCHEMA.md.  Ranks are within the split's member universe; 0 = not there."""
+    ids = reps[0]["entity_id"]
+    sim = np.stack([r["rank"] for r in reps])                # reps x test_len x N
+    n_tr = int(df_tr["period"].max()) + 1
+    Rtr = (df_tr.pivot(index="period", columns="entity_id", values="rank")
+           .reindex(index=range(n_tr), columns=ids).to_numpy())
+    floors = (df_tr.drop_duplicates("period").set_index("period")["N"]
+              .reindex(range(n_tr)).to_numpy() + 1.0)
+    pres = np.isfinite(Rtr)
+    pen = np.where(pres, Rtr, floors[:, None])
+    Rte = (df_te.pivot(index="period", columns="entity_id", values="rank")
+           .reindex(index=range(test_len), columns=ids).to_numpy())
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / f"{platform}__T0_{int(T0):04d}.npz"
+    np.savez_compressed(
+        path, entity_id=np.asarray(ids).astype(str), platform=str(platform),
+        T0=int(T0), test_len=int(test_len), top_k=int(top_k or 0),
+        stack=str(stack).strip(), seeds=np.arange(len(reps)),
+        train_perm_rank=np.nanmean(pen, axis=0), train_presence=pres.mean(axis=0),
+        origin_rank=np.nan_to_num(Rtr[-1], nan=0.0).astype(np.uint32),
+        obs_rank=np.nan_to_num(Rte, nan=0.0).astype(np.uint32),
+        sim_rank=sim.astype(np.uint32))
+    print(f"    endpoint export: {path}  ({sim.shape[0]} reps x {sim.shape[1]} weeks "
+          f"x {sim.shape[2]} members)")
+    return path
+
+
 def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  top_k=None, buffer_mult=4, temper=False, min_knot_n=None,
                  md_lags=None, t_tails=False, spec_b=False, conditional=None,
@@ -828,7 +877,7 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
                  md_vr_long=False, dist_scores=False, nnls=True,
                  eul_level=False, s_vintage=None, cond_home="state", member_ids_file=None,
                  origins=None, test_len=None, expect_member_sha=None,
-                 frozen_prefix=None):
+                 frozen_prefix=None, endpoint_export=None):
     """Rolling-origin OOS movement gate. For each split: estimate the variance
     partition on TRAIN; calibrate one sigma_obs_scale on the TRAIN moment VECTOR
     (dRank1, dRank4, coll1, coll5, RACF1); then PREDICT the held-out displacement
@@ -841,8 +890,17 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
     multi-block designs -- e.g. the registered E2 confirmation block is
     origins=[136], test_len=34 (train on periods < 136, score exactly
     136..169) with the frozen T0=136 membership file.  None = the committed
-    auto-derivation (unchanged)."""
+    auto-derivation (unchanged).
+
+    endpoint_export (2026-10-12, work plan A6): a directory.  When given, each
+    split also writes the per-member predictive samples of its conditional
+    simulation (the same reps the gate scores) beside the observed ranks.
+    Needs a conditional stack.  Off by default; the gate's numbers are the
+    same with or without it."""
     from scipy.stats import wasserstein_distance
+    if endpoint_export and not conditional:
+        raise SystemExit("--endpoint-export needs --conditional: the unconditional "
+                         "simulation has no link to the panel's endpoints")
     print(f"\n{'='*72}\n{platform.upper()} — OOS movement gate (rolling-origin, distributional)\n{'='*72}")
     df_full = mrd.load_panel(mrd.PLATFORMS[platform])
     T = int(df_full["period"].max()) + 1
@@ -955,8 +1013,12 @@ def oos_movement(platform, n_splits=5, obs_frac=0.5, reps=3, boot=400,
             # conditional forecast: real filtered end-of-train state; per-entity
             # EB-shrunken temperament when conditional == 'vhat'
             vh = (mrd.eb_vhat(df_tr, s=p.temper_s) if conditional == "vhat" else None)
+            exp_reps = [] if endpoint_export else None
             sd, srf, sc = sim_dist_cond(p, df_tr, test_len, hor, reps=reps, vhat=vh,
-                                        cond_home=cond_home)
+                                        cond_home=cond_home, export=exp_reps)
+            if endpoint_export:
+                _write_endpoint_export(endpoint_export, platform, T0, test_len, top_k,
+                                       df_tr, df_te, exp_reps, opts)
         else:
             sd, srf, sc = sim_dist(p, test_len, hor, reps=reps)   # model prediction
         rows.append(dict(T0=T0, scale=scale, hor=hor, ts=p.temper_s,
@@ -1209,6 +1271,10 @@ if __name__ == "__main__":
                     help="path to the frozen T=136 weekly panel; re-verify "
                          "byte-equality of the extended panel's prefix before "
                          "scoring (A6.1 enforcement)")
+    ap.add_argument("--endpoint-export", default=None, metavar="DIR",
+                    help="with --oos and --conditional: also write, per split, every "
+                         "member's simulated ranks (the reps the gate scores) and "
+                         "observed ranks to DIR (work plan A6; gate numbers unchanged)")
     ap.add_argument("--dist-scores", action="store_true",
                     help="OOS gate: additionally report ensemble CRPS skill vs "
                          "persistence, predictive quantile coverage, and the "
@@ -1245,7 +1311,8 @@ if __name__ == "__main__":
                          origins=args.origins, test_len=args.test_len,
                          reps=args.reps, boot=args.boot,
                          expect_member_sha=args.expect_member_sha,
-                         frozen_prefix=args.frozen_prefix)
+                         frozen_prefix=args.frozen_prefix,
+                         endpoint_export=args.endpoint_export)
     else:
         for p in args.platforms:
             run(p, top_k=_resolve_k(p, args), buffer_mult=args.buffer_mult)
