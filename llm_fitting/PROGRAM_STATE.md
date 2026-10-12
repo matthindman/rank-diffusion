@@ -35,8 +35,8 @@ background, and replaces §2x in that role. Claude leads and Codex/Astra
 validates independently under `coordination/PROTOCOL.md`; Codex's tasks
 are in `coordination/QUEUE.md`. Phase 1 has no model code and no candidate
 gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
-(A1, A2), §2z-av (A3). The per-endpoint export for Codex's V3 (A6) is on
-`main`.
+(A1, A2), §2z-av (A3), §2z-aw (A7, follow-ups added to the plan). The
+per-endpoint export for Codex's V3 (A6) is on `main`.
 
 ## Evidence to date
 
@@ -60,8 +60,10 @@ gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
    already sitting near the boundary, four in five are repeat exits, and
    sudden lasting exits are 1.2–1.4% of events and over-produced by the
    simulation. On comments the deficit is as large inside the training
-   window. Whether a slide is slow drift or one step down followed by
-   flicker is not yet measured.
+   window. Counted by endpoint (§2z-aw): 2.5–3.8 times as many relocate
+   to the boundary zone as simulated, steps that stick are rare (5% of
+   first exits against 17–30% simulated), and year over year the data's
+   level moves like a random walk where the simulation's reverts.
 2. **Head share.** S(1) over-produced on FB Era A (about 2.7×), on the
    comments extension, and on the Instagram rescue; under-produced on long
    submissions. The sign difference shows heterogeneity and does not isolate
@@ -96,6 +98,12 @@ gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
    boundary estimate.
 8. **Breadth.** Two platforms and three metrics, plus a censored Instagram
    demonstration.
+9. **Amplitude is not one fixed number per endpoint.** Volatility changes
+   between the halves of a panel, and long-run and short-run volatility
+   correlate about 0.85 across endpoints where one amplitude gives 1.00
+   (§2z-aw); forcing one amplitude inflates the FB head (§2z-as).
+10. **An annual cycle on Reddit** that the model does not have and that the
+    long-difference moments straddle (§2z-aw).
 
 ## Refuted or withdrawn — not to be re-proposed without new evidence
 
@@ -121,13 +129,14 @@ gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
 ## Not yet examined
 
 By keyword search of MODEL_STATUS on 2026-10-08 (verify before relying on
-it): seasonality or annual periodicity; cross-sectional dependence beyond
-the single common factor; within-entity volatility clustering; whether large
+it): cross-sectional dependence beyond the single common factor; whether large
 drops sit in item supply or in per-item engagement on FB and Reddit (the
 count columns exist); recovery of the full pipeline on its own simulated
 data (Codex task V2); a moment-sensitivity exhibit; the gate's ability to
 reject a wrong model. Dispersion to 78 weeks and return times of departures
-were measured in §2z-au.
+were measured in §2z-au. An endpoint-specific annual cycle on the Reddit
+panels and volatility that changes over time within endpoints were found
+in §2z-aw; how much of the fitted reversion is the cycle is not measured.
 
 ## Data
 

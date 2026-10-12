@@ -6134,3 +6134,125 @@ valid under censoring. **Files.** `llm_fitting/phase1_a3.py`;
 `llm_fitting/runs/2026-10-12_A3_head_share/` (DESIGN.md, cells, logs,
 report_tables.txt, REPORT.md). Commands: `python llm_fitting/phase1_a3.py
 run <panel>`, `run_b <panel>`, `report`.
+
+## 2z-aw. 2026-10-12 — EXPLORATORY MEASUREMENT (A7, follow-ups to A1 and A2; not in the work plan as adopted): year over year an endpoint's level moves like a random walk where the simulation's reverts; the Reddit panels have an endpoint-specific annual cycle the model lacks; 2.5–3.8 times as many established endpoints relocate to the boundary as simulated; volatility is not fixed over time, and long-run and short-run volatility are not one amplitude. Twelve of sixteen predictions held in full, three in part, one failed; nothing adopted, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-12; design,
+statistics and tests committed at 38bb5a6 before the first five cells; a
+design addendum at baad58a before four more cells; results committed with
+this entry._
+
+**Tier.** Exploratory diagnostic on DEVELOPMENT data. In sample, except the
+relocation counts, which use the train-only cohort and scoring windows of
+§2z-ac and §2z-ae P7. The task was designed after §2z-au was seen, so it is
+post hoc as a set; each prediction was written before its cell ran. One
+group of values was seen before its prediction could be written and is
+labelled so below. The planted-mechanism study (Codex, V2) has not yet
+shown which of these statistics separate the candidate mechanisms.
+
+**Question.** What §2z-au left open: whether slides are drift or steps;
+whether the lasting level reverts; whether an endpoint's volatility is one
+fixed amplitude; and the tails on a yardstick that does not depend on
+wandering.
+
+**Method.** New statistics in `llm_fitting/residual_anatomy.py`, each with
+a known-answer test: an anchored scale in `tails_by_horizon`, `cohort_fate`,
+`momentum`, `volatility_persistence`, `amplitude_coherence`. Same fits and
+seeds as §2z-au (20; 30 for relocation); the comments extension over its
+full 213 weeks uses the A2 full-window fit.
+
+**Result, direction.** Slope of a later change in an endpoint's block-mean
+level on an earlier one, group mean removed, middle group, data /
+simulation (seed SD). A random walk gives +0.25 for adjacent changes and 0
+otherwise.
+
+| | whole-year blocks, adjacent | whole-year, one apart | 13-week blocks, half a year apart | one year | two years |
+|---|---|---|---|---|---|
+| long submissions | +0.313 / −0.011 (0.026) | +0.007 / −0.206 (0.024) | −0.033 / −0.093 | +0.119 / −0.046 | +0.077 / −0.029 |
+| comments extension | +0.279 / −0.118 (0.011) | +0.071 / −0.228 (0.018) | −0.110 / −0.145 | +0.182 / −0.045 | +0.146 / −0.020 |
+| comments | | | −0.053 / −0.134 | +0.101 / −0.040 | +0.096 / −0.019 |
+| FB Era A | | | −0.038 / −0.148 | +0.010 / −0.042 | |
+
+**Result, relocation.** Cohort with train permanent rank ≤ K/2, main
+split, data / simulation: share relocated to the boundary zone
+(scoring-window permanent rank beyond 0.75 K, still present) 0.049 / 0.020
+on the comments extension and 0.069 / 0.018 on long submissions (0.047 /
+0.019 and 0.049 / 0.019 in the within-train split); shift in log permanent
+rank, median +0.089 / −0.001 and +0.134 / +0.035, 95th percentile 0.97 /
+0.60 and 1.06 / 0.68; first exit sudden and lasting 0.054 / 0.298 and 0.053
+/ 0.167; exits per exiting endpoint 4.97 / 2.76 and 4.74 / 3.49; share of
+the cohort gone 0.007 / 0.030 and 0.012 / 0.011.
+
+**Result, amplitude and tails.** Middle group, data / simulation, FB,
+long submissions, comments. Correlation of an endpoint's volatility between
+the two halves of the panel over that between interleaved weeks: 0.802 /
+0.948, 0.817 / 0.978, 0.847 / 0.950. Correlation across endpoints between
+long-run (13-week) and short-run volatility, sampling noise divided out:
+0.849 / 0.996, 0.846 / 1.000, 0.844 / 0.994 (comments extension 0.831 /
+0.995; at 26 weeks 0.77–0.80 / 0.99–1.00). q99/q90 of h-week changes over
+the endpoint's own one-week scale at the longest horizon: 2.09 / 1.64, 2.14
+/ 1.61, 2.19 / 1.61 (Gaussian 1.57).
+
+**What the measurements show.**
+
+1. Year over year, an endpoint's level moves like a random walk on both
+   four-year panels; the simulation's reverts.
+2. The three Reddit panels have an endpoint-specific annual cycle: the
+   slope is positive at one and two years in every rank group and negative
+   at half a year in all but one. The simulation has none. Seasonality was
+   listed as not yet examined. The fit's long-difference moments at 26 and
+   52 weeks straddle the cycle, which reads as reversion; how much of the
+   fitted reversion is the cycle is not measured.
+3. Established endpoints relocate to the boundary 2.5 and 3.8 times as
+   often as simulated, and the cohort as a whole loses about a tenth in log
+   rank between windows where the simulation's does not. Steps that stick
+   are rare in the data (5% of first exits) and common in the simulation
+   (17–30%).
+4. On comments the simulated cohort is outside the top-K as often as the
+   data's, by dying (3.0% against 0.7%) where the data's relocate.
+5. An endpoint's volatility is not fixed over time (80–85% of the
+   interleaved correlation survives between halves, against 95–98%).
+6. Long-run and short-run volatility are mostly, not wholly, one amplitude
+   (0.83–0.85 against 0.99–1.00, on four panels). The statistic reads
+   0.03–0.04 high at 13 weeks when two amplitudes exist.
+7. On the anchored scale the tails are fat at every horizon on every panel
+   and grow with horizon on comments. Findings 5 and 6 are possible
+   sources, with rare large lasting moves; not separated here. This
+   replaces the reading of long-horizon tails in §2z-au and its correction.
+
+**Predictions (DESIGN.md), scored.** a1 anchored and entity scales agree at
+one week: HELD. a2 anchored excess at the longest horizon: HELD. a3 smaller
+than at one week on FB and comments: HELD on FB, FAILED on comments. b1
+relocated share at least twice the simulation's: HELD. b2 median shift
+larger by under 0.10 and 95th percentile by at least 0.15: HELD. b3 slides
+a larger share of first exits: HELD. b4 time outside at least 1.5 times:
+HELD on submissions, FAILED on comments. c1 simulation's 13-week skip slope
+negative: HELD. c2 data's higher: HELD. c3 data's 26-week skip slope within
+±0.10 on Reddit: FAILED (+0.126, +0.118), which is what exposed the annual
+cycle. d1, d2 volatility ratio: HELD. Addendum, with the data's whole-year
+and multi-spacing values already seen and the simulation's not: e1
+simulation reverts with whole-year blocks: HELD. e2 simulation has no
+positive slope at one year: HELD. f1 simulation's amplitude figure at least
+0.85: HELD. f2 data's lower by at least 0.15: HELD on submissions (0.154),
+short on FB (0.147) and comments (0.1499).
+
+**Verdict.** No adoption rule applies. For decision point D1: (i) reversion
+to a fixed home is contradicted at the scale of a year and is the
+simulation's shortfall in relocation, so with §2z-at the form of the
+lasting layer is the leading question; (ii) before any candidate for it,
+one measurement is owed, a refit with the annual cycle taken out of the
+long-difference moments, on data and simulation through one filter; (iii)
+candidate C-A (one amplitude for the whole model) is not what the data
+shows, consistent with §2z-as; (iv) the simulated exit hazard for
+established endpoints on comments is too high. The claim language around
+b = 1 (equal spread of the two amplitudes is not one amplitude) is the
+owner's to revisit; nothing is changed here.
+
+**Not shown, not run.** How much of the fitted reversion is the cycle.
+Whether the cohort's loss of ground is newer endpoints rising. FB at a
+year. Any gate evaluation, any model change. **Files.**
+`llm_fitting/residual_anatomy.py`, `tests/test_residual_anatomy.py`,
+`llm_fitting/phase1_anatomy.py`; `llm_fitting/runs/2026-10-12_A7_followups/`
+(DESIGN.md, cells, logs, report_tables.txt, two posthoc_momentum JSON
+files, REPORT.md). Commands: `python llm_fitting/phase1_anatomy.py a7
+<panel>`, `a7b <panel>`, `a7c <panel>`, `report7`.
