@@ -1,0 +1,4 @@
+waiting for a heavy-job slot; held by:
+  pid 26239 since 2026-10-12 08:59:33 in /Users/hindman/Documents/GitHub/rank-diffusion :: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u llm_fitting/phase1_anatomy.py a2 reddit_submissions_long
+  pid 26238 since 2026-10-12 08:59:05 in /Users/hindman/Documents/GitHub/rank-diffusion :: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u llm_fitting/phase1_anatomy.py a1 reddit_comments
+  pid 26237 since 2026-10-12 08:59:05 in /Users/hindman/Documents/GitHub/rank-diffusion :: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u llm_fitting/phase1_anatomy.py a1 reddit_submissions_long

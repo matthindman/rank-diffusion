@@ -18,3 +18,9 @@
 - The assigned working copy lies outside the initial sandbox writable roots.
   Authorized commands therefore request scoped execution escalation; no writes
   are made in Claude's checkout, including through the data symlink.
+
+- A second health check was initially queued behind Claude's three jobs.
+  It was cancelled before execution and rerun without heavy_lock because
+  the initial completed check demonstrated a duration below five minutes.
+  This is not an interrupted experiment or a gate result. Its wait log is
+  retained; all gate runs still use the heavy lock.
