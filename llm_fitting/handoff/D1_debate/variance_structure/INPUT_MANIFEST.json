@@ -1,0 +1,65 @@
+{
+  "python": "3.11.6",
+  "numpy": "2.0.1",
+  "pandas": "2.2.2",
+  "inputs": {
+    "facebook_a": {
+      "registry": {
+        "path": "data/ssd/derived/fb_weekly_rebuilt.parquet",
+        "id_col": "endpoint_id",
+        "ts_col": "date",
+        "metric_col": "metric_value",
+        "max_rank": null,
+        "date_min": "2020-11-02",
+        "date_max": "2022-06-27",
+        "daily_path": "data/ssd/derived/fb_daily.parquet",
+        "day_guard": true
+      },
+      "bytes": 199839899,
+      "mtime_ns": 1783060232750000000,
+      "sha256": "deb56413f0b5cf24c590d87a84b735aa959ff535b9c3e027c2625f0682916701"
+    },
+    "reddit_comments": {
+      "registry": {
+        "path": "data/ssd/derived/reddit_comments_2018-12_2021-06_weekly.parquet",
+        "id_col": "endpoint_id",
+        "ts_col": "date",
+        "metric_col": "metric_value",
+        "max_rank": null,
+        "daily_path": "data/ssd/derived/reddit_comments_2018-12_2021-06_daily.parquet",
+        "day_guard": false
+      },
+      "bytes": 220272950,
+      "mtime_ns": 1783092997660000000,
+      "sha256": "b00ee41f7d2813e744b1dc9663a9a8df5c6d7c3dc07d24bbbb2cbf7fb8070041"
+    },
+    "reddit_submissions_long": {
+      "registry": {
+        "path": "data/ssd/derived/reddit_weekly_long.parquet",
+        "id_col": "endpoint_id",
+        "ts_col": "date",
+        "metric_col": "metric_value",
+        "max_rank": null,
+        "daily_path": "data/ssd/derived/reddit_daily_long.parquet",
+        "day_guard": false
+      },
+      "bytes": 923586541,
+      "mtime_ns": 1784195152120000000,
+      "sha256": "57074a57077f9e66d5f24d70df736e33c6a54d9291c1197f5432d71e2f5c8259"
+    },
+    "reddit_comments_ext": {
+      "registry": {
+        "path": "data/ssd/derived/reddit_comments_2018-12_2022-12_weekly_REGISTERED.parquet",
+        "id_col": "endpoint_id",
+        "ts_col": "date",
+        "metric_col": "metric_value",
+        "max_rank": null,
+        "daily_path": "data/ssd/derived/reddit_comments_2018-12_2022-12_daily.parquet",
+        "day_guard": false
+      },
+      "bytes": 414278326,
+      "mtime_ns": 1783875169010000000,
+      "sha256": "93942240d766e5fa306f26d6c7ebda0c2da0c0aac741b76b956f5d65ce92380d"
+    }
+  }
+}

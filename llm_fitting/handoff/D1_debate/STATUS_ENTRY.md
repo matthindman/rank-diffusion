@@ -15,3 +15,27 @@ Provenance: OpenAI Codex; base `37c01db7b6c83929e1857d4314c06298f4e2fdf1`, branc
 **Not run.** No fits, simulations, gate evaluations, empirical measurements, code changes, raw/sealed data contact or health run. The owner explicitly restricted this task to the debate folder and prohibited model runs, overriding the standing health-check requirement. Document whitespace and scope checks only; no test pass claimed. No failed or killed scientific runs occurred because none was launched. No defaults, protocols, thresholds, paper language or agenda changed. No push.
 
 **Artifacts.** CODEX_1.md; CODEX_2.md; CODEX_SIGNOFF.md; REPORT.md; GATE_ROWS.md. The pre-existing RULES.md and QUESTION.md are the debate design; there was no experiment requiring a separate DESIGN.md. Consensus is on main at the pinned commit, not copied or modified by Codex.
+
+## 2026-10-12 addendum — next research phase documented: PLANNING ONLY, nothing adopted
+
+**Provenance.** OpenAI Codex; starting commit `6c99858aab71e7e8bde5338b6c59c70f72481725`, branch `codex/d1-debate`. The owner requested: "write this to the project docs in the appropriate place." This authorizes saving the proposed agenda, not adopting it or starting its experiments.
+
+**Read and basis.** The October 8 Codex and Claude agendas, October 12 adopted work plan, relevant PROGRAM_STATE and MODEL_STATUS entries through A9/A10 (§2z-bf/bh), signed D1 consensus, independent variance–structure follow-up and A10 audit, and the stochastic-modeling/evidence-standards and record-authoring instructions. Literature reading status is preserved in the linked theory note; no additional literature claim is introduced by this documentation turn.
+
+**Proposed.** Six steps: independent stationary-balance accounting; focused recovery against competing mechanisms; structure prediction without calibrating to the target ladder; the smallest supported named-endpoint process; adjustment and structural-change tests; social-mechanism identification and reserved-evidence transport. Mathematical work addresses the estimand bridge, renewal and boundaries, and reconstruction/adjustment errors. Immediate deliverable: a focused measurement-and-recovery protocol, then a decision about whether independent forward structural prediction is identified. Non-identification is an explicit stopping or redirection outcome.
+
+**Artifact.** `RESEARCH_AGENDA_CODEX_2026-10-12.md`, linked from the debate REPORT.md. The existing signed debate and previous record text are preserved. Claude may integrate the proposal and append this handoff to the canonical record; this session does not edit Claude-owned files.
+
+**Validation and scope.** Documentation whitespace, link-target and changed-path checks only. No new measurements, data contact, scored predictions, code changes, fits, simulations, gates or pushes. Health script omitted under the owner's no-model-runs and folder-only restrictions; no test/health pass claimed. No agenda, default, protocol, threshold, or paper-language change adopted.
+
+## 2026-10-12 addendum — mathematical proof prompts and recent prompting research
+
+**Provenance and scope.** OpenAI Codex; starting commit `b4fb5253e45f713f68876fd8b13d6e1873c8a619`, branch `codex/d1-debate`. The owner requested reusable prompts targeting the key potential mathematical proofs, with target, scope, conditions, and recent research on Astra-class mathematical prompting. This is planning/documentation, not execution or agenda adoption.
+
+**Prepared.** Five Markdown files in `proof_prompts/`: research rationale and operating conditions; the identification/estimand bridge; an explicit typed rank-interacting population with type-preserving renewal; discrete collision/volatility estimation; independent proof review. Priority goes to identifying the coefficient the structural equation actually needs. Negative identification results and useful restricted theorems are valid outcomes. Finite-frequency observations, latent occupancy, nonlinear uniqueness, stationary finite-N limits, and proof dependencies are explicit checks.
+
+**Sources.** Read official Astra guidance and selected primary-source methodology from February First Proof, March Aletheia, June First Proof Second Batch, the October OpenAI mathematics release/repository, and September AGMAI recommendations; the 2026 generative-verifier paper was read at abstract level only. Exact portions and reading-status tags appear in the package README. No controlled study establishing a best Astra prompt for these probability problems was found. The unreleased model behind the October release is not identified with available Astra. The release's individual proofs were not audited.
+
+**Limitations and retrieval.** The model-specific Markdown documentation URL failed in the browser and direct network retrieval failed; the official HTML guide was successfully read instead. Full AlphaProof/ProofBench texts were not successfully retrieved and are not used as supporting evidence. No model capabilities or theorem novelty were inferred from search summaries.
+
+**Validation.** Document whitespace, relative-link targets, append-only preservation, and changed-path checks only. No new empirical measurement, proof execution, data contact, model code, fits, simulations, gate evaluations, or pushes. Health checking omitted under the owner's no-model-runs and folder-only restrictions; no health/test pass claimed. No new theorem, default, registered protocol, threshold, or paper claim is established by these documents.
