@@ -6724,3 +6724,37 @@ reversion) does not separate them. The labels are descriptive and the
 battery has no family-wide error control, so neither statement identifies
 a mechanism. Codex raised the objection in the debate
 (`handoff/D1_debate/CODEX_2.md`); the check is mine.
+
+## 2z-be. 2026-10-12 — PLANNING ONLY: the Claude–Codex debate on candidate 2 closed with a signed consensus. Both models supply the ladder; candidate 2 is withdrawn as the proposed replacement, unselected and not refuted; the recommendation to the owner is a design-first diagnostic batch. Nothing adopted; no code, fit, simulation or gate evaluation
+
+_Integration note (Claude Opus 5.5, 2026-10-12): the debate was asked for by the owner (§2z-ba). Two first positions were written independently (Claude's held back, its SHA-256 committed first and verified by Codex), followed by two more rounds. `handoff/D1_debate/CONSENSUS.md` is the result; Codex's sign-off (AGREE) is pinned to its SHA-256 a54262a5…85e8, which is the file on `main`. The entry below is Codex's `STATUS_ENTRY.md`, verbatim; its heading there was: "2026-10-12 — D1 debate completed: PLANNING ONLY, nothing adopted". The rounded counts in the consensus ("42 to 68 of 650 to 780 statistics") are sourced to the dated correction of §2z-bd, which has the exact figures. Agreement between two models is not evidence; the consensus names the measurement behind each empirical statement. The decision asked of the owner is whether the design for the diagnostic batch should be written._
+
+Provenance: OpenAI Codex; base `37c01db7b6c83929e1857d4314c06298f4e2fdf1`, branch `codex/d1-debate`; governing instructions and skills at that base. Claude is the sole writer of MODEL_STATUS and may append this handoff entry with its section letter.
+
+**Question.** Does candidate 2 (attraction to the measured ladder at current rank), or the existing personal-home model, explain the origin of the rank-size structure, and what should be measured for a causal research contribution?
+
+**Read.** Debate RULES, QUESTION and evidence sheets; candidate 2 only; MODEL_STATUS §1, §2b, §2z-at/au/aw/ay and later §2z-bc/bd including the dated correction; PROGRAM_STATE and required skills/references; the specified repository literature note; primary literature tagged with read scope in CODEX_1 and CODEX_2. No data values or other Codex working copy were read.
+
+**Process.** Independent position committed at `0a8ad89` before reading Claude's first position. Its published text matched the precommitted SHA-256. Point-by-point second position committed at `8406430`. Claude's third reply and consensus, main `191422962f3ba22fe6db11d19d860fd779cc42f0`, addressed the substantive objections. CODEX_SIGNOFF records AGREE to that exact consensus version and hash. The new all-pairs evidence was read from Claude's canonical-record correction, not independently reanalyzed here.
+
+**Recommendation, not adoption.** Both proposed and existing models supply the measured ladder; neither establishes its genesis. Withdraw candidate 2 as the proposed replacement now, with no candidate gate spending; retain the conditional benchmark. Design comparisons of restoring response, turnover and state-dependent growth, allowing non-identification and accounting for observation/selection uncertainty. If independently estimated primitives can predict unused structure and movement, a distributional explanation becomes supportable; named social causes require further identification. Existing empirical disagreements cannot be resolved by agreement between agents.
+
+**Corrections prompted by the debate.** Claude withdrew the inference that any replacement must retain a pull toward the ladder. A wrong-initial-state demonstration does not establish emergence if empirical homes/targets remain in the parameters. The closure ratio is not a validated exchangeability classifier. Claude checked the recovery pair table after Codex challenged the blanket temporal-indistinguishability claim and appended a correction in §2z-bd. That is Claude's check, not a new Codex analysis. The literature note's unbounded expected top-share assertion is mathematically false for a defined share of nonnegative activities; bounded shares have finite expectations even when raw levels lack them.
+
+**Not run.** No fits, simulations, gate evaluations, empirical measurements, code changes, raw/sealed data contact or health run. The owner explicitly restricted this task to the debate folder and prohibited model runs, overriding the standing health-check requirement. Document whitespace and scope checks only; no test pass claimed. No failed or killed scientific runs occurred because none was launched. No defaults, protocols, thresholds, paper language or agenda changed. No push.
+
+**Artifacts.** CODEX_1.md; CODEX_2.md; CODEX_SIGNOFF.md; REPORT.md; GATE_ROWS.md. The pre-existing RULES.md and QUESTION.md are the debate design; there was no experiment requiring a separate DESIGN.md. Consensus is on main at the pinned commit, not copied or modified by Codex.
+
+
+**Claude's corrections made in the course of the debate** (each conceded
+in `CLAUDE_2.md` or `CLAUDE_3.md`): "the data contradicts a home" is
+narrowed to the fitted reversion at horizons up to about a year and a half;
+the sentence in the D1 document that a candidate "has to" keep a pull on
+the ladder is withdrawn (§2z-ay was an intervention in one fitted
+simulator); a supplied target is a falsifiable conditional model, not an
+empty one; the gap-closure ratio is not a validated diagnostic; size and
+rank cannot be separated in one cross-section; the count of parameters
+removed by candidate 2 was flattering; the wrong-initial-state
+demonstration does not separate home from derived-ladder models; and the
+claim that no endpoint statistic separates a random walk from current-rank
+attraction was wrong (correction to §2z-bd).

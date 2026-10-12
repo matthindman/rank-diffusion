@@ -40,7 +40,8 @@ gate evaluations. Phase 1 results so far: §2z-as (A5), §2z-at (A4), §2z-au
 off: the home both pulls endpoints back, which the data contradicts, and
 holds the ladder, which it needs), §2z-az (the card under two seedings),
 §2z-bc (Codex's V2: independent simulator, recovery, planted mechanisms)
-and §2z-bd (what V2 changes in the entries before it).
+and §2z-bd (what V2 changes in the entries before it), §2z-be (the debate
+on candidate 2, closed).
 The per-endpoint export for Codex's V3 (A6) is on `main`.
 
 ## Evidence to date
@@ -186,8 +187,12 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 - **D1, decided so far (§2z-ba):** the seeding change is approved (opt-in,
   structure simulation, time-median ladder; re-freeze still to be decided).
-  Candidate 2 is not approved and is under debate between Claude and Codex
-  (`handoff/D1_debate/`). The rest of the list below is open.
+  Candidate 2 is withdrawn by a signed Claude–Codex consensus (§2z-be,
+  `handoff/D1_debate/CONSENSUS.md`). **Waiting on the owner:** whether the
+  design for the diagnostic batch it recommends should be written
+  (restoring response toward an own earlier level, a train-only ladder, or
+  neither; turnover at nested cutoffs; state-dependent growth). The rest of
+  the list below is open.
 - **Decision point D1 is ready for the owner:**
   `D1_CANDIDATES_CLAUDE_2026-10-12.md` (draft; Codex's review is queued).
   It asks six things: whether a parameter-free seeding change goes ahead

@@ -8,9 +8,13 @@ number is quoted from the MODEL_STATUS section named beside it._
 
 - **Candidate 1 is approved by the owner and implemented, opt-in** (§2z-ba,
   §2z-bb). Re-freezing the structure stacks to use it is still open.
-- **Candidate 2 is not approved.** The owner questioned it, I withdrew it
-  in the form written here, and it is under debate with Codex
-  (`handoff/D1_debate/`).
+- **Candidate 2 is withdrawn.** The owner questioned it; a debate with
+  Codex closed with a signed consensus (`handoff/D1_debate/CONSENSUS.md`,
+  §2z-be): both it and the present model supply the ladder, it is
+  unselected and not refuted, and what is recommended in its place is a
+  design-first diagnostic batch, for the owner to approve or not. The
+  sentence below that a candidate "has to" keep a pull on the ladder is
+  withdrawn.
 - **Codex's V2 has landed** (§2z-bc) and changes three readings below
   (§2z-bd): the "not one amplitude" result is not established (the
   statistic detects the annual cycle); planted cycles lower the fitted
