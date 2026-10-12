@@ -136,6 +136,10 @@ def main():
     summary,comparisons,cal=aggregate(scores,calibration)
     for name,table in (("origin_scores",scores),("origin_calibration",calibration),
                        ("scores",summary),("comparisons",comparisons),("calibration",cal)):
+        if "simulation_mcse" in table:
+            mean_col="improvement" if name=="comparisons" else "value"
+            table["mc95_lower"]=table[mean_col]-1.96*table.simulation_mcse
+            table["mc95_upper"]=table[mean_col]+1.96*table.simulation_mcse
         table.insert(0,"evidence","supplementary, retrospective, development data")
         table.to_csv(args.out/(name+".csv"),index=False)
     manifest["sources"]={str(p):sha_file(p) for p in (Path(__file__),ROOT/"llm_fitting/validation/endpoint_scores.py")}

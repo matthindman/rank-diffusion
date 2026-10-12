@@ -40,3 +40,6 @@ P4–P7 are descriptive operational predictions, not acceptance rules. If timing
 Ferro (2014), fair ensemble scores, DOI10.1002/qj.2270, https://empslocal.ex.ac.uk/people/staff/ferro/Publications/ferro2013.pdf.
 Gneiting & Raftery (2007), proper scores, https://sites.stat.washington.edu/raftery/Research/PDF/Gneiting2007jasa.pdf.
 Full grid, failures and missing cells are reported; no score tuning or seed expansion.
+
+## Presentation clarification, before first score analysis
+The already declared whole-member jackknife MCSE will also be printed as estimate±1.96MCSE in mc95 columns, explicitly a normal-approximation conditional simulation-error band, to accompany all head rows even where calendar-block intervals are withheld. This changes no scores, comparisons, decision thresholds or predictions. The simulation draws have begun but no endpoint-score table has been inspected.

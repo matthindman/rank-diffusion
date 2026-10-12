@@ -77,12 +77,12 @@ def render(root,out,handoff):
         [[r.panel,r.horizon,r.baseline,fmt(r.model),fmt(r.baseline_score),fmt(r.improvement),band(r),fmt(r.simulation_mcse),r.origins]
         for r in c[(c.group=="all")&(c.metric=="crps")].itertuples()]),
       "## Rank groups at nominal h4",
-      md(["panel","group","baseline","CRPS improvement","13w bracket","MCSE"],
-        [[r.panel,r.group,r.baseline,fmt(r.improvement),band(r),fmt(r.simulation_mcse)]
+      md(["panel","group","baseline","CRPS improvement","13w bracket","MCSE","approx MC95 band"],
+        [[r.panel,r.group,r.baseline,fmt(r.improvement),band(r),fmt(r.simulation_mcse),f"[{r.mc95_lower:.6f}, {r.mc95_upper:.6f}]"]
          for r in c[(c.group.isin(["head","middle","shell","tail"]))&(c.horizon==4)&(c.metric=="crps")].itertuples()]),
       "## Outside-event scores for established endpoints",
       md(["panel","h","group","baseline","model Brier","baseline Brier","improvement","13w bracket","MCSE"],
-        [[r.panel,r.horizon,r.group,r.baseline,fmt(r.model),fmt(r.baseline_score),fmt(r.improvement),band(r),fmt(r.simulation_mcse)]
+        [[r.panel,r.horizon,r.group,r.baseline,fmt(r.model),fmt(r.baseline_score),fmt(r.improvement),band(r),fmt(r.simulation_mcse),f"[{r.mc95_lower:.6f}, {r.mc95_upper:.6f}]"]
          for r in c[(c.group.isin(["established","established_origin_inside"]))&(c.horizon==13)&(c.metric=="brier")].itertuples()]),
       "Forecast versus observed event rates (equal-origin means):",
       md(["panel","group","h","method","quantity","rate"],
@@ -95,7 +95,7 @@ def render(root,out,handoff):
           cal[(cal.group=="all")&(cal.method=="frozen_model")&(cal.metric=="rank_cdf")].itertuples()]),
       "## Uncertainty and scope",
       "Every bootstrap draw resamples calendar blocks with all endpoints and origins' joint score bundles together. Five overlapping origins are not five experiments. The primary13-week and sensitivity26-week results are descriptive conditional resummaries of sparse forecast origins, not validated frequentist coverage for new panels. Circular wrapping adds artificial adjacency. Empty draws are counted. At least3 origins and a calendar span of2 blocks are required; otherwise brackets are withheld. The short submissions panel cannot supply such intervals. Larger entity counts do not repair its short time support.",
-      "Whole-member jackknife MCSE deletes the same ensemble index across cases/origins to retain shared-draw dependence. It describes conditional simulation precision only;20 members make this approximate. Head groups use all20 members and both reported uncertainty summaries where the calendar permits. No refitting, parameter bootstrap, specification-selection correction, familywise inference, or fresh confirmation was performed. The fair scores judge the actual sampler, including random amplitudes in these conditional-state stacks; they do not imply personalized amplitude estimates.",
+      "Whole-member jackknife MCSE deletes the same ensemble index across cases/origins to retain shared-draw dependence. It describes conditional simulation precision only;20 members make this approximate. The mc95 columns are score or paired improvement plus/minus1.96MCSE: normal-approximation simulation-error bands, not sampling or refitting confidence intervals. They are supplied explicitly for head rows including the short panel. Head groups use all20 members and both reported uncertainty summaries where the calendar permits. No refitting, parameter bootstrap, specification-selection correction, familywise inference, or fresh confirmation was performed. The fair scores judge the actual sampler, including random amplitudes in these conditional-state stacks; they do not imply personalized amplitude estimates.",
       "## All predictions",md(["prediction","verdict","result"],[[p["prediction"],p["status"],p["result"]] for p in preds]),
       "## Execution and validation",
       f"Actual gate attempts:{len(attempts)}; completed:{sum(d['status']=='RAN-OK' for d in attempts)}. Every attempt is in GATE_ROWS.md and the archived attempt records. Synthetic known-answer tests are unit tests, not panel gate evaluations. The full export audit checks all20 splits,alignment,rank bounds,simulated absorbing absence,unique live ranks,baseline support and source-linked file hashes.",
