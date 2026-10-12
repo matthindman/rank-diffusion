@@ -1,0 +1,2 @@
+{"time": 1791763930.123351, "command": ["llm_fitting/validation/gate_instrument.py", "run", "--panel", "facebook_a", "--phase", "reference"], "status": "STARTED"}
+{"time": 1791763930.123351, "command": ["llm_fitting/validation/gate_instrument.py", "run", "--panel", "facebook_a", "--phase", "reference"], "status": "RAN-OK", "finished": 1791764031.920714}

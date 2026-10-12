@@ -1,0 +1,30 @@
+{
+  "complete_for_all_panels": false,
+  "panels": {
+    "facebook_a": {
+      "seed_files": 7200,
+      "ordered_path_and_sha256_digest": "ba46acbd0928958805eaacfc46be9675778961c30b20d0c57de2c80716d89fbe",
+      "unchanged_inputs_fits_empirical_moments_and_model_sources": true,
+      "full_bank_calibration_and_pooled_gate_score_reconstructed": true
+    },
+    "reddit": {
+      "seed_files": 7200,
+      "ordered_path_and_sha256_digest": "e50f4ca86640a42184ced4d7cfa80f0f93ad1fdb33a2093708823139d7c5bda4",
+      "unchanged_inputs_fits_empirical_moments_and_model_sources": true,
+      "full_bank_calibration_and_pooled_gate_score_reconstructed": true
+    }
+  },
+  "analysis_sources": {
+    "gate_instrument_report.py": "57a740cd7034680e88ec4fc786c9f62e1974a4188b9c59d64acc7a22753324b4",
+    "gate_instrument_analysis.py": "0882223dd9bbff5bb022e913e4b7fee8ce3eedd34e41020ccc29931b650f6f40",
+    "gate_instrument_plot.py": "9a693082837814979d5b7288365145cb36e7956276fc2022ad0b77b5621694f9"
+  },
+  "runtime": {
+    "numpy": "2.0.1",
+    "pandas": "2.2.2",
+    "scipy": "1.14.0",
+    "pyarrow": "21.0.0",
+    "matplotlib": "3.9.2"
+  },
+  "commit_at_audit": "b98910e28bf70df204848c6db8612b9e1e6e0471"
+}

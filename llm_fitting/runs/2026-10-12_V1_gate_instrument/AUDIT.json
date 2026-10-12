@@ -1,0 +1,42 @@
+{
+  "complete_for_all_panels": true,
+  "panels": {
+    "facebook_a": {
+      "seed_files": 7200,
+      "ordered_path_and_sha256_digest": "ba46acbd0928958805eaacfc46be9675778961c30b20d0c57de2c80716d89fbe",
+      "unchanged_inputs_fits_empirical_moments_and_model_sources": true,
+      "full_bank_calibration_and_pooled_gate_score_reconstructed": true
+    },
+    "reddit_comments": {
+      "seed_files": 7200,
+      "ordered_path_and_sha256_digest": "ee16fc03db4299f54a7aee096ab6d005eb679dab2c9a0a90d88adf44e8c024a7",
+      "unchanged_inputs_fits_empirical_moments_and_model_sources": true,
+      "full_bank_calibration_and_pooled_gate_score_reconstructed": true
+    },
+    "reddit": {
+      "seed_files": 7200,
+      "ordered_path_and_sha256_digest": "e50f4ca86640a42184ced4d7cfa80f0f93ad1fdb33a2093708823139d7c5bda4",
+      "unchanged_inputs_fits_empirical_moments_and_model_sources": true,
+      "full_bank_calibration_and_pooled_gate_score_reconstructed": true
+    },
+    "reddit_submissions_long": {
+      "seed_files": 7200,
+      "ordered_path_and_sha256_digest": "8078aa2fa3df8f2839db08c8551ae7ed72d65ca49d75ee6a806adde2a5265fe1",
+      "unchanged_inputs_fits_empirical_moments_and_model_sources": true,
+      "full_bank_calibration_and_pooled_gate_score_reconstructed": true
+    }
+  },
+  "analysis_sources": {
+    "gate_instrument_report.py": "03cf71bb172491ceb984a2c6812e17e0ea883bb7718271a3f309f99e37487199",
+    "gate_instrument_analysis.py": "0882223dd9bbff5bb022e913e4b7fee8ce3eedd34e41020ccc29931b650f6f40",
+    "gate_instrument_plot.py": "9a693082837814979d5b7288365145cb36e7956276fc2022ad0b77b5621694f9"
+  },
+  "runtime": {
+    "numpy": "2.0.1",
+    "pandas": "2.2.2",
+    "scipy": "1.14.0",
+    "pyarrow": "21.0.0",
+    "matplotlib": "3.9.2"
+  },
+  "commit_at_audit": "b98910e28bf70df204848c6db8612b9e1e6e0471"
+}

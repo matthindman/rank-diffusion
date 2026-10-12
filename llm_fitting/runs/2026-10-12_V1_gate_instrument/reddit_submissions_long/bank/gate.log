@@ -1,0 +1,111 @@
+
+========================================================================
+REDDIT_SUBMISSIONS_LONG — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=212  test_len=53  train-end origins=[53, 80, 106, 132, 159]  universe=top-5000 (B=4x, train-only membership) temper pool>=8 md6 t-tails NNLS COND:state
+bank complete: origin=53 train scale=1 seeds=1000..1079
+bank complete: origin=53 train scale=0.7 seeds=1000..1079
+bank complete: origin=53 train scale=0.5 seeds=1000..1079
+bank complete: origin=53 train scale=0.35 seeds=1000..1079
+bank complete: origin=53 train scale=0.25 seeds=1000..1079
+bank complete: origin=53 train scale=0.15 seeds=1000..1079
+bank complete: origin=53 train scale=0.1 seeds=1000..1079
+bank complete: origin=53 train scale=0.05 seeds=1000..1079
+bank complete: origin=53 train scale=0 seeds=1000..1079
+bank complete: origin=53 test scale=0.5 seeds=1000..1079
+bank complete: origin=53 test scale=1 seeds=1000..1079
+bank complete: origin=53 test scale=0.7 seeds=1000..1079
+bank complete: origin=53 test scale=0.35 seeds=1000..1079
+bank complete: origin=53 test scale=0.25 seeds=1000..1079
+bank complete: origin=53 test scale=0.15 seeds=1000..1079
+bank complete: origin=53 test scale=0.1 seeds=1000..1079
+bank complete: origin=53 test scale=0.05 seeds=1000..1079
+bank complete: origin=53 test scale=0 seeds=1000..1079
+bank complete: origin=80 train scale=1 seeds=1000..1079
+bank complete: origin=80 train scale=0.7 seeds=1000..1079
+bank complete: origin=80 train scale=0.5 seeds=1000..1079
+bank complete: origin=80 train scale=0.35 seeds=1000..1079
+bank complete: origin=80 train scale=0.25 seeds=1000..1079
+bank complete: origin=80 train scale=0.15 seeds=1000..1079
+bank complete: origin=80 train scale=0.1 seeds=1000..1079
+bank complete: origin=80 train scale=0.05 seeds=1000..1079
+bank complete: origin=80 train scale=0 seeds=1000..1079
+bank complete: origin=80 test scale=0 seeds=1000..1079
+bank complete: origin=80 test scale=1 seeds=1000..1079
+bank complete: origin=80 test scale=0.7 seeds=1000..1079
+bank complete: origin=80 test scale=0.5 seeds=1000..1079
+bank complete: origin=80 test scale=0.35 seeds=1000..1079
+bank complete: origin=80 test scale=0.25 seeds=1000..1079
+bank complete: origin=80 test scale=0.15 seeds=1000..1079
+bank complete: origin=80 test scale=0.1 seeds=1000..1079
+bank complete: origin=80 test scale=0.05 seeds=1000..1079
+bank complete: origin=106 train scale=1 seeds=1000..1079
+bank complete: origin=106 train scale=0.7 seeds=1000..1079
+bank complete: origin=106 train scale=0.5 seeds=1000..1079
+bank complete: origin=106 train scale=0.35 seeds=1000..1079
+bank complete: origin=106 train scale=0.25 seeds=1000..1079
+bank complete: origin=106 train scale=0.15 seeds=1000..1079
+bank complete: origin=106 train scale=0.1 seeds=1000..1079
+bank complete: origin=106 train scale=0.05 seeds=1000..1079
+bank complete: origin=106 train scale=0 seeds=1000..1079
+bank complete: origin=106 test scale=0 seeds=1000..1079
+bank complete: origin=106 test scale=1 seeds=1000..1079
+bank complete: origin=106 test scale=0.7 seeds=1000..1079
+bank complete: origin=106 test scale=0.5 seeds=1000..1079
+bank complete: origin=106 test scale=0.35 seeds=1000..1079
+bank complete: origin=106 test scale=0.25 seeds=1000..1079
+bank complete: origin=106 test scale=0.15 seeds=1000..1079
+bank complete: origin=106 test scale=0.1 seeds=1000..1079
+bank complete: origin=106 test scale=0.05 seeds=1000..1079
+bank complete: origin=132 train scale=1 seeds=1000..1079
+bank complete: origin=132 train scale=0.7 seeds=1000..1079
+bank complete: origin=132 train scale=0.5 seeds=1000..1079
+bank complete: origin=132 train scale=0.35 seeds=1000..1079
+bank complete: origin=132 train scale=0.25 seeds=1000..1079
+bank complete: origin=132 train scale=0.15 seeds=1000..1079
+bank complete: origin=132 train scale=0.1 seeds=1000..1079
+bank complete: origin=132 train scale=0.05 seeds=1000..1079
+bank complete: origin=132 train scale=0 seeds=1000..1079
+bank complete: origin=132 test scale=0 seeds=1000..1079
+bank complete: origin=132 test scale=1 seeds=1000..1079
+bank complete: origin=132 test scale=0.7 seeds=1000..1079
+bank complete: origin=132 test scale=0.5 seeds=1000..1079
+bank complete: origin=132 test scale=0.35 seeds=1000..1079
+bank complete: origin=132 test scale=0.25 seeds=1000..1079
+bank complete: origin=132 test scale=0.15 seeds=1000..1079
+bank complete: origin=132 test scale=0.1 seeds=1000..1079
+bank complete: origin=132 test scale=0.05 seeds=1000..1079
+bank complete: origin=159 train scale=1 seeds=1000..1079
+bank complete: origin=159 train scale=0.7 seeds=1000..1079
+bank complete: origin=159 train scale=0.5 seeds=1000..1079
+bank complete: origin=159 train scale=0.35 seeds=1000..1079
+bank complete: origin=159 train scale=0.25 seeds=1000..1079
+bank complete: origin=159 train scale=0.15 seeds=1000..1079
+bank complete: origin=159 train scale=0.1 seeds=1000..1079
+bank complete: origin=159 train scale=0.05 seeds=1000..1079
+bank complete: origin=159 train scale=0 seeds=1000..1079
+bank complete: origin=159 test scale=0 seeds=1000..1079
+bank complete: origin=159 test scale=1 seeds=1000..1079
+bank complete: origin=159 test scale=0.7 seeds=1000..1079
+bank complete: origin=159 test scale=0.5 seeds=1000..1079
+bank complete: origin=159 test scale=0.35 seeds=1000..1079
+bank complete: origin=159 test scale=0.25 seeds=1000..1079
+bank complete: origin=159 test scale=0.15 seeds=1000..1079
+bank complete: origin=159 test scale=0.1 seeds=1000..1079
+bank complete: origin=159 test scale=0.05 seeds=1000..1079
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 53  0.50  |  0.196      |  0.131        |    4.0   | True  s=1.11
+    T0= 80  0.00  |  0.154      |  0.180        |    4.4   | True  s=1.11
+    T0=106  0.00  |  0.058      |  0.086        |    0.5   | True  s=1.11
+    T0=132  0.00  |  0.208      |  0.200        |    0.8   | False  s=1.12
+    T0=159  0.00  |  0.246      |  0.216        |    4.1   | True  s=1.12
+
+  sigma_obs_scale stability: [0.5, 0.0, 0.0, 0.0, 0.0]  median=0.00 range=0.00-0.50
+  MODEL rel err = 0.172 ± 0.064   |   persistence = 0.163 ± 0.048
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 80% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=159): emp median/p90 vs model median/p90
+    dRank1: emp    4/  16   model    4/  16
+    dRank4: emp    5/  21   model    6/  24
+    dRank13: emp    8/  29   model   10/  38

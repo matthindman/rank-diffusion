@@ -1,0 +1,37 @@
+{
+  "panel": "facebook_a",
+  "phase": "bank",
+  "seed_start": 1000,
+  "reps": 80,
+  "boot": 2000,
+  "commit": "2d278899b08a73caab08b03cc1c7b427aba71060",
+  "sources": {
+    "llm_fitting/minimal_rankdiff.py": "8bae37435c134d928987249c4ef968360c9fc447999aee451ffb83642a0f4c6a",
+    "llm_fitting/rankdiff_kalman.py": "6a44d0112e3480f88e0b86ef8e39dca840b2e737f4ae4e3d1f2c483bd196fe49",
+    "llm_fitting/validation/gate_instrument.py": "f267d03e528dc2edf6a1dc3b3cf3f45911b0205a9ea61e1c558cc65ae6c8f344"
+  },
+  "inputs": {
+    "data/ssd/derived/fb_weekly_rebuilt.parquet": "deb56413f0b5cf24c590d87a84b735aa959ff535b9c3e027c2625f0682916701",
+    "data/ssd/derived/fb_daily.parquet": "46fb0d6f8205fd7b217f86ed743264e0dcd076c3e37ab3bd1cca2579415aea2c"
+  },
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "numpy": "2.0.1",
+  "started": 1791765383.1521611,
+  "result": {
+    "model_rel": 0.11543239385996536,
+    "model_rel_sd": 0.0348933077448455,
+    "base_rel": 0.14528508644887378,
+    "base_rel_sd": 0.030718568921937018,
+    "coverage": 0.6,
+    "scales": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.7
+    ],
+    "n_splits": 5
+  },
+  "reference_pass": null,
+  "seconds": 1571.3498198986053
+}

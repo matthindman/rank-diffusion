@@ -1,0 +1,72 @@
+
+========================================================================
+REDDIT_SUBMISSIONS_LONG — OOS movement gate (rolling-origin, distributional)
+========================================================================
+  T=212  test_len=53  train-end origins=[53, 80, 106, 132, 159]  universe=top-5000 (B=4x, train-only membership) temper pool>=8 md6 t-tails NNLS COND:state
+bank complete: origin=53 train scale=1 seeds=0..19
+bank complete: origin=53 train scale=0.7 seeds=0..19
+bank complete: origin=53 train scale=0.5 seeds=0..19
+bank complete: origin=53 train scale=0.35 seeds=0..19
+bank complete: origin=53 train scale=0.25 seeds=0..19
+bank complete: origin=53 train scale=0.15 seeds=0..19
+bank complete: origin=53 train scale=0.1 seeds=0..19
+bank complete: origin=53 train scale=0.05 seeds=0..19
+bank complete: origin=53 train scale=0 seeds=0..19
+bank complete: origin=53 test scale=0 seeds=0..19
+bank complete: origin=80 train scale=1 seeds=0..19
+bank complete: origin=80 train scale=0.7 seeds=0..19
+bank complete: origin=80 train scale=0.5 seeds=0..19
+bank complete: origin=80 train scale=0.35 seeds=0..19
+bank complete: origin=80 train scale=0.25 seeds=0..19
+bank complete: origin=80 train scale=0.15 seeds=0..19
+bank complete: origin=80 train scale=0.1 seeds=0..19
+bank complete: origin=80 train scale=0.05 seeds=0..19
+bank complete: origin=80 train scale=0 seeds=0..19
+bank complete: origin=80 test scale=0.05 seeds=0..19
+bank complete: origin=106 train scale=1 seeds=0..19
+bank complete: origin=106 train scale=0.7 seeds=0..19
+bank complete: origin=106 train scale=0.5 seeds=0..19
+bank complete: origin=106 train scale=0.35 seeds=0..19
+bank complete: origin=106 train scale=0.25 seeds=0..19
+bank complete: origin=106 train scale=0.15 seeds=0..19
+bank complete: origin=106 train scale=0.1 seeds=0..19
+bank complete: origin=106 train scale=0.05 seeds=0..19
+bank complete: origin=106 train scale=0 seeds=0..19
+bank complete: origin=106 test scale=0.1 seeds=0..19
+bank complete: origin=132 train scale=1 seeds=0..19
+bank complete: origin=132 train scale=0.7 seeds=0..19
+bank complete: origin=132 train scale=0.5 seeds=0..19
+bank complete: origin=132 train scale=0.35 seeds=0..19
+bank complete: origin=132 train scale=0.25 seeds=0..19
+bank complete: origin=132 train scale=0.15 seeds=0..19
+bank complete: origin=132 train scale=0.1 seeds=0..19
+bank complete: origin=132 train scale=0.05 seeds=0..19
+bank complete: origin=132 train scale=0 seeds=0..19
+bank complete: origin=132 test scale=0.5 seeds=0..19
+bank complete: origin=159 train scale=1 seeds=0..19
+bank complete: origin=159 train scale=0.7 seeds=0..19
+bank complete: origin=159 train scale=0.5 seeds=0..19
+bank complete: origin=159 train scale=0.35 seeds=0..19
+bank complete: origin=159 train scale=0.25 seeds=0..19
+bank complete: origin=159 train scale=0.15 seeds=0..19
+bank complete: origin=159 train scale=0.1 seeds=0..19
+bank complete: origin=159 train scale=0.05 seeds=0..19
+bank complete: origin=159 train scale=0 seeds=0..19
+bank complete: origin=159 test scale=0.1 seeds=0..19
+
+  per split:  scale | model relErr | persist relErr | wass(dR1) | dR1 model-in-CI?
+    T0= 53  0.00  |  0.213      |  0.131        |    4.2   | True  s=1.11
+    T0= 80  0.05  |  0.148      |  0.180        |    4.6   | True  s=1.11
+    T0=106  0.10  |  0.121      |  0.086        |    0.4   | True  s=1.11
+    T0=132  0.50  |  0.190      |  0.200        |    0.5   | False  s=1.12
+    T0=159  0.10  |  0.297      |  0.216        |    4.0   | True  s=1.12
+
+  sigma_obs_scale stability: [0.0, 0.05, 0.1, 0.5, 0.1]  median=0.10 range=0.00-0.50
+  MODEL rel err = 0.194 ± 0.061   |   persistence = 0.163 ± 0.048
+  bootstrap-CI coverage (model dR1 median inside held-out 95% CI): 80% of splits
+
+  held-out displacement DISTRIBUTION (last split T0=159): emp median/p90 vs model median/p90
+    dRank1: emp    4/  16   model    4/  16
+    dRank4: emp    5/  21   model    6/  25
+    dRank13: emp    8/  29   model   10/  39
+COMPLETE reddit_submissions_long reference: {'model_rel': 0.19372422191397337, 'model_rel_sd': 0.060631280253286485, 'base_rel': 0.16260944664590987, 'base_rel_sd': 0.04787061804541393, 'coverage': 0.8, 'scales': [0.0, 0.05, 0.1, 0.5, 0.1], 'n_splits': 5}
