@@ -5,3 +5,5 @@ cells/
 predictions/
 study.lock
 *.tmp
+# Retained locally and losslessly archived in attempts.jsonl.gz.
+attempts/
