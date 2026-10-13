@@ -1,0 +1,28 @@
+PART 1. Synthetic random walks, 52-week block means, cohort fixed on block 0, change 2 -> 3.
+All rates over sigma^2 / (2S); mean (sd) over 6 seeds.  Random-walk value of the factor: 0.667
+
+case                                   | cohort slide  | reordering    | occupant loss | reordering/slide
+random walks only                      | 0.995 (0.030) | 0.648 (0.015) | 0.664 (0.075) | 0.651 (0.010)
+plus AR(1) swings, rho 0.8, variance 0.05 | 0.989 (0.037) | 0.683 (0.013) | 0.693 (0.062) | 0.692 (0.018)
+
+PART 2. Step 1 cells: median over cut-offs K/16..K of the reordering gain per endpoint per week,
+by block length L and spacing D, as measured and divided by the random-walk factor.
+
+panel                      | L   | D   | pairs | measured            | factor | divided by the factor
+reddit_comments_ext        | 52  | 52  | 2     | 0.0025 to 0.0027    | 0.667  | 0.0038 to 0.0040
+reddit_comments_ext        | 52  | 104 | 1     | 0.0031              | 0.833  | 0.0037
+reddit_comments_ext        | 26  | 52  | 5     | 0.0033 to 0.0035    | 0.834  | 0.0040 to 0.0042
+reddit_comments_ext        | 26  | 104 | 3     | 0.0034 to 0.0035    | 0.917  | 0.0038 to 0.0038
+reddit_comments_ext        | 26  | 156 | 1     | 0.0034              | 0.945  | 0.0036
+reddit_comments_ext        | all conventions, divided by the factor: 0.0036 to 0.0042, median 0.0039
+
+reddit_submissions_long    | 52  | 52  | 2     | 0.0027 to 0.0027    | 0.667  | 0.0040 to 0.0040
+reddit_submissions_long    | 52  | 104 | 1     | 0.0032              | 0.833  | 0.0039
+reddit_submissions_long    | 26  | 52  | 5     | 0.0033 to 0.0036    | 0.834  | 0.0039 to 0.0043
+reddit_submissions_long    | 26  | 104 | 3     | 0.0034 to 0.0039    | 0.917  | 0.0037 to 0.0043
+reddit_submissions_long    | 26  | 156 | 1     | 0.0036              | 0.945  | 0.0038
+reddit_submissions_long    | all conventions, divided by the factor: 0.0037 to 0.0043, median 0.0040
+
+facebook_a                 | 26  | 26  | 1     | 0.0074              | 0.667  | 0.0110
+facebook_a                 | all conventions, divided by the factor: 0.0110 to 0.0110, median 0.0110
+

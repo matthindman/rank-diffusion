@@ -83,6 +83,14 @@ screen for predicting slopes FAILED on all three panels, so by its own rule
 the result is a stated requirement and not a model. Next: Codex's V4, then a
 decision on how step 3 is posed with flow and shape included.
 
+**Step 1's reading is corrected (§2z-bw).** A self-review the owner asked for
+found that block means shorten the reordering gain and not the slide, which
+the protocol had not allowed for. Two readings of §2z-bu are withdrawn as
+stated and the simple balance is nearer to closing than it said; no number
+changed and the screen's scores stand as scored. The entry registers a
+prediction for V4 and is under the same blind. The factor goes into the
+protocol's next version after V4.
+
 **A second measurement, M2, has run (§2z-bv;
 `runs/2026-10-13_M2_entrants_shape/REPORT.md`).** The owner asked for it: who
 the entrants to the top K are (new endpoints or returning ones), and where

@@ -7764,6 +7764,8 @@ legacy guard 14/15 and churn 0.013.
 
 ## 2z-bu. 2026-10-13 — EXPLORATORY MEASUREMENT (M1, step 1 of the adopted agenda): the balance accounting on three development panels. The ladder's reordering rate, measured from who replaced whom, equals the variance-over-slope constant of §2z-bf; incumbents slide against the current top K at about 0.0043 per week on all three panels; no return toward an endpoint's own level at a year. Flow and shape change are not small, and the feasibility screen for predicting slopes FAILS on all three panels. 19 of 42 scored predictions passed, 16 failed, 3 inconclusive, 4 not adjudicated; nothing adopted, no fit, no gate evaluation
 
+_[CORRECTED 2026-10-13 by §2z-bw: the reordering gain on block means is about a third short of its continuous-time value and the cohort slide is not. Finding 1 ("lands on the constant"), finding 5 and "slopes about 40% too shallow" are withdrawn as stated; rules B1, B5, B6 and B7 were set without the factor. No number here changes.]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-13; protocol v2
 and runner committed at 223f5e2 before any run; results committed with this
 entry. Codex: this entry reports step 1's output; do not read it until your V4
@@ -8124,3 +8126,158 @@ llm_fitting/mts_step1b.py report`. Outputs:
 extended once before any run, when the owner supplied the chart.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-bw. 2026-10-13 — CORRECTION to §2z-bu, from a self-review the owner asked for: on block means the reordering gain and the occupants' loss come out about a third short and a cohort's slide does not, so two readings of step 1 were wrong. The agreement of the reordering rate with the constant of §2z-bf was a coincidence of conventions (corrected for averaging it is 0.0036–0.0043 a week on Reddit, against 0.0026–0.0036 by the variance route), and the slide exceeds the corrected reordering rate by about 10%, not 60–70%: plain random walks on a stable ladder give the reported 1.5. No number in §2z-bu changes and its scores stand as scored; nothing adopted, no panel opened, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-13; started
+from 31833eb. Codex: this entry discusses step 1's output; do not read it until
+your V4 recovery map is committed._
+
+**Tier.** Correction and review. One known-answer check on synthetic random
+walks and a re-reading of result files already in `runs/2026-10-13_M1_balance/`.
+No panel was opened, so there is no ledger row. No fit, no gate evaluation.
+
+**What was asked.** The owner: "review the results". Codex's V4 had not
+finished (897 of 1,200 cells run, all RAN-OK by the launcher's log; I opened
+no cell and no table), so I reviewed what is on record: §2z-bf, §2z-bh,
+§2z-bu and §2z-bv, starting from the claim I had just illustrated for the
+owner, that the reordering rate equals the variance-over-slope constant.
+
+**The error.** Step 1 measures the ladder on block means. For a random walk
+with weekly variance σ², the difference of two L-week means whose blocks
+start D weeks apart has variance σ²(D − L/3 + 1/(3L)), not σ²D: two thirds
+for consecutive 52-week blocks. Everything that scales with that variance is
+short by the same factor: the reordering gain, the band variance in its
+small-step value, and the loss of the current occupants, who are picked on a
+block mean and so are on average still rising at its end. A mean drift is not
+affected, so the slide of a cohort fixed on an earlier block is not short.
+The protocol, the runner and Codex's review R4 do not mention this. §2z-bu
+compared the block reordering gain (short) with §2z-bf's constant (from
+weekly levels, not short) and with the cohort slide (not short).
+
+**Check 1, known answer.** Random walks on an exponential ladder, where the
+level at every rank rises at σ²/(2S) and the shape does not move; 52-week
+block means; cohort fixed on block 0, change from block 2 to 3; through
+`balance_accounting.topk_accounting`; six seeds; rates over σ²/(2S).
+
+| | cohort slide | reordering gain | occupants' loss | reordering over slide |
+|---|---|---|---|---|
+| random walks only | 0.995 (sd 0.030) | 0.648 (0.015) | 0.664 (0.075) | 0.651 (0.010) |
+| plus AR(1) swings (ρ 0.8, variance 0.05) | 0.989 (0.037) | 0.683 (0.013) | 0.693 (0.062) | 0.692 (0.018) |
+| step 1, comments, primary pair (§2z-bu), per week | 0.0043 | 0.0027 | 0.0030 | 0.63 |
+| step 1, submissions, primary pair, per week | 0.0043 | 0.0027 | 0.0039 | 0.63 |
+
+The data's ratio of reordering gain to slide, 0.63 on both Reddit panels, is
+the value a plain random walk gives under this measurement. The occupants'
+loss on submissions is above it, which is that panel's moving shape.
+
+**Check 2, the cells already on disk.** Median over cut-offs K/16 to K of the
+reordering gain per endpoint per week, by block length L and spacing D, as
+measured and divided by the factor.
+
+| panel | L | D | pairs | measured | factor | divided by the factor |
+|---|---|---|---|---|---|---|
+| comments (ext) | 52 | 52 | 2 | 0.0025 to 0.0027 | 0.667 | 0.0038 to 0.0040 |
+| | 52 | 104 | 1 | 0.0031 | 0.833 | 0.0037 |
+| | 26 | 52 | 5 | 0.0033 to 0.0035 | 0.834 | 0.0040 to 0.0042 |
+| | 26 | 104 | 3 | 0.0034 to 0.0035 | 0.917 | 0.0038 |
+| | 26 | 156 | 1 | 0.0034 | 0.945 | 0.0036 |
+| submissions (long) | 52 | 52 | 2 | 0.0027 | 0.667 | 0.0040 |
+| | 52 | 104 | 1 | 0.0032 | 0.833 | 0.0039 |
+| | 26 | 52 | 5 | 0.0033 to 0.0036 | 0.834 | 0.0039 to 0.0043 |
+| | 26 | 104 | 3 | 0.0034 to 0.0039 | 0.917 | 0.0037 to 0.0043 |
+| | 26 | 156 | 1 | 0.0036 | 0.945 | 0.0038 |
+| Facebook Era A | 26 | 26 | 1 | 0.0074 | 0.667 | 0.0110 |
+
+The measured rate rises with spacing and falls with block length as the
+factor says; divided by it, the twelve pairs on each Reddit panel agree within
+about ±8% (medians 0.0039 and 0.0040). With weekly positions in place
+of block means the rate at 52 weeks is 0.0060 and 0.0061: passing swings, as
+§2z-bu's A3 already showed. Swings left in a block mean push the divided
+value up (5–8% in check 1's second row), so it is an upper estimate.
+
+**What this changes in §2z-bu.**
+
+1. **Finding 1 is withdrawn as stated.** The reordering gain does not land on
+   §2z-bf's constant once both are on the same footing. On Reddit there are
+   now three routes to the one constant: the variance route, 0.0026 and
+   0.0030 with growth of variance from 13 to 52 weeks (§2z-bf), 0.0036 and
+   0.0033 from 13 to 26 (§2z-bh); the reordering route, 0.0036–0.0042 and
+   0.0037–0.0043; the cohort slide, 0.0043 on both (0.0041–0.0044 across
+   boundaries). They agree within a factor of about 1.6, and the two taken
+   from movement of named endpoints agree within about 10%. The variance
+   route depends on the horizon window by 10–40%.
+2. **Finding 5 is withdrawn as evidence of anything.** "The slide over-predicts
+   the reordering gain on Reddit (1.1 to 1.7 times), and over-predicts what
+   the current occupants themselves lose" is what random walks give through
+   block means (1.5). That the occupants "are the ones that had been rising"
+   is true and is the selection effect of ranking on an average. Corrected,
+   the slide over the reordering rate is 1.10 on comments and 1.08 on
+   submissions at the medians.
+3. **"It would give slopes about 40% too shallow" is withdrawn.** As the
+   protocol writes the map, S = v/(2s) with v the band variance on block
+   means, it is a third too shallow in a world where it holds exactly. With
+   v divided by the factor, slide and corrected reordering differ by about
+   10% on the primary pair, so the simple balance is much nearer to closing
+   on 2021→2022 than §2z-bu said.
+4. **The scores stand as scored, and three of the rules were mis-set.** B1
+   (reordering gain in §2z-bf's range) passed by comparing unlike quantities.
+   B5's range for the predictable share, 0.5–1.2, was written as if a perfect
+   world gave 1; it gives 1.5, and the observed 1.16–1.27 on comments failed
+   a rule it should not have been held to. B6 and B7 limit flow and shape as
+   shares of R, which is short, so those shares are up to 1.5 times too
+   large: on comments flow between K/8 and K/2 is 10–19% of the corrected
+   rate, against a limit of 15%. I do not re-score. The screen failed by the
+   rule fixed beforehand; what it now says is that flow and shape are real
+   (§2z-bv measures both) and that the size of the failure was overstated.
+5. **"Step 3 is not worth attempting on these panels" is reopened**, pending
+   V4. The requirement stated there stands and gains a line: the map needs
+   the averaging factor, flow, and a shape allowed to move.
+6. **Facebook.** One pair of consecutive 26-week blocks; the divided value,
+   0.0110, is mostly passing swings (weekly positions give 0.0256 at 26
+   weeks). Nothing can be said about Facebook's balance from it.
+
+**What does not change.** Any number. The slide (finding 2) and its
+independence of the boundary. Finding 3: the association with changes two
+blocks earlier is zero for a time-averaged random walk, which correlates only
+adjacent differences, so averaging does not produce it; the caveats of §2z-bt
+apply as before. B9 and A2, which divide the reordering gain by a small-step
+value from the same run, both short alike. The weekly-position rows. All of
+§2z-bv: its block-to-block accounting is the same block quantity each year,
+so its stability across years holds, and "occupant loss and reordering gain
+nearly meet in 2021→2022" is a statement about two block quantities that are
+short alike.
+
+**Prediction registered for V4, before its grid is complete.** V4's held-out
+map takes the band variance on block means. For its two plain walks
+(`fixed_walk`, `unstabilized`) on the two Reddit profiles I expect the median
+signed slope error to lie between −20% and −40%, and the same predictions
+multiplied by D/(D − L/3) = 1.5 to have a median within ±15%. If so, a
+failure of P7 there is this convention and not a failure of identification.
+Codex stays blind to this entry until its map is committed, which keeps its
+write-up an independent test of whether the recovery study finds the factor
+unaided; it will then be asked for the corrected variant, labelled post hoc.
+
+**Other review notes** (weaker than stated or not established; not errors).
+(a) "Flat across ranks" in §2z-bf is ±15–25%, and the rise in the bottom
+octave on both comments panels (0.0033–0.0037 against medians of 0.0026–
+0.0027) does not appear in the reordering route at K (0.0024–0.0026, against
+0.0024–0.0026 at K/2), which is exact to 4K; it is probably the edge of the
+absence-penalized universe, not checked. (b) Whether the new endpoints and
+the growth from below of §2z-bv are partly archive coverage is unexamined.
+(c) The registered date of §2z-bv is unverified. (d) This is a review by the
+author; Codex's follows when its blind is lifted.
+
+**Also corrected.** Explanations given to the owner in conversation earlier
+today repeated readings 1 and 2; corrected in conversation.
+
+**Changes.** One regression test,
+`test_block_means_shorten_the_reordering_gain_and_not_the_slide`
+(`tests/test_balance_accounting.py`). `balance_accounting.py` and
+`mts_step1.py` are untouched, as V4 uses them at 223f5e2; the factor goes
+into the protocol's next version after V4.
+
+**Commands.** `python llm_fitting/runs/2026-10-13_M1_review/check_block_averaging.py`
+(output saved beside it as `check_output.txt`).
+
+**Ledgers.** No gate evaluation. No data contact.

@@ -295,3 +295,27 @@ def test_uncertified_tracking_is_not_adjudicated():
     assert pairs and all("not_adjudicated" in p and "accounting" not in p for p in pairs)
     sc = m1.score(res, "reddit")
     assert sc["screen"]["status"] == m1.NA and sc["B1"]["status"] == m1.NA
+
+
+def test_block_means_shorten_the_reordering_gain_and_not_the_slide():
+    """Found in a self-review of step 1 (MODEL_STATUS 2z-bw).  Random walks on an
+    exponential ladder: the level at every rank rises at sigma^2 / (2S) per week
+    and the shape does not move.  On 52-week block means one year apart the slide
+    of a cohort fixed earlier recovers that rate; the reordering gain and the
+    occupants' loss come out near two thirds of it, because the difference of two
+    L-week means D weeks apart has variance sigma^2 (D - L/3), not sigma^2 D."""
+    rng = np.random.default_rng(0)
+    N, K, S, sig2, L, nb = 20000, 2000, 1.5, 0.009, 52, 4
+    X = S * np.log(N / np.arange(1, N + 1)) + np.cumsum(rng.normal(0, np.sqrt(sig2), (L * nb, N)), axis=0)
+    M = X.reshape(nb, L, N).mean(axis=1)
+    c = sig2 / (2 * S)
+    centre = [np.sort(M[b])[::-1][:K].mean() for b in range(nb)]
+    cohort = np.argsort(-M[0])[:K]
+    slide = -((M[3, cohort] - M[2, cohort]).mean() - (centre[3] - centre[2])) / L
+    rows = ba.topk_accounting(M[2], M[3], [K // 8, K // 4, K // 2, K], K)
+    r = np.median([x["R"] / (x["k"] * L) for x in rows])
+    g = np.median([x["G"] / (x["k"] * L) for x in rows])
+    assert slide / c == pytest.approx(1.0, abs=0.15)
+    assert r / c == pytest.approx(2 / 3, abs=0.1)
+    assert g / c == pytest.approx(2 / 3, abs=0.2)
+    assert r / slide < 0.8

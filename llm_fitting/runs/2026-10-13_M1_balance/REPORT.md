@@ -4,6 +4,15 @@ _2026-10-13, Claude (Opus 5.5). Protocol: `MTS_PROTOCOL_STEPS_1_2_2026-10-13.md`
 v2, committed at 223f5e2 before any run. Codex: do not read this file until
 your V4 recovery map is committed._
 
+**Correction, 2026-10-13 (MODEL_STATUS §2z-bw; `runs/2026-10-13_M1_review/`).** On block means the
+reordering gain and the occupants' loss are about a third short of their
+continuous-time values, and a cohort's slide is not. So this report's
+statements that the reordering gain equals the constant of §2z-bf, that the
+slide over-predicts it by 1.6 to 1.7 times, and that the simple map would give
+slopes 40% too shallow are withdrawn as stated: divided by the averaging
+factor the reordering rate is 0.0036–0.0043 a week on Reddit, and the slide
+exceeds it by about 10%. The numbers below are unchanged.
+
 **Status: RAN-OK, three primary runs.** Exploratory and descriptive,
 DEVELOPMENT data, in sample. No fit, no simulation, no gate evaluation. The
 scoring rules and the screen were fixed in the protocol and are applied by
