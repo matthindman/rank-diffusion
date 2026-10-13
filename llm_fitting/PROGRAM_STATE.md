@@ -99,13 +99,19 @@ chart the owner supplied (28 June 2021, both Reddit panels). It depends on
 step 1's output, so Codex is blind to it on the same terms and its results are
 not repeated on this page. It bears directly on how step 3 is posed.
 
-**Codex's V4 is prepared and has not run.** Design, classification rule,
-runner, tests and a resumable launcher are committed on
-`codex/v4-planted-rivals` (4da9562; `handoff/V4_planted_rivals/`, status IN
-PROGRESS). Its native study waits for the owner to start `launch_study.sh`
-from a user-owned Terminal. Nothing from that branch is merged, and the blind
-stays in force, until the recovery map is committed. Claude read the design
-on 2026-10-13 and asked for no change.
+**Codex's V4 has run and is merged (§2z-bx; review §2z-by; 2026-10-14).** All
+1,200 cells ran. The slope map as the protocol wrote it recovers held-out
+slopes in none of the ten planted worlds; signs of return toward an
+endpoint's own level also appear in walks with persistent noise; interval
+coverage could not be adjudicated. Claude's review reproduces the headline
+numbers and adds three things: the prediction registered in §2z-bw failed in
+size; V4's classifier puts the real step 1 results far outside every planted
+world, because all ten are stationary and the data are not, so V4 gives no
+mechanism reading of the data; and on Reddit's calmest year the incumbents'
+slide is 10–25% above a lasting reordering rate measured without an
+averaging factor. Step 3 as the protocol wrote it has no license. **The blind
+is lifted**; queue row R5 asks Codex to review step 1, M2, the correction and
+this reading.
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate
@@ -257,14 +263,14 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
 
-- **Starting Codex's V4 study** (2026-10-13). The command is in
-  `handoff/V4_planted_rivals/REPORT.md` on `codex/v4-planted-rivals`: one
-  resumable process from a user-owned Terminal, needing the T9 drive for its
-  first stage. 1,200 synthetic cells; Codex gives no time estimate.
-- **How step 3 is posed after M1 and M2** (§2z-bu, §2z-bv). The protocol's
-  feasibility screen failed, so its slope prediction is not run as written.
-  A revised design is Claude's to draft and Codex's to review; whether it is
-  drafted before or after V4's map is the owner's call.
+- **What follows V4** (§2z-by, 2026-10-14). Step 3 as written is closed. Two
+  pieces of design work are open and neither is started: a second set of
+  planted worlds with a growing population, a moving shape and a dated change
+  at the top; and a revised slope prediction with a lasting variance free of
+  averaging and passing swings, entry, and a shape allowed to move. Order and
+  scope are the owner's call.
+- Whether V4's two archives (37 MB) are published with `main`'s history at
+  the next push, as V2's were (§2z-br).
 - **D1, decided so far (§2z-ba):** the seeding change is approved (opt-in,
   structure simulation, time-median ladder; re-freeze still to be decided).
   Candidate 2 is withdrawn by a signed Claude–Codex consensus (§2z-be,
