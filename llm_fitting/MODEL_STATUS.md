@@ -7896,6 +7896,8 @@ llm_fitting/mts_step1.py report`. Outputs: `runs/2026-10-13_M1_balance/`
 
 ## 2z-bv. 2026-10-13 — EXPLORATORY MEASUREMENT (M2, asked for by the owner): who the entrants to the top K are, and where and when the ladder's shape moves. On Reddit 81–87% of entrants are endpoints new to the record, and almost no exit is a disappearance; the shape moves as a tilt that is monotone in rank, lower ranks rising faster, most of it before mid-2021; at the date registered from the owner's chart, 28 June 2021, the share of the first-ranked submissions position falls from 8.3% to 4.3% in one quarter and ranks 250 to 1,000 step up with it; comments show a smaller, less sharply dated version. 18 of 25 scored predictions passed, 7 failed; nothing adopted, no fit, no gate evaluation
 
+_[NOTE 2026-10-14, §2z-bz: the registered date is confirmed from Reddit's own post of 22 June 2021 (a personalised Home feed for all mobile users from 28 June). The archive's collection delay also changes at 1 July 2021, and four short-delay pockets in the submissions files are identified there; the daily check that separates the two dates has not been run.]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-13; design,
 predictions and runner committed at 62b795e before any run; results committed
 with this entry. Codex: this entry reports output that depends on step 1; do
@@ -8610,3 +8612,133 @@ branch).
 
 **Ledgers.** No gate evaluation. Codex's three absence-profile contacts of
 2026-10-13 are appended to `EXPOSURE_LEDGER.md` from its `EXPOSURE_ROWS.md`.
+
+## 2z-bz. 2026-10-14 — REVIEW OF EXTERNAL EVIDENCE (research sub-agent, asked for by the owner; relayed by Claude): PLANNING ONLY, nothing adopted. The date registered in §2z-bv is confirmed from Reddit's own post (a personalised Home feed for all mobile users from 28 June 2021); the growth of 2019–2020 and its stall are in Reddit's own totals; a January 2020 feed change deliberately favoured small communities. No score-truncation artifact is indicated in the archive, but the archive's collection delay changes at 1 July 2021, three days after the registered date, and four short-delay pockets are identified. The check that separates the two dates needs the daily panel on T9, which is not mounted: NOT RUN
+
+_Provenance: a Claude Opus 5.5 research sub-agent launched by this session on
+2026-10-13, reporting 2026-10-14; this entry by Claude Opus 5.5 (Anthropic),
+Claude Code; started from 693bafd._
+
+**The owner's request.** "task a subagent with answering the question: is
+there already substantive external evidence or credible reports of external
+features that might explain these features that go beyond just random growth
+w/ (~constant-ish) entry? think broadly about causes that might be consistent
+with these: do we know that there was an increase in entry, for example? are
+what we know about recommendation algorithm changes consistent with this?"
+
+**What was done.** Web search and page reads by the sub-agent, with the
+measured features of §2z-bv given as things to explain and no explanation
+assumed. Its report, with a source list and a dated timeline, is
+`runs/2026-10-13_external_evidence/REPORT.md`. The harness did not let the
+sub-agent write that file; I saved its returned text unchanged after reading
+all of it. **I did not open its sources.** The dates and totals in items 1
+and 2 below agree with what I know of those Reddit posts; item 3 rests on the
+sub-agent's own small spot check and has to be repeated on our files.
+
+**Data contact by the sub-agent, not asked for in the brief.** To learn when
+the archive captured scores, it queried a public archive API (Arctic Shift,
+which re-serves the Pushshift files for March 2023 and earlier) for up to 100
+items at each of a number of instants between December 2018 and December
+2022, reading creation time, retrieval time and score and no subreddit name.
+By its statement nothing created after 2022 was queried; its scripts take the
+dates as arguments, so I cannot confirm that from them. Logged in
+`EXPOSURE_LEDGER.md`. The period is that of the DEVELOPMENT panels.
+
+**Findings** (source keys are those of the report).
+
+1. **The registered date is real** (strong; primary, R1, R2). Reddit's post
+   of 22 June 2021 says that from 28 June 2021 every iOS and Android user gets
+   a machine-learned, personalised Best sort for the Home feed, replacing a
+   ranking by votes and age, with recommended posts in place of community
+   suggestions. An admin said users were seeing content from more
+   communities, and that r/all, r/popular and the other sorts were not
+   changed. Experiments ran before the date; user reports of recommended
+   posts in Home start in January 2021. No external source measures how
+   attention moved between large and small communities, so the causal link
+   to §2z-bv's step is moderate, not strong.
+2. **The growth and its stall are Reddit's own numbers** (strong; R3–R6).
+   2020: upvotes +53.8%, posts +52.4%, daily users +44%. 2021: posts +19%,
+   comments +12%, upvotes +1%. 2022: posts +14%, comments +7%. The 2020 rise
+   in votes, about 0.43 log units, is close to the half log unit by which the
+   top-K level rose (§2z-bv item 6), and the 2021 figure matches the
+   flattening.
+3. **The platform tilted exposure toward small communities more than once**
+   (primary; R7, R8, R12, R21). January 2020: Home-feed ranking changed to
+   favour small and medium communities (reported effect: commenters there
+   +10%, in the largest −0.3%). August 2020: Best sort on r/popular with
+   experiments on more diverse content. February 2021: recommended
+   communities in notifications widened from hundreds to thousands; explicit
+   communities removed from r/all. June 2021: the change of item 1. 2022:
+   Discover tab (February), Best as the Home default (June) and the only Home
+   sort on iOS (December). In June 2022 Reddit credited its 2021 feed work
+   with subscription growth in more small subreddits, without figures.
+4. **Entry.** No published count of subreddits created per month or year was
+   found. New communities tied to 2020–2021 events are documented by name.
+   Reddit removed about 745,000 dormant subreddits from 23 June 2021, freeing
+   their names; a re-created name can look new.
+5. **The archive** (the sub-agent's spot check, small samples; maintainer and
+   community statements). Scores in the monthly files were re-collected after
+   posting, by delays that were long in nearly every sampled month: no
+   score-truncation artifact is indicated for the 2019→2020 jump, for the
+   comments series, or at the registered date. Two things need our own check:
+   - **The delay changes at the file boundary of 1 July 2021**, from about 20
+     days (submissions of late June 2021) to about 360 days (July 2021,
+     re-collected in June 2022), and from about 29 to about 320 days on
+     comments. Both are long enough for scores to settle. A re-collection a
+     year later could still differ in what it finds (removed posts, banned
+     communities, votes later withdrawn from sanctioned accounts). Our weekly
+     panels cannot separate 28 June from 1 July; the week that begins the
+     registered quarter straddles both.
+   - **Short-delay pockets in submissions**, where summed scores are biased
+     down: 28–30 April 2020 (the last two days nearly zero), 12 June 2021
+     (hours), about 29 May 2022 (about a day), the last week of August 2019
+     (one to two days).
+   Bans can also remove a community's last months from files re-collected
+   later (29 June 2020; 1 September 2021); the sub-agent's inference, not
+   documented by anyone.
+6. **Other dated events**: the ban wave of 29 June 2020, WallStreetBets in
+   January–March 2021 (the best candidate for the spring 2021 step in the
+   comments top five; weak), the moderator protest of August–September 2021.
+   None is dated to the week of 28 June 2021.
+7. **Facebook**: Meta's reduction of political content in Feed from February
+   2021 and independent counts of falling interactions on political and news
+   pages; CrowdTangle's own decline; a fixed list also decays. Moderate.
+8. **Unexplained**: Reddit's reported upvotes fall from 46 billion (2021) to
+   24+ billion (2022) with no comment, while our submission total is roughly
+   flat.
+
+**Not found.** Any measurement of top-subreddit shares around the date; any
+count of subreddit creation; which subreddits led by post score in 2019–2021
+(for 2022 a secondary source names r/memes by score and r/AskReddit by
+comments; we have not read names from the panel); any study using 28 June
+2021 as a natural experiment; any documented change to score computation.
+
+**What this does to the record.**
+
+- §2z-bv's registered date is confirmed in date and in direction. Its step in
+  the middle ranks "in the same quarter" and my reading that it looks like a
+  reallocation of exposure are what Reddit's description would produce. The
+  archive boundary three days later is not excluded as a contributor.
+- §2z-bv's "growth from below, strongest in 2019–2020" is a documented
+  one-off expansion of the platform followed by a stall, together with a
+  dated feed change that favoured small communities. It is neither constant
+  entry nor a stationary feature.
+- Of the alternatives to the simplest account, two now have documentary
+  support on Reddit: entry and total attention that vary over time, and
+  exposure by position set and changed by the platform. The window 2019–2022
+  contains at least three dated interventions and one demand shock.
+- The weeks of 27 April 2020, 7 June 2021, about 23 May 2022 and the last of
+  August 2019 are suspect in the submissions panel and have never been
+  screened.
+
+**Not run, and why.** The checks that would settle item 5 on our own files:
+the first rank's share by day from 14 June to 14 July 2021 (a break on the
+28th or a ramp points to Reddit; a break at 00:00 UTC on 1 July points to
+the archive); the same shares on numbers of submissions, which do not depend
+on when a score was read; karma per post either side of the boundary; and a
+screen for the four pockets. They need the daily long panel on T9. **T9 is
+not mounted today**, so that thread stops here. The capture delay itself
+needs the raw files on the WD drive, which is unplugged by the owner's
+instruction.
+
+**Ledgers.** No gate evaluation. The sub-agent's API contact is logged.

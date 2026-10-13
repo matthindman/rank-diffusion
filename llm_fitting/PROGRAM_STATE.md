@@ -263,6 +263,10 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
 
+- **Mounting T9 for a data-validity check** (§2z-bz, 2026-10-14). External evidence confirms the date registered
+  in §2z-bv, and also finds that the archive's collection delay changes three days later, at 1 July 2021, with four
+  short-delay pockets in the submissions files. The daily check that separates the two needs the daily long panel on T9.
+  The capture delay itself needs the raw files on the WD drive.
 - **What follows V4** (§2z-by, 2026-10-14). Step 3 as written is closed. Two
   pieces of design work are open and neither is started: a second set of
   planted worlds with a growing population, a moving shape and a dated change
