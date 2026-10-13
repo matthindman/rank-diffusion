@@ -1,0 +1,633 @@
+panel,rival,prediction,status,count
+cross-panel,equal_components,B8,PASS,20
+cross-panel,fixed_static,B8,FAIL,10
+cross-panel,fixed_static,B8,NOT ADJUDICATED,10
+cross-panel,fixed_walk,B8,PASS,20
+cross-panel,home,B8,NOT ADJUDICATED,20
+cross-panel,position_ou,B8,PASS,20
+cross-panel,rank_drift,B8,PASS,20
+cross-panel,replacement,B8,NOT ADJUDICATED,20
+cross-panel,rw_medium,B8,PASS,20
+cross-panel,rw_persistent,B8,PASS,20
+cross-panel,unstabilized,B8,PASS,20
+facebook_a,equal_components,A1,PASS,20
+facebook_a,equal_components,A2,PASS,20
+facebook_a,equal_components,A2b,FAIL,5
+facebook_a,equal_components,A2b,PASS,15
+facebook_a,equal_components,A3,PASS,20
+facebook_a,equal_components,A4,PASS,20
+facebook_a,equal_components,B1,PASS,20
+facebook_a,equal_components,B10,NOT ADJUDICATED,20
+facebook_a,equal_components,B2,NOT ADJUDICATED,20
+facebook_a,equal_components,B3,INCONCLUSIVE,20
+facebook_a,equal_components,B4,NOT ADJUDICATED,20
+facebook_a,equal_components,B5,NOT ADJUDICATED,20
+facebook_a,equal_components,B6,PASS,20
+facebook_a,equal_components,B7,FAIL,2
+facebook_a,equal_components,B7,PASS,18
+facebook_a,equal_components,B9,FAIL,11
+facebook_a,equal_components,B9,PASS,9
+facebook_a,equal_components,screen,FAIL,4
+facebook_a,equal_components,screen,INCONCLUSIVE,16
+facebook_a,fixed_static,A1,PASS,20
+facebook_a,fixed_static,A2,PASS,20
+facebook_a,fixed_static,A2b,FAIL,2
+facebook_a,fixed_static,A2b,PASS,18
+facebook_a,fixed_static,A3,PASS,20
+facebook_a,fixed_static,A4,PASS,20
+facebook_a,fixed_static,B1,FAIL,20
+facebook_a,fixed_static,B10,NOT ADJUDICATED,20
+facebook_a,fixed_static,B2,NOT ADJUDICATED,20
+facebook_a,fixed_static,B3,INCONCLUSIVE,20
+facebook_a,fixed_static,B4,NOT ADJUDICATED,20
+facebook_a,fixed_static,B5,NOT ADJUDICATED,20
+facebook_a,fixed_static,B6,PASS,20
+facebook_a,fixed_static,B7,FAIL,15
+facebook_a,fixed_static,B7,PASS,5
+facebook_a,fixed_static,B9,FAIL,19
+facebook_a,fixed_static,B9,PASS,1
+facebook_a,fixed_static,screen,FAIL,20
+facebook_a,fixed_walk,A1,PASS,20
+facebook_a,fixed_walk,A2,PASS,20
+facebook_a,fixed_walk,A2b,FAIL,2
+facebook_a,fixed_walk,A2b,PASS,18
+facebook_a,fixed_walk,A3,PASS,20
+facebook_a,fixed_walk,A4,FAIL,8
+facebook_a,fixed_walk,A4,PASS,12
+facebook_a,fixed_walk,B1,PASS,20
+facebook_a,fixed_walk,B10,NOT ADJUDICATED,20
+facebook_a,fixed_walk,B2,NOT ADJUDICATED,20
+facebook_a,fixed_walk,B3,INCONCLUSIVE,20
+facebook_a,fixed_walk,B4,NOT ADJUDICATED,20
+facebook_a,fixed_walk,B5,NOT ADJUDICATED,20
+facebook_a,fixed_walk,B6,PASS,20
+facebook_a,fixed_walk,B7,FAIL,19
+facebook_a,fixed_walk,B7,PASS,1
+facebook_a,fixed_walk,B9,FAIL,7
+facebook_a,fixed_walk,B9,PASS,13
+facebook_a,fixed_walk,screen,FAIL,19
+facebook_a,fixed_walk,screen,INCONCLUSIVE,1
+facebook_a,home,A1,PASS,20
+facebook_a,home,A2,PASS,20
+facebook_a,home,A2b,FAIL,3
+facebook_a,home,A2b,PASS,17
+facebook_a,home,A3,PASS,20
+facebook_a,home,A4,FAIL,20
+facebook_a,home,B1,FAIL,20
+facebook_a,home,B10,NOT ADJUDICATED,20
+facebook_a,home,B2,NOT ADJUDICATED,20
+facebook_a,home,B3,INCONCLUSIVE,20
+facebook_a,home,B4,NOT ADJUDICATED,20
+facebook_a,home,B5,NOT ADJUDICATED,20
+facebook_a,home,B6,PASS,20
+facebook_a,home,B7,FAIL,20
+facebook_a,home,B9,FAIL,7
+facebook_a,home,B9,NOT ADJUDICATED,13
+facebook_a,home,screen,FAIL,20
+facebook_a,position_ou,A1,PASS,20
+facebook_a,position_ou,A2,PASS,20
+facebook_a,position_ou,A2b,FAIL,1
+facebook_a,position_ou,A2b,PASS,19
+facebook_a,position_ou,A3,PASS,20
+facebook_a,position_ou,A4,PASS,20
+facebook_a,position_ou,B1,PASS,20
+facebook_a,position_ou,B10,NOT ADJUDICATED,20
+facebook_a,position_ou,B2,NOT ADJUDICATED,20
+facebook_a,position_ou,B3,INCONCLUSIVE,20
+facebook_a,position_ou,B4,NOT ADJUDICATED,20
+facebook_a,position_ou,B5,NOT ADJUDICATED,20
+facebook_a,position_ou,B6,PASS,20
+facebook_a,position_ou,B7,FAIL,2
+facebook_a,position_ou,B7,PASS,18
+facebook_a,position_ou,B9,FAIL,8
+facebook_a,position_ou,B9,PASS,12
+facebook_a,position_ou,screen,FAIL,2
+facebook_a,position_ou,screen,INCONCLUSIVE,18
+facebook_a,rank_drift,A1,PASS,20
+facebook_a,rank_drift,A2,PASS,20
+facebook_a,rank_drift,A2b,FAIL,2
+facebook_a,rank_drift,A2b,PASS,18
+facebook_a,rank_drift,A3,PASS,20
+facebook_a,rank_drift,A4,FAIL,16
+facebook_a,rank_drift,A4,PASS,4
+facebook_a,rank_drift,B1,PASS,20
+facebook_a,rank_drift,B10,NOT ADJUDICATED,20
+facebook_a,rank_drift,B2,NOT ADJUDICATED,20
+facebook_a,rank_drift,B3,INCONCLUSIVE,20
+facebook_a,rank_drift,B4,NOT ADJUDICATED,20
+facebook_a,rank_drift,B5,NOT ADJUDICATED,20
+facebook_a,rank_drift,B6,PASS,20
+facebook_a,rank_drift,B7,FAIL,20
+facebook_a,rank_drift,B9,FAIL,3
+facebook_a,rank_drift,B9,PASS,17
+facebook_a,rank_drift,screen,FAIL,20
+facebook_a,replacement,A1,PASS,20
+facebook_a,replacement,A2,PASS,20
+facebook_a,replacement,A2b,PASS,20
+facebook_a,replacement,A3,INCONCLUSIVE,20
+facebook_a,replacement,A4,FAIL,20
+facebook_a,replacement,B1,FAIL,1
+facebook_a,replacement,B1,NOT ADJUDICATED,4
+facebook_a,replacement,B1,PASS,15
+facebook_a,replacement,B10,NOT ADJUDICATED,20
+facebook_a,replacement,B2,NOT ADJUDICATED,20
+facebook_a,replacement,B3,INCONCLUSIVE,9
+facebook_a,replacement,B3,NOT ADJUDICATED,4
+facebook_a,replacement,B3,PASS,7
+facebook_a,replacement,B4,NOT ADJUDICATED,20
+facebook_a,replacement,B5,NOT ADJUDICATED,20
+facebook_a,replacement,B6,FAIL,16
+facebook_a,replacement,B6,NOT ADJUDICATED,4
+facebook_a,replacement,B7,FAIL,16
+facebook_a,replacement,B7,NOT ADJUDICATED,4
+facebook_a,replacement,B9,NOT ADJUDICATED,20
+facebook_a,replacement,screen,FAIL,16
+facebook_a,replacement,screen,NOT ADJUDICATED,4
+facebook_a,rw_medium,A1,PASS,20
+facebook_a,rw_medium,A2,PASS,20
+facebook_a,rw_medium,A2b,FAIL,1
+facebook_a,rw_medium,A2b,PASS,19
+facebook_a,rw_medium,A3,PASS,20
+facebook_a,rw_medium,A4,PASS,20
+facebook_a,rw_medium,B1,FAIL,12
+facebook_a,rw_medium,B1,PASS,8
+facebook_a,rw_medium,B10,NOT ADJUDICATED,20
+facebook_a,rw_medium,B2,NOT ADJUDICATED,20
+facebook_a,rw_medium,B3,INCONCLUSIVE,20
+facebook_a,rw_medium,B4,NOT ADJUDICATED,20
+facebook_a,rw_medium,B5,NOT ADJUDICATED,20
+facebook_a,rw_medium,B6,PASS,20
+facebook_a,rw_medium,B7,FAIL,12
+facebook_a,rw_medium,B7,PASS,8
+facebook_a,rw_medium,B9,FAIL,9
+facebook_a,rw_medium,B9,PASS,11
+facebook_a,rw_medium,screen,FAIL,14
+facebook_a,rw_medium,screen,INCONCLUSIVE,6
+facebook_a,rw_persistent,A1,PASS,20
+facebook_a,rw_persistent,A2,PASS,20
+facebook_a,rw_persistent,A2b,PASS,20
+facebook_a,rw_persistent,A3,PASS,20
+facebook_a,rw_persistent,A4,FAIL,4
+facebook_a,rw_persistent,A4,PASS,16
+facebook_a,rw_persistent,B1,FAIL,9
+facebook_a,rw_persistent,B1,PASS,11
+facebook_a,rw_persistent,B10,NOT ADJUDICATED,20
+facebook_a,rw_persistent,B2,NOT ADJUDICATED,20
+facebook_a,rw_persistent,B3,INCONCLUSIVE,20
+facebook_a,rw_persistent,B4,NOT ADJUDICATED,20
+facebook_a,rw_persistent,B5,NOT ADJUDICATED,20
+facebook_a,rw_persistent,B6,PASS,20
+facebook_a,rw_persistent,B7,FAIL,15
+facebook_a,rw_persistent,B7,PASS,5
+facebook_a,rw_persistent,B9,FAIL,14
+facebook_a,rw_persistent,B9,PASS,6
+facebook_a,rw_persistent,screen,FAIL,15
+facebook_a,rw_persistent,screen,INCONCLUSIVE,5
+facebook_a,unstabilized,A1,PASS,20
+facebook_a,unstabilized,A2,PASS,20
+facebook_a,unstabilized,A2b,FAIL,1
+facebook_a,unstabilized,A2b,PASS,19
+facebook_a,unstabilized,A3,PASS,20
+facebook_a,unstabilized,A4,FAIL,5
+facebook_a,unstabilized,A4,PASS,15
+facebook_a,unstabilized,B1,FAIL,2
+facebook_a,unstabilized,B1,PASS,18
+facebook_a,unstabilized,B10,NOT ADJUDICATED,20
+facebook_a,unstabilized,B2,NOT ADJUDICATED,20
+facebook_a,unstabilized,B3,INCONCLUSIVE,20
+facebook_a,unstabilized,B4,NOT ADJUDICATED,20
+facebook_a,unstabilized,B5,NOT ADJUDICATED,20
+facebook_a,unstabilized,B6,PASS,20
+facebook_a,unstabilized,B7,FAIL,19
+facebook_a,unstabilized,B7,PASS,1
+facebook_a,unstabilized,B9,FAIL,4
+facebook_a,unstabilized,B9,PASS,16
+facebook_a,unstabilized,screen,FAIL,19
+facebook_a,unstabilized,screen,INCONCLUSIVE,1
+reddit_comments_ext,equal_components,A1,PASS,20
+reddit_comments_ext,equal_components,A2,PASS,20
+reddit_comments_ext,equal_components,A2b,FAIL,20
+reddit_comments_ext,equal_components,A3,PASS,20
+reddit_comments_ext,equal_components,A4,PASS,20
+reddit_comments_ext,equal_components,B1,FAIL,1
+reddit_comments_ext,equal_components,B1,PASS,19
+reddit_comments_ext,equal_components,B10,FAIL,3
+reddit_comments_ext,equal_components,B10,PASS,17
+reddit_comments_ext,equal_components,B2,INCONCLUSIVE,18
+reddit_comments_ext,equal_components,B2,PASS,2
+reddit_comments_ext,equal_components,B3,FAIL,1
+reddit_comments_ext,equal_components,B3,INCONCLUSIVE,19
+reddit_comments_ext,equal_components,B4,FAIL,17
+reddit_comments_ext,equal_components,B4,INCONCLUSIVE,3
+reddit_comments_ext,equal_components,B5,NOT ADJUDICATED,20
+reddit_comments_ext,equal_components,B6,PASS,20
+reddit_comments_ext,equal_components,B7,FAIL,1
+reddit_comments_ext,equal_components,B7,PASS,19
+reddit_comments_ext,equal_components,B9,FAIL,4
+reddit_comments_ext,equal_components,B9,PASS,16
+reddit_comments_ext,equal_components,screen,FAIL,4
+reddit_comments_ext,equal_components,screen,INCONCLUSIVE,16
+reddit_comments_ext,fixed_static,A1,PASS,20
+reddit_comments_ext,fixed_static,A2,PASS,20
+reddit_comments_ext,fixed_static,A2b,FAIL,16
+reddit_comments_ext,fixed_static,A2b,PASS,4
+reddit_comments_ext,fixed_static,A3,PASS,20
+reddit_comments_ext,fixed_static,A4,PASS,20
+reddit_comments_ext,fixed_static,B1,FAIL,20
+reddit_comments_ext,fixed_static,B10,FAIL,5
+reddit_comments_ext,fixed_static,B10,INCONCLUSIVE,13
+reddit_comments_ext,fixed_static,B10,PASS,2
+reddit_comments_ext,fixed_static,B2,FAIL,20
+reddit_comments_ext,fixed_static,B3,FAIL,3
+reddit_comments_ext,fixed_static,B3,INCONCLUSIVE,17
+reddit_comments_ext,fixed_static,B4,PASS,20
+reddit_comments_ext,fixed_static,B5,FAIL,18
+reddit_comments_ext,fixed_static,B5,INCONCLUSIVE,2
+reddit_comments_ext,fixed_static,B6,FAIL,5
+reddit_comments_ext,fixed_static,B6,PASS,15
+reddit_comments_ext,fixed_static,B7,FAIL,17
+reddit_comments_ext,fixed_static,B7,PASS,3
+reddit_comments_ext,fixed_static,B9,FAIL,17
+reddit_comments_ext,fixed_static,B9,PASS,3
+reddit_comments_ext,fixed_static,screen,FAIL,20
+reddit_comments_ext,fixed_walk,A1,PASS,20
+reddit_comments_ext,fixed_walk,A2,PASS,20
+reddit_comments_ext,fixed_walk,A2b,FAIL,16
+reddit_comments_ext,fixed_walk,A2b,PASS,4
+reddit_comments_ext,fixed_walk,A3,PASS,20
+reddit_comments_ext,fixed_walk,A4,PASS,20
+reddit_comments_ext,fixed_walk,B1,PASS,20
+reddit_comments_ext,fixed_walk,B10,PASS,20
+reddit_comments_ext,fixed_walk,B2,INCONCLUSIVE,5
+reddit_comments_ext,fixed_walk,B2,PASS,15
+reddit_comments_ext,fixed_walk,B3,INCONCLUSIVE,20
+reddit_comments_ext,fixed_walk,B4,PASS,20
+reddit_comments_ext,fixed_walk,B5,INCONCLUSIVE,4
+reddit_comments_ext,fixed_walk,B5,NOT ADJUDICATED,1
+reddit_comments_ext,fixed_walk,B5,PASS,15
+reddit_comments_ext,fixed_walk,B6,PASS,20
+reddit_comments_ext,fixed_walk,B7,FAIL,5
+reddit_comments_ext,fixed_walk,B7,PASS,15
+reddit_comments_ext,fixed_walk,B9,FAIL,5
+reddit_comments_ext,fixed_walk,B9,PASS,15
+reddit_comments_ext,fixed_walk,screen,FAIL,5
+reddit_comments_ext,fixed_walk,screen,INCONCLUSIVE,1
+reddit_comments_ext,fixed_walk,screen,PASS,14
+reddit_comments_ext,home,A1,PASS,20
+reddit_comments_ext,home,A2,PASS,20
+reddit_comments_ext,home,A2b,FAIL,15
+reddit_comments_ext,home,A2b,PASS,5
+reddit_comments_ext,home,A3,PASS,20
+reddit_comments_ext,home,A4,PASS,20
+reddit_comments_ext,home,B1,NOT ADJUDICATED,20
+reddit_comments_ext,home,B10,NOT ADJUDICATED,20
+reddit_comments_ext,home,B2,NOT ADJUDICATED,20
+reddit_comments_ext,home,B3,NOT ADJUDICATED,20
+reddit_comments_ext,home,B4,NOT ADJUDICATED,20
+reddit_comments_ext,home,B5,NOT ADJUDICATED,20
+reddit_comments_ext,home,B6,NOT ADJUDICATED,20
+reddit_comments_ext,home,B7,NOT ADJUDICATED,20
+reddit_comments_ext,home,B9,NOT ADJUDICATED,20
+reddit_comments_ext,home,screen,NOT ADJUDICATED,20
+reddit_comments_ext,position_ou,A1,PASS,20
+reddit_comments_ext,position_ou,A2,PASS,20
+reddit_comments_ext,position_ou,A2b,FAIL,16
+reddit_comments_ext,position_ou,A2b,PASS,4
+reddit_comments_ext,position_ou,A3,PASS,20
+reddit_comments_ext,position_ou,A4,PASS,20
+reddit_comments_ext,position_ou,B1,PASS,20
+reddit_comments_ext,position_ou,B10,PASS,20
+reddit_comments_ext,position_ou,B2,INCONCLUSIVE,2
+reddit_comments_ext,position_ou,B2,PASS,18
+reddit_comments_ext,position_ou,B3,FAIL,1
+reddit_comments_ext,position_ou,B3,INCONCLUSIVE,19
+reddit_comments_ext,position_ou,B4,PASS,20
+reddit_comments_ext,position_ou,B5,FAIL,3
+reddit_comments_ext,position_ou,B5,INCONCLUSIVE,16
+reddit_comments_ext,position_ou,B5,PASS,1
+reddit_comments_ext,position_ou,B6,PASS,20
+reddit_comments_ext,position_ou,B7,PASS,20
+reddit_comments_ext,position_ou,B9,FAIL,2
+reddit_comments_ext,position_ou,B9,PASS,18
+reddit_comments_ext,position_ou,screen,FAIL,1
+reddit_comments_ext,position_ou,screen,PASS,19
+reddit_comments_ext,rank_drift,A1,PASS,20
+reddit_comments_ext,rank_drift,A2,PASS,20
+reddit_comments_ext,rank_drift,A2b,FAIL,16
+reddit_comments_ext,rank_drift,A2b,PASS,4
+reddit_comments_ext,rank_drift,A3,PASS,20
+reddit_comments_ext,rank_drift,A4,FAIL,20
+reddit_comments_ext,rank_drift,B1,PASS,20
+reddit_comments_ext,rank_drift,B10,PASS,20
+reddit_comments_ext,rank_drift,B2,INCONCLUSIVE,16
+reddit_comments_ext,rank_drift,B2,PASS,4
+reddit_comments_ext,rank_drift,B3,INCONCLUSIVE,20
+reddit_comments_ext,rank_drift,B4,PASS,20
+reddit_comments_ext,rank_drift,B5,INCONCLUSIVE,1
+reddit_comments_ext,rank_drift,B5,NOT ADJUDICATED,1
+reddit_comments_ext,rank_drift,B5,PASS,18
+reddit_comments_ext,rank_drift,B6,PASS,20
+reddit_comments_ext,rank_drift,B7,FAIL,20
+reddit_comments_ext,rank_drift,B9,FAIL,1
+reddit_comments_ext,rank_drift,B9,PASS,19
+reddit_comments_ext,rank_drift,screen,FAIL,20
+reddit_comments_ext,replacement,A1,PASS,20
+reddit_comments_ext,replacement,A2,PASS,20
+reddit_comments_ext,replacement,A2b,FAIL,16
+reddit_comments_ext,replacement,A2b,PASS,4
+reddit_comments_ext,replacement,A3,INCONCLUSIVE,20
+reddit_comments_ext,replacement,A4,FAIL,20
+reddit_comments_ext,replacement,B1,PASS,20
+reddit_comments_ext,replacement,B10,INCONCLUSIVE,20
+reddit_comments_ext,replacement,B2,FAIL,20
+reddit_comments_ext,replacement,B3,INCONCLUSIVE,3
+reddit_comments_ext,replacement,B3,PASS,17
+reddit_comments_ext,replacement,B4,PASS,20
+reddit_comments_ext,replacement,B5,FAIL,1
+reddit_comments_ext,replacement,B5,NOT ADJUDICATED,19
+reddit_comments_ext,replacement,B6,FAIL,20
+reddit_comments_ext,replacement,B7,FAIL,20
+reddit_comments_ext,replacement,B9,FAIL,20
+reddit_comments_ext,replacement,screen,FAIL,20
+reddit_comments_ext,rw_medium,A1,PASS,20
+reddit_comments_ext,rw_medium,A2,PASS,20
+reddit_comments_ext,rw_medium,A2b,FAIL,18
+reddit_comments_ext,rw_medium,A2b,PASS,2
+reddit_comments_ext,rw_medium,A3,PASS,20
+reddit_comments_ext,rw_medium,A4,PASS,20
+reddit_comments_ext,rw_medium,B1,PASS,20
+reddit_comments_ext,rw_medium,B10,PASS,20
+reddit_comments_ext,rw_medium,B2,INCONCLUSIVE,9
+reddit_comments_ext,rw_medium,B2,PASS,11
+reddit_comments_ext,rw_medium,B3,INCONCLUSIVE,20
+reddit_comments_ext,rw_medium,B4,PASS,20
+reddit_comments_ext,rw_medium,B5,NOT ADJUDICATED,2
+reddit_comments_ext,rw_medium,B5,PASS,18
+reddit_comments_ext,rw_medium,B6,PASS,20
+reddit_comments_ext,rw_medium,B7,FAIL,1
+reddit_comments_ext,rw_medium,B7,PASS,19
+reddit_comments_ext,rw_medium,B9,FAIL,8
+reddit_comments_ext,rw_medium,B9,PASS,12
+reddit_comments_ext,rw_medium,screen,FAIL,1
+reddit_comments_ext,rw_medium,screen,INCONCLUSIVE,2
+reddit_comments_ext,rw_medium,screen,PASS,17
+reddit_comments_ext,rw_persistent,A1,PASS,20
+reddit_comments_ext,rw_persistent,A2,PASS,20
+reddit_comments_ext,rw_persistent,A2b,FAIL,18
+reddit_comments_ext,rw_persistent,A2b,PASS,2
+reddit_comments_ext,rw_persistent,A3,PASS,20
+reddit_comments_ext,rw_persistent,A4,PASS,20
+reddit_comments_ext,rw_persistent,B1,PASS,20
+reddit_comments_ext,rw_persistent,B10,PASS,20
+reddit_comments_ext,rw_persistent,B2,INCONCLUSIVE,10
+reddit_comments_ext,rw_persistent,B2,PASS,10
+reddit_comments_ext,rw_persistent,B3,INCONCLUSIVE,20
+reddit_comments_ext,rw_persistent,B4,PASS,20
+reddit_comments_ext,rw_persistent,B5,NOT ADJUDICATED,2
+reddit_comments_ext,rw_persistent,B5,PASS,18
+reddit_comments_ext,rw_persistent,B6,PASS,20
+reddit_comments_ext,rw_persistent,B7,FAIL,2
+reddit_comments_ext,rw_persistent,B7,PASS,18
+reddit_comments_ext,rw_persistent,B9,FAIL,6
+reddit_comments_ext,rw_persistent,B9,PASS,14
+reddit_comments_ext,rw_persistent,screen,FAIL,2
+reddit_comments_ext,rw_persistent,screen,INCONCLUSIVE,2
+reddit_comments_ext,rw_persistent,screen,PASS,16
+reddit_comments_ext,unstabilized,A1,PASS,20
+reddit_comments_ext,unstabilized,A2,PASS,20
+reddit_comments_ext,unstabilized,A2b,FAIL,17
+reddit_comments_ext,unstabilized,A2b,PASS,3
+reddit_comments_ext,unstabilized,A3,PASS,20
+reddit_comments_ext,unstabilized,A4,PASS,20
+reddit_comments_ext,unstabilized,B1,PASS,20
+reddit_comments_ext,unstabilized,B10,PASS,20
+reddit_comments_ext,unstabilized,B2,INCONCLUSIVE,4
+reddit_comments_ext,unstabilized,B2,PASS,16
+reddit_comments_ext,unstabilized,B3,INCONCLUSIVE,20
+reddit_comments_ext,unstabilized,B4,PASS,20
+reddit_comments_ext,unstabilized,B5,FAIL,14
+reddit_comments_ext,unstabilized,B5,INCONCLUSIVE,5
+reddit_comments_ext,unstabilized,B5,NOT ADJUDICATED,1
+reddit_comments_ext,unstabilized,B6,PASS,20
+reddit_comments_ext,unstabilized,B7,FAIL,4
+reddit_comments_ext,unstabilized,B7,PASS,16
+reddit_comments_ext,unstabilized,B9,FAIL,1
+reddit_comments_ext,unstabilized,B9,PASS,19
+reddit_comments_ext,unstabilized,screen,FAIL,11
+reddit_comments_ext,unstabilized,screen,PASS,9
+reddit_submissions_long,equal_components,A1,PASS,20
+reddit_submissions_long,equal_components,A2,PASS,20
+reddit_submissions_long,equal_components,A2b,FAIL,20
+reddit_submissions_long,equal_components,A3,PASS,20
+reddit_submissions_long,equal_components,A4,PASS,20
+reddit_submissions_long,equal_components,B1,PASS,20
+reddit_submissions_long,equal_components,B10,FAIL,4
+reddit_submissions_long,equal_components,B10,PASS,16
+reddit_submissions_long,equal_components,B2,INCONCLUSIVE,20
+reddit_submissions_long,equal_components,B3,INCONCLUSIVE,20
+reddit_submissions_long,equal_components,B4,FAIL,4
+reddit_submissions_long,equal_components,B4,INCONCLUSIVE,16
+reddit_submissions_long,equal_components,B5,INCONCLUSIVE,1
+reddit_submissions_long,equal_components,B5,NOT ADJUDICATED,10
+reddit_submissions_long,equal_components,B5,PASS,9
+reddit_submissions_long,equal_components,B6,PASS,20
+reddit_submissions_long,equal_components,B7,FAIL,5
+reddit_submissions_long,equal_components,B7,PASS,15
+reddit_submissions_long,equal_components,B9,FAIL,5
+reddit_submissions_long,equal_components,B9,PASS,15
+reddit_submissions_long,equal_components,screen,FAIL,12
+reddit_submissions_long,equal_components,screen,INCONCLUSIVE,6
+reddit_submissions_long,equal_components,screen,PASS,2
+reddit_submissions_long,fixed_static,A1,PASS,20
+reddit_submissions_long,fixed_static,A2,PASS,20
+reddit_submissions_long,fixed_static,A2b,FAIL,4
+reddit_submissions_long,fixed_static,A2b,PASS,16
+reddit_submissions_long,fixed_static,A3,PASS,20
+reddit_submissions_long,fixed_static,A4,PASS,20
+reddit_submissions_long,fixed_static,B1,FAIL,20
+reddit_submissions_long,fixed_static,B10,FAIL,5
+reddit_submissions_long,fixed_static,B10,INCONCLUSIVE,15
+reddit_submissions_long,fixed_static,B2,FAIL,20
+reddit_submissions_long,fixed_static,B3,FAIL,3
+reddit_submissions_long,fixed_static,B3,INCONCLUSIVE,17
+reddit_submissions_long,fixed_static,B4,INCONCLUSIVE,6
+reddit_submissions_long,fixed_static,B4,PASS,14
+reddit_submissions_long,fixed_static,B5,FAIL,17
+reddit_submissions_long,fixed_static,B5,INCONCLUSIVE,3
+reddit_submissions_long,fixed_static,B6,FAIL,16
+reddit_submissions_long,fixed_static,B6,PASS,4
+reddit_submissions_long,fixed_static,B7,FAIL,20
+reddit_submissions_long,fixed_static,B9,FAIL,19
+reddit_submissions_long,fixed_static,B9,PASS,1
+reddit_submissions_long,fixed_static,screen,FAIL,20
+reddit_submissions_long,fixed_walk,A1,PASS,20
+reddit_submissions_long,fixed_walk,A2,PASS,20
+reddit_submissions_long,fixed_walk,A2b,FAIL,2
+reddit_submissions_long,fixed_walk,A2b,PASS,18
+reddit_submissions_long,fixed_walk,A3,PASS,20
+reddit_submissions_long,fixed_walk,A4,PASS,20
+reddit_submissions_long,fixed_walk,B1,FAIL,4
+reddit_submissions_long,fixed_walk,B1,PASS,16
+reddit_submissions_long,fixed_walk,B10,PASS,20
+reddit_submissions_long,fixed_walk,B2,INCONCLUSIVE,14
+reddit_submissions_long,fixed_walk,B2,PASS,6
+reddit_submissions_long,fixed_walk,B3,INCONCLUSIVE,20
+reddit_submissions_long,fixed_walk,B4,PASS,20
+reddit_submissions_long,fixed_walk,B5,FAIL,1
+reddit_submissions_long,fixed_walk,B5,INCONCLUSIVE,7
+reddit_submissions_long,fixed_walk,B5,PASS,12
+reddit_submissions_long,fixed_walk,B6,PASS,20
+reddit_submissions_long,fixed_walk,B7,FAIL,16
+reddit_submissions_long,fixed_walk,B7,PASS,4
+reddit_submissions_long,fixed_walk,B9,FAIL,6
+reddit_submissions_long,fixed_walk,B9,PASS,14
+reddit_submissions_long,fixed_walk,screen,FAIL,17
+reddit_submissions_long,fixed_walk,screen,PASS,3
+reddit_submissions_long,home,A1,PASS,20
+reddit_submissions_long,home,A2,PASS,20
+reddit_submissions_long,home,A2b,FAIL,8
+reddit_submissions_long,home,A2b,PASS,12
+reddit_submissions_long,home,A3,PASS,20
+reddit_submissions_long,home,A4,PASS,20
+reddit_submissions_long,home,B1,FAIL,19
+reddit_submissions_long,home,B1,PASS,1
+reddit_submissions_long,home,B10,FAIL,20
+reddit_submissions_long,home,B2,FAIL,20
+reddit_submissions_long,home,B3,FAIL,1
+reddit_submissions_long,home,B3,INCONCLUSIVE,19
+reddit_submissions_long,home,B4,FAIL,20
+reddit_submissions_long,home,B5,FAIL,20
+reddit_submissions_long,home,B6,PASS,20
+reddit_submissions_long,home,B7,FAIL,6
+reddit_submissions_long,home,B7,PASS,14
+reddit_submissions_long,home,B9,FAIL,8
+reddit_submissions_long,home,B9,PASS,12
+reddit_submissions_long,home,screen,FAIL,20
+reddit_submissions_long,position_ou,A1,PASS,20
+reddit_submissions_long,position_ou,A2,PASS,20
+reddit_submissions_long,position_ou,A2b,FAIL,2
+reddit_submissions_long,position_ou,A2b,PASS,18
+reddit_submissions_long,position_ou,A3,PASS,20
+reddit_submissions_long,position_ou,A4,PASS,20
+reddit_submissions_long,position_ou,B1,FAIL,1
+reddit_submissions_long,position_ou,B1,PASS,19
+reddit_submissions_long,position_ou,B10,PASS,20
+reddit_submissions_long,position_ou,B2,INCONCLUSIVE,5
+reddit_submissions_long,position_ou,B2,PASS,15
+reddit_submissions_long,position_ou,B3,INCONCLUSIVE,20
+reddit_submissions_long,position_ou,B4,PASS,20
+reddit_submissions_long,position_ou,B5,FAIL,5
+reddit_submissions_long,position_ou,B5,INCONCLUSIVE,11
+reddit_submissions_long,position_ou,B5,PASS,4
+reddit_submissions_long,position_ou,B6,PASS,20
+reddit_submissions_long,position_ou,B7,FAIL,6
+reddit_submissions_long,position_ou,B7,PASS,14
+reddit_submissions_long,position_ou,B9,FAIL,4
+reddit_submissions_long,position_ou,B9,PASS,16
+reddit_submissions_long,position_ou,screen,FAIL,12
+reddit_submissions_long,position_ou,screen,PASS,8
+reddit_submissions_long,rank_drift,A1,PASS,20
+reddit_submissions_long,rank_drift,A2,PASS,20
+reddit_submissions_long,rank_drift,A2b,FAIL,4
+reddit_submissions_long,rank_drift,A2b,PASS,16
+reddit_submissions_long,rank_drift,A3,PASS,20
+reddit_submissions_long,rank_drift,A4,FAIL,15
+reddit_submissions_long,rank_drift,A4,PASS,5
+reddit_submissions_long,rank_drift,B1,FAIL,17
+reddit_submissions_long,rank_drift,B1,PASS,3
+reddit_submissions_long,rank_drift,B10,PASS,20
+reddit_submissions_long,rank_drift,B2,INCONCLUSIVE,19
+reddit_submissions_long,rank_drift,B2,PASS,1
+reddit_submissions_long,rank_drift,B3,INCONCLUSIVE,20
+reddit_submissions_long,rank_drift,B4,PASS,20
+reddit_submissions_long,rank_drift,B5,INCONCLUSIVE,6
+reddit_submissions_long,rank_drift,B5,PASS,14
+reddit_submissions_long,rank_drift,B6,PASS,20
+reddit_submissions_long,rank_drift,B7,FAIL,20
+reddit_submissions_long,rank_drift,B9,FAIL,3
+reddit_submissions_long,rank_drift,B9,PASS,17
+reddit_submissions_long,rank_drift,screen,FAIL,20
+reddit_submissions_long,replacement,A1,PASS,20
+reddit_submissions_long,replacement,A2,PASS,20
+reddit_submissions_long,replacement,A2b,FAIL,4
+reddit_submissions_long,replacement,A2b,PASS,16
+reddit_submissions_long,replacement,A3,INCONCLUSIVE,20
+reddit_submissions_long,replacement,A4,FAIL,20
+reddit_submissions_long,replacement,B1,PASS,20
+reddit_submissions_long,replacement,B10,INCONCLUSIVE,20
+reddit_submissions_long,replacement,B2,FAIL,20
+reddit_submissions_long,replacement,B3,INCONCLUSIVE,10
+reddit_submissions_long,replacement,B3,PASS,10
+reddit_submissions_long,replacement,B4,PASS,20
+reddit_submissions_long,replacement,B5,FAIL,17
+reddit_submissions_long,replacement,B5,NOT ADJUDICATED,3
+reddit_submissions_long,replacement,B6,FAIL,20
+reddit_submissions_long,replacement,B7,FAIL,20
+reddit_submissions_long,replacement,B9,FAIL,20
+reddit_submissions_long,replacement,screen,FAIL,20
+reddit_submissions_long,rw_medium,A1,PASS,20
+reddit_submissions_long,rw_medium,A2,PASS,20
+reddit_submissions_long,rw_medium,A2b,FAIL,2
+reddit_submissions_long,rw_medium,A2b,PASS,18
+reddit_submissions_long,rw_medium,A3,PASS,20
+reddit_submissions_long,rw_medium,A4,PASS,20
+reddit_submissions_long,rw_medium,B1,PASS,20
+reddit_submissions_long,rw_medium,B10,PASS,20
+reddit_submissions_long,rw_medium,B2,INCONCLUSIVE,15
+reddit_submissions_long,rw_medium,B2,PASS,5
+reddit_submissions_long,rw_medium,B3,INCONCLUSIVE,20
+reddit_submissions_long,rw_medium,B4,PASS,20
+reddit_submissions_long,rw_medium,B5,INCONCLUSIVE,1
+reddit_submissions_long,rw_medium,B5,PASS,19
+reddit_submissions_long,rw_medium,B6,PASS,20
+reddit_submissions_long,rw_medium,B7,FAIL,17
+reddit_submissions_long,rw_medium,B7,PASS,3
+reddit_submissions_long,rw_medium,B9,FAIL,9
+reddit_submissions_long,rw_medium,B9,PASS,11
+reddit_submissions_long,rw_medium,screen,FAIL,17
+reddit_submissions_long,rw_medium,screen,PASS,3
+reddit_submissions_long,rw_persistent,A1,PASS,20
+reddit_submissions_long,rw_persistent,A2,PASS,20
+reddit_submissions_long,rw_persistent,A2b,FAIL,2
+reddit_submissions_long,rw_persistent,A2b,PASS,18
+reddit_submissions_long,rw_persistent,A3,PASS,20
+reddit_submissions_long,rw_persistent,A4,PASS,20
+reddit_submissions_long,rw_persistent,B1,PASS,20
+reddit_submissions_long,rw_persistent,B10,PASS,20
+reddit_submissions_long,rw_persistent,B2,INCONCLUSIVE,17
+reddit_submissions_long,rw_persistent,B2,PASS,3
+reddit_submissions_long,rw_persistent,B3,INCONCLUSIVE,20
+reddit_submissions_long,rw_persistent,B4,INCONCLUSIVE,2
+reddit_submissions_long,rw_persistent,B4,PASS,18
+reddit_submissions_long,rw_persistent,B5,INCONCLUSIVE,1
+reddit_submissions_long,rw_persistent,B5,PASS,19
+reddit_submissions_long,rw_persistent,B6,PASS,20
+reddit_submissions_long,rw_persistent,B7,FAIL,16
+reddit_submissions_long,rw_persistent,B7,PASS,4
+reddit_submissions_long,rw_persistent,B9,FAIL,8
+reddit_submissions_long,rw_persistent,B9,PASS,12
+reddit_submissions_long,rw_persistent,screen,FAIL,16
+reddit_submissions_long,rw_persistent,screen,PASS,4
+reddit_submissions_long,unstabilized,A1,PASS,20
+reddit_submissions_long,unstabilized,A2,PASS,20
+reddit_submissions_long,unstabilized,A2b,FAIL,2
+reddit_submissions_long,unstabilized,A2b,PASS,18
+reddit_submissions_long,unstabilized,A3,PASS,20
+reddit_submissions_long,unstabilized,A4,PASS,20
+reddit_submissions_long,unstabilized,B1,FAIL,8
+reddit_submissions_long,unstabilized,B1,PASS,12
+reddit_submissions_long,unstabilized,B10,PASS,20
+reddit_submissions_long,unstabilized,B2,INCONCLUSIVE,13
+reddit_submissions_long,unstabilized,B2,PASS,7
+reddit_submissions_long,unstabilized,B3,INCONCLUSIVE,20
+reddit_submissions_long,unstabilized,B4,PASS,20
+reddit_submissions_long,unstabilized,B5,FAIL,5
+reddit_submissions_long,unstabilized,B5,INCONCLUSIVE,12
+reddit_submissions_long,unstabilized,B5,PASS,3
+reddit_submissions_long,unstabilized,B6,PASS,20
+reddit_submissions_long,unstabilized,B7,FAIL,12
+reddit_submissions_long,unstabilized,B7,PASS,8
+reddit_submissions_long,unstabilized,B9,FAIL,2
+reddit_submissions_long,unstabilized,B9,PASS,18
+reddit_submissions_long,unstabilized,screen,FAIL,18
+reddit_submissions_long,unstabilized,screen,PASS,2

@@ -61,3 +61,7 @@ llm_fitting/handoff/**/figures/*.png
 # V2 per-seed and all-pairs archives (33 MB): kept on branch codex/v2-planted-mechanisms, not on main
 llm_fitting/runs/2026-10-12_V2_planted_mechanisms/compact/diagnostics_seeds.jsonl.gz
 llm_fitting/runs/2026-10-12_V2_planted_mechanisms/diagnostic_pairs.csv.gz
+
+# V4 full seed evidence and numeric map (37 MB): kept on branch codex/v4-planted-rivals, not on main
+llm_fitting/runs/2026-10-13_V4_planted_rivals/seed_evidence.jsonl.gz
+llm_fitting/runs/2026-10-13_V4_planted_rivals/numeric_map.csv.gz
