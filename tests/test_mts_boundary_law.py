@@ -86,3 +86,18 @@ def test_a_pressed_head_sinks_and_crosses_at_the_theory_rate_below_the_press():
         assert 0.75 < p[k]["R_lasting"] / theory(p[k]) < 1.33, (k, p[k]["R_lasting"] / theory(p[k]))
     for k in (25, 50, 100):
         assert p[k]["obs_one"] < -0.3 * C
+
+
+def test_short_panels_with_13_week_blocks_have_one_start_and_still_cross_at_the_theory_rate():
+    """Facebook Era A has 86 weeks: six 13-week blocks, one start, spacings of 26 and 52 weeks."""
+    rng = np.random.default_rng(31)
+    x = S * np.log(N / np.arange(1, N + 1))
+    out = np.empty((84, N))
+    for t in range(84):
+        x = x + rng.normal(0, np.sqrt(SIG2), N)
+        out[t] = x
+    res = bd.analyse(long_frame(out), K, 13, boot=5)
+    assert len(res["starts"]) == 1 and res["starts"][0]["start"] == 1
+    p = {r["k"]: r for r in res["pooled"]}
+    for k in (400, 800, 1600):
+        assert 0.75 < p[k]["R_lasting"] / theory(p[k]) < 1.33, (k, p[k]["R_lasting"] / theory(p[k]))

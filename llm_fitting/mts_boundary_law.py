@@ -87,8 +87,8 @@ def analyse(df, K, block=BLOCK, boot=BOOT, seed=0):
     out = dict(K=int(K), T=int(T), block=int(block), n_blocks=int(nb), certified_top=n_cert,
                ks=[k for _, k in ks], starts=[])
     vb = (1, 3, 5)
-    if nb < 8 or min(n_cert) < int(np.ceil(bl.WIDTH * K)):
-        out["not_adjudicated"] = "needs eight 26-week blocks and ranks to 1.42 K certified exact"
+    if nb < 6 or min(n_cert) < int(np.ceil(bl.WIDTH * K)):          # one start (cohort 0, blocks 1..5) at least
+        out["not_adjudicated"] = "needs six blocks and ranks to 1.42 K certified exact"
         return out
     pr0, pres0 = ba.perm_rank(Rk, start, start + block, floors)
     var_rows, var_bs = bl.lasting_variance(M, bl._assign(pr0, pres0, st), st, vb, 2 * block, rng, boot)
@@ -175,14 +175,16 @@ def analyse(df, K, block=BLOCK, boot=BOOT, seed=0):
     return out
 
 
-def run(panel):
+def run(panel, block=BLOCK):
+    """block 26 for the Reddit panels (2z-cm); 13 for facebook_a, whose Era A has 86 weeks (one start)."""
     import minimal_rankdiff as mrd
     cfg = m1.PANELS[panel]
     df = mrd.load_panel(mrd.PLATFORMS[cfg["platform"]])
-    res = analyse(df, cfg["K"])
+    res = analyse(df, cfg["K"], block=block)
     res.update(panel=panel, finished=time.strftime("%Y-%m-%d %H:%M:%S"))
     (OUT / "cells").mkdir(parents=True, exist_ok=True)
-    (OUT / "cells" / f"boundary__{panel}.json").write_text(json.dumps(res, indent=1, default=float))
+    tag = "" if block == BLOCK else f"__block{block}"
+    (OUT / "cells" / f"boundary__{panel}{tag}.json").write_text(json.dumps(res, indent=1, default=float))
     print(f"[{panel}] T={res['T']} blocks={res['n_blocks']} certified_top={res['certified_top']} written", flush=True)
 
 
@@ -263,6 +265,8 @@ def main():
     args = sys.argv[1:]
     if args[:1] == ["run"] and len(args) == 2 and args[1] in PANELS:
         run(args[1])
+    elif args[:1] == ["run"] and len(args) == 3 and args[1] in m1.PANELS:
+        run(args[1], int(args[2]))
     elif args[:1] == ["report"]:
         report()
         score()
