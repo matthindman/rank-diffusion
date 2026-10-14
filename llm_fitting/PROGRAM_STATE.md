@@ -176,6 +176,16 @@ On Facebook pages (Era A) the boundary theory holds too: crossings at K/16 … K
 are 0.77–1.17 of prediction, at rates about twice Reddit's (§2z-ct). A quarter
 of movement after June 2021 does not forecast the next year better than the
 ladder's own trend (§2z-cs).
+At a given rank the boundary ratio does not depend on K, and comments holds
+with 13-week blocks; submissions crosses only 0.61–0.72 of prediction at ranks
+of about 300–600 by every estimator, not explained by neighbours moving
+together (§2z-cu, §2z-cv). Rank-only dynamics fail the boundary test (ratios
+2.4–3.6), so its agreement on the data is not automatic (§2z-cv). In shares:
+the top 78 submissions communities went from 51% to 35% of the top 5,000's
+activity in 2019–2022, and their movement sustains 16%; comments is near
+balance (§2z-cw). Paper materials for the owner, none adopted:
+`PAPER_FRAME_DRAFT_2026-10-15.md` (title, significance, abstract, captions),
+`REVIEWER_QUESTIONS_2026-10-15.md`, figures in `runs/2026-10-15_figures/`.
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate
