@@ -70,12 +70,37 @@ def _terms(La, Lb, strat, width, ks, K):
     return out
 
 
-def analyse(df, K, block=BLOCK, boot=BOOT, seed=0):
+def _perm(Rk, lo, hi, floors, rule):
+    """Permanent rank over rows [lo, hi).  'absence_penalized' (the default everywhere) counts an absent
+    week at that week's floor.  'present_weeks' (opt-in, for instruments whose absences are mostly
+    instrument dropout, as Instagram's are: 2z-c L2) averages the ranks of the weeks present; ghosts are
+    then excluded by the presence threshold rather than sunk by the penalty."""
+    if rule == "absence_penalized":
+        return ba.perm_rank(Rk, lo, hi, floors)
+    r = Rk[lo:hi].astype(float)
+    present = r > 0
+    n = present.sum(axis=0)
+    pr = np.where(n > 0, np.where(present, r, 0.0).sum(axis=0) / np.maximum(n, 1), np.inf)
+    return pr, present.mean(axis=0)
+
+
+def _assign_at(pr, pres, st, thr):
+    which = np.full(pr.size, -1)
+    ok = pres >= thr
+    for j, (lo, hi) in enumerate(st):
+        which[ok & (pr > lo) & (pr <= hi)] = j
+    return which
+
+
+def analyse(df, K, block=BLOCK, boot=BOOT, seed=0, pres=None, rank_rule="absence_penalized"):
+    """pres: presence needed for a block level and for a cohort member (default m1.PRES, 0.9);
+    rank_rule: see _perm.  Both opt-in; the defaults reproduce 2z-cm exactly."""
+    thr = m1.PRES if pres is None else float(pres)
     X, Rk, floors, outside, ids = m1.matrices(df, K)
     T = X.shape[0]
     nb = T // block
     start = T - nb * block
-    M = ba.block_means(X, block, start=start, min_frac=m1.PRES)
+    M = ba.block_means(X, block, start=start, min_frac=thr)
     rng = np.random.default_rng(seed)
     st, ks = bl.strata(K), bl.cutoffs(K)
     width = np.array([hi - lo for lo, hi in st])
@@ -90,16 +115,16 @@ def analyse(df, K, block=BLOCK, boot=BOOT, seed=0):
     if nb < 6 or min(n_cert) < int(np.ceil(bl.WIDTH * K)):          # one start (cohort 0, blocks 1..5) at least
         out["not_adjudicated"] = "needs six blocks and ranks to 1.42 K certified exact"
         return out
-    pr0, pres0 = ba.perm_rank(Rk, start, start + block, floors)
-    var_rows, var_bs = bl.lasting_variance(M, bl._assign(pr0, pres0, st), st, vb, 2 * block, rng, boot)
+    pr0, pres0 = _perm(Rk, start, start + block, floors, rank_rule)
+    var_rows, var_bs = bl.lasting_variance(M, _assign_at(pr0, pres0, st, thr), st, vb, 2 * block, rng, boot)
     vn = [v["n"] for v in var_rows]
     s2 = {k: bl._at_boundary([v["sigma2"] for v in var_rows], vn, j) for j, k in ks}
     s2_bs = {k: np.array([bl._at_boundary(var_bs[:, t], vn, j) for t in range(boot)]) for j, k in ks}
     out["variance"] = [dict(lo=float(lo), hi=float(hi), **v) for (lo, hi), v in zip(st, var_rows)]
 
     for a in range(1, nb - SPACINGS[0]):
-        prc, presc = ba.perm_rank(Rk, start + (a - 1) * block, start + a * block, floors)
-        which = bl._assign(prc, presc, st)
+        prc, presc = _perm(Rk, start + (a - 1) * block, start + a * block, floors, rank_rule)
+        which = _assign_at(prc, presc, st, thr)
         Da = [D for D in SPACINGS if a + D <= nb - 1]
         if len(Da) < 2:
             continue
