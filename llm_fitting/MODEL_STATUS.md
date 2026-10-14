@@ -9619,3 +9619,80 @@ measure of founding rates. Anything on Facebook or YouTube.
 
 **Ledgers.** No data file opened (recorded run outputs only); no gate
 evaluation; nothing for the exposure ledger.
+
+## 2z-cl. 2026-10-14 — REVIEW (PLANNING ONLY, nothing adopted; synthetic simulation, no data file opened) of an external result supplied by the owner: GPT-6 pro's count-only test of fixed volatility types against volatility that responds to a community's own level. Its validity checks out within its model; a simulation of that model answers the power question it left open: power only for a strong response with quiet passing noise, none at the size of our gradient, and slow passing swings and life-cycle arcs, both on our panels, break its null. Its design principle, a null that holds for every community separately, is the right one for our within-community test
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; started
+from fa12a7e. Source verbatim in
+`runs/2026-10-14_external_volatility_test_review/SOURCE.md`; review, code
+and outputs in the same folder (`REVIEW.md`, `sim_power.py`,
+`sim_power.json`, `output.txt`)._
+
+**What was supplied.** The owner pasted the result in the conversation ("Here
+is a result from GPT-6 pro:"). The question it answers was not supplied; its
+parameter box is inferred in `REVIEW.md`. Its linked code archive was not
+supplied. Under fixed volatility, a three-block second difference of a
+community's log intensity, weights (1, −2, 1)/L over a year, cancels its
+level and its own linear trend. It is then Gaussian and symmetric for each
+community separately. Volatility that responds to level skews it, so the
+test looks for a third-moment (leverage) signature. An exact Poisson
+transform of daily counts carries this to observations, a betting mixture
+gives exact level 0.05, and the common seasonal phase is profiled. The
+result states that power is not established.
+
+**Checked.** The transform's bound (12) and the monotonicity of |f_τ|, by
+direct summation at four intensities. The filter's moments. The filtered OU
+variance (44), against a direct integral to five digits. Not checked: the
+daily-integration bounds (22)–(26), the envelope (33)–(35), the interval
+certificate.
+
+**Simulation of its own model.** Each scenario is 20 independent sets of
+10,000 communities over 363 days. Rejections in sets of 10,000; of 40,000:
+
+| scenario | rejects (10,000) | rejects (40,000) |
+|---|---|---|
+| nulls inside the model, heavy and quiet passing noise | 0/20, 0/20 | 0/5, 0/5 |
+| β = −0.0004 (the alternative asked about), heavy noise (v 0.09, κ 1/30) | 0/20 | 0/5 |
+| β = −0.0004, quiet noise (v 0.02, κ 1/7) | 7/20 | 5/5 |
+| β = −0.0001, heavy and quiet | 0/20, 0/20 | 0/5, 0/5 |
+| fixed volatility with drift by level (up to six times our tilt), or short spikes | 0/20 each | 0/5 each |
+| fixed volatility with slow spikes (decay 1/60 a day), quiet | 1/20 | 1/5 |
+| fixed volatility with concave life-cycle arcs on 30% of names, quiet | 0/20; **20/20 with the phase known** | 0/5 |
+
+An ideal test with the phase known would need about 120,000 communities at
+β = −0.0004 in heavy noise, and about 180,000 at β = −0.0001 in quiet noise,
+before the bias allowance; after it, about 370,000 and tens of millions.
+
+**Verdict.** Nothing to adopt.
+
+1. The null calibration is right within its model.
+2. Our panels' lasting variance falls with level by 0.8–1.2 × 10⁻⁴ a day per
+   log unit on comments and 1.8–3.6 × 10⁻⁴ on submissions (§2z-cd cells). That
+   is a fifth to nine tenths of the alternative, and only if all of it were a
+   response to level. At comments' size the test has no power on panels of
+   12,500–25,000 communities.
+3. Two features of our panels break its null:
+   - slow passing swings: a fitted 10-week half-life on comments (§2p), and
+     weekly positions moving half again as much as block means (§2z-bw);
+   - life-cycle arcs (§2p). Its seasonal profile absorbs moderate arcs only
+     because the same profile removes power in heavy noise.
+4. Karma is not a count.
+
+**What it means** (my reading). It supplies the design principle the
+within-community test needs: a statistic whose mean is zero for each
+community under fixed volatility. Such a null is immune to fixed types
+whatever their association with size or age. By the same argument, which is
+my extension, it is also immune to any deterministic change of volatility
+with age. So it separates a response to the community's own level from all
+three age-related rivals of §2z-ck. The third-moment route is too weak and
+too fragile for these panels. Two alternatives, untested; V5 should compare
+them:
+- a second-moment route: does a community's later lasting variance change
+  after its own lasting move? This needs a per-community version of the
+  variance route's noise cancellation;
+- a contrast that also removes curvature, against arcs.
+
+**Not run.** Arcs beyond the profile's range. Karma-like observation noise.
+Any panel data.
+
+**Ledgers.** No data contact; no gate evaluation.
