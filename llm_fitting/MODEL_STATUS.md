@@ -9015,3 +9015,130 @@ llm_fitting/mts_replenish.py run <panel>` for `reddit_submissions_long` and
 No run was killed.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-cd. 2026-10-14 — EXPLORATORY MEASUREMENT: the balance by rank as a rate law, tested out of equilibrium. On the persisting endpoints, d shape_k/dt = σ_k²/(2S_k) − s̄_k predicts the rate at which the ladder's shape changes from named movement alone: over 24 cells the slope of observed on predicted is 0.76, the correlation 0.94, the rms error 43% of "no change", and the sign is right in 13 of 13 cells where a change of any size is predicted. A lagged version beats "no change" on both panels and "repeat last year" on one. It does worse than "no change" on comments 2020→2021. Four of five predictions held; nothing adopted, no fit, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; design,
+predictions, runner and planted-world tests committed at a2ce2a8 before the
+run; results committed with this entry._
+
+**Tier.** Exploratory, DEVELOPMENT data, in sample except the lagged test.
+Data only.
+
+**The owner's request.** "think big, identify the biggest remaining obstacles
+to a publishable paper, and tackle the most important/most tractable you can
+make progress on your own in the next three hours without additional data."
+
+**The obstacles, as I rank them.** (1) No tested statement that movement
+determines structure once the ladder may move; the one slope design is closed
+(§2z-by). (2) No planted world contains the data (Codex). (3) One platform;
+Facebook unreadable; new data sealed (owner). (4) The window holds dated
+platform changes, so stationarity cannot be the claim. (5) The candidate for
+individual movement has no gate evaluation (owner-gated). (6) Capture delay
+unmeasured on our files (WD drive). I took (1), which also answers (4).
+
+**The statement.** For the endpoints with a level in both of two blocks, U_k
+the mean level of the top k positions, shape_k = U_k − U_K:
+d shape_k/dt = c_k − s̄_k, with c_k = σ_k²/(2S_k) the gain per member per week
+from crossings at the boundary (lasting variance there over twice the local
+slope) and s̄_k the mean slide against U_K of the named endpoints ranked
+above k. At k = K it is §2z-cc's "slide equals diffusion"; with one slide it
+is S = σ²/(2g). The left side is read off the ladder and the right side off
+named endpoints by rank; they share no computation. Unlike the accounting of
+§2z-bq it can fail: it needs movement at a boundary to be a small-step
+diffusion with the measured variance. Entry is exact and apart.
+
+**Method.** `runs/2026-10-14_balance_law/DESIGN.md`; `mts_balance_law.py`. Two
+Reddit panels, four 52-week blocks, centre K, cut-offs K/64 to K on the
+strata's edges. s̄_k from a cohort fixed on the block before the pair, by
+strata of permanent rank weighted by width; σ² by the variance route of
+§2z-cc (2019 cohort, blocks 1 to 3, one value per rank for the panel); S the
+mean of the two blocks' local slopes, or the start block's for the lagged
+prediction, which takes its slides from the year before. 300 endpoint
+bootstraps. Planted-world tests: stationary, head pressed down, head too
+steep, and swings with births.
+
+**Deviation.** The first output had no prediction at four of seven cut-offs:
+whole-number cut-offs did not match strata edges that are fractions of K. I
+saw the three valid cut-offs per pair, fixed the matching, added a test and
+re-ran. No rule or prediction changed.
+
+**Result.** Rates per 1,000 weeks on the persisting set, at K/64, K/32, K/16,
+K/8, K/4, K/2.
+
+| | predicted | observed | rms error against "no change" |
+|---|---|---|---|
+| submissions 2020→2021 | −4.0, −4.9, −4.0, −3.1, −1.1, −0.6 | −5.2, −4.3, −3.4, −2.5, −1.4, −0.7 | 0.7 against 3.3 |
+| submissions 2021→2022 | −6.0, −5.9, −4.0, −2.2, −0.6, −0.2 | −4.0, −3.3, −2.6, −2.1, −1.1, −0.3 | 1.5 against 2.6 |
+| comments 2021→2022 | −0.4, +0.1, +1.5, +1.8, +1.6, +0.8 | +0.5, +0.7, +1.1, +1.2, +1.1, +0.8 | 0.6 against 0.9 |
+| comments 2020→2021 | +0.1, −0.0, +0.9, +1.3, +0.8, −0.1 | −0.9, −0.5, +0.0, +0.3, +0.6, +0.4 | 0.7 against 0.5 |
+
+Pooled, 24 cells: slope of observed on predicted 0.76; correlation 0.94; rms
+error 0.00094 a week against 0.00216; sign right in 13 of 13 where the
+prediction exceeds 0.0010, and in 21 of 24 overall. Lagged, 12 cells: rms
+error 0.00069 against 0.00086 for "repeat last year" and 0.00194 for "no
+change"; by panel 0.00045 against 0.00097 and 0.00094 on comments, 0.00086
+against 0.00074 and 0.00257 on submissions; sign right in 12 of 12.
+
+1. On submissions the head's members lose 0.006–0.011 a week against the pack
+   and crossings return 0.002–0.005: the head sinks at the difference, by
+   rank, in both years.
+2. On comments in 2021→2022 the persisting ladder steepens in the middle as
+   predicted (correlation 0.99), and entry takes most of it back: the entry
+   term is −0.0005 to −0.0011 a week below K. The full ladder's stability
+   that year is two opposing movements.
+3. On comments in 2020→2021 the law is worse than "no change": observed
+   changes under 0.001, predictions about 0.001 too high in the middle.
+4. Over-prediction: observed is 0.97 and 0.64 of predicted on submissions and
+   0.68 on comments 2021→2022. Every primary cohort is fixed on the block next
+   to its pair and may still carry swings that fade (§2z-bt), inflating its
+   slide; with the older 2019 cohort on 2021→2022 the figures are 1.10
+   (submissions) and 0.73 (comments), so that may be part of it on
+   submissions and is not the explanation on comments. Cause unknown.
+5. The slope movement would sustain, S* = σ_k²/(2(s̄_k − entry term)), over
+   the observed one, 2021→2022, K/64 to K: comments 0.71, 0.78, 1.15, 1.32,
+   1.37, 1.14, 0.85; submissions 0.47, 0.27, 0.39, 0.59, 0.88, 0.97, 1.03.
+
+**Predictions scored** (`DESIGN.md`). L1, slope 0.7–1.3 and rms error under
+half of "no change": PASS (0.76; 0.43), narrowly on both. L2, sign right in
+at least 85% of cells above 0.0010: PASS (13 of 13). L3, lagged beats "no
+change" on both panels and "repeat last year" on at least one: PASS. L4, S*/S
+within 0.75–1.33 on comments from K/64 to K/2 and below 0.75 on submissions
+at K/32 to K/8: FAIL on comments (0.71, 1.37); holds on submissions. L5,
+2020→2021 unseen, the submissions head predicted to sink at K/32 to K/8 and
+sinking: PASS. Before the run I had worked two cases by hand from earlier
+tables (DESIGN.md), so the in-sample fit for 2021→2022 was not blind.
+
+**Verdict.** No adoption rule applies. The rate form of the balance holds in
+three of four panel-years, including the two in which the ladder moves
+fastest, and in one lagged year on each panel; it over-predicts by about a
+quarter.
+
+**What it means** (my reading). A top set is stable when crossings at its
+boundary return what its members lose; whatever changes members' mean
+movement by rank moves the shape at the rate of the imbalance. That is a
+statement about the relation of individual movement to structure which can
+fail, did not in the hardest cases here, and can be frozen for new data:
+variance and slides by rank from one period, the slope at the start of the
+next, a predicted change of shape by rank, scored against "no change" and
+"repeat last change". On submissions it implies the head goes on sinking
+after 2022 if slides and variances persist; that is not registered.
+
+**What it does not show.** Why members' mean movement by rank is what it is.
+Validity out of sample beyond one lagged year on two panels of one platform.
+Anything above K/64 or about Facebook.
+
+**Limits.** The 24 cells are overlapping cut-offs on four panel-years. The
+variance is measured once per panel on both years. Head steps are not small.
+The over-prediction is uncorrected. Planted worlds have no heavy tails or
+endpoint cycles.
+
+**Not run.** Codex's review (added to row R5). A version with 26-week blocks,
+which would give more lagged steps. The sealed-data design.
+
+**Commands.** `caffeinate -dims python scripts/heavy_lock.py -- python -u
+llm_fitting/mts_balance_law.py run <panel>` for both panels; `python
+llm_fitting/mts_balance_law.py report`. Outputs in
+`runs/2026-10-14_balance_law/`. No run was killed.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.

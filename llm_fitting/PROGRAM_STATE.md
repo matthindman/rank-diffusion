@@ -126,6 +126,16 @@ variance. But mean change depends on rank among named endpoints, so
 "diffusion and entry and nothing else" is too simple: a candidate needs
 growth that depends on size and can change in time.
 
+**The balance as a rate law (§2z-cd, 2026-10-14).** On the persisting
+endpoints, the rate of change of the ladder's shape at rank k is the gain
+from crossings at the boundary, σ_k²/(2S_k), minus the mean slide of the
+named endpoints above k. Tested where the ladder moves: over two Reddit
+panels and two year pairs the observed rate is 0.76 of the predicted one
+with correlation 0.94, the sign is right wherever a change is predicted, and
+a lagged version beats "no change" on both panels; it fails on comments
+2020→2021 and over-predicts by about a quarter. This is the candidate for
+what a sealed test would freeze. Not reviewed by Codex yet.
+
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate
 is numerically vacuous. Proofs 4 to 6, 8 and 9 and a second audit of Proof 7
@@ -276,6 +286,10 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
 
+- **Whether the rate law of §2z-cd becomes the sealed-data test**, and whether
+  its implication for submissions after 2022 (the head goes on sinking if
+  slides and variances persist) is registered before the 2023–2024 archive is
+  opened. Both need a protocol committed first.
 - **What follows V4** (§2z-by, 2026-10-14). Step 3 as written is closed. Two
   pieces of design work are open and neither is started: a second set of
   planted worlds with a growing population, a moving shape and a dated change

@@ -48,6 +48,17 @@ def rows(kind, pair):
     return {r["k"]: r for r in p["rows"]}
 
 
+def test_cutoffs_sit_on_the_strata_edges_even_when_those_are_not_whole_numbers():
+    """K / 128 is fractional for the real panels (97.66 for K = 12,500).  Every cut-off must
+    find the stratum that ends there and the one that begins there."""
+    for KK in (12500, 5000, 800):
+        st, ks = bl.strata(KK), bl.cutoffs(KK)
+        assert [k for _, k in ks][-1] == KK and len(ks) == 7
+        for j, k in ks:
+            assert abs(st[j][1] - k) <= 0.5 and st[j + 1][0] == st[j][1]
+    assert bl._at_boundary([1.0, 3.0, 5.0], [1, 1, 1], 1) == 4.0
+
+
 def test_stationary_walks_predict_and_show_no_change():
     r = rows("stationary", 2)
     for k in (100, 200, 400):
@@ -72,3 +83,28 @@ def test_a_head_that_is_too_steep_is_predicted_to_sink():
     assert r[100]["c"] < 0.85 * C                              # too steep: reordering returns less than the slide
     assert r[100]["pred"] < 0 and r[50]["pred"] < 0
     assert np.mean([r[k]["obs_P"] for k in (25, 50, 100)]) < 0
+
+
+def test_passing_swings_and_births_do_not_break_it():
+    """The pressed head again, with AR(1) swings on every endpoint and a newcomer a week
+    landing near the K-th level.  Entry is taken out exactly; the rest still follows the law."""
+    X = world("pressed_head")
+    rng = np.random.default_rng(100)
+    T = X.shape[0]
+    e = np.zeros((T, N))
+    e[0] = rng.normal(0, np.sqrt(0.05), N)
+    for i in range(1, T):
+        e[i] = 0.8 * e[i - 1] + rng.normal(0, np.sqrt(0.05 * (1 - 0.8 ** 2)), N)
+    X = X + e
+    cols = []
+    for w in range(BLOCK, T - 4):
+        srt = np.sort(X[w])[::-1]
+        path = np.full(T, np.nan)
+        path[w:] = rng.uniform(srt[2 * K - 1], srt[K - 1] + 0.5) + np.cumsum(rng.normal(0, np.sqrt(SIG2), T - w))
+        cols.append(path)
+    res = bl.analyse(long_frame(np.column_stack([X] + cols)), K, BLOCK, boot=40)
+    p = [q for q in res["pairs"] if q["primary"] and q["start"] == 2][0]
+    below = [r for r in p["rows"] if 25 <= r["k"] < K]
+    sm = bl.summary(below)
+    assert 0.5 < sm["slope"] < 1.6 and sm["rmse"] < 0.6 * sm["rmse_zero"] and sm["sign_agree"] == sm["n"]
+    assert all(r["entry"] <= 1e-12 for r in below)             # newcomers near K lift the centre, not the head

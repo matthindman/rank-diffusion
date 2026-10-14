@@ -33,7 +33,11 @@ WIDTH = np.sqrt(2.0)
 
 
 def cutoffs(K):
-    return [K // 64, K // 32, K // 16, K // 8, K // 4, K // 2, K]
+    """Cut-offs K/64 ... K as (index of the stratum that ends there, position on the ladder).
+    The strata's edges are fractions of K and need not be whole numbers; the cut-off is the
+    edge, and the position is the edge rounded."""
+    st = strata(K)
+    return [(j, int(round(hi))) for j, (lo, hi) in enumerate(st) if K / 64 - 1e-9 <= hi <= K + 1e-9]
 
 
 def strata(K):
@@ -87,9 +91,9 @@ def lasting_variance(M, which, st, blocks, block, rng, boot):
     return out, np.array(draws)
 
 
-def _at_boundary(vals, wts, st, k):
-    """Value at rank k: mean of the two strata that meet there, weighted by members."""
-    js = [j for j, (lo, hi) in enumerate(st) if abs(hi - k) < 1e-6 or abs(lo - k) < 1e-6]
+def _at_boundary(vals, wts, j_end):
+    """Value at the boundary where stratum j_end ends: mean of it and the next, weighted by members."""
+    js = [j for j in (j_end, j_end + 1) if j < len(vals)]
     v = np.array([vals[j] for j in js], float)
     w = np.array([wts[j] for j in js], float)
     ok = np.isfinite(v)
@@ -113,8 +117,8 @@ def pair_terms(M, which, st, a, b, K, ks, block, rng, boot):
         if x.size >= 5:
             bs[:, j] = -(x[rng.integers(0, x.size, (boot, x.size))].mean(axis=1) - dUK_P) / D
     rows = []
-    for k in ks:
-        js = [j for j, (lo, hi) in enumerate(st) if hi <= k + 1e-6]
+    for j_end, k in ks:
+        js = list(range(j_end + 1))
         ok = [j for j in js if np.isfinite(slide[j])]
         cover = width[ok].sum() / width[js].sum() if js else 0.0
         sbar = float((slide[ok] * width[ok]).sum() / width[ok].sum()) if ok else np.nan
@@ -143,7 +147,7 @@ def analyse(df, K, block, boot=BOOT, seed=0):
     st, ks = strata(K), cutoffs(K)
     out = dict(K=int(K), T=int(T), block=int(block), n_tracked=int(X.shape[1]),
                blocks=dict(n=int(nb), start=int(start), certified_top=n_cert),
-               strata=[[float(lo), float(hi)] for lo, hi in st], ks=ks, pairs=[])
+               strata=[[float(lo), float(hi)] for lo, hi in st], ks=[k for _, k in ks], pairs=[])
     if nb < 4 or min(n_cert) < int(np.ceil(WIDTH * K)):
         out["not_adjudicated"] = "needs four blocks with ranks to 1.42 K certified exact"
         return out
@@ -154,8 +158,8 @@ def analyse(df, K, block, boot=BOOT, seed=0):
     var_rows, var_bs = lasting_variance(M, which[0], st, (1, 2, 3), block, rng, boot)
     out["variance"] = [dict(lo=float(lo), hi=float(hi), **v) for (lo, hi), v in zip(st, var_rows)]
     vn = [v["n"] for v in var_rows]
-    s2 = {k: _at_boundary([v["sigma2"] for v in var_rows], vn, st, k) for k in ks}
-    s2_bs = {k: np.array([_at_boundary(var_bs[:, t], vn, st, k) for t in range(boot)]) for k in ks}
+    s2 = {k: _at_boundary([v["sigma2"] for v in var_rows], vn, j) for j, k in ks}
+    s2_bs = {k: np.array([_at_boundary(var_bs[:, t], vn, j) for t in range(boot)]) for j, k in ks}
 
     terms = {(a, b, sel): pair_terms(M, which[sel], st, a, b, K, ks, block, rng, boot)
              for (a, b, sel) in ((1, 2, 0), (2, 3, 1), (2, 3, 0))}
