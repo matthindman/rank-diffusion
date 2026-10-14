@@ -9018,6 +9018,8 @@ No run was killed.
 
 ## 2z-cd. 2026-10-14 — EXPLORATORY MEASUREMENT: the balance by rank as a rate law, tested out of equilibrium. On the persisting endpoints, d shape_k/dt = σ_k²/(2S_k) − s̄_k predicts the rate at which the ladder's shape changes from named movement alone: over 24 cells the slope of observed on predicted is 0.76, the correlation 0.94, the rms error 43% of "no change", and the sign is right in 13 of 13 cells where a change of any size is predicted. A lagged version beats "no change" on both panels and "repeat last year" on one. It does worse than "no change" on comments 2020→2021. Four of five predictions held; nothing adopted, no fit, no gate evaluation
 
+_[QUALIFIED 2026-10-14 by §2z-cg: in the same-year form the change of the centre cancels, so observed minus predicted is (change of the persisting set's top-k mean) − (mean change of the named endpoints above k) − σ_k²/(2S_k). The in-sample fit is an accounting of change by named movement with a theory of the boundary, not a forecast; the lagged tests are the forecasts. "The two sides share no computation" is true of the code and misleading about the algebra.]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; design,
 predictions, runner and planted-world tests committed at a2ce2a8 before the
 run; results committed with this entry._
@@ -9263,3 +9265,82 @@ change" on submissions, where they give similar numbers. Cover Wikipedia or
 
 **Ledgers.** No gate evaluation. The forecasts read development panels
 already logged for §2z-cd and §2z-ce; a row is added.
+
+## 2z-cg. 2026-10-14 — EXPLORATORY MEASUREMENT and QUALIFICATION of §2z-cd: the rate law with half-year starts. With same-year slides the law accounts for the ladder's change in all ten year-long pairs (60 cells: slope 0.88, correlation 0.90, rms error 39% of "no change"), including three reversals of the comments head. From the year before's slides it forecasts submissions and fails on comments, where the drift by rank turns every half year. In the same-year form the centre's change cancels, so that form is an accounting of change by named movement with a theory of the boundary, not a forecast. One of three predictions held
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; design and
+runner option committed at 700ec29 before the run; results committed with this
+entry. The yearly analysis is unchanged and reproduces §2z-cd exactly
+(checked)._
+
+**Tier.** Exploratory, DEVELOPMENT data. Data only.
+
+**Method.** `runs/2026-10-14_balance_law_halfyear/DESIGN.md`. `mts_balance_law.py`
+with 26-week blocks and pairs two blocks apart: five pairs per panel starting
+every half year from July 2019, cohort fixed on the half year before each,
+lasting variance from blocks 1, 3, 5 (52-week spacing), lagged prediction
+from the pair a year earlier for the last three.
+
+**Result.**
+
+| | cells | slope | correlation | rms error, per 1,000 weeks | sign |
+|---|---|---|---|---|---|
+| same-year slides, ten pairs | 60 | 0.88 | 0.90 | 1.13 against 2.89 for "no change" | 47 of 48 above 1.0 |
+| slides from the year before, six pairs | 36 | 0.17 | — | 3.51 against 2.56 for "no change" and 3.73 for "repeat last" | 17 of 36 |
+
+Comments, mean over K/64 to K/2, predicted and observed, per 1,000 weeks:
+−4.4 and −4.5 (Jul 2019 → Jun 2020); −1.8 and −2.0; +2.1 and +2.0; +2.3 and
++2.5; −1.4 and −0.9 (Jul 2021 → Jun 2022). The yearly failure on comments
+2020→2021 (§2z-cd) is a sinking and a rise inside one year that 52-week
+blocks average away. Lagged on comments: the wrong sign in all three pairs
+(rms 6.2, 4.3, 3.0 against 2.1, 2.6, 1.0 for "no change"). Lagged on
+submissions: 1.6, 0.9, 2.1 against 3.6, 2.8, 2.6 for "no change" and 2.1,
+1.1, 1.3 for "repeat last". The submissions head sinks at 2.6–3.4 per 1,000
+weeks in every pair; the predicted head rate ranges from −1.9 to −3.2, in no
+matching order (rank correlation 0.10), too fast at K/64–K/32 and too slow at
+K/16–K/8 in the later pairs.
+
+**Predictions scored** (`DESIGN.md`). H1, pooled slope 0.6–1.4, correlation at
+least 0.8, rms under 0.6 of "no change": PASS. H2, lagged beats "no change" in
+five of six and "repeat last" in three: FAIL (three of six; four of six). H3,
+rank correlation of predicted and observed head sinking on submissions at
+least 0.7: FAIL (0.10).
+
+**Qualification of §2z-cd, found in this write-up.** In the same-year form,
+observed minus predicted is exactly (change of the persisting set's top-k
+mean) − (mean change of the named endpoints ranked above k) − σ_k²/(2S_k):
+the change of the centre cancels. So the same-year test asks whether the
+positional top k moves as its named members do plus what crossings at the
+boundary add. It can fail and has not; it is an accounting of change by named
+movement with a theory of the boundary, not a prediction of structure from
+earlier movement. §2z-cd's "the two sides share no computation" is true of
+the code and misleading about the algebra. The lagged tests are the
+forecasts: two of two yearly and five of six half-year beat "no change"
+where the drift by rank persisted (submissions, comments 2021→2022), and the
+comments half-year ones fail.
+
+**What the evidence now supports** (my reading, for the paper's aims).
+
+1. *Mechanics of structure.* On Reddit, at every rank tested from K/64 to
+   K/2, on two metrics and through dated platform changes, the ladder's
+   change is what members' mean movement plus diffusion across rank
+   boundaries gives (§2z-cc, §2z-cd, here), with the lasting rate measured
+   three ways that agree (§2z-cc). Entry is a measured, separate term. A
+   stationary ladder is the special case where crossings return what members
+   lose.
+2. *Forecasting.* Structure can be forecast from earlier movement where the
+   drift by rank persists (submissions after 2020: §2z-cd, §2z-ce, here) and
+   not where it turns (comments). A forecast of structure is a forecast of
+   drift by rank.
+3. *Open.* What sets the drift by rank: platform growth and feed changes are
+   documented candidates (§2z-bz), the June 2021 change acted on the top of
+   submissions within days (§2z-ca), and the drift's dependence on rank
+   differs by metric and year (§2z-cc). No mechanism is identified.
+
+**Not run.** A forecast of the drift by rank itself. Codex's review.
+
+**Commands.** `caffeinate -dims python scripts/heavy_lock.py -- python -u
+llm_fitting/mts_balance_law.py run-halfyear <panel>`; `python
+llm_fitting/mts_balance_law.py report-halfyear`.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.

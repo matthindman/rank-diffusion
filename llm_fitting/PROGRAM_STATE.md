@@ -126,15 +126,21 @@ variance. But mean change depends on rank among named endpoints, so
 "diffusion and entry and nothing else" is too simple: a candidate needs
 growth that depends on size and can change in time.
 
-**The balance as a rate law (§2z-cd, 2026-10-14).** On the persisting
-endpoints, the rate of change of the ladder's shape at rank k is the gain
-from crossings at the boundary, σ_k²/(2S_k), minus the mean slide of the
-named endpoints above k. Tested where the ladder moves: over two Reddit
-panels and two year pairs the observed rate is 0.76 of the predicted one
-with correlation 0.94, the sign is right wherever a change is predicted, and
-a lagged version beats "no change" on both panels; it fails on comments
-2020→2021 and over-predicts by about a quarter. This is the candidate for
-what a sealed test would freeze. Not reviewed by Codex yet.
+**The balance as a rate law (§2z-cd to §2z-cg, 2026-10-14).** On the
+persisting endpoints, the rate of change of the ladder's shape at rank k is
+the gain from crossings at the boundary, σ_k²/(2S_k), minus the mean slide of
+the named endpoints above k. With same-year slides it accounts for the
+ladder's change at every rank tested, on two metrics, in yearly and
+half-year pairs (slope 0.76–0.88, correlation 0.90–0.94, sign right wherever
+a change is predicted, including three reversals of the comments head). That
+form is an accounting of change by named movement with a theory of the
+boundary, not a forecast: the centre's change cancels (§2z-cg qualifies
+§2z-cd). As a forecast from the year before, by the law or by pushing raw
+movement through the ladder (§2z-ce), it works on submissions, where the
+drift by rank persisted after 2020, and fails on comments, where it turned
+every half year. Forecasting structure is forecasting the drift by rank; what
+sets that drift is the open question. Forecasts of the 2023 ladders are fixed
+in a draft protocol (§2z-cf). None of this is reviewed by Codex yet.
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate
