@@ -54,4 +54,5 @@ def test_the_detectable_change_shrinks_with_window_length_and_stratum_size():
     out, _ = dd.analyse(world(0.0), K)
     mde = out["mde"]
     assert mde["26"]["head"] < mde["4"]["head"]
-    assert mde["13"]["rel"][-1] < mde["13"]["rel"][1]             # the bottom stratum is big, the top ones small
+    rel = [v for v in mde["13"]["rel"] if v == v]                 # strata under ten members are NaN
+    assert rel[-1] < rel[0]                                        # the bottom stratum is big, the top ones small
