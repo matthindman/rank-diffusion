@@ -10353,3 +10353,89 @@ and the theory tracks the difference.
 - The Era A slice only (§2b).
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-cu. 2026-10-15 — EXPLORATORY MEASUREMENT and FIGURES for the paper: (1) robustness of the boundary theory to the universe size and block length; at a given rank the ratio does not depend on K, and comments holds with 13-week blocks, but submissions shows a persistent shortfall of crossings at ranks of about 300–600 (0.61–0.72 of prediction by every estimator); (2) the descriptive facts of the paper's opening; (3) four figures and a draft of the questions reviewers will ask. One of two robustness predictions held, the other partly not adjudicated; nothing adopted
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; the
+robustness design was committed at 5b78a84 before its runs. Figures by
+`runs/2026-10-15_figures/make_figures.py` from saved outputs. Reviewer
+questions in `REVIEWER_QUESTIONS_2026-10-15.md`._
+
+### 1. Robustness (`runs/2026-10-15_boundary_robustness_K/DESIGN.md`)
+
+| run | starts | R̃/c at K/64 … K | in [0.75, 1.33] |
+|---|---|---|---|
+| comments, K = 6,250 | 3 | 1.82, 1.22, 1.20, 1.08, 0.98, 0.99, 1.11 | 6 of 7 |
+| comments, K = 25,000 | — | not adjudicated: ranks complete only to about 29,600 in the first block, short of the 1.42 K needed | — |
+| comments, 13-week blocks | 11 | 0.72, 1.15, 1.41, 0.86, 0.91, 1.07, 1.14 | 5 of 7 |
+| submissions, K = 2,500 | 3 | 2.06, 1.64, 1.86, 0.72, 0.61, 0.97, 0.90 | 2 of 4 at K/8 … K |
+| submissions, K = 10,000 | 3 | 1.86, 0.72, 0.61, 0.97, 0.90, 0.87, 0.89 | 4 of 4 at K/8 … K |
+
+1. **K does not change the result.** At the same absolute rank the ratio is
+   the same at every K, to two decimals. Submissions at k = 312, 625, 1,250
+   reads 0.72, 0.61, 0.97 at K = 2,500, 5,000 and 10,000 alike. This is as it
+   should be: neither the crossings nor σ²/2S at rank k depend on the centre.
+   So the scored outcomes reflect where each K's cut-offs fall.
+2. **Comments with 13-week blocks** holds over eleven starts. The one value
+   outside the band is 1.41 at K/16.
+3. **Submissions' shortfall at ranks of about 300–600 is real.** The ratio is
+   0.61–0.72 there:
+   - with the variance route (§2z-cm), start by start (§2z-cm, 0.53–0.90), and
+     with the variogram (§2z-co, 0.68 at 625);
+   - in strata of 280–570 communities, not the head's few dozen.
+
+   Crossings there are about two thirds of what lasting variance and slope
+   predict. Untested candidates:
+   - neighbours at those ranks moving together, which lowers the relative
+     variance across the boundary that crossings need below the
+     cross-sectional variance the estimators measure;
+   - the June 2021 step of ranks 250–1,000 (§2z-bv).
+
+**Scored.** R1, comments in all three variants: two pass and one is **NOT
+ADJUDICATED**. R2, submissions at both K: **FAIL** (K = 2,500, 2 of 4).
+
+### 2. The opening facts (`runs/2026-10-15_puzzle/`, descriptive, unnamed)
+
+**Turnover.** The share of a top set still in it after one, two and three
+years:
+
+| | 1 year | 2 years | 3 years |
+|---|---|---|---|
+| comments, top 195 / 1,562 / 12,500 | 0.79 / 0.82 / 0.84 | 0.66 / 0.71 / 0.74 | 0.59 / 0.64 / 0.67 |
+| submissions, top 78 / 625 / 5,000 | 0.79 / 0.80 / 0.82 | 0.66 / 0.68 / 0.71 | 0.58 / 0.59 / 0.63 |
+
+On Facebook pages, 0.69–0.82 of each top set remains after a year.
+
+**Rank changes in a year among the top K:**
+- the median change of log rank is 0.19–0.21 on comments and 0.24 on
+  submissions;
+- 7% and 10% of members halve or double their rank;
+- Facebook, per half-year: 0.26–0.29, and 16%.
+
+### 3. Figures (`runs/2026-10-15_figures/`)
+
+| figure | what it shows | from |
+|---|---|---|
+| `fig_puzzle.png` | the ladders by year on three ladders; 120 random community paths; turnover | §2z-cu |
+| `fig_three_ladders.png` | measured crossings against σ²/2S rank by rank on comments, submissions and Facebook pages; the ratio by k/K with intervals | §2z-cm, §2z-ct |
+| `fig_sustained_ladder.png` | the ladder that each year's movement sustains (S* integrated over log rank) against the observed one | §2z-cd cells |
+| `fig_shape_decomposition.png` | the exact half-year split of shape change into members' movement and steady crossings | §2z-cr |
+
+From `fig_sustained_ladder.png`:
+- *Comments.* The observed ladder lies between the ladders sustained by the
+  movement of 2020→21 (flatter) and 2021→22 (steeper). It sits where its
+  fluctuating movement holds it.
+- *Submissions.* Both years' movement sustains a head far flatter than
+  observed: about 3.0–3.2 log units above rank K at K/64, against 4.6–4.8.
+  The head is out of balance and sinking toward it.
+
+### 4. Reviewer questions
+
+`REVIEWER_QUESTIONS_2026-10-15.md` is a draft for the owner. It lists 14
+questions a referee is likely to ask, each with the evidence and the record
+section, and marks what is open. It proposes four main figures and the
+supporting material. Of the predictions scored since §2z-cm, 9 of 17 held and
+one was partly not adjudicated.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`
+(robustness runs; opening facts).

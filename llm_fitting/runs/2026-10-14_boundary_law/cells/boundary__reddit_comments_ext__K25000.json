@@ -1,0 +1,29 @@
+{
+ "K": 25000,
+ "T": 213,
+ "block": 26,
+ "n_blocks": 8,
+ "certified_top": [
+  29646,
+  34074,
+  39118,
+  46145,
+  54526,
+  52964,
+  57979,
+  57195
+ ],
+ "ks": [
+  391,
+  781,
+  1562,
+  3125,
+  6250,
+  12500,
+  25000
+ ],
+ "starts": [],
+ "not_adjudicated": "needs six blocks and ranks to 1.42 K certified exact",
+ "panel": "reddit_comments_ext",
+ "finished": "2026-10-15 01:21:13"
+}
