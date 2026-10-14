@@ -9344,3 +9344,33 @@ llm_fitting/mts_balance_law.py run-halfyear <panel>`; `python
 llm_fitting/mts_balance_law.py report-halfyear`.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-ch. 2026-10-14 — POST HOC, unscored: the platform's growth over a year does not account for the drift by rank. Across the five half-year pairs of §2z-cg the correlation of the platform total's growth with the change of shape is 0.02 on comments and −0.28 on submissions; the comments head's three reversals are not in step with growth
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; started from
+df30aa7. A first look at §2z-cg's open question, written down after it was
+computed; no prediction was made._
+
+**What was computed.** For each pair: log growth of the panel's weekly total of
+the metric, end block over start block; the observed change of the persisting
+set's shape and the mean slide above k, each averaged over K/64 to K/2.
+`runs/2026-10-14_balance_law_halfyear/growth_vs_drift.py`.
+
+| | growth of the total, by pair | change of shape (per 1,000 weeks) | mean slide above k |
+|---|---|---|---|
+| comments | 0.20, 0.14, 0.16, 0.20, 0.13 | −4.5, −2.0, +2.0, +2.5, −0.9 | 8.0, 5.6, 1.7, 1.6, 5.3 |
+| submissions | 0.30, 0.09, −0.25, −0.21, −0.09 | −2.7, −2.8, −2.9, −2.2, −2.4 | 6.7, 6.6, 6.4, 6.3, 6.9 |
+
+Correlations with growth: comments 0.02 (shape) and −0.08 (slide); submissions
+−0.28 and 0.59. Five overlapping pairs per panel; nothing here is a test.
+
+**Reading.** On submissions the slide of the head is nearly constant through
+growth and decline of the total, which is what a feed that keeps pressing on
+the largest communities would give. On comments the head rose in the two
+pairs that contain early 2021 and sank otherwise; events at particular large
+communities in early 2021, such as the WallStreetBets surge (§2z-bz), are a
+candidate that could only be checked by reading names, which no analysis here
+has done. Platform growth as such is not the driver.
+
+**Ledgers.** No gate evaluation. The panels' weekly totals were read
+(DEVELOPMENT); logged.
