@@ -10668,3 +10668,133 @@ now resolved as the loader does, keeping the largest metric, and the totals
 panel was rerun; its boundary numbers were identical. No run was killed.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-cy. 2026-10-15 — EXPLORATORY MEASUREMENT, registered: ex ante forecasts of lock-in. From measured movement alone, the probability that each member of today's top k is still in the top k later discriminates who stays on all four ladders (Brier score 13–21% below constant turnover, within 0.002–0.005 of a logistic fitted to past outcomes) and is calibrated within ±0.07 in 75% of cells. But it under-forecasts staying: incumbents are stickier than average movement implies, by 2–5 points at the first horizon and 5–17 points at longer ones, except at the very top of Reddit, which lost members faster than forecast at 1.5–2 years. Two of three predictions held; nothing adopted, nothing fitted to outcomes
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; design,
+predictions, runner and planted test committed at 50dc474 before the run.
+The owner's request: "People really care about our ability to forecast
+lock-in at the top/mid-top ranks — while platforms themselves typically deny
+or dismiss the presence of strong lock in … Flesh out in a rigorous way what
+these models provide in terms of ex ante prediction for the rate at which
+the top / 'upper middle class' endpoints turn over. Validate these
+predictions using the historical data across all three platforms."_
+
+**What the model provides ex ante** (`runs/2026-10-15_lockin/DESIGN.md`,
+`mts_lockin.py`). At an origin, using only the last three blocks:
+- *Movement moments.* For each stratum of current rank, the mean and
+  variance of members' change against the top-K mean over one and two
+  blocks, and the share still present.
+- *Extension to any horizon.* The diffusion structure (a one-time constant
+  plus drift and variance linear in time) gives the moments at any horizon.
+- *The boundary.* The level of rank k drifts at its recent rate.
+- *The forecast.* For each member i of the top k:
+  p_i(h) = q_s(h) Φ((g_i + μ_s(h) − β_k h)/√v_s(h)), with g_i its gap above
+  the rank-k level.
+
+No retention outcome enters it.
+
+**Baselines:**
+- *constant turnover:* the training window's retention extrapolated
+  geometrically, the same for every member, the "X% a year" claim;
+- *logistic:* a regression on log rank and log horizon fitted to the training
+  window's outcomes.
+
+**Ladders.**
+
+| ladder | blocks | K | origins | horizons |
+|---|---|---|---|---|
+| Reddit comments | 26 weeks | 12,500 | 5 | to 130 weeks |
+| Reddit submissions | 26 weeks | 5,000 | 5 | to 130 weeks |
+| Facebook pages | 13 weeks | 3,500 | 3 | to 39 weeks |
+| Instagram, through the apparatus | 7 weeks | 10,000 | 3 | to 21 weeks |
+
+Top sets k = K/64, K/16 and K/4: 126 scored cells in all.
+
+**Result, per member** (Brier scores pooled over origins, k and horizons).
+
+| ladder | movement forecast | constant turnover | logistic fitted to outcomes | skill over constant turnover |
+|---|---|---|---|---|
+| Reddit comments | 0.125 | 0.158 | 0.124 | 21% |
+| Reddit submissions | 0.136 | 0.166 | 0.131 | 18% |
+| Facebook pages | 0.161 | 0.186 | 0.159 | 13% |
+| Instagram | 0.162 | 0.202 | 0.162 | 20% |
+
+**Result, in aggregate:** retention of the top k, observed against forecast,
+mean over origins.
+
+| | horizon | observed | forecast | constant turnover | observed − forecast |
+|---|---|---|---|---|---|
+| comments, top 195 | 26 / 52 / 104 weeks | 0.83 / 0.75 / 0.62 | 0.81 / 0.75 / 0.69 | 0.84 / 0.77 / 0.65 | +0.03 / 0.00 / −0.07 |
+| comments, top 3,125 | 26 / 52 / 104 | 0.88 / 0.82 / 0.73 | 0.86 / 0.78 / 0.67 | 0.88 / 0.81 / 0.69 | +0.03 / +0.04 / +0.06 |
+| submissions, top 78 | 26 / 52 / 104 | 0.86 / 0.78 / 0.65 | 0.83 / 0.76 / 0.72 | 0.83 / 0.75 / 0.58 | +0.03 / +0.01 / −0.07 |
+| submissions, top 312 | 26 / 52 / 104 | 0.87 / 0.79 / 0.68 | 0.82 / 0.74 / 0.60 | 0.86 / 0.77 / 0.59 | +0.05 / +0.05 / +0.08 |
+| Facebook, top 54 | 13 / 26 / 39 | 0.75 / 0.69 / 0.63 | 0.69 / 0.57 / 0.46 | 0.75 / 0.65 / 0.57 | +0.05 / +0.11 / +0.17 |
+| Facebook, top 875 | 13 / 26 / 39 | 0.80 / 0.72 / 0.69 | 0.77 / 0.69 / 0.62 | 0.80 / 0.73 / 0.63 | +0.03 / +0.04 / +0.07 |
+| Instagram, top 156 | 7 / 14 / 21 | 0.81 / 0.74 / 0.67 | 0.76 / 0.72 / 0.72 | 0.80 / 0.75 / 0.75 | +0.05 / +0.02 / −0.05 |
+| Instagram, top 2,500 | 7 / 14 / 21 | 0.75 / 0.70 / 0.66 | 0.74 / 0.68 / 0.64 | 0.76 / 0.71 / 0.66 | +0.02 / +0.02 / +0.02 |
+
+Pooled calibration: in every decile of forecast probability, the share that
+stayed is 0.03–0.10 above the forecast (`runs/2026-10-15_figures/fig_lockin.png`).
+
+**Predictions scored** (`mts_lockin.score`).
+
+| | rule | result |
+|---|---|---|
+| T1 | per-member Brier below constant turnover's on each ladder | **PASS** (4 of 4) |
+| T2 | forecast retention within ±0.07 of observed in ≥ 75% of cells | **PASS** (95 of 126, 75.4%) |
+| T3 | at h ≥ 3 blocks, mean absolute error ≤ constant turnover's | **FAIL** (0.063 against 0.044) |
+
+**What it means** (my reading).
+1. **Movement forecasts who stays.** On four ladders, three platforms, two
+   metrics and Instagram's censored instrument, measured movement ranks the
+   members of a top set by their chance of staying. It does so about as well
+   as a model fitted to past retention, without seeing any retention.
+2. **The top is stickier than movement implies.**
+   - The forecast assumes every member of a rank band moves like the band's
+     average. Members stayed 2–5 points more often than that even at the
+     first horizon, where the forecast's moments are measured at exactly that
+     horizon.
+   - By 1.5–2.5 years the gap is 5–17 points, largest for Facebook pages and
+     Reddit submissions' upper middle.
+   - So the platforms' claim of weak lock-in is the opposite of what these
+     data show: members of top sets keep their places more than even their
+     own band's measured mobility predicts.
+   - Two readings fit: persistent differences in volatility within a band,
+     where calm incumbents stay (tested post hoc below); and reversion slower
+     than a year, which the linear extension misses.
+3. **The exception is the very top of Reddit** (top 195 comments, top 78
+   submissions). At 78–104 weeks it lost members faster than forecast, by 5–7
+   points, in the period around Reddit's June 2021 change, when crossings at
+   the head tripled (§2z-cm).
+4. **Constant turnover is a good aggregate number at short horizons and a poor
+   per-member forecast.** Its aggregate errors are small at one and two
+   blocks, but it assigns every member the same chance, so its Brier scores
+   are 13–21% worse.
+
+**Limits.** Origins are few and overlapping (5, 5, 3, 3), and the cells
+within an origin are correlated. Facebook and Instagram horizons are short.
+Nothing is out of sample beyond each origin's training window.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+**Post hoc: where the excess comes from** (`runs/2026-10-15_lockin/calm_vs_volatile.py`,
+DEVELOPMENT, unnamed). Members of the top K/16 are split, within their
+stratum of current rank, by the size of their own change over the block
+before the origin. Observed minus forecast retention at one and two blocks:
+
+| ladder | top set | calm half | volatile half |
+|---|---|---|---|
+| Reddit comments | 781 | **+0.058** (n 3,459) | 0.000 (n 3,445) |
+| Reddit submissions | 312 | **+0.103** (n 1,393) | +0.004 (n 1,379) |
+| Facebook pages | 218 | **+0.111** (n 545) | +0.043 (n 532) |
+
+The volatile half turns over as the band-average forecast says. Nearly all
+the excess lock-in is the calm half staying. A community that moved little
+over the last block goes on moving little: volatility persists within a name
+at this horizon. That is a lock-in mechanism, calm incumbents, and evidence
+on the type-versus-state question of §2z-cj, §2z-ck and §2z-cq.
+
+**Next step (not run):** a forecast that scales each member's variance by its
+own recent movement, shrunk toward its band. It should remove most of the
+under-forecast. It should be registered before it is scored.

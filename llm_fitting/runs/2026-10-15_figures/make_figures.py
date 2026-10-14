@@ -341,7 +341,58 @@ def fig_instagram_censoring():
     fig.savefig(HERE / "fig_instagram_censoring.png", dpi=150)
 
 
+def fig_lockin():
+    """Ex ante forecasts of lock-in (2z-cy): retention of the top K/64 and K/4 by horizon on four ladders, forecast
+    from movement against observed and constant turnover; and calibration of the per-member forecasts."""
+    sets = [("reddit_comments_ext", "Reddit comments", BLUE), ("reddit_submissions_long", "Reddit submissions", ORANGE),
+            ("facebook_a", "Facebook pages", "#2a9d5c"), ("instagram_hm", "Instagram (a-matching)", "#8e44ad")]
+    fig, ax = plt.subplots(1, 5, figsize=(19, 4.2))
+    allp, allo = [], []
+    for a, (pn, lab, col) in zip(ax[:4], sets):
+        r = load(R / "2026-10-15_lockin" / f"lockin__{pn}.json")
+        bw = r["block"]
+        for k, ls in zip((r["ks"][0], r["ks"][2]), ("-", "--")):
+            hs = sorted({int(h) for c in r["origins"] for h in c["ks"][str(k)]["horizons"]})
+            agg = {h: [c["ks"][str(k)]["horizons"][str(h)] for c in r["origins"] if str(h) in c["ks"][str(k)]["horizons"]] for h in hs}
+            x = [0] + [h * bw / 52 for h in hs]
+            a.plot(x, [1] + [np.mean([v["observed"] for v in agg[h]]) for h in hs], ls, color="k", marker="o", ms=3,
+                   label=f"observed, top {k:,}")
+            a.plot(x, [1] + [np.mean([v["model"] for v in agg[h]]) for h in hs], ls, color=col, marker="s", ms=3,
+                   label=f"forecast from movement, top {k:,}")
+            a.plot(x, [1] + [np.mean([v["geometric"] for v in agg[h]]) for h in hs], ls, color=GREY, lw=0.8,
+                   label=f"constant turnover, top {k:,}" if k == r["ks"][0] else None)
+        for c in r["origins"]:
+            for v in c["ks"].values():
+                for x_ in v["horizons"].values():
+                    for b in x_["calibration"]:
+                        allp.append((b["p"], b["obs"], b["n"]))
+        a.set_title(lab, fontsize=10)
+        a.set_xlabel("years later")
+        a.set_ylabel("share still in the top k")
+        a.set_ylim(0.4, 1.02)
+        a.legend(fontsize=6.3, loc="lower left")
+    a = ax[4]
+    P = np.array(allp)
+    bins = np.linspace(0, 1, 11)
+    idx = np.digitize(P[:, 0], bins) - 1
+    xs, ys = [], []
+    for b in range(10):
+        m = idx == b
+        if P[m, 2].sum() > 0:
+            xs.append(np.average(P[m, 0], weights=P[m, 2]))
+            ys.append(np.average(P[m, 1], weights=P[m, 2]))
+    a.plot([0, 1], [0, 1], color=GREY, lw=1)
+    a.plot(xs, ys, "ko-")
+    a.set_xlabel("forecast probability of staying")
+    a.set_ylabel("share that stayed")
+    a.set_title("Calibration, all ladders, origins, k, h", fontsize=10)
+    fig.suptitle("Ex ante forecasts of lock-in from measured movement, scored against what happened", fontsize=11)
+    fig.tight_layout()
+    fig.savefig(HERE / "fig_lockin.png", dpi=150)
+
+
 if __name__ == "__main__":
+    fig_lockin()
     fig_instagram_censoring()
     fig_four_ladders()
     fig_concentration()
