@@ -477,6 +477,12 @@ def run(panel):
         weeks = {pd.Timestamp(x) for x in ie.weeks_containing(days)}
         ts = df.groupby("period")["ts"].first()
         flagged = [int(p) for p, d in ts.items() if pd.Timestamp(d) in weeks]
+    elif panel == "reddit_submissions_long":
+        import instrument_eras as ie
+        import pandas as pd
+        weeks = {pd.Timestamp(x) for x in ie.reddit_flagged_weeks("submissions")}
+        ts = df.groupby("period")["ts"].first()
+        flagged = [int(p) for p, d in ts.items() if pd.Timestamp(d) in weeks]
     res = analyse(df, cfg["K"], cfg["block"], flagged_weeks=flagged, break_date=BREAKS.get(panel))
     res.update(panel=panel, system=cfg["system"], finished=time.strftime("%Y-%m-%d %H:%M:%S"))
     (OUT / "cells").mkdir(parents=True, exist_ok=True)

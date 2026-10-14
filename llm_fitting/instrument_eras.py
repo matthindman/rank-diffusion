@@ -43,6 +43,29 @@ complete-week filter.  Usage:
     trusted-panel keystone already contained the same collection holes, and
     dropping interior weeks would break the consecutive-week change pairs the
     MD/ACF estimators rely on.  They are reported, not silently used.
+
+SCORE-CAPTURE GUARD, REDDIT (declared 2026-10-14 on the owner's decision;
+MODEL_STATUS 2z-ca, 2z-cb).  The Reddit panels are sums of scores, and the
+archive read each item's score some time after it was posted.  Where that
+delay was hours or less the scores are short.  This is invisible to the
+low-count-day guard: the items are all there, their scores are not.  A day is
+flagged when the platform's karma per item falls below SCORE_GUARD_FRAC
+(=0.70) of the median of the same weekday in the SCORE_GUARD_WEEKS (=4) weeks
+before and the four after (at least four of those eight days must exist).
+Measured on the daily panels of 2018-12-01..2022-12-31 (1,492 days):
+  submissions  2020-04-28 (0.57), 2020-04-29 (0.015), 2020-04-30 (0.015),
+               2021-06-12 (0.63).  On the two days at 0.015 the scores are
+               about 1 per submission.
+  comments     none.
+REDDIT_SCORE_FLAGGED_DAYS records these so that no drive is needed to use
+them; `python instrument_eras.py --score-guard` re-derives them from the
+daily panels.  Usage:
+  * NOTHING changes by default.  Frozen stacks, fits and gates keep every week.
+  * Analyses of levels (trends, block means, anything in log units over time)
+    report their result with the flagged weeks left out beside the result with
+    them in.  In shares and ranks the damage is mostly common to every
+    subreddit; reading scores early raises the largest subreddits' share
+    (2z-ca), so it is not exactly common.
 """
 from __future__ import annotations
 
@@ -65,6 +88,14 @@ GUARD_WINDOW = 28    # trailing days for the median
 GUARD_FRAC = 0.60    # flag a day when count < GUARD_FRAC * trailing median
 GUARD_MIN_PERIODS = 7
 
+SCORE_GUARD_FRAC = 0.70   # flag a day when karma per item < this fraction of the local same-weekday median
+SCORE_GUARD_WEEKS = 4     # weeks on each side
+SCORE_GUARD_MIN = 4       # of the 2 * SCORE_GUARD_WEEKS neighbouring days, at least this many must exist
+REDDIT_SCORE_FLAGGED_DAYS = {
+    "submissions": ("2020-04-28", "2020-04-29", "2020-04-30", "2021-06-12"),
+    "comments": (),
+}
+
 SSD = "data/ssd/derived"
 DAILY_PATHS = {
     "facebook": f"{SSD}/fb_daily.parquet",
@@ -73,6 +104,11 @@ DAILY_PATHS = {
 WEEKLY_PATHS = {
     "facebook": f"{SSD}/fb_weekly_rebuilt.parquet",
     "reddit_comments": f"{SSD}/reddit_comments_2018-12_2021-06_weekly.parquet",
+}
+# Daily panels for the score-capture guard: (path, column holding the number of items).
+SCORE_DAILY = {
+    "submissions": (f"{SSD}/reddit_daily_long.parquet", "submission_count"),
+    "comments": (f"{SSD}/reddit_comments_2018-12_2022-12_daily.parquet", "comment_count"),
 }
 
 
@@ -95,6 +131,58 @@ def weeks_containing(days: pd.DatetimeIndex) -> set:
     """Monday-anchored weeks that contain any of the given days."""
     days = pd.DatetimeIndex(days)
     return set(days - pd.to_timedelta(days.weekday, unit="D"))
+
+
+def karma_per_item_series(kind: str) -> pd.Series:
+    """Platform karma divided by the platform count of items, per day, from a
+    Reddit daily panel.  Reads three columns, one row group at a time."""
+    import pyarrow.parquet as pq
+    path, cnt = SCORE_DAILY[kind]
+    pf = pq.ParquetFile(path)
+    parts = []
+    for i in range(pf.metadata.num_row_groups):
+        t = pf.read_row_group(i, columns=["date", "metric_value", cnt]).to_pandas()
+        parts.append(t.groupby("date")[["metric_value", cnt]].sum())
+    tot = pd.concat(parts).groupby(level=0).sum().sort_index()
+    tot.index = pd.to_datetime(tot.index)
+    return tot["metric_value"] / tot[cnt]
+
+
+def score_ratio(kpi: pd.Series, weeks: int = SCORE_GUARD_WEEKS) -> pd.Series:
+    """Each day's karma per item over the median of the same weekday in the
+    `weeks` weeks before and after.  NaN where fewer than SCORE_GUARD_MIN of
+    those days exist."""
+    v = kpi.reindex(pd.date_range(kpi.index.min(), kpi.index.max()))
+    nb = pd.concat([v.shift(7 * j, freq="D").reindex(v.index) for j in range(-weeks, weeks + 1) if j], axis=1)
+    med = nb.median(axis=1).where(nb.notna().sum(axis=1) >= SCORE_GUARD_MIN)
+    return (v / med).reindex(kpi.index)
+
+
+def flag_score_days(kpi: pd.Series, frac: float = SCORE_GUARD_FRAC,
+                    weeks: int = SCORE_GUARD_WEEKS) -> pd.DatetimeIndex:
+    """Days whose karma per item is below frac of the local same-weekday median."""
+    r = score_ratio(kpi, weeks)
+    return r.index[r < frac]
+
+
+def reddit_flagged_weeks(kind: str) -> set:
+    """Monday-anchored weeks containing a recorded score-flagged day."""
+    return weeks_containing(pd.DatetimeIndex(pd.to_datetime(list(REDDIT_SCORE_FLAGGED_DAYS[kind]))))
+
+
+def profile_scores(kind: str) -> None:
+    """Re-derive the score-capture flags from the daily panel and compare them
+    with the recorded list."""
+    kpi = karma_per_item_series(kind)
+    r = score_ratio(kpi)
+    days = flag_score_days(kpi)
+    print(f"reddit {kind}: {len(kpi)} days {kpi.index.min().date()}..{kpi.index.max().date()}; "
+          f"{len(days)} days below {SCORE_GUARD_FRAC:.0%} of the local same-weekday median")
+    for d in days:
+        print(f"      {d.date()}  ratio {r[d]:.3f}  karma per item {kpi[d]:.2f}")
+    recorded = set(pd.to_datetime(list(REDDIT_SCORE_FLAGGED_DAYS[kind])))
+    print(f"  matches the recorded list: {set(days) == recorded}; weeks: "
+          f"{[str(pd.Timestamp(x).date()) for x in sorted(weeks_containing(days))]}")
 
 
 def era_span(era: str) -> tuple[pd.Timestamp, pd.Timestamp]:
@@ -140,8 +228,19 @@ def profile(platform: str) -> None:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("platforms", nargs="*", default=["facebook", "reddit_comments"],
-                    choices=list(DAILY_PATHS))
+    # no `choices` on the positional: with nargs="*" and nothing given, argparse (3.11) checks
+    # the empty list itself against the choices and rejects it, so the bare command failed
+    ap.add_argument("platforms", nargs="*", default=None,
+                    help=f"any of {', '.join(DAILY_PATHS)}; default: all")
+    ap.add_argument("--score-guard", action="store_true",
+                    help="instead: re-derive the Reddit score-capture flags from the daily panels")
     args = ap.parse_args()
-    for p in args.platforms:
-        profile(p)
+    for p in args.platforms or []:
+        if p not in DAILY_PATHS:
+            ap.error(f"unknown platform {p!r} (choose from {', '.join(DAILY_PATHS)})")
+    if args.score_guard:
+        for kind in SCORE_DAILY:
+            profile_scores(kind)
+    else:
+        for p in args.platforms or ["facebook", "reddit_comments"]:
+            profile(p)
