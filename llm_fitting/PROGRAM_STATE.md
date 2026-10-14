@@ -191,6 +191,12 @@ present-weeks permanent rank, both opt-in), crossings are 0.94–1.12 of
 prediction at K/16 … K. Planted censoring worlds show the "a"-query layers
 leave the test unbiased, and the matching-post count carries at most 23–41%
 of the movement; the q-free per-post panel is too noisy to confirm (§2z-cx).
+Ex ante lock-in forecasts from movement discriminate who stays in a top set on
+all four ladders (Brier 13–21% below constant turnover, at par with a fitted
+logistic) but under-forecast staying; block-scale heavy tails are the planted
+mechanism, and an outcome-free empirical-shape forecast halves the
+under-forecast (post hoc) (§2z-cy, §2z-cz). The evidence packet is
+`EVIDENCE_PACKET_2026-10-15.md`.
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate

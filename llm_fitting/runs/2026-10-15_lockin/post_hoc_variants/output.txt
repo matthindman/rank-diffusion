@@ -1,0 +1,5 @@
+[reddit_comments_ext] blocks 8, origins [2, 3, 4, 5, 6] written
+[reddit_submissions_long] blocks 8, origins [2, 3, 4, 5, 6] written
+[facebook_a] blocks 6, origins [2, 3, 4] written
+[instagram_hm] blocks 6, origins [2, 3, 4] written
+exit done

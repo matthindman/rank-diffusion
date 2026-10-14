@@ -10671,6 +10671,8 @@ panel was rerun; its boundary numbers were identical. No run was killed.
 
 ## 2z-cy. 2026-10-15 — EXPLORATORY MEASUREMENT, registered: ex ante forecasts of lock-in. From measured movement alone, the probability that each member of today's top k is still in the top k later discriminates who stays on all four ladders (Brier score 13–21% below constant turnover, within 0.002–0.005 of a logistic fitted to past outcomes) and is calibrated within ±0.07 in 75% of cells. But it under-forecasts staying: incumbents are stickier than average movement implies, by 2–5 points at the first horizon and 5–17 points at longer ones, except at the very top of Reddit, which lost members faster than forecast at 1.5–2 years. Two of three predictions held; nothing adopted, nothing fitted to outcomes
 
+_[CORRECTED IN PART 2026-10-15 by §2z-cz: the post hoc calm-half split is partly mechanical (planted swing worlds without types give a calm excess of +0.02 to +0.04), so the reading that volatility persists within a name is withdrawn as stated; among planted mechanisms only block-scale jumps reproduce the under-forecast, and an outcome-free forecast with the empirical shape of training changes halves it on all four ladders (post hoc).]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; design,
 predictions, runner and planted test committed at 50dc474 before the run.
 The owner's request: "People really care about our ability to forecast
@@ -10798,3 +10800,77 @@ on the type-versus-state question of §2z-cj, §2z-ck and §2z-cq.
 **Next step (not run):** a forecast that scales each member's variance by its
 own recent movement, shrunk toward its band. It should remove most of the
 under-forecast. It should be registered before it is scored.
+
+## 2z-cz. 2026-10-15 — POST HOC (unregistered) and CORRECTION of §2z-cy, plus the EVIDENCE PACKET. The calm-half reading of §2z-cy is partly mechanical. Among planted mechanisms only block-scale jumps reproduce the under-forecast of staying. On the data a forecast with the empirical shape of training changes, still outcome-free, halves the under-forecast on all four ladders and matches a logistic fitted to past outcomes. An evidence packet indexes every claim. Nothing adopted
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; started
+from 94f01e2. `mts_lockin.py` gains reported variants (individual
+volatility, empirical shape, convolution). The default forecast and its
+registered scores are unchanged on rerun: T1 Brier identical on all four
+ladders, T2 0.754, T3 0.063 against 0.044._
+
+**1. Correction of §2z-cy's post hoc reading.** §2z-cy read the calm half's
+excess retention (+0.06 to +0.11, against about 0 for the volatile half) as
+evidence that volatility persists within a name. Planted worlds without any
+volatility types give the same split a calm excess of +0.02 to +0.04 (swing
+worlds). Members whose last block was quiet have less passing swing to give
+back. The data's calm excess is larger than that, but the split does not
+isolate volatility types. The type-versus-state reading of §2z-cy is
+withdrawn as stated.
+
+**2. What produces the under-forecast** (planted, `mts_lockin.analyse`).
+Observed minus forecast staying at K/16 … K/4:
+
+| planted world | first horizon | all horizons |
+|---|---|---|
+| Gaussian walk | +0.002 | +0.007 |
+| passing swings | about 0 | about 0 |
+| log-normal volatility types (log-sd 0.8) | about 0 | +0.004 |
+| 30–50% near-static class | 0.000 to +0.004 | −0.003 to −0.010 |
+| weekly Student-t or weekly jumps | +0.004 to +0.010 | +0.001 to +0.005 |
+| **block-scale jumps** (3% of names per block carry half the variance) | **+0.022** | **+0.034**, growing to +0.066 at four blocks |
+
+Only two-speed movement reproduces the data's pattern in size and in its
+growth with horizon: most incumbents drift slowly while a few move a lot. A
+Gaussian forecast with the band's average variance spreads everyone, so it
+under-forecasts staying.
+
+**3. Post hoc forecasts on the data** (`runs/2026-10-15_lockin/`, rerun;
+unregistered). Each replaces Φ:
+- *empirical shape:* the stratum's standardised training changes at one or
+  two blocks;
+- *convolution:* first-block changes plus independent later increments;
+- *individual volatility:* the band variance scaled by the member's own last
+  squared move, shrunk by its persistence in training.
+
+All use no outcomes. Pooled over origins, k and horizons:
+
+| ladder | under-forecast: Gaussian / empirical / convolution | Brier: Gaussian / empirical / convolution / individual | logistic fitted to outcomes |
+|---|---|---|---|
+| Reddit comments | +0.035 / +0.016 / +0.020 | 0.1252 / **0.1237** / 0.1239 / 0.1235 | 0.1244 |
+| Reddit submissions | +0.059 / +0.034 / +0.031 | 0.1357 / 0.1315 / **0.1314** / 0.1332 | 0.1309 |
+| Facebook pages | +0.051 / +0.027 / +0.030 | 0.1607 / **0.1584** / 0.1585 / 0.1591 | 0.1587 |
+| Instagram | +0.021 / −0.006 / +0.005 | 0.1621 / 0.1610 / 0.1613 / **0.1605** | 0.1615 |
+
+- The empirical shape about halves the under-forecast on every ladder. It
+  brings the movement-based forecast to the outcome-fitted logistic: equal or
+  better on three ladders, and within 0.0006 on submissions.
+- Individual volatility helps the Brier a little and the bias little.
+- Reading: the data's block-scale changes are heavy-tailed. Lock-in looks
+  stronger than average movement implies because movement is concentrated in
+  a few large moves.
+- **The empirical-shape forecast must be registered before it is claimed.**
+  The sealed 2023–24 data are the place, and the revised protocol (§2z-cp)
+  could carry it as a secondary test.
+
+**4. The evidence packet** (`EVIDENCE_PACKET_2026-10-15.md`, draft for the
+owner).
+- Fourteen claims, each with numbers, record section, figure, code, tests and
+  standing.
+- A scoreboard of every registered prediction since §2z-cm: 15 of 26 scored
+  items held, one not adjudicated.
+- The known failures the paper must state, the data statuses, the commands to
+  reproduce, and the positioning.
+
+**Ledgers.** Data contact for the rerun is covered by §2z-cy's row; no new
+gate evaluation.

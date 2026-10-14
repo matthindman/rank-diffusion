@@ -75,15 +75,29 @@ def analyse(M, K, ks, horizons, origins):
     for a in origins:
         t0 = a - 2
         # training moments by stratum of current rank at t0
-        mom = []
+        mom, Z, E = [], [], []
+        rng_c = np.random.default_rng(1000 + a)
         for lo, hi in st:
             m = (R[t0] > lo) & (R[t0] <= hi)
             d1 = Y[t0 + 1][m] - Y[t0][m]
             d2 = Y[t0 + 2][m] - Y[t0][m]
             ok1, ok2 = np.isfinite(d1), np.isfinite(d2)
+            # how far a member's squared move over one block carries into the next (opt-in individual volatility,
+            # 2z-cz): the correlation, within the stratum, of the squared changes t0 -> t0+1 and t0+1 -> t0+2
+            e1, e2 = d1, Y[t0 + 2][m] - Y[t0 + 1][m]
+            okp = np.isfinite(e1) & np.isfinite(e2)
+            lam = float(np.clip(np.corrcoef(e1[okp] ** 2, e2[okp] ** 2)[0, 1], 0, 1)) if okp.sum() > 20 else 0.0
+            # opt-in empirical shape (2z-cz): the training changes standardised by their own mean and sd
+            z1 = np.sort((d1[ok1] - d1[ok1].mean()) / d1[ok1].std()) if ok1.sum() > 20 else None
+            z2 = np.sort((d2[ok2] - d2[ok2].mean()) / d2[ok2].std()) if ok2.sum() > 20 else None
+            Z.append((z1, z2))
+            # opt-in convolution (2z-cz): first-block changes d1 (they carry the one-time constant) and the next
+            # block's increments of the same members, t0+1 -> t0+2, which follow selection; both empirical
+            E.append((d1[ok1] if ok1.sum() > 20 else None, e2[okp] if okp.sum() > 20 else None))
             mom.append(dict(n=int(m.sum()), q1=float(ok1.mean()) if m.any() else np.nan, q2=float(ok2.mean()) if m.any() else np.nan,
                             mu1=float(np.mean(d1[ok1])) if ok1.sum() > 5 else np.nan, mu2=float(np.mean(d2[ok2])) if ok2.sum() > 5 else np.nan,
-                            v1=float(np.var(d1[ok1])) if ok1.sum() > 5 else np.nan, v2=float(np.var(d2[ok2])) if ok2.sum() > 5 else np.nan))
+                            v1=float(np.var(d1[ok1])) if ok1.sum() > 5 else np.nan, v2=float(np.var(d2[ok2])) if ok2.sum() > 5 else np.nan,
+                            lam=lam, msq=float(np.mean(e2[okp] ** 2)) if okp.sum() > 5 else np.nan))
         # training pairs for the logistic baseline, and past turnover for the geometric one
         cell = dict(origin=int(a), ks={})
         for k in ks:
@@ -108,6 +122,41 @@ def analyse(M, K, ks, horizons, origins):
                 v = np.array([max(mom[j]["v1"] + (mom[j]["v2"] - mom[j]["v1"]) * (h - 1), 1e-6) for j in sj])
                 q = np.array([mom[j]["q1"] * (mom[j]["q2"] / mom[j]["q1"]) ** (h - 1) if mom[j]["q1"] > 0 else 0.0 for j in sj])
                 p_model = np.clip(q * _phi((g + mu - beta * h) / np.sqrt(v)), 0, 1)
+                # individual volatility: scale the variance by the member's own last squared move relative to its
+                # stratum, shrunk by the stratum's persistence lam (both from the training window and block a)
+                own = (Y[a][members] - Y[a - 1][members]) ** 2
+                msq = np.array([mom[j]["msq"] for j in sj])
+                lam = np.array([mom[j]["lam"] for j in sj])
+                ratio = np.where(np.isfinite(own) & (msq > 0), own / msq, 1.0)
+                w = np.clip(1 + lam * (ratio - 1), 0.05, 20)
+                p_ind = np.clip(q * _phi((g + mu - beta * h) / np.sqrt(v * w)), 0, 1)
+                # empirical shape: P(stay) = P(z > -x), z from the stratum's standardised training changes at
+                # horizon 1 (h = 1) or 2 (h >= 2); Phi where a stratum has too few
+                x_ = (g + mu - beta * h) / np.sqrt(v)
+                p_emp = np.empty(members.size)
+                for i, j in enumerate(sj):
+                    zz = Z[j][0 if h == 1 else 1]
+                    p_emp[i] = _phi(x_[i]) if zz is None else 1 - np.searchsorted(zz, -x_[i], side="right") / zz.size
+                p_emp = np.clip(q * p_emp, 0, 1)
+                # convolution: change over h = one draw of d1 + (h - 1) independent draws of the later increment;
+                # the stratum's distribution by 4,000 Monte Carlo draws, the boundary drifting as before
+                p_conv = np.empty(members.size)
+                cache = {}
+                for i, j in enumerate(sj):
+                    if j not in cache:
+                        d1j, e2j = E[j]
+                        if d1j is None or e2j is None:
+                            cache[j] = None
+                        else:
+                            draws = d1j[rng_c.integers(0, d1j.size, 4000)]
+                            for _ in range(h - 1):
+                                draws = draws + e2j[rng_c.integers(0, e2j.size, 4000)]
+                            cache[j] = np.sort(draws)
+                    dd = cache[j]
+                    thr = -(g[i] - beta * h)
+                    p_conv[i] = (_phi((g[i] + mu[i] - beta * h) / np.sqrt(v[i])) if dd is None
+                                 else 1 - np.searchsorted(dd, thr, side="right") / dd.size)
+                p_conv = np.clip(q * p_conv, 0, 1)
                 p_geo = np.full(members.size, r1 * (r2 / r1) ** (h - 1) if r1 > 0 else 0.0)
                 p_log = 1 / (1 + np.exp(-(bL[0] + bL[1] * np.log(R[a][members]) + bL[2] * np.log(h))))
                 obs = (R[a + h][members] <= k).astype(float)
@@ -117,8 +166,11 @@ def analyse(M, K, ks, horizons, origins):
                 bins = np.array_split(order, 10) if members.size >= 50 else [order]
                 calib = [dict(p=float(p_model[b].mean()), obs=float(obs[b].mean()), n=int(b.size)) for b in bins if b.size]
                 hs[str(h)] = dict(n=int(members.size), observed=float(obs.mean()), model=float(p_model.mean()),
-                                  geometric=float(p_geo.mean()), logistic=float(p_log.mean()),
+                                  geometric=float(p_geo.mean()), logistic=float(p_log.mean()), individual=float(p_ind.mean()),
+                                  empirical=float(p_emp.mean()), brier_empirical=brier(p_emp),
+                                  convolution=float(p_conv.mean()), brier_convolution=brier(p_conv),
                                   brier_model=brier(p_model), brier_geometric=brier(p_geo), brier_logistic=brier(p_log),
+                                  brier_individual=brier(p_ind),
                                   calibration=calib)
             cell["ks"][str(k)] = dict(r1=r1, r2=r2, beta=beta, horizons=hs)
         cell["moments"] = mom
@@ -185,6 +237,44 @@ def score():
     lg = [abs(x["geometric"] - x["observed"]) for _, _, _, h, x in allc if h >= 3]
     out["T3"] = dict(model=float(np.mean(lm)) if lm else None, geometric=float(np.mean(lg)) if lg else None, cells=len(lm),
                      verdict=("PASS" if lm and np.mean(lm) <= np.mean(lg) else "FAIL") if lm else "NOT ADJUDICATED")
+    ind = {}
+    for pn in SETTINGS:
+        f = OUT / f"lockin__{pn}.json"
+        if not f.exists():
+            continue
+        cs = list(cells(json.loads(f.read_text())))
+        if not cs or "individual" not in cs[0][3]:
+            continue
+        n = sum(x["n"] for *_, x in cs)
+        under_m = sum((x["observed"] - x["model"]) * x["n"] for *_, x in cs) / n
+        under_i = sum((x["observed"] - x["individual"]) * x["n"] for *_, x in cs) / n
+        bm = sum(x["brier_model"] * x["n"] for *_, x in cs) / n
+        bi = sum(x["brier_individual"] * x["n"] for *_, x in cs) / n
+        ind[pn] = dict(under_forecast_model=under_m, under_forecast_individual=under_i, brier_model=bm, brier_individual=bi,
+)
+    emp = {}
+    for pn in SETTINGS:
+        f = OUT / f"lockin__{pn}.json"
+        if not f.exists():
+            continue
+        cs = list(cells(json.loads(f.read_text())))
+        if not cs or "empirical" not in cs[0][3]:
+            continue
+        n = sum(x["n"] for *_, x in cs)
+        um = sum((x["observed"] - x["model"]) * x["n"] for *_, x in cs) / n
+        ue = sum((x["observed"] - x["empirical"]) * x["n"] for *_, x in cs) / n
+        bm = sum(x["brier_model"] * x["n"] for *_, x in cs) / n
+        be = sum(x["brier_empirical"] * x["n"] for *_, x in cs) / n
+        bg = sum(x["brier_geometric"] * x["n"] for *_, x in cs) / n
+        bl_ = sum(x["brier_logistic"] * x["n"] for *_, x in cs) / n
+        uc = sum((x["observed"] - x["convolution"]) * x["n"] for *_, x in cs) / n
+        bc = sum(x["brier_convolution"] * x["n"] for *_, x in cs) / n
+        emp[pn] = dict(under_forecast_gaussian=um, under_forecast_empirical=ue, under_forecast_convolution=uc,
+                       brier_gaussian=bm, brier_empirical=be, brier_convolution=bc, brier_geometric=bg, brier_logistic=bl_)
+    if emp:                                        # POST HOC variants (2z-cz), reported, not registered or scored
+        out["post_hoc_empirical_shape"] = emp
+    if ind:
+        out["post_hoc_individual_volatility"] = ind
     print(json.dumps(out, indent=1))
     return out
 

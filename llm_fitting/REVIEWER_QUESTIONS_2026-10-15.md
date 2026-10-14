@@ -146,6 +146,26 @@ members' drift by rank changes, as after Reddit's June 2021 Home-feed change
 - Bans and quarantines are exits like any other. *Open:* whether named
   moderation waves matter. This would need names, the owner's decision.
 
+**3a. Platforms say there is little lock-in at the top. What can the model say before the fact?**
+- *The forecast.* For each member of today's top k, the probability it is
+  still there after h, from measured movement alone: no retention outcomes
+  (§2z-cy).
+- *Who stays.* On Reddit comments and submissions, Facebook pages and
+  Instagram, it ranks members by their chance of staying 13–21% better than
+  constant turnover (Brier). That is at par with a logistic fitted to past
+  outcomes.
+- *Calibration.* Within ±0.07 in 75% of cells.
+- *The direction.* Incumbents are stickier than the band-average forecast
+  says, by 2–5 points within a year and more later.
+- *Why.* Movement is two-speed: most incumbents drift slowly and a few move
+  a lot. With the empirical shape of past changes, still outcome-free, the
+  under-forecast halves and the forecast matches the fitted logistic on all
+  four ladders (post hoc, §2z-cz; to be registered).
+- *The exception.* The very top of Reddit lost members faster than forecast
+  around the June 2021 change.
+- *Answer to the platforms' claim.* On these data, top positions are held
+  longer than members' own measured mobility implies.
+
 ## Inference
 
 **9. Uncertainty, multiplicity, and what was registered.**
@@ -219,9 +239,12 @@ members' drift by rank changes, as after Reddit's June 2021 Home-feed change
 4. **Structure from movement** (`fig_sustained_ladder.png`, with
    `fig_why_it_curves.png`): the ladder each year's movement sustains,
    against the observed ladder, and why it steepens down the ranks.
-5. **Where concentration is going** (`fig_concentration.png`): the head's
+5. **Lock-in, forecast ex ante** (`fig_lockin.png`): retention of the top
+   sets by horizon on four ladders, forecast against observed and constant
+   turnover, with calibration.
+6. **Where concentration is going** (`fig_concentration.png`): the head's
    share by year and the share its own movement sustains.
-6. **An intervention** (`fig_rate_law_and_head_mobility.png`): the same-year
+7. **An intervention** (`fig_rate_law_and_head_mobility.png`): the same-year
    law over 60 cells, and the head's crossings around June 2021.
 
 **SI:**

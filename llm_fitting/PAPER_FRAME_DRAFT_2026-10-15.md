@@ -102,6 +102,17 @@ net slide_k) integrated over log rank, against the ladder observed.
 - *(B)* Crossing gain at the head of Reddit submissions over three yearly
   windows around the June 2021 Home-feed change, with intervals.
 
+**Figure 6. Lock-in, forecast before the fact** (`…/fig_lockin.png`). For the
+top K/64 and K/4 of each ladder, the share still in the top set after h,
+observed (black), forecast from measured movement alone (colour) and by
+constant turnover (grey). Right: calibration of the per-member forecasts over
+all ladders, origins, top sets and horizons.
+
+_Optional abstract sentence (owner's choice; the abstract is at the limit):_
+"From the same movement, an ex ante forecast picks out which top communities
+keep their places as well as a model fitted to past outcomes, and it shows
+incumbents stickier than average movement implies."
+
 ## What the paper claims and does not claim (to keep the frame honest)
 
 **Claims (DEVELOPMENT data, in sample):**
@@ -109,7 +120,9 @@ net slide_k) integrated over log rank, against the ladder observed.
 - the boundary theory rank by rank on four ladders (Instagram through the censoring apparatus);
 - steady crossings;
 - the sustained slope and relaxation times;
-- the debiased cohort method.
+- the debiased cohort method;
+- ex ante lock-in forecasts that discriminate who stays (registered), with the
+  under-forecast and its post hoc repair stated as such.
 
 **Does not claim:**
 - the law's mathematics, which is stochastic portfolio theory's;
