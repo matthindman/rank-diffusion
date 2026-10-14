@@ -9446,3 +9446,63 @@ llm_fitting/mts_drift_detect.py run <panel>`; `python llm_fitting/mts_drift_dete
 report`; `PYTHONPATH=. python llm_fitting/runs/2026-10-14_drift_detection/scan_post_hoc.py`.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-cj. 2026-10-14 — OWNER DECISION on framing, and REVIEW (PLANNING ONLY, nothing adopted) of Codex's six-hour proof campaign. The owner: the paper can be agnostic about what sets the drift by rank. Codex's campaign, uncommitted in its debate working copy, proves a finite-age test separating fixed volatility types from volatility that responds to size, gives conditional count-based measurement bounds and one restricted forecast witness; its most useful consequence for the paper is an empirical within-community test, and the rest is conditional theory with wide or demanding bounds
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; started from
+89b8d31._
+
+**The owner's decision** (conversation, 2026-10-14, after §2z-ci): "we can be
+agnostic about what sets the drift. that's still a publishable paper." Drift by
+rank enters the paper as a measured input; its causes are not a claim the paper
+has to make. This changes no registered claim text.
+
+**What was reviewed.** At the owner's request:
+`rank-diffusion-codex-debate/llm_fitting/handoff/D1_debate/proof_campaign_2026-10-14/`
+(REPORT, README, ASSUMPTION_DECISIONS, STATUS_ENTRY, COMPLETION_AUDIT, and the
+finite-age theorem with its results and counterexamples). It is uncommitted on
+`codex/d1-debate` (HEAD 8bb6365), with the earlier uncommitted proofs 9–13 and
+their reviews. It is not in the record; its STATUS_ENTRY can be appended when
+Codex commits it and the branch is merged.
+
+**Checked by me.** The finite-age theorem's core (single age, point entry):
+∂a∂x log n_a = [x/T + g − a g′]/a², and for common g, A′(x) = (x/T + g)(E a E 1/a
+− 1) ≥ g(E a E 1/a − 1); both match the stated results, and the bound holds
+numerically at three sizes. The bursty-entry counterexample reproduces
+exactly (A′(0.5) = −0.000526 per day per log unit). The general-entry proof's
+structure (inverse-age integration by parts) reads correctly; I did not check
+every step, the cohort theorem, the count-sensor bridge or the macro
+certificate, which Codex audited internally.
+
+**Verdict.**
+
+1. *The finite-age theorem is the useful result.* Under fixed volatility types
+   with ordered drift, a common entry history and size law, and no positive
+   common growth, the variance of the communities occupying a size cannot fall
+   as size rises, at any age. Ours does fall (§2z-cc, §2z-cd), which would
+   point to volatility that responds to size. But Reddit 2019–2022 has
+   exactly the escapes Codex's counterexamples construct: positive common
+   growth and a burst of entry. So the theorem cannot decide it on these
+   panels. A direct within-community test can: does a community's lasting
+   variance change when it moves in rank, against communities that do not
+   move? This matters for the rate law, which uses variance at a rank; if
+   volatility is a trait carried by communities, that variance shifts with
+   composition.
+2. *The count-based measurement bounds* are rigorous and conditional on event
+   counts with Poisson structure. Karma, our metric, is not an event count, as
+   Codex notes. The illustrated intervals are 31–95% of a variance cap for
+   10,000 names over one to ten years: robustness guarantees, not a
+   replacement for the estimators in use.
+3. *The restricted forecast witness* needs about 21 million events a day and
+   proportional growth, and widens the ladder rather than maintaining it.
+   Little direct use for the paper.
+4. *Convergence.* Codex's recommended structural test, a few prespecified
+   structural quantities, drift and variance by rank measured beforehand,
+   entry and exit, persistence as baseline, no conditioning on the target
+   year, is the design of §2z-cd's lagged test and of the draft 2023 protocol
+   (§2z-cf), reached independently. Its caution matches §2z-cg's
+   qualification.
+
+**Not run.** The within-community test. Integration of the campaign.
+
+**Ledgers.** No data contact; no gate evaluation.
