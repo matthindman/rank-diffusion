@@ -69,9 +69,9 @@ def _assign(pr, pres, st):
 
 
 def lasting_variance(M, which, st, blocks, block, rng, boot):
-    """Per stratum: [var(change a->c) - (var(a->b) + var(b->c)) / 2] / block, for the cohort
-    members with a level in all three blocks.  The averaging offset and a constant left by
-    passing swings cancel in the difference."""
+    """Per stratum: [var(change a->c) - (var(a->b) + var(b->c)) / 2] / spacing, for the cohort
+    members with a level in all three blocks, `block` being the spacing a->b in weeks.  The
+    averaging offset and a constant left by passing swings cancel in the difference."""
     a, b, c = blocks
     tri = np.isfinite(M[a]) & np.isfinite(M[b]) & np.isfinite(M[c])
     out, draws = [], []
@@ -132,7 +132,11 @@ def pair_terms(M, which, st, a, b, K, ks, block, rng, boot):
                         for (lo, hi), n, s in zip(st, ns, slide)])
 
 
-def analyse(df, K, block, boot=BOOT, seed=0):
+def analyse(df, K, block, boot=BOOT, seed=0, step=1):
+    """step: pairs (a, a + step) in blocks.  With 52-week blocks (step 1) this is the design of
+    2z-cd exactly.  With 26-week blocks and step 2 the pairs are a year apart, start every half
+    year, and the annual cycle does not enter a change; the variance then comes from blocks 1,
+    3, 5 of the cohort fixed on block 0."""
     X, R, floors, outside, ids = m1.matrices(df, K)
     T = X.shape[0]
     nb = T // block
@@ -145,28 +149,36 @@ def analyse(df, K, block, boot=BOOT, seed=0):
         n_cert.append(int((M[b][np.isfinite(M[b])] > bd).sum()))
     rng = np.random.default_rng(seed)
     st, ks = strata(K), cutoffs(K)
-    out = dict(K=int(K), T=int(T), block=int(block), n_tracked=int(X.shape[1]),
-               blocks=dict(n=int(nb), start=int(start), certified_top=n_cert),
+    dates = (df.groupby("period")["ts"].first().reindex(range(T)).astype(str).tolist() if "ts" in df.columns else None)
+    out = dict(K=int(K), T=int(T), block=int(block), step=int(step), n_tracked=int(X.shape[1]),
+               blocks=dict(n=int(nb), start=int(start), certified_top=n_cert,
+                           first_week=None if dates is None else [dates[start + b * block] for b in range(nb)]),
                strata=[[float(lo), float(hi)] for lo, hi in st], ks=[k for _, k in ks], pairs=[])
-    if nb < 4 or min(n_cert) < int(np.ceil(WIDTH * K)):
-        out["not_adjudicated"] = "needs four blocks with ranks to 1.42 K certified exact"
+    vb = (1, 2, 3) if step == 1 else (1, 1 + step, 1 + 2 * step)
+    if nb < vb[-1] + 1 or min(n_cert) < int(np.ceil(WIDTH * K)):
+        out["not_adjudicated"] = "needs the variance blocks and ranks to 1.42 K certified exact"
         return out
     which = {}
-    for sel in (0, 1):
+    for sel in range(nb - step - 1):
         pr, pres = ba.perm_rank(R, start + sel * block, start + (sel + 1) * block, floors)
         which[sel] = _assign(pr, pres, st)
-    var_rows, var_bs = lasting_variance(M, which[0], st, (1, 2, 3), block, rng, boot)
+    var_rows, var_bs = lasting_variance(M, which[0], st, vb, step * block, rng, boot)
     out["variance"] = [dict(lo=float(lo), hi=float(hi), **v) for (lo, hi), v in zip(st, var_rows)]
+    out["variance_blocks"] = list(vb)
     vn = [v["n"] for v in var_rows]
     s2 = {k: _at_boundary([v["sigma2"] for v in var_rows], vn, j) for j, k in ks}
     s2_bs = {k: np.array([_at_boundary(var_bs[:, t], vn, j) for t in range(boot)]) for j, k in ks}
 
-    terms = {(a, b, sel): pair_terms(M, which[sel], st, a, b, K, ks, block, rng, boot)
-             for (a, b, sel) in ((1, 2, 0), (2, 3, 1), (2, 3, 0))}
+    keys = [(a, a + step, a - 1) for a in range(1, nb - step)]
+    if step == 1:
+        keys = [(1, 2, 0), (2, 3, 1), (2, 3, 0)]
+    terms = {key: pair_terms(M, which[key[2]], st, key[0], key[1], K, ks, block, rng, boot) for key in keys}
     q = lambda v: ([float(np.nanquantile(v, 0.05)), float(np.nanquantile(v, 0.95))]  # noqa: E731
                    if np.isfinite(v).any() else [np.nan, np.nan])
     for (a, b, sel), t in terms.items():
-        lag = terms[(1, 2, 0)] if (a, b) == (2, 3) else None
+        lag = terms.get((a - step, a, a - step - 1))
+        if step == 1:
+            lag = terms[(1, 2, 0)] if (a, b) == (2, 3) else None
         rows = []
         for i, r in enumerate(t["rows"]):
             k = r["k"]
@@ -186,7 +198,8 @@ def analyse(df, K, block, boot=BOOT, seed=0):
                            last_year=float(lr["obs_P"]))
             rows.append(row)
         out["pairs"].append(dict(start=a, end=b, weeks=t["weeks"], cohort_on=sel, n_both=t["n_both"],
-                                 primary=bool(sel == a - 1), strata=t["strata"], rows=rows))
+                                 primary=bool(sel == a - 1), variance_out_of_sample=bool(vb[-1] <= a),
+                                 strata=t["strata"], rows=rows))
     return out
 
 
@@ -202,14 +215,15 @@ def summary(rows, key="pred", obs="obs_P"):
                 corr=float(np.corrcoef(p, o)[0, 1]) if len(r) > 2 and p.std() > 0 and o.std() > 0 else np.nan)
 
 
-def run(panel):
+def run(panel, halfyear=False):
     import minimal_rankdiff as mrd
     cfg = m1.PANELS[panel]
     df = mrd.load_panel(mrd.PLATFORMS[cfg["platform"]])
-    res = analyse(df, cfg["K"], cfg["block"])
+    res = analyse(df, cfg["K"], 26, step=2) if halfyear else analyse(df, cfg["K"], cfg["block"])
     res.update(panel=panel, finished=time.strftime("%Y-%m-%d %H:%M:%S"))
-    (OUT / "cells").mkdir(parents=True, exist_ok=True)
-    (OUT / "cells" / f"law__{panel}.json").write_text(json.dumps(res, indent=1, default=float))
+    out_dir = OUT if not halfyear else Path("llm_fitting/runs/2026-10-14_balance_law_halfyear")
+    (out_dir / "cells").mkdir(parents=True, exist_ok=True)
+    (out_dir / "cells" / f"law__{panel}.json").write_text(json.dumps(res, indent=1, default=float))
     print(f"[{panel}] T={res['T']} tracked={res['n_tracked']} blocks={res['blocks']['n']} "
           f"certified_top={res['blocks']['certified_top']} written", flush=True)
 
@@ -267,10 +281,55 @@ def report():
     print("\n".join(lines))
 
 
+def report_halfyear():
+    """Half-year starts, pairs a year apart (2z-cg)."""
+    d = Path("llm_fitting/runs/2026-10-14_balance_law_halfyear")
+    lines, pooled, pooled_lag = [], [], []
+    for panel in PANELS:
+        f = d / "cells" / f"law__{panel}.json"
+        if not f.exists():
+            continue
+        res = json.loads(f.read_text())
+        K = res["K"]
+        fw_ = res["blocks"]["first_week"]
+        lines += [f"\n## {panel}  (K = {K}, 26-week blocks from {fw_[0]}, pairs a year apart; variance from blocks {res['variance_blocks']})", "",
+                  "| pair (start of first block → start of second) | predicted, K/64 … K/2 (per 1,000 weeks) | observed, persisting set | rms error, against no change | lagged: predicted | lagged rms, repeat last |",
+                  "|---|---|---|---|---|---|"]
+        for p in res["pairs"]:
+            below = [r for r in p["rows"] if r["k"] < K]
+            sm = summary(below)
+            pooled += below
+            lag = ""
+            lagr = ""
+            if "pred_lag" in below[0]:
+                sl, ly = summary(below, "pred_lag"), summary(below, "last_year")
+                lag = ", ".join(f"{1000 * r['pred_lag']:+.1f}" for r in below)
+                lagr = f"{1000 * sl['rmse']:.2f}, {1000 * ly['rmse']:.2f}"
+                pooled_lag += below
+            lines.append(f"| {fw_[p['start']]} → {fw_[p['end']]} | " + ", ".join(f"{1000 * r['pred']:+.1f}" for r in below) + " | " +
+                         ", ".join(f"{1000 * r['obs_P']:+.1f}" for r in below) + f" | {1000 * sm['rmse']:.2f}, {1000 * sm['rmse_zero']:.2f} | {lag} | {lagr} |")
+    if pooled:
+        sm = summary(pooled)
+        big = [r for r in pooled if abs(r["pred"]) > 0.0010]
+        agree = sum(np.sign(r["pred"]) == np.sign(r["obs_P"]) for r in big)
+        lines += ["", f"Pooled, {sm['n']} cells: slope {sm['slope']:.2f}, correlation {sm['corr']:.2f}, rms error {1000 * sm['rmse']:.2f} against "
+                      f"{1000 * sm['rmse_zero']:.2f} for no change (per 1,000 weeks); sign right in {agree} of {len(big)} cells above 1.0."]
+    if pooled_lag:
+        sl, ly = summary(pooled_lag, "pred_lag"), summary(pooled_lag, "last_year")
+        lines += [f"Lagged, {sl['n']} cells: rms error {1000 * sl['rmse']:.2f}; repeat last {1000 * ly['rmse']:.2f}; no change {1000 * sl['rmse_zero']:.2f}; "
+                  f"slope {sl['slope']:.2f}; sign right in {sl['sign_agree']} of {sl['n']}."]
+    (d / "report_tables.md").write_text("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+
 def main():
     args = sys.argv[1:]
     if args[:1] == ["run"] and len(args) == 2 and args[1] in PANELS:
         run(args[1])
+    elif args[:1] == ["run-halfyear"] and len(args) == 2 and args[1] in PANELS:
+        run(args[1], halfyear=True)
+    elif args[:1] == ["report-halfyear"]:
+        report_halfyear()
     elif args[:1] == ["report"]:
         report()
     else:

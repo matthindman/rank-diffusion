@@ -108,3 +108,14 @@ def test_passing_swings_and_births_do_not_break_it():
     sm = bl.summary(below)
     assert 0.5 < sm["slope"] < 1.6 and sm["rmse"] < 0.6 * sm["rmse_zero"] and sm["sign_agree"] == sm["n"]
     assert all(r["entry"] <= 1e-12 for r in below)             # newcomers near K lift the centre, not the head
+
+
+def test_half_year_starts_with_pairs_a_year_apart():
+    """The same pressed head read with blocks half as long and pairs two blocks apart (the
+    design of 2z-cg): the law still tracks the sinking, pair by pair, and lagged pairs exist."""
+    res = bl.analyse(long_frame(world("pressed_head")), K, BLOCK // 2, boot=40, step=2)
+    assert res["variance_blocks"] == [1, 3, 5] and len(res["pairs"]) == 5
+    rows = [r for p in res["pairs"] for r in p["rows"] if 25 <= r["k"] < K]
+    sm = bl.summary(rows)
+    assert 0.5 < sm["slope"] < 1.6 and sm["rmse"] < 0.6 * sm["rmse_zero"]
+    assert sum("pred_lag" in p["rows"][0] for p in res["pairs"]) == 3
