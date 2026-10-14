@@ -113,6 +113,19 @@ averaging factor. Step 3 as the protocol wrote it has no license. **The blind
 is lifted**; queue row R5 asks Codex to review step 1, M2, the correction and
 this reading.
 
+**Since V4: external evidence, two data checks and the replenishment test
+(§2z-bz to §2z-cc, 2026-10-14).** The date registered in §2z-bv is confirmed
+from Reddit's own post, and the daily panels show the June 2021 step starting
+on 23–24 June, before the archive's file boundary, which is not its cause
+(§2z-ca). One week of the submissions panel is damaged; Reddit weeks now have
+a flag list in `instrument_eras`, opt-in only (§2z-cb, owner decision). The
+replenishment test (§2z-cc) splits the incumbents' slide exactly: entry net
+of exit is 29–41% of it on comments and 8–19% on submissions, and what is
+left agrees within about 12% with the lasting rate from reordering and from
+variance. But mean change depends on rank among named endpoints, so
+"diffusion and entry and nothing else" is too simple: a candidate needs
+growth that depends on size and can change in time.
+
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate
 is numerically vacuous. Proofs 4 to 6, 8 and 9 and a second audit of Proof 7
@@ -263,11 +276,6 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
 
-- **Whether Reddit weeks get a flag list** (§2z-ca, 2026-10-14). The daily check ran: the June 2021 step on
-  submissions begins on 23–24 June, before both Reddit's announced date and the archive's file boundary, so the
-  archive is not its cause. It also found the week of 27 April 2020 damaged in the submissions panel (two days
-  with scores of about 1). No analysis so far screens it. The capture delay from our own raw files still needs
-  the WD drive.
 - **What follows V4** (§2z-by, 2026-10-14). Step 3 as written is closed. Two
   pieces of design work are open and neither is started: a second set of
   planted worlds with a growing population, a moving shape and a dated change

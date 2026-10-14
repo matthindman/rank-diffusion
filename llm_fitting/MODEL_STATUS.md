@@ -8849,3 +8849,169 @@ llm_fitting/runs/2026-10-14_daily_date_check/daily_check.py`. Outputs in that
 folder: `output.txt`, `daily_series.csv`, `REPORT.md`. The run was not killed.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-cb. 2026-10-14 — OWNER DECISION and change: Reddit weeks get a flag list. `instrument_eras` gains a declared score-capture guard and the list it yields (submissions: 28–30 April 2020 and 12 June 2021; comments: none). Nothing changes by default; opt-in only
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; started
+from 167d501; committed at 884c3ec._
+
+**The decision.** Asked in conversation whether Reddit weeks should get a flag
+list like Facebook's, so that the damaged week of §2z-ca is screened in future
+analyses, the owner answered: "yes, add the flag list".
+
+**What it spends or changes.** No default, frozen stack, gate, threshold or
+registered protocol. It adds a declared rule and a recorded list to the
+canonical instrument module.
+
+**The rule** (`instrument_eras.py`, SCORE-CAPTURE GUARD). A day is flagged
+when the platform's karma per item is below 0.70 of the median of the same
+weekday in the four weeks before and the four after, with at least four of
+those eight days present. It is the rule §2z-ca used. Facebook's low-count
+guard cannot see this damage: the items are all there, their scores are not.
+
+**The list.** Submissions: 2020-04-28 (0.57), 2020-04-29 (0.015), 2020-04-30
+(0.015), 2021-06-12 (0.63); weeks of 2020-04-27 and 2021-06-07. Comments:
+none. `python llm_fitting/instrument_eras.py --score-guard`, run from the
+repository root with T9 mounted, re-derives both from the daily panels and
+reports that they match the recorded list (run 2026-10-14: they do).
+
+**Declared usage.** Frozen stacks, fits and gates keep every week. Analyses
+of levels report their result with the flagged weeks left out beside the
+result with them in. `mts_step1b.run` now does so for the long submissions
+panel, as it did for Facebook; M2 was not re-run.
+
+**Also fixed.** The module's bare command failed: with `nargs="*"` and nothing
+given, argparse checked the empty list against the positional's `choices` and
+rejected it. The check is now done by hand. Behaviour with arguments is
+unchanged.
+
+**Tests.** `tests/test_instrument_score_guard.py`, four synthetic tests:
+planted pockets are flagged and a weekend pattern is not; a slow trend is
+not; days without enough neighbours are never flagged; the recorded list
+maps to the two Monday weeks. Suite 541; health check passes.
+
+**Not decided.** Whether any frozen stack or registered analysis should drop
+these weeks. That would change a default and is the owner's.
+
+## 2z-cc. 2026-10-14 — EXPLORATORY MEASUREMENT (owner-requested): the replenishment test. The incumbents' slide splits exactly into displacement by entrants and a slide against persisting endpoints: entry net of exit is 29–41% of the slide on comments and 8–19% on submissions, four fifths of it endpoints new to the record. The slide against persisting endpoints agrees within about 12% with the lasting rate from reordering and from a variance route new here. But mean change depends on rank among named endpoints: on submissions lower ranks gain on higher ones in both years; on comments not in 2020→2021 and the reverse in 2021→2022. Ten of twelve predictions held; nothing adopted, no fit, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; design,
+predictions, runner and planted-world tests committed at 884c3ec before the
+run; results committed with this entry._
+
+**Tier.** Exploratory and descriptive, DEVELOPMENT data, in sample. Data only.
+
+**The owner's request.** "yes, add the flag list, then run the replenishment
+test".
+
+**Question.** §2z-by left the slide 10–25% above the lasting reordering rate
+on Reddit's calm year. The simplest account says incumbents lose ground
+because persisting endpoints diffuse past them and new ones arrive above
+them, and for no other reason. How much of the slide is entry; does the rest
+equal the lasting rate measured otherwise; and does a named endpoint's mean
+change depend on its rank, which it should not on that account?
+
+**Method.** `runs/2026-10-14_replenishment/DESIGN.md`; `mts_replenish.py`.
+Cohort fixed on block 0 (2019) by permanent rank, as step 1. Exact split:
+slide = slide_P + (E − X), where slide_P is the cohort's slide against the
+centre of the endpoints with a level in both blocks, E is what entrants add
+to the end centre and X what later exits added to the start centre. Variance
+route: per bin, σ² = [var(change 1→3) − ½(var(1→2) + var(2→3))]/52 and
+c_var = σ²/(2S). Tilt: a weighted line through the mean changes of eight
+bins of permanent rank, (K/128, K/64] to (K, 2K], against log rank, as the
+fitted bottom minus top, per week. Endpoint bootstrap, 400 draws, 5–95%.
+Planted-world tests (closed walks; walks with births; drift by rank) pass.
+
+**Result: the split.** Per endpoint per week.
+
+| | slide (5–95%) | E | X | I = E − X | I / slide | slide_P (5–95%) | new share of E |
+|---|---|---|---|---|---|---|---|
+| comments 2020→2021 | 0.00556 (0.00537–0.00577) | 0.00280 | 0.00049 | 0.00230 | 41% | 0.00326 (0.00306–0.00347) | 84% |
+| comments 2021→2022 | 0.00428 (0.00407–0.00446) | 0.00180 | 0.00057 | 0.00123 | 29% | 0.00305 (0.00284–0.00323) | 80% |
+| submissions 2020→2021 | 0.00510 (0.00478–0.00538) | 0.00140 | 0.00041 | 0.00099 | 19% | 0.00411 (0.00379–0.00439) | 84% |
+| submissions 2021→2022 | 0.00435 (0.00407–0.00468) | 0.00080 | 0.00046 | 0.00033 | 8% | 0.00402 (0.00373–0.00435) | 76% |
+
+Identity residual zero to rounding. The slides reproduce §2z-bu's. Entrants,
+new entrants and exits in the top K: comments 1,200, 1,003, 258 and 812,
+657, 309; submissions 339, 296, 112 and 231, 186, 146, as §2z-bv.
+
+**Result: three routes to the lasting rate** (2021→2022).
+
+| | slide_P | reordering route (§2z-by) | variance route (5–95%) |
+|---|---|---|---|
+| comments | 0.0031 | 0.0034–0.0036 | 0.0034 (0.0033–0.0036) |
+| submissions | 0.0040 | 0.0035–0.0040 | 0.0039 (0.0035–0.0042) |
+
+By bin the variance route on comments is 0.0039–0.0045 for ranks 391–3,125,
+then 0.0037, 0.0030 and 0.0024 down to 2K: the lasting variance is 0.013 a
+week in all three bottom bins while the slope rises from 1.8 to 2.7.
+
+**Result: the tilt** (fitted bottom bin minus top bin, per week).
+
+| | 2020→2021 | 2021→2022 |
+|---|---|---|
+| comments | +0.0002 (−0.0004 to +0.0009) | −0.0020 (−0.0027 to −0.0014) |
+| submissions | +0.0035 (+0.0025 to +0.0044) | +0.0013 (+0.0004 to +0.0022) |
+
+On submissions the bins of ranks 156–312 and 312–625 fall by 0.0023 a week
+against the cohort in 2020→2021 (z −4.7 and −3.7) and the bin from K to 2K
+rises by 0.0005 (z +3.2). Attrition is 5–7% a year in the lowest bin and
+under 1% at the top, which flatters the lowest bins; the submissions gradient
+is present among the bins with at most 2% attrition, and on comments the bias
+runs against the tilt found.
+
+**Predictions scored** (`DESIGN.md`; `mts_replenish.score`, fixed beforehand).
+R1, entry net of exit 20–40% of the slide on comments and 5–25% on
+submissions in both pairs: FAIL on comments (41%, 29%), PASS on submissions
+(19%, 8%). R2, slide_P within 15% of the reordering route's range: PASS,
+PASS. R3, variance route within 25% of slide_P: PASS (1.13), PASS (0.96). R4,
+new endpoints at least 70% of E: PASS, PASS. R5a, no tilt on comments: FAIL
+(2021→2022). R5b, a positive tilt on submissions in 2021→2022: PASS. R5c, the
+bin from K to 2K does not rise by more than 0.0010 a week: PASS, PASS. Ten of
+twelve.
+
+**A caution found after the run** (post hoc; changes no score). The rule
+takes "no drift by rank" as equal mean change in logs. A process unbiased in
+levels has mean log change −σ²/2, and σ² rises down the ladder; with the
+lasting variances above that alone gives a tilt of −0.0020 on comments and
+about −0.006 on submissions. The comments tilt of 2021→2022 equals that
+benchmark and that of 2020→2021 equals the other, so the two years differ by
+0.002 a week and which is "no drift" is undetermined. On submissions the tilt
+is positive against either.
+
+**Flagged weeks** (§2z-cb). Submissions rerun with the weeks of 2020-04-27 and
+2021-06-07 missing: no figure moves by more than 0.00006 a week; no score
+changes.
+
+**Verdict.** No adoption rule applies. The accounting closes: the excess of
+the slide over the lasting rate is entry, and the lasting rate has three
+agreeing estimates. The simplest account, diffusion and entry and nothing
+else, fails its one discriminating test on submissions under either
+convention and on comments in one year or the other.
+
+**What it means** (my reading).
+
+1. Replenishment is real and sized: about a third of what pushes incumbents
+   down on comments, a tenth to a fifth on submissions.
+2. The lasting rate on Reddit, 0.0031–0.0036 on comments and 0.0035–0.0040 on
+   submissions, no longer rests on one estimator.
+3. A candidate model needs mean growth that depends on size and can change
+   over time. On submissions its sign is what the documented feed changes
+   would give (§2z-bz); nothing here ties the two.
+4. "One constant across ranks" (§2z-bf) weakens: with this estimator the
+   ratio falls by a third to nearly a half over the bottom two octaves on
+   comments.
+
+**What it does not show.** Why growth depends on rank. Anything below 2K.
+Anything about Facebook. Which convention is the right null.
+
+**Not run.** A model with drift by size. Codex's review (row R5, to which
+this entry is added). Facebook.
+
+**Commands.** `caffeinate -dims python scripts/heavy_lock.py -- python -u
+llm_fitting/mts_replenish.py run <panel>` for `reddit_submissions_long` and
+`reddit_comments_ext`; `python llm_fitting/mts_replenish.py report`. Outputs:
+`runs/2026-10-14_replenishment/` (`cells/`, `report_tables.md`, `REPORT.md`).
+No run was killed.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
