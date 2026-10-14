@@ -144,6 +144,12 @@ in a draft protocol (§2z-cf). None of this is reviewed by Codex yet. A change i
 rank the size of the slide is detectable within weeks in large strata and
 months at the head (§2z-ci); on comments drift by rank has an annual cycle,
 so detection needs a seasonal baseline first.
+The owner's framing (§2z-cj): the paper can be agnostic about what sets the
+drift by rank. The owner's context (§2z-ck): the platforms are mature. Under
+the rate law falling entry steepens a ladder (on comments entry holds it
+flat); it puts Reddit outside the premises of Codex's finite-age theorem; and
+it makes a community's age a rival to its size in explaining why volatility
+falls with size.
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate

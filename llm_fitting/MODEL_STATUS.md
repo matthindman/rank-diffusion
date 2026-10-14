@@ -9449,6 +9449,8 @@ report`; `PYTHONPATH=. python llm_fitting/runs/2026-10-14_drift_detection/scan_p
 
 ## 2z-cj. 2026-10-14 — OWNER DECISION on framing, and REVIEW (PLANNING ONLY, nothing adopted) of Codex's six-hour proof campaign. The owner: the paper can be agnostic about what sets the drift by rank. Codex's campaign, uncommitted in its debate working copy, proves a finite-age test separating fixed volatility types from volatility that responds to size, gives conditional count-based measurement bounds and one restricted forecast witness; its most useful consequence for the paper is an empirical within-community test, and the rest is conditional theory with wide or demanding bounds
 
+_[CORRECTED IN PART 2026-10-14 by §2z-ck: the record shows no "burst of entry" against Reddit's history, and entry to the top K falls within the window. The better-founded reason the theorem cannot decide here is that a maturing platform's entry falls faster than the theorem's premises allow; positive common growth remains the other escape.]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; started from
 89b8d31._
 
@@ -9506,3 +9508,114 @@ certificate, which Codex audited internally.
 **Not run.** The within-community test. Integration of the campaign.
 
 **Ledgers.** No data contact; no gate evaluation.
+
+## 2z-ck. 2026-10-14 — OWNER CONTEXT and ARITHMETIC on recorded outputs (POST HOC, unscored; no data file opened; nothing adopted): the platforms are mature. Falling entry puts Reddit outside the premises of Codex's finite-age theorem, which replaces §2z-cj's "burst of entry" as the reason the theorem cannot decide here, and makes age a third rival explanation of why volatility falls with size. Under the rate law entry is what holds the comments ladder flat: without it the slope that movement sustains would be 18–51% steeper. At measured movement a typical newcomer needs decades to reach the head
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; started
+from 6467e73. Arithmetic in `runs/2026-10-14_maturity_arithmetic/`
+(`maturity_arith.py`, `output.txt`), reading only the recorded cells of
+§2z-cd._
+
+**The owner's context** (conversation, 2026-10-14): "the context is that ALL
+of these platforms are now extremely mature. There are comparatively few new
+entrants compared to earlier periods. Any new YouTuber cannot easily become
+Mr Beast or Mark Rober. How does this fit into the age results?" Earlier, on
+the annual cycle of §2z-ci: "Reddit really does become overrun with kids when
+they are out of school!" Both are context, not checked here; the second would
+need community names.
+
+**What the record says about entry over time.** Entrants to the top K fall
+from 1,200 (9.6% of K) to 812 (6.5%) on comments and from 339 (6.8%) to 231
+(4.6%) on submissions between the two yearly pairs (§2z-bv). What they add to
+the end centre falls from 0.0028 to 0.0018 a week and from 0.0014 to 0.0008,
+and the incumbents' slide falls with it, from 0.0056 to 0.0043 and from
+0.0051 to 0.0044, while the slide against persisting endpoints barely moves
+(0.0033 to 0.0031; 0.0041 to 0.0040) (§2z-cc). Two pairs, the first holding
+2020. The record starts in December 2018 and holds no creation dates, so it
+cannot compare with the platform's earlier years; entry to the top K is not
+the rate at which communities are founded.
+
+1. **Correction to §2z-cj.** I wrote there that Reddit 2019–2022 has "a burst
+   of entry". The record shows no burst against the platform's history, and
+   within the window entry to the top K falls. The theorem needs the
+   effective entry profile at the source (founding rate times e^{dt}, d a
+   common death hazard) to be log-concave and nondecreasing; its extension
+   (Codex, `GENERAL_ENTRY_THEOREM.md`, line 92) allows a decline no faster
+   than g²/a_+, which with the slide for g (about 0.004 a week) and a_+ about
+   0.013 a week is about 0.0012 a week, 6% a year. A maturing platform, whose
+   founding rate falls faster than its communities die plus about 6% a year,
+   is outside the premises whatever its bursts. §2z-cj's conclusion stands, that the theorem
+   cannot decide on these panels; this is the better-founded reason, with
+   positive common growth the other.
+2. **Age mixing on a mature platform.** Codex's counterexample 3 (90% of
+   names aged 30 days, 10% aged 365, two fixed volatilities) shows the
+   mechanism: the members of a young cohort that reach a given size are its
+   most volatile ones, an old cohort reaches the head with a broader mix, so
+   the middle can hold young volatile communities and the head old calm ones,
+   and the variance of the communities at a size then falls with size while
+   every community's volatility is fixed. A mature platform has an old head
+   and a younger middle: in 2022, 60–63% of the top K were already in the
+   2019 cohort, and entrants sit at median rank 8,000 of 12,500 and 3,500 of
+   5,000 (§2z-bv). The fall of variance with size (§2z-cc) therefore has three
+   rivals: volatility that responds to current size; fixed volatility with
+   age mixing; volatility that falls as a community ages. A within-community
+   test has to separate size from age. Codex's cohort diagnostic
+   (`COHORT_DIAGNOSTIC.md`) is built for this; the only ages the instrument
+   has are first appearances since December 2018, which Codex judges
+   insufficient alone. Communities first seen in 2019–2021 form young cohorts
+   of roughly known age; all older ones are censored.
+3. **Entry under the rate law.** The slope that movement sustains with the
+   entry term, S* = σ²/(2(s̄ − entry term)) (§2z-cd item 5), against the same
+   without it, σ²/(2s̄), at K/64 to K/2 (`output.txt`):
+
+   | | 2020→2021 | 2021→2022 |
+   |---|---|---|
+   | comments: without entry / with | 1.23–1.51 | 1.18–1.34 |
+   | submissions: without entry / with | 1.04–1.06 | 1.00 |
+
+   On comments the persisting ladder steepened in 2021→2022 and entry pulled
+   it back (§2z-cd item 2). With entry falling and all else fixed, the law
+   says the comments ladder steepens and the head's share rises, with no
+   advantage of size in anyone's growth. On submissions entry is too small at
+   the head to matter; its shape there is set by drift by rank, which after
+   June 2021 worked against the head (§2z-ca, §2z-cd).
+4. **A newcomer's climb, illustrative.** Drifted Brownian motion with the
+   lasting variance and slides by rank of each pair, from the entrants'
+   median rank to K/64 (`output.txt`):
+
+   | | gap | within 10 years | within 20 years | ever, never leaving | mean time if it gets there |
+   |---|---|---|---|---|---|
+   | comments, rank 8,000 → 195 | 5.2 log units (about 180×) | 0.4–0.6% | 1.6–2.2% | 4–6% | 30–33 years |
+   | submissions, rank 3,520 → 78 | 4.1–4.3 (60–74×) | 0.04–0.05% | 0.1% | 0.1% | 12–13 years |
+
+   In general, in a stationary ladder under this approximation the chance
+   that a community moving like the ladder's typical member, starting at
+   rank m, ever reaches rank k is k/m, whatever the level of that movement;
+   one with lasting variance σ_i² above the typical σ² has
+   (k/m)^(σ²/σ_i²), which is larger. The mean time if it does is S ln(m/k)/μ, which at the
+   sustained slope S* = σ²/(2μ) is σ² ln(m/k)/(2μ²). As entry falls, μ falls
+   and the climb, once the ladder has adjusted, lengthens as 1/μ². With a
+   finite career, leaving at rate δ, the chance itself falls: it is
+   (k/m)^((1 + √(1 + 2δσ²/μ²))/2). On submissions the chance is far below
+   k/m because the head's slides are large and its slope exceeds what they
+   sustain (S*/S 0.3–0.6 at the head).
+
+**Limits.** The climb ignores passing swings, heavy-tailed jumps and fixed
+fast types, all of which make real fast climbs likelier than this. One year's
+parameters, held fixed for decades. The ladder is not stationary. Reddit
+only; nothing here is about YouTube.
+
+**What it means** (my reading). Maturity fits the results and sharpens them.
+It is the reason the age theorem cannot decide on our panels, and it makes
+age something the within-community test must control. It gives the rate law
+a statement about the long run that needs no rich-get-richer mechanism:
+falling entry steepens a ladder unless drift by rank works against the head.
+"A new YouTuber cannot easily become Mr Beast" is, at measured Reddit
+movement, the slow climb: the head is decades away, and slower churn
+lengthens the climb as the square.
+
+**Not run.** The comparison of young and old cohorts at equal rank. Any
+measure of founding rates. Anything on Facebook or YouTube.
+
+**Ledgers.** No data file opened (recorded run outputs only); no gate
+evaluation; nothing for the exposure ledger.

@@ -4,8 +4,10 @@ _From Claude (lead), at the owner's request, on `main` at the commit that adds
 this file. Read it with `git show main:llm_fitting/coordination/briefs/STATUS_FOR_CODEX_2026-10-14.md`.
 Everything cited is in `llm_fitting/MODEL_STATUS.md` by section; quote numbers
 from there, not from this page. **Your blind is lifted** (since §2z-by): read
-anything. The owner has seen and agreed the direction below; the queue rows at
-the end are the actionable part._
+anything. The owner asked for this brief and set the framing in §1
+(§2z-cj) and the context in §7 (§2z-ck); the order of the asks in §3 is my
+proposal, not an owner decision. The queue rows V5 and R6 are the actionable
+part._
 
 ## 1. The claim the paper is now built around
 
@@ -99,8 +101,9 @@ worlds), because every planted world is stationary and the data are not.
 (the finite-age theorem's single-age core and bound; counterexample 3
 reproduced exactly). Most useful consequence: a **within-community test** of
 whether volatility is a trait carried by a community or a response to its
-current size. The theorem cannot decide it on Reddit 2019–22 because the window
-has both of its escapes (positive common growth, a burst of entry). Count-sensor
+current size. The theorem cannot decide it on Reddit 2019–22: positive common
+growth is one escape, and falling entry on a mature platform is the other
+(§7; this replaces "a burst of entry"). Count-sensor
 bounds are conditional on event counts and wide; the proportional-growth
 witness needs about 21 million events a day and widens the ladder. Your
 recommended structural test, prespecified targets, drift and variance by rank
@@ -179,7 +182,7 @@ mismatch), would be useful.
 
 - Claude is the only writer of MODEL_STATUS, the ledgers, PROGRAM_STATE and
   QUEUE. Your handoff `STATUS_ENTRY.md` stands in for your record entry.
-- `main` is 12 commits ahead of `origin`, unpushed by the owner's choice; the
+- `main` is 12 commits ahead of `origin` with this brief's amendment, unpushed (pushing is the owner's call); the
   owner pushed through 97f09c9 today. Your worktrees share refs with the main
   checkout, so `git show main:<path>` reads current files.
 - Sealed folders: never look inside without the owner's word in conversation
@@ -205,3 +208,36 @@ mismatch), would be useful.
 | external evidence | `runs/2026-10-13_external_evidence/REPORT.md` |
 | draft 2023 protocol and forecasts | `llm_fitting/BRIDGE_FORECAST_PROTOCOL_DRAFT_2026-10-14.md`, `runs/2026-10-14_bridge_forecast/` |
 | earlier steps | M1 `runs/2026-10-13_M1_balance/` (read with §2z-bw, §2z-by), M2 `runs/2026-10-13_M2_entrants_shape/`, V4 review `runs/2026-10-14_V4_review/` |
+
+## 7. Added the same day: the owner's context, mature platforms (§2z-ck)
+
+The owner: these platforms are now very mature, with few new entrants
+compared with earlier years, and a new creator cannot easily reach the top.
+Three consequences for your work:
+
+- **Your finite-age theorem's premises.** It needs effective entry at the
+  source to be log-concave and nondecreasing; your extension allows a decline
+  of at most g²/a_+, about 6% a year at our magnitudes. A maturing platform is
+  outside that by construction. Entry to our top K falls between the two
+  yearly pairs (9.6% to 6.5% of K on comments, 6.8% to 4.6% on submissions;
+  §2z-bv). So "a burst of entry" in my §2z-cj is withdrawn; the theorem still
+  cannot decide here, for this reason.
+- **Age is a third rival.** Your counterexample 3 is the mature platform's
+  shape: the old head, and young volatile communities in the middle. The fall
+  of variance with size has three rivals: volatility responding to size,
+  fixed volatility with age mixing, and volatility falling with a community's
+  age. **V5 should include a platform life cycle** (entry rising, then
+  falling, with an old founding cohort) under fixed types, and say whether it
+  gives variance falling with size at our magnitudes. **The within-community
+  test must separate size from age**: tell me what your cohort diagnostic
+  needs and whether first appearance since December 2018 (the only age we
+  have; older communities are censored) can serve for young cohorts.
+- **Entry and the long run, under the rate law.** On comments, removing the
+  entry term would raise the slope that movement sustains by 18–51% across
+  K/64 to K/2; on submissions by under 6%. So falling entry steepens a ladder
+  unless drift by rank works against the head. Under a drifted Brownian
+  approximation, a typical community's chance of ever climbing from rank m to
+  rank k in a stationary ladder is k/m, and the mean time if it does is
+  σ² ln(m/k)/(2μ²), so slower churn lengthens climbs as 1/μ². A short proof
+  target, if you agree it matters: the same quantities with heterogeneous
+  fixed volatility, a finite career, and passing swings.

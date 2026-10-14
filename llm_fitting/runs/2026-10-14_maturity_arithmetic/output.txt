@@ -1,0 +1,32 @@
+reddit_comments_ext blocks 1->2
+   k=  195  S=0.91  S*=0.63  S*(no entry)=0.95  ratio=1.51  entry=-0.0018
+   k=  391  S=1.13  S*=0.78  S*(no entry)=1.13  ratio=1.44  entry=-0.0017
+   k=  781  S=1.15  S*=1.00  S*(no entry)=1.43  ratio=1.42  entry=-0.0015
+   k= 1562  S=1.32  S*=1.32  S*(no entry)=1.93  ratio=1.47  entry=-0.0013
+   k= 3125  S=1.66  S*=1.52  S*(no entry)=2.10  ratio=1.38  entry=-0.0011
+   k= 6250  S=2.03  S*=1.58  S*(no entry)=1.95  ratio=1.23  entry=-0.0008
+   climb rank 7999 -> 195: gap 5.24 log units (x189), drift -0.0034/wk, var 0.0107/wk; P(ever) 0.037 (k/K-type benchmark 0.024); P(within 5y) 0.0003, 10y 0.0041, 20y 0.0156; mean time given success 30 years
+reddit_comments_ext blocks 2->3
+   k=  195  S=0.89  S*=0.64  S*(no entry)=0.80  ratio=1.25  entry=-0.0011
+   k=  391  S=1.05  S*=0.85  S*(no entry)=1.07  ratio=1.25  entry=-0.0010
+   k=  781  S=1.15  S*=1.30  S*(no entry)=1.71  ratio=1.32  entry=-0.0009
+   k= 1562  S=1.31  S*=1.73  S*(no entry)=2.32  ratio=1.34  entry=-0.0008
+   k= 3125  S=1.66  S*=2.23  S*(no entry)=2.92  ratio=1.31  entry=-0.0007
+   k= 6250  S=1.99  S*=2.19  S*(no entry)=2.58  ratio=1.18  entry=-0.0005
+   climb rank 7999 -> 195: gap 5.15 log units (x172), drift -0.0030/wk, var 0.0107/wk; P(ever) 0.056 (k/K-type benchmark 0.024); P(within 5y) 0.0004, 10y 0.0058, 20y 0.0218; mean time given success 33 years
+reddit_submissions_long blocks 1->2
+   k=   78  S=0.84  S*=0.46  S*(no entry)=0.48  ratio=1.04  entry=-0.0004
+   k=  156  S=0.98  S*=0.28  S*(no entry)=0.30  ratio=1.05  entry=-0.0003
+   k=  312  S=1.03  S*=0.37  S*(no entry)=0.39  ratio=1.05  entry=-0.0003
+   k=  625  S=1.12  S*=0.54  S*(no entry)=0.57  ratio=1.06  entry=-0.0004
+   k= 1250  S=1.20  S*=0.90  S*(no entry)=0.96  ratio=1.06  entry=-0.0003
+   k= 2500  S=1.40  S*=1.16  S*(no entry)=1.22  ratio=1.05  entry=-0.0003
+   climb rank 3520 -> 78: gap 4.30 log units (x74), drift -0.0062/wk, var 0.0078/wk; P(ever) 0.001 (k/K-type benchmark 0.022); P(within 5y) 0.0000, 10y 0.0004, 20y 0.0009; mean time given success 13 years
+reddit_submissions_long blocks 2->3
+   k=   78  S=0.92  S*=0.41  S*(no entry)=0.41  ratio=1.00  entry=+0.0000
+   k=  156  S=0.86  S*=0.25  S*(no entry)=0.25  ratio=0.99  entry=+0.0001
+   k=  312  S=1.00  S*=0.39  S*(no entry)=0.39  ratio=0.99  entry=+0.0000
+   k=  625  S=1.00  S*=0.62  S*(no entry)=0.62  ratio=1.00  entry=-0.0000
+   k= 1250  S=1.16  S*=1.03  S*(no entry)=1.03  ratio=1.00  entry=-0.0000
+   k= 2500  S=1.34  S*=1.28  S*(no entry)=1.28  ratio=1.00  entry=-0.0000
+   climb rank 3520 -> 78: gap 4.09 log units (x60), drift -0.0065/wk, var 0.0078/wk; P(ever) 0.001 (k/K-type benchmark 0.022); P(within 5y) 0.0001, 10y 0.0005, 20y 0.0010; mean time given success 12 years
