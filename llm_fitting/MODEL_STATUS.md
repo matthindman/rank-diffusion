@@ -7898,6 +7898,8 @@ llm_fitting/mts_step1.py report`. Outputs: `runs/2026-10-13_M1_balance/`
 
 _[NOTE 2026-10-14, §2z-bz: the registered date is confirmed from Reddit's own post of 22 June 2021 (a personalised Home feed for all mobile users from 28 June). The archive's collection delay also changes at 1 July 2021, and four short-delay pockets in the submissions files are identified there; the daily check that separates the two dates has not been run.]_
 
+_[NOTE 2026-10-14, §2z-ca: the daily check ran. The step begins on 23–24 June 2021, before both dates, with no discontinuity at 1 July; "at the registered date" should read "within days of the announcement". The week of 27 April 2020 is damaged in the submissions panel.]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-13; design,
 predictions and runner committed at 62b795e before any run; results committed
 with this entry. Codex: this entry reports output that depends on step 1; do
@@ -8615,6 +8617,8 @@ branch).
 
 ## 2z-bz. 2026-10-14 — REVIEW OF EXTERNAL EVIDENCE (research sub-agent, asked for by the owner; relayed by Claude): PLANNING ONLY, nothing adopted. The date registered in §2z-bv is confirmed from Reddit's own post (a personalised Home feed for all mobile users from 28 June 2021); the growth of 2019–2020 and its stall are in Reddit's own totals; a January 2020 feed change deliberately favoured small communities. No score-truncation artifact is indicated in the archive, but the archive's collection delay changes at 1 July 2021, three days after the registered date, and four short-delay pockets are identified. The check that separates the two dates needs the daily panel on T9, which is not mounted: NOT RUN
 
+_[CLOSED IN PART 2026-10-14 by §2z-ca: the daily check ran. The step precedes the archive boundary and has no discontinuity at it; the April 2020 and June 2021 pockets are in our files, the other two are not at the level expected.]_
+
 _Provenance: a Claude Opus 5.5 research sub-agent launched by this session on
 2026-10-13, reporting 2026-10-14; this entry by Claude Opus 5.5 (Anthropic),
 Claude Code; started from 693bafd._
@@ -8742,3 +8746,106 @@ needs the raw files on the WD drive, which is unplugged by the owner's
 instruction.
 
 **Ledgers.** No gate evaluation. The sub-agent's API contact is logged.
+
+## 2z-ca. 2026-10-14 — EXPLORATORY MEASUREMENT (owner-requested): the daily check of §2z-bz's open question. The step on submissions begins on 23–24 June 2021, before both Reddit's announced date and the archive's file boundary, and nothing happens at the boundary: the archive is not its cause. The top five's share of karma falls by 31% and the first position's by 37% within about a month, with a partial reversal in the first week of July; the change is in votes per post, not in posting; comments show nothing. The archive's short-delay pocket of 28–30 April 2020 is in our files: one week of the submissions panel is damaged. Five of seven predictions held; nothing adopted, no fit, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; design,
+predictions and runner committed at 2be99df before the run; results committed
+with this entry._
+
+**Tier.** Exploratory and descriptive, DEVELOPMENT data. Data only.
+
+**The owner's request.** "T9 is mounted, run the daily check".
+
+**Question.** §2z-bv found a step on submissions in the quarter beginning 28
+June 2021. §2z-bz found two candidate causes three days apart: Reddit's
+personalised Home feed "starting on June 28", and the archive's change at
+00:00 UTC on 1 July from scores re-collected about 20 days after posting to
+about 360 days after. Which date carries the step, and are §2z-bz's
+short-delay pockets in our files?
+
+**Method.** `runs/2026-10-14_daily_date_check/DESIGN.md`. The daily panels
+behind `reddit_submissions_long` and `reddit_comments_ext`, UTC days. Pocket
+screen over all 1,492 days: platform karma per item against the same weekday
+in the eight weeks around it. Date: two fixed sets chosen on 31 May–27 June
+2021 (the five subreddits with the most karma; those ranked 201–1,000), their
+daily shares of karma and of the number of items, and weekly differences
+d7(t) = x(t) − x(t − 7) against a noise scale from 10 May–20 June. Onset: the
+first day from 21 June with |d7| above three noise scales on three days
+running. No subreddit name printed or written.
+
+**Result.**
+
+| week beginning | top five, share of karma | first position | middle set | top five, share of posts | top five, karma per post over the rest's |
+|---|---|---|---|---|---|
+| 3 May to 14 June (seven weeks) | 13.4–14.4% | 8.2–8.5% | 20.5–20.9% | 0.93–1.10% | 14.2–16.6 |
+| 21 June | 11.2% | 6.3% | 22.1% | 0.96% | 13.1 |
+| 28 June | 9.4% | 4.9% | 22.8% | 1.00% | 10.2 |
+| 5 July | 11.5% | 6.9% | 21.9% | 1.05% | 12.2 |
+| 12 July | 10.6% | 6.0% | 22.2% | 1.01% | 11.6 |
+| 19 July | 9.5% | 5.3% | 22.8% | 0.85% | 12.3 |
+| 26 July | 9.3% | 5.2% | 22.5% | 0.89% | 11.3 |
+
+1. **The onset is 23–24 June 2021**: 23 June for the first position, 24 June
+   for the top five and for their karma per post. By day the top five hold
+   13.4% on 21 June, 10.2% on 24 June, 10.0% on 28 June, 8.3% on 30 June and
+   7.6% on 1 July, then 9.2%, 11.1% and about 11% through 7 July.
+2. **Nothing happens at the archive boundary.** 30 June to 1 July is 8.3% to
+   7.6%, inside the run of the days before, and the move that follows is
+   upward. The fall starts a week before the boundary. The two collection
+   batches §2z-bz found inside June change at about 20 June, not 24 June.
+3. **It is fast, and not one step.** From 3 May–20 June to 19 July–1 August:
+   top five 13.7% to 9.4% (−31%), first position 8.3% to 5.2% (−37%), middle
+   set 20.7% to 22.6% (+9%). The lowest days are 29 June–1 July; the first
+   week of July reverses about half of the fall; it resumes from mid-July.
+   Reddit announced on 22 June, set 28 June for all mobile users, described
+   slow rollouts, and wrote on 13 July that the feed was live for everyone
+   (§2z-bz). The series is what an advanced, eased and completed rollout
+   would give; no source says that is what happened.
+4. **Votes per post, not posting.** The top five's share of the number of
+   submissions has no onset and stays near 1%.
+5. **Comments: nothing.** No onset on any series; the top five hold 13–15%
+   of comment karma throughout.
+6. **Pockets.** Four days of 1,492 are below 0.7 on submissions: 28 April
+   2020 (0.57), 29 and 30 April 2020 (0.015 each: 1.15 and 1.14 karma per
+   submission), 12 June 2021 (0.63). Around 29 May 2022 and in the last week
+   of August 2019 the lowest ratios are 0.90. Comments have none. On 12 June
+   2021, with scores read within hours, the top five's share is 16.6% and
+   the first position's 10.4%: reading scores early inflates the top's share.
+
+**Predictions scored** (`DESIGN.md`). D1, pockets: PASS on the four firm
+dates and on comments; the two I was less sure of, FAIL (0.90, 0.90). D2,
+onset on or before 30 June: PASS (24 June; I expected 28 or 29). D3, at least
+a third in place on 28–30 June: PASS, with an overshoot (2.8 times the change
+on 5–7 July). D4, no onset in the top five's share of posts: PASS. D5, onset
+of opposite sign in the middle set's karma share: FAIL by the rule (3.5, 2.9,
+3.6, 2.4, 3.3 noise scales on 24–28 June, never three running above 3; the
+share at positions 201–1,000 of the day has its onset on 24 June). D6, no
+onset on comments: PASS.
+
+**Verdict by the reading fixed beforehand.** The step begins before the
+archive boundary. §2z-bz's archive hypothesis for its timing is not
+supported; Reddit's change, with exposure beginning before the announced
+date, remains the explanation the evidence fits.
+
+**What it changes.** §2z-bv's "within a quarter" stands; "at the registered
+date" should read "within days of the announcement, from 23–24 June".
+§2z-bv's first-position figures for the quarter (8.3% to 4.3%) are quarterly
+means and include decline after July. **The week of 27 April 2020 in the
+submissions panel is damaged** and no analysis so far has screened it; in
+shares and ranks it should matter little, in levels that week is low by
+about a third. Whether Reddit weeks get a flag list like Facebook's is a
+method decision not taken here.
+
+**What it does not show.** What Reddit did on which day. That no other
+archive effect exists. Anything about which communities are involved: no
+name was read.
+
+**Not run.** The capture delay from our own raw files (WD drive). The first
+rank's share on re-read current scores. Any model comparison.
+
+**Commands.** `caffeinate -dims python scripts/heavy_lock.py -- python -u
+llm_fitting/runs/2026-10-14_daily_date_check/daily_check.py`. Outputs in that
+folder: `output.txt`, `daily_series.csv`, `REPORT.md`. The run was not killed.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
