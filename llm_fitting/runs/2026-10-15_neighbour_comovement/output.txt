@@ -1,0 +1,13 @@
+reddit_submissions_long k=78: n=117 rho_1=-0.045 rho_2=-0.153 rho_5=-0.053 rho_10=-0.080 rho_25=-0.123 rho_random=-0.012
+reddit_submissions_long k=156: n=234 rho_1=+0.059 rho_2=-0.116 rho_5=-0.039 rho_10=+0.022 rho_25=-0.048 rho_random=-0.004
+reddit_submissions_long k=312: n=468 rho_1=+0.109 rho_2=+0.023 rho_5=-0.034 rho_10=-0.081 rho_25=-0.021 rho_random=+0.005
+reddit_submissions_long k=625: n=938 rho_1=-0.034 rho_2=-0.020 rho_5=-0.033 rho_10=-0.027 rho_25=+0.031 rho_random=-0.002
+reddit_submissions_long k=1250: n=1875 rho_1=-0.007 rho_2=-0.060 rho_5=-0.046 rho_10=-0.049 rho_25=-0.014 rho_random=+0.003
+reddit_submissions_long k=2500: n=3750 rho_1=-0.002 rho_2=-0.029 rho_5=-0.058 rho_10=-0.020 rho_25=-0.030 rho_random=+0.012
+reddit_comments_ext k=195: n=293 rho_1=-0.016 rho_2=-0.006 rho_5=-0.020 rho_10=-0.029 rho_25=-0.026 rho_random=-0.000
+reddit_comments_ext k=390: n=585 rho_1=-0.000 rho_2=-0.030 rho_5=-0.002 rho_10=-0.049 rho_25=+0.006 rho_random=-0.001
+reddit_comments_ext k=781: n=1172 rho_1=-0.029 rho_2=-0.072 rho_5=+0.011 rho_10=-0.007 rho_25=-0.001 rho_random=-0.003
+reddit_comments_ext k=1562: n=2343 rho_1=-0.058 rho_2=-0.030 rho_5=-0.018 rho_10=-0.003 rho_25=+0.013 rho_random=+0.001
+reddit_comments_ext k=3125: n=4688 rho_1=-0.046 rho_2=-0.005 rho_5=-0.039 rho_10=-0.034 rho_25=-0.014 rho_random=-0.004
+reddit_comments_ext k=6250: n=9375 rho_1=-0.021 rho_2=-0.022 rho_5=-0.017 rho_10=-0.018 rho_25=-0.030 rho_random=-0.005
+exit done

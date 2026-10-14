@@ -45,9 +45,13 @@ members' drift by rank changes, as after Reddit's June 2021 Home-feed change
   - S is the ladder's local slope;
   - the crossings are reordering gains of the top set, read off the ladder at
     two spacings.
-- *It can fail, and does in planted worlds.* Fixed volatility types still
-  sorting toward the head give 1.2–1.3 in the body and 2–4 at the head
-  (§2z-cq).
+- *It can fail, and does in planted worlds.*
+  - Fixed volatility types still sorting toward the head give 1.2–1.3 in the
+    body and 2–4 at the head (§2z-cq).
+  - Rank-only dynamics fail badly: random displacement in rank gives 2.4–3.6,
+    and neighbour swaps 0.3–1.7 (§2z-cv).
+  - So agreement on the data says that lasting movement behaves like
+    diffusion of levels, not like exchanges of rank.
 - *It also fails on real data where it should.* On submissions the head's
   ratio is 1.6–1.9, where the variance estimate is noise (§2z-cm).
 - *What it rests on.* That lasting movement near each boundary is
@@ -105,8 +109,8 @@ members' drift by rank changes, as after Reddit's June 2021 Home-feed change
 - *Block length:* comments holds with 13-week blocks over eleven starts
   (§2z-cu).
 - *Open:* submissions crosses only 0.61–0.72 of prediction at ranks of about
-  300–600, by every estimator. Candidates: neighbours moving together, or the
-  June 2021 step of that band (§2z-cu).
+  300–600, by every estimator (§2z-cu). Neighbours moving together is ruled
+  out (§2z-cv). Remaining candidate: the June 2021 step of that band.
 - *Open:* the head of submissions, where strata of 30–150 communities limit
   any estimator to about ±30% (§2z-co).
 
@@ -186,8 +190,9 @@ members' drift by rank changes, as after Reddit's June 2021 Home-feed change
    shape split exactly into members' movement and steady crossings.
 3. **One law, three ladders** (`fig_three_ladders.png`): measured crossings
    against σ²/2S rank by rank, and the ratio by rank.
-4. **Structure from movement** (`fig_sustained_ladder.png`): the ladder each
-   year's movement sustains, against the observed ladder.
+4. **Structure from movement** (`fig_sustained_ladder.png`, with
+   `fig_why_it_curves.png`): the ladder each year's movement sustains,
+   against the observed ladder, and why it steepens down the ranks.
 5. **An intervention** (`fig_rate_law_and_head_mobility.png`): the same-year
    law over 60 cells, and the head's crossings around June 2021.
 

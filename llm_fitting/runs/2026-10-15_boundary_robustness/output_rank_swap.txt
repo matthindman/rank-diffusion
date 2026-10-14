@@ -1,0 +1,2 @@
+rank_swaps   k=25: ratio nan  k=50: ratio 3.35  k=100: ratio 2.39  k=200: ratio 3.40  k=400: ratio 3.43  k=800: ratio 3.31  k=1600: ratio 3.61
+local_swaps  k=25: ratio 0.48  k=50: ratio 0.73  k=100: ratio 0.44  k=200: ratio 1.72  k=400: ratio 0.31  k=800: ratio 0.53  k=1600: ratio 0.84

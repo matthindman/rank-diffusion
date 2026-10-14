@@ -10439,3 +10439,52 @@ one was partly not adjudicated.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`
 (robustness runs; opening facts).
+
+## 2z-cv. 2026-10-15 — POST HOC and PLANTED WORLDS (unscored), FIGURE and DRAFT FRAME: neighbour co-movement does not explain submissions' crossing shortfall; rank-only dynamics fail the boundary test badly (ratios 2.4–3.6 for random displacement, 0.3–1.7 for neighbour swaps), so its agreement on the data is not automatic; why the ladder steepens down the ranks; a draft title, significance statement, abstract and captions for the owner
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; started
+from b273092._
+
+1. **Neighbour co-movement** (`runs/2026-10-15_neighbour_comovement/`,
+   DEVELOPMENT, unnamed).
+   - *Hypothesis:* communities next to each other on the ladder move
+     together, so they cross less than the cross-sectional variance implies,
+     which would explain the shortfall at ranks of about 300–600 (§2z-cu).
+   - *Measure:* the correlation of 104-week changes between members m places
+     apart in level, after removing a local trend, within each rank band.
+   - *Result.* Submissions: ρ₁ from −0.045 to +0.109, the largest at k = 312
+     (n 468), and −0.034 at 625. Comments: −0.058 to 0.000. Random pairs: 0
+     to ±0.012.
+   - *Reading.* An implied crossing factor 1 − ρ₁ of 0.89–1.03. **Rejected**
+     as the explanation; the shortfall remains open.
+2. **Rank-only rivals** (`runs/2026-10-15_boundary_robustness/planted_rank_swap.py`,
+   synthetic). The same exponential ladder, but names move in rank and take
+   the ladder's level at their rank:
+   - random displacement: 1% a week take each other's ranks at random, as in
+     rank-space models such as Iñiguez et al. 2022;
+   - neighbour swaps: a random walk in rank.
+
+   The boundary test gives ratios of 2.4–3.6 and 0.3–1.7 respectively, far
+   from 1. Diffusion of levels with heavy tails, jumps or drift types gives
+   0.85–1.25 (§2z-cq). That the data give 0.85–1.22 (comments) and 0.77–1.17
+   (Facebook) is evidence that lasting movement there behaves like diffusion
+   of levels, not like exchanges of rank. The boundary agreement is not true
+   by construction.
+3. **Why the ladder steepens down the ranks**
+   (`runs/2026-10-15_figures/fig_why_it_curves.png`, §2z-cd cells).
+   - Lasting variance rises from the head to K: about 0.007 to 0.013 a week on
+     comments, 0.004–0.009 to 0.013 on submissions.
+   - The net slide (members' slide plus entry) falls, from 0.005–0.011 to
+     0.003–0.004.
+   - So the sustained slope S* = σ²/(2 × net slide) rises from 0.3–0.6 at
+     K/64 to 1.6–2.1 at K, as the observed slope does (0.9 to 1.7–2.6). The
+     ladder's curvature is the profile of volatility and slide by rank.
+   - Variance is measured once per panel, so the two years' variance curves
+     coincide.
+4. **Draft frame for the paper** (`PAPER_FRAME_DRAFT_2026-10-15.md`, NOT
+   ADOPTED): three title options, a significance statement (114 words), an
+   abstract (247 words), captions for five figures, and a list of what is and
+   is not claimed, each sourced to the record. Claim language is the owner's.
+
+**Ledgers.** Data contact (item 1) logged in `EXPOSURE_LEDGER.md`. No gate
+evaluation.

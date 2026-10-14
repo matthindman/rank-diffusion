@@ -227,7 +227,35 @@ def fig_sustained_ladder():
     fig.savefig(HERE / "fig_sustained_ladder.png", dpi=150)
 
 
+def fig_why_it_curves():
+    """Why the ladder is steeper at the bottom: lasting variance and net slide by rank, and the slope they sustain
+    (2z-cd cells, both primary year pairs)."""
+    fig, ax = plt.subplots(1, 3, figsize=(14, 4.3))
+    for pn, lab, col in (("reddit_comments_ext", "comments", BLUE), ("reddit_submissions_long", "submissions", ORANGE)):
+        d = load(R / "2026-10-14_balance_law" / "cells" / f"law__{pn}.json")
+        K = d["K"]
+        for q, ls, tag in zip([q for q in d["pairs"] if q["primary"]], (":", "-"), ("2020→21", "2021→22")):
+            rows = sorted(q["rows"], key=lambda r: r["k"])
+            k = np.array([r["k"] for r in rows]) / K
+            ax[0].plot(k, [1000 * r["sigma2"] for r in rows], ls, color=col, marker="o", ms=3, label=f"{lab} {tag}")
+            ax[1].plot(k, [1000 * (r["sbar"] - r["entry"]) for r in rows], ls, color=col, marker="o", ms=3, label=f"{lab} {tag}")
+            ax[2].plot(k, [r["S"] for r in rows], ls, color="k", lw=1, alpha=0.6)
+            ax[2].plot(k, [np.nan if r["S_star"] is None else r["S_star"] for r in rows], ls, color=col, marker="o", ms=3, label=f"{lab} sustained, {tag}")
+    ax[2].plot([], [], color="k", alpha=0.6, label="observed (both panels, both years)")
+    for a, t, y in zip(ax, ("Lasting variance by rank", "Net slide by rank (members' slide plus entry)", "Slope: observed and sustained S* = σ²/2(net slide)"),
+                       ("per 1,000 weeks", "per 1,000 weeks", "S (− d log level / d log rank)")):
+        a.set_xscale("log")
+        a.set_xlabel("rank / K")
+        a.set_title(t, fontsize=10)
+        a.set_ylabel(y)
+        a.legend(fontsize=7)
+    fig.suptitle("Why the ladder steepens down the ranks: variance rises and the net slide falls toward the bottom", fontsize=11)
+    fig.tight_layout()
+    fig.savefig(HERE / "fig_why_it_curves.png", dpi=150)
+
+
 if __name__ == "__main__":
+    fig_why_it_curves()
     fig_sustained_ladder()
     fig_puzzle()
     fig_boundary()

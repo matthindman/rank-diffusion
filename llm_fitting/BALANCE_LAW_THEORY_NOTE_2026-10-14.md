@@ -223,7 +223,10 @@ gap density at zero, exact only for exponential gaps.
    differences of spacings remove the biases that ranking by current position,
    passing swings and sampling interval put into rank-based estimates (§2z-cm).
 
-Evidence so far: two Reddit metrics, 2019–2022, DEVELOPMENT. Figures in
+Evidence so far: two Reddit metrics, 2019–2022, and Facebook pages (Era A),
+all DEVELOPMENT (§2z-ct). A draft title, significance statement, abstract and
+captions are in `PAPER_FRAME_DRAFT_2026-10-15.md`; reviewer questions are in
+`REVIEWER_QUESTIONS_2026-10-15.md`. Figures in
 `runs/2026-10-15_figures/` and, perhaps the clearest single one, the exact
 half-year split of shape change into members' movement and steady crossings
 (`runs/2026-10-15_comments_2021_head/fig_shape_decomposition.png`, §2z-cr). Missing:
