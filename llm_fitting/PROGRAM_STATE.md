@@ -172,6 +172,10 @@ head's one gain (about March–September 2021) was broad, not a few
 communities (§2z-cr). Planted checks: the boundary test is robust to heavy
 tails, jumps and drift types, and rises above 1 when volatility types are
 still sorting (§2z-cq).
+On Facebook pages (Era A) the boundary theory holds too: crossings at K/16 … K
+are 0.77–1.17 of prediction, at rates about twice Reddit's (§2z-ct). A quarter
+of movement after June 2021 does not forecast the next year better than the
+ladder's own trend (§2z-cs).
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate

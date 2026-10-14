@@ -10226,3 +10226,130 @@ of drift by rank?
    That is worth checking against Reddit's mid-2021 changes. Unchecked.
 
 **Ledgers.** Data contact logged in `EXPOSURE_LEDGER.md`. No gate evaluation.
+
+## 2z-cs. 2026-10-15 — EXPLORATORY MEASUREMENT, registered: rolling-origin forecasts of a year's change of shape from 13-week movement, across the June 2021 Home-feed change. The law with last quarter's slides does not beat the trend after the change (one qualifying origin; 0.051 against 0.045 log units rms on submissions) and is worse before it, where a quarter's slides are noisy. On submissions the ladder's own trend is the best forecast at seven origins; on comments, no change is. One of three predictions held; nothing adopted
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; design,
+predictions, runner and planted test committed at d47c7ea before the run.
+The owner asked for five more hours: "Go deeper: focus on the most important
+unanswered questions here, key figures for the paper, answering the most
+substantively important questions reviewers are likely to have"._
+
+**Question.** §2z-co found the law forecasts no better than trend where
+nothing changes. The case for the law was to be the intervention: after a
+change in drift by rank the old trend is wrong, and recent movement read
+through the law should be right.
+
+**Method.** `runs/2026-10-15_intervention/DESIGN.md`; `mts_intervention.py`.
+- 13-week blocks; seven origins, the ends of quarters from June 2020 to
+  December 2021.
+- Target: the persisting set's change of shape over the next 52 weeks at
+  K/64 … K/2. Scored at K/16 … K/2; the head is reported apart because its
+  strata are small.
+- Forecasts:
+
+  | | forecast |
+  |---|---|
+  | N | no change |
+  | T | the trend, the last 52 weeks' change |
+  | LQ | the law with last quarter's slides |
+  | LY | the law with last year's slides |
+  | LQ, early σ² | LQ with σ² from 2019–2020 |
+
+**Result** (rms, log units over 52 weeks, K/16 … K/2).
+
+| | origins | N | T | LQ | LY | LQ, early σ² |
+|---|---|---|---|---|---|---|
+| submissions, after the change | 1 (Dec 2021) | 0.122 | **0.045** | 0.051 | 0.092 | 0.079 |
+| submissions, before it | 4 | 0.104 | 0.061 | 0.107 | **0.052** | 0.114 |
+| submissions, all | 7 | 0.105 | **0.053** | 0.092 | 0.063 | 0.105 |
+| comments, all | 7 | **0.104** | 0.243 | 0.274 | 0.232 | 0.296 |
+
+1. **Only one origin has its whole last quarter after 28 June 2021**: the
+   last, December 2021. At it, LQ is close to the trend and both beat no
+   change by more than half.
+2. **On submissions the change did not break the trend.** The head was
+   already sinking (§2z-cd), and the change accelerated the very top (§2z-ca).
+   The ladder's own 52-week trend is the best forecast overall: about half
+   the error of no change.
+3. **A quarter's slides are noisy.** LQ is the worst of the movement-based
+   forecasts before the change. The law with a year's slides (LY) does best
+   there.
+4. **Comments.** The direction of the head reverses between 2020 and 2021
+   (§2z-cr), so trend and law both do worse than no change.
+
+**Predictions scored** (`DESIGN.md`; `mts_intervention.score`).
+
+| | prediction | result |
+|---|---|---|
+| J1 | submissions, after the change: LQ beats T and N | **FAIL** (beats N, not T) |
+| J2 | submissions, before the change: LQ/T in [0.75, 1.25] | **FAIL** (1.75) |
+| J3 | comments: N best over all origins | **PASS** |
+
+**Verdict.** No adoption rule applies. The hoped-for use of the law, reading
+an intervention's effect from a quarter of movement before the trend shows
+it, is not supported on this record. One event, one qualifying origin, and an
+event that sped up an existing trend rather than reversing it.
+
+**What it means** (my reading).
+- The paper's case for the law rests on explanation (§2z-cm, §2z-cr) and on
+  counterfactuals: sustained slope and relaxation time (§2z-cd, §2z-cp). It
+  does not rest on forecasting.
+- Forecasting structure is as good as forecasting drift by rank. On these
+  panels a year's trend in the ladder already carries that information.
+- An intervention that reversed drift by rank, or a cleaner event, would be a
+  better test. The sealed 2023 data hold one candidate, the June 2023
+  blackout (§2z-cf), as a shock.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-ct. 2026-10-15 — EXPLORATORY MEASUREMENT, registered: the boundary theory holds on a second platform. On Facebook pages (Era A, 13-week blocks, one start) crossings at K/16 … K are 0.77–1.17 of lasting variance over twice the slope (5 of 5), with crossing rates about twice Reddit's; the lasting slides of whoever holds the top k and of the cohort agree (7 of 7). Both predictions held; nothing adopted, no fit, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; design,
+predictions, generalised runner and a 13-week-block planted test committed
+at ff1b603 before the run. Output
+`runs/2026-10-14_boundary_law/cells/boundary__facebook_a__block13.json`._
+
+**Method.** As §2z-cm on `facebook_a` (86 weeks, K = 3,500):
+- six 13-week blocks; one start, with the cohort fixed on block 0;
+- crossings from the difference of spacings of 26 and 52 weeks;
+- σ² by the variance route over blocks 1, 3, 5.
+
+Planted worlds with passing swings of half-life 10 or 26 weeks: at these
+block lengths both the crossings and σ² are inflated 1.1–1.4×, and their
+ratio stays 0.92–1.23 (`runs/2026-10-15_boundary_facebook/DESIGN.md`).
+
+**Result** (per page per 1,000 weeks; lasting forms).
+
+| k | 55 (K/64) | 109 | 219 | 438 | 875 | 1,750 | 3,500 |
+|---|---|---|---|---|---|---|---|
+| slope S | 0.65 | 0.70 | 0.85 | 0.98 | 0.95 | 1.24 | 1.61 |
+| c = σ²/2S | 10.6 | 7.8 | 10.8 | 7.2 | 5.7 | 5.0 | 4.4 |
+| crossings R̃ | 7.5 | 7.3 | 8.4 | 6.6 | 6.6 | 5.3 | 4.4 |
+| R̃ / c (5–95%) | 0.71 (0.28–1.79) | 0.94 (0.59–2.15) | 0.77 (0.50–1.22) | 0.92 (0.61–1.38) | 1.17 (0.83–1.62) | 1.07 (0.85–1.38) | 1.00 (0.82–1.16) |
+
+- Lasting slides, current top minus cohort: +0.0004 to +0.0026 a week, every
+  interval containing zero.
+- One spacing: as on Reddit, the slide of the current top exceeds the
+  cohort's or falls short of it depending on rank. Facebook's passing swings
+  push it up.
+
+**Predictions scored.**
+
+| | rule | result |
+|---|---|---|
+| F1 | R̃/c in [0.75, 1.33] at ≥ 4 of 5 cut-offs K/16 … K | **PASS** (5 of 5) |
+| F2 | lasting slides agree at ≥ 5 of 7 | **PASS** (7 of 7) |
+
+**Verdict.** No adoption rule applies. The law's physical claim holds on a
+second platform. Facebook differs from Reddit in metric (page interactions,
+not karma), population (pages run by organisations and people, not
+communities) and ranking system. Its crossing rates are 1.5–2 times Reddit's,
+and the theory tracks the difference.
+
+**Limits.**
+- One start and 86 weeks; intervals wide at the head.
+- The absolute rates carry passing swings; the ratio is the tested quantity.
+- The Era A slice only (§2b).
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
