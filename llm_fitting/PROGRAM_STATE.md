@@ -286,6 +286,10 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
 
+- **The draft protocol for forecasting the 2023 Reddit ladders** (§2z-cf;
+  `BRIDGE_FORECAST_PROTOCOL_DRAFT_2026-10-14.md`): its forecasts are fixed;
+  adopting it and building the 2023 panel would be first contact with the
+  bridge. It is the concrete form of the next item.
 - **Whether the rate law of §2z-cd becomes the sealed-data test**, and whether
   its implication for submissions after 2022 (the head goes on sinking if
   slides and variances persist) is registered before the 2023–2024 archive is

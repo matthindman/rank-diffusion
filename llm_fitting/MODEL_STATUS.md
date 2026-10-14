@@ -9219,3 +9219,47 @@ llm_fitting/mts_forward.py run <panel>`; `python llm_fitting/mts_forward.py
 report`; `PYTHONPATH=. python llm_fitting/runs/2026-10-14_forward/diagnose_hybrids.py`.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-cf. 2026-10-14 — PLANNING ONLY, nothing adopted: a DRAFT protocol for forecasting the 2023 Reddit ladders, with its forecasts fixed now from development data. Both forecasters say the submissions head goes on sinking against the top 5,000 through 2023 (0.19 log units at K/64, about 0.09 at K/8); scoring and the conditions before it are fixed in the draft. No contact with the sealed archive
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; started from
+1da4bb5. That commit was made before its health check, which then passed
+(548 research tests)._
+
+**What this is.** `BRIDGE_FORECAST_PROTOCOL_DRAFT_2026-10-14.md` and
+`runs/2026-10-14_bridge_forecast/` (`make_forecast.py`, `forecast.json`,
+`forecast.md`). The forecasts were computed from `reddit_submissions_long`
+and `reddit_comments_ext` only and are fixed by the commit that carries this
+entry. The protocol is a draft for the owner, who has asked for the
+sealed-data test of step 3 to be designed before any sealed folder is opened
+(PROGRAM_STATE). Adopting it, and building the 2023 panel, is the owner's
+decision and would be first value-level contact with the bridge.
+
+**The forecasts** (change of shape, 2022 block to 2023 block, log units, at
+K/64, K/32, K/16, K/8, K/4, K/2):
+
+| | forward simulation (2021→2022 transition) | rate law, full ladder | repeat last change |
+|---|---|---|---|
+| submissions | −0.19, −0.14, −0.12, −0.09, −0.05, −0.01 | −0.19, −0.22, −0.15, −0.08, +0.04, +0.08 | −0.21, −0.17, −0.14, −0.11, −0.06, −0.02 |
+| comments | −0.02, −0.00, +0.02, +0.02, +0.03, +0.02 | +0.00, +0.04, +0.09, +0.11, +0.09, +0.06 | −0.03, −0.02, +0.01, +0.02, +0.02, +0.02 |
+
+Simulation sd 0.005–0.05; the rate law's persisting-set bands are in
+`forecast.md`.
+
+**Scoring, fixed in the draft.** Primary: on submissions the forward
+simulation beats "no change" in rms error over the six cut-offs. Secondary:
+both forecasters against "repeat last change"; signs at K/64 to K/8; slopes
+within 15%. Comments secondary, and NOT ADJUDICATED unless `RC_2023-05` is
+acquired.
+
+**Conditions before scoring, fixed in the draft.** The source change to Arctic
+Shift in April 2023 and the capture delay by day, through the score-capture
+guard; the June 2023 blackout, with a declared second score leaving out 12
+June to 16 July 2023; completeness; the registered build.
+
+**What it does not do.** Separate the forward simulation from "repeat last
+change" on submissions, where they give similar numbers. Cover Wikipedia or
+2024.
+
+**Ledgers.** No gate evaluation. The forecasts read development panels
+already logged for §2z-cd and §2z-ce; a row is added.
