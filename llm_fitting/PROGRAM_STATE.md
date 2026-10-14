@@ -160,6 +160,12 @@ removed, the slide of whoever holds a rank equals the cohort's. The theory
 note `BALANCE_LAW_THEORY_NOTE_2026-10-14.md` relates the law to stochastic
 portfolio theory (its stationary form is Fernholz's gap identity) and drafts
 the paper's argument for the owner.
+A second variance estimator (a variogram) gives the same verdict on comments
+(crossings 0.85–1.01 of prediction) and leaves submissions' body at 0.7–0.8
+and its head unmeasurable (§2z-co). Seasonal forecasts fail on comments: its
+head does not move by season at the half-year scale. On submissions the law
+forecasts no better than repeating the ladder's own last change, so the paper
+should claim explanation and counterfactual, not superior forecasts (§2z-co).
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate

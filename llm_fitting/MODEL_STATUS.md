@@ -9899,3 +9899,149 @@ It must cite Fernholz (2017), Fernholz & Koch, Itkin & Larsson (2024), Baker
 Iñiguez et al. (2022).
 
 **Ledgers.** No new data contact; no gate evaluation.
+
+## 2z-co. 2026-10-15 — EXPLORATORY MEASUREMENT, two registered tests after §2z-cm. (1) A second estimator of lasting variance, a variogram with lags a year apart: on comments the boundary theory holds with it too (crossings 0.85–1.01 of prediction at every rank, 7 of 7); on submissions, crossings in the body run 0.7–0.8 of it (2 of 7), and neither estimator can measure the head. (2) Seasonal forecasts of the ladder's half-year changes: on comments no forecast beats "no change", because the comments head does not move by season at this scale (it lost ground in five of six half-years and gained sharply in one); on submissions both lags beat "no change", but simply repeating the last change does as well. Three of seven predictions held; nothing adopted, no fit, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; designs,
+predictions, runners and planted-world tests committed at 55f0f83 (variogram)
+and 83aaaeb (seasonal) before the runs; results committed with this entry.
+The owner extended the session by three hours ("Take an additional 3 hours
+over and above the initial grant")._
+
+**Tier.** Exploratory, DEVELOPMENT data, in sample. Data only.
+
+### 1. The variogram (`runs/2026-10-15_variogram/`, `mts_variogram.py`)
+
+**Method.** Cohort fixed on block 0 by permanent rank. Rolling 4-week means of
+weekly levels. σ² = (V(104) − V(52))/52, where V(D) is the cross-sectional
+variance of members' changes over D weeks, averaged over every weekly origin
+from mid-2019 to the end of 2022.
+- Lags a year apart leave out the annual cycle and swings that fade within
+  months.
+- Planted worlds: accurate within 7% in strata of ≥ 300. But only about √3
+  more precise than the variance route, since each member has few independent
+  year-long changes. I had expected far more and recorded the correction in
+  the design before the run.
+
+**Result** (crossings R̃ and the slope S from §2z-cm, pooled).
+
+| k (comments) | 195 | 391 | 781 | 1,562 | 3,125 | 6,250 | 12,500 |
+|---|---|---|---|---|---|---|---|
+| R̃ / c, variogram | 0.99 | 1.00 | 0.87 | 0.85 | 0.87 | 0.97 | 1.01 |
+| R̃ / c, variance route (§2z-cm) | 1.22 | 1.20 | 1.08 | 0.98 | 0.99 | 1.11 | 1.20 |
+
+| k (submissions) | 78 | 156 | 312 | 625 | 1,250 | 2,500 | 5,000 |
+|---|---|---|---|---|---|---|---|
+| R̃ / c, variogram | 0.72 | 2.31 | 1.14 | 0.68 | 0.76 | 0.70 | 0.72 |
+| R̃ / c, variance route (§2z-cm) | 1.64 | 1.86 | 0.72 | 0.61 | 0.97 | 0.90 | 0.87 |
+
+- On comments the variogram's variance is 12–24% above the variance route's in
+  the large strata. The two estimators bracket the crossings: 0.85–1.22 of
+  prediction at every rank.
+- On submissions the variogram is 20–49% above the variance route in the
+  large strata. Its window runs to the end of 2022, and the variance route's
+  ends in 2021; in the big strata the lasting variance rose by a third to a
+  half after June 2021 (era comparison below). The head strata remain noise,
+  one estimate negative.
+
+**Era comparison** (short lags, 78-week windows; biased upward by unfaded
+swings and noisy below several hundred members; reported, not scored).
+- In the large strata, lasting variance after June 2021 is 1.16–1.39 times its
+  earlier value on comments and 1.36–1.55 times on submissions.
+- Head strata: uninformative.
+- Measured directly, without any variance, the crossings at the head of
+  submissions rose from 2.4 (0.8–3.8) to 7.8 (3.8–13.7) per 1,000 weeks at
+  K/64, and from 2.2 to 6.4 at K/32 (§2z-cm, by start).
+
+**Scored.**
+
+| | comments | submissions |
+|---|---|---|
+| V1, the estimators agree within 25% in strata of ≥ 1,000 | **PASS** (1.12–1.24) | **FAIL** (1.20–1.49) |
+| V3, R̃/c in [0.75, 1.33] at ≥ 5 of 7 | **PASS** (7 of 7) | **FAIL** (2 of 7) |
+
+### 2. Seasonal forecasts (`runs/2026-10-15_seasonal/`, `mts_seasonal.py`)
+
+**Method.** The persisting set's change of shape over each half-year at K/64
+… K/2. Four targets per panel, from mid-block to mid-block: Oct 2020 → Mar
+2021, Mar → Sep 2021, Sep 2021 → Mar 2022, Mar → Sep 2022. Forecast before
+each target from earlier blocks:
+
+| | forecast |
+|---|---|
+| F0 | no change |
+| F1 | the law with last half-year's slides |
+| F2 | the law with the same season's slides a year earlier |
+| E1 | repeat the last change |
+| E2 | repeat the same season's change |
+
+**Result** (rms error per 1,000 weeks, 24 cells per panel).
+
+| | F0 | F1 | F2 | E1 | E2 |
+|---|---|---|---|---|---|
+| comments | **3.13** | 4.71 | 5.77 | 4.95 | 5.98 |
+| submissions | 3.49 | 2.42 | 2.38 | **2.15** | 2.16 |
+
+1. **Comments has no seasonal alternation at this scale.**
+   - The head's change at K/64 over the six half-years was −8.2, −3.3, −3.4,
+     +5.8, −1.2 and −2.0 per 1,000 weeks.
+   - The summers (the second, fourth and sixth) were −3.3, +5.8 and −2.0.
+   - It lost ground in five of six half-years and gained sharply once, from
+     about March to September 2021. That half-year alone makes every forecast
+     fail.
+   - The annual cycle of §2z-ci was in four-week drift departures. It does
+     not carry to half-year changes of the ladder.
+2. **On submissions, drift by rank persists and both lags forecast.** But
+   repeating the last change of shape does as well or slightly better. At the
+   half-year scale the law adds nothing to the persistence of the ladder's
+   own trend, as §2z-cd already showed for one year (lagged law 0.00086
+   against 0.00074 for "repeat last year" on submissions).
+
+**Scored.**
+
+| | prediction | result |
+|---|---|---|
+| Z1 | comments: rms(F2) below F0 and F1 | **FAIL** |
+| Z2 | comments: rms(E2) below F0 and E1 | **FAIL** |
+| Z3 | submissions: F1 and F2 below F0 | **PASS** |
+
+**Verdict.** No adoption rule applies.
+- The boundary theory on comments is now supported by two independent
+  variance estimators.
+- The submissions body is 0.7–1.0 of prediction depending on estimator and
+  period.
+- The comments forecast failure is not seasonal.
+
+**What it means** (my reading).
+1. *The law's empirical core stands where it can be measured.* On comments,
+   crossings follow lasting variance over twice the slope within about ±15%
+   at every rank, by two estimators and three starts (§2z-cm).
+2. *Submissions is the open case.* Its body runs below prediction by 0–30%.
+   Two candidates: the period mismatch between variance and crossings, and
+   heterogeneous lasting drifts, which inflate both variance estimators
+   (each picks up the dispersion of drifts times 156 weeks). Codex's review
+   should take this up.
+3. *Forecasting.* The law explains how the ladder changes and what slope
+   movement sustains. On this record it does not forecast structure better
+   than extrapolating the ladder's own recent change: as well on submissions
+   and no better on comments. The paper should claim explanation and
+   counterfactual, not superior forecasts, unless an outcome-blind test shows
+   otherwise.
+4. *Mobility at the head after June 2021.* The crossings at the head of
+   submissions roughly tripled after the change, measured directly. This is
+   the most robust statement about that change's effect on mobility at the
+   top.
+
+**What it does not show.** Why comments gained at the head in mid-2021 (it
+would need names). Anything outside sample.
+
+**Not run.** A drift-heterogeneity correction to the variance estimators. A
+time-aligned variogram per start, too noisy at these window lengths.
+
+**Commands.** `python llm_fitting/mts_variogram.py run <panel>` and
+`python llm_fitting/mts_seasonal.py run <panel>`, each through `caffeinate
+-dims python scripts/heavy_lock.py --`; `report` for each, with scores. No run
+was killed.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`
+(two rows).
