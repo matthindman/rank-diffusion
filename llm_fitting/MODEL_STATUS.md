@@ -9835,3 +9835,67 @@ llm_fitting/runs/2026-10-14_boundary_law/by_start_post_hoc.py <panel>`. No run
 was killed.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-cn. 2026-10-14 — PLANNING ONLY and POST HOC: where the law stands against prior work, from a targeted novelty search; and a post hoc observation that the head of submissions became about four times as volatile after June 2021. Nothing adopted; no new data contact
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; started
+from 64caa58. Search report (a delegated research agent, verbatim, reading
+tagged per item): `runs/2026-10-14_boundary_law/NOVELTY_SEARCH.md`. Theory
+note corrected accordingly: `BALANCE_LAW_THEORY_NOTE_2026-10-14.md` §3, §5a._
+
+**The search found.**
+1. **The mathematics is established.**
+   - The rate law follows from the forward equation for ordered levels
+     (Shkolnikov 2012; Jourdain & Reygner; Cabezas, Dembo, Sarantsev &
+     Sidoravicius 2019 for profiles out of equilibrium).
+   - Its stationary form is Fernholz's gap identity (2017, eq. 2.20);
+     identification confirmed.
+2. **Closest competitor.** Baker & Smyth (arXiv 2608.27156, August 2026)
+   model rank-based entry and exit on CRSP with the same σ²·density/2 flux,
+   infer drift from it, and compare predicted relaxation times with observed
+   persistence. Exact entry accounting is not new as an idea (c).
+3. **Two of my characterisations were wrong.** I corrected them in the theory
+   note:
+   - Fernholz & Koch compare stationary regimes; they do not decompose
+     concentration dynamically.
+   - Itkin & Larsson's appendix B.1 is a bias of a *volatility* estimator, not
+     of conditioning drift on current rank.
+4. **Found by no source searched:**
+   - an out-of-equilibrium test that predicts the crossing term from measured
+     volatility and slope and checks it rank by rank against measured
+     crossings (a, new as a test, not as mathematics);
+   - treatment of the drift bias of ranking by current position, passing
+     swings or block averaging (b, largely new);
+   - any rank-based or random-growth analysis of online attention or of a
+     platform algorithm change (d, new).
+
+**Post hoc, from the saved outputs of §2z-cm** (`by_start__*.json`; no new
+data contact). The variance the crossings imply, 2S·R̃, at K/64 on submissions:
+
+| crossings between blocks starting | 2020-06-29 → 2021-06-28 | 2020-12-28 → 2021-12-27 | 2021-06-28 → 2022-06-27 |
+|---|---|---|---|
+| implied variance at K/64, a week | 0.0036 | 0.0079 | 0.0147 |
+
+- The variance route's top stratum moves the same way: 0.0019, 0.0059 and
+  0.0464 (31 communities).
+- Below K/8 the implied variance barely changes across the starts.
+- Reading: after the June 2021 Home-feed change the head of submissions
+  became several times more mobile, as well as drifting down (§2z-ca, §2z-cd).
+  Unscored and unregistered; the head strata are small.
+- On comments, variance at the head rises more gently across the same starts:
+  implied 0.0071 to 0.0102.
+
+**What it means** (my reading). The paper cannot claim the law's
+mathematics. It can claim:
+- the first out-of-equilibrium test of the predicted crossing term, which
+  holds rank by rank and over time on comments (§2z-cm);
+- a named-cohort method that removes the drift bias of ranking by current
+  position;
+- the first application to online attention, through a dated algorithm change
+  that, on this reading, changed both the drift and the mobility of the head.
+
+It must cite Fernholz (2017), Fernholz & Koch, Itkin & Larsson (2024), Baker
+& Smyth (2026), Gabaix, Lasry, Lions & Moll (2016), Blumm et al. (2012) and
+Iñiguez et al. (2022).
+
+**Ledgers.** No new data contact; no gate evaluation.

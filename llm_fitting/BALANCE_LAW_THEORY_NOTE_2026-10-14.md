@@ -69,22 +69,49 @@ when the variance is twice the slide.
     Fernholz's identity in continuum notation.**
   - The Atlas-model slope σ²/(2g) (Fernholz & Fernholz 2020) is its
     one-slide case.
-- **The dynamic decomposition**, a change of a top-k share into growth of the
-  top and a local-time (rank-switching) term, is standard in SPT.
-  - Fernholz & Koch (Dallas Fed WP 1604; AER P&P 2017) use it to attribute
-    the rise of US bank concentration to weaker cross-sectional reversion.
-  - In that literature the local-time term is *measured* from rank switching,
-    and the rank-based coefficients are those of *whoever holds* a rank.
+- **Changes in concentration.** Fernholz & Koch (Dallas Fed WP 1604; AER
+  P&P 2017; EER 2021) compare two stationary regimes of US bank concentration
+  around a dated policy change and attribute the change to volatility against
+  reversion by rank. That is comparative statics, with no dynamic law; local
+  time appears only inside the reversion estimator. Throughout SPT the
+  local-time term is *measured* from rank switching, and the rank-based
+  coefficients are those of *whoever holds* a rank.
+- **The forward equation for ordered levels** is established theory: porous-
+  medium limits (Shkolnikov 2012; Jourdain & Reygner 2013, 2015), out-of-
+  equilibrium profiles for rank-dependent drifts (Cabezas, Dembo, Sarantsev &
+  Sidoravicius, CPAM 2019), and local times of ranked semimartingales (Banner
+  & Ghomrasni 2008). The rate law of §2 is derivable from it.
+- **Entry and exit, closest competitor.** Baker & Smyth ("Traveling waves in
+  equity markets with rank-based entry and exit", arXiv 2608.27156, August
+  2026) write the CDF's evolution with rank-dependent entry and exit. Their
+  flux ½σ²g is our boundary term, and their slope without turnover is
+  σ²/(2(B(s) − sB(1))). They infer drift from the wave identity rather than
+  measure it, and compare predicted relaxation times with the persistence of
+  shape deviations on CRSP.
+- **Rank-density estimators.** Itkin & Larsson (arXiv 2403.04674, Remark 3.5)
+  consider and reject an occupation-density estimator of local time as data
+  inefficient. Our σ²/(2S) is a prediction tested against measured crossings,
+  not an estimator of them.
 - **Random growth** (Gabaix 1999, 2009; Gabaix, Lasry, Lions & Moll 2016)
   gives the stationary tail and its transition speed, with entry and death.
-- The program's literature notes
-  (`lit_review/research_notes/Rank dynamics modeling best practices/rank_dynamics_model_families.md`)
-  record that SPT estimation treats neither measurement error, nor
-  sampling-interval effects, nor the bias of conditioning on current rank,
-  except heuristically (Itkin & Larsson 2024, appendix B.1).
+- **Estimation.** SPT calibrations (Fernholz 2017; Fernholz & Koch; Itkin
+  & Larsson) all condition on current rank. Itkin & Larsson's appendix B.1
+  is a discretisation bias in a *volatility* estimator, called open there.
+  No calibration found treats the drift analogue: regression of whoever is on
+  top, and the constants passing swings and block averaging leave.
+- **Online attention.** Blumm et al. (PRL 2012) link noise to rank stability
+  with item-level Langevin dynamics. Iñiguez et al. (Nat. Commun. 2022)
+  model rank flux in rank space only, and note that linking score and rank is
+  an open extension. Neutral-copying models predict turnover across a chart
+  boundary by another mechanism (Bentley et al. 2007; Evans & Giometto 2011).
+  None links individual movement to the slope of the rank-size curve
+  quantitatively. No rank-based or transition-speed analysis of a platform
+  algorithm change was found.
 
-The mathematics of §2 is therefore not new. What can be new is what follows,
-pending the targeted search now running (to be added as §6).
+The mathematics of §2 is therefore not new. What can be new is what
+follows. The novelty search behind this section is in
+`runs/2026-10-14_boundary_law/NOVELTY_SEARCH.md`: broad, not exhaustive, with
+reading level tagged per item.
 
 ## 4. What this program adds
 
@@ -109,8 +136,11 @@ pending the targeted search now running (to be added as §6).
      The two have opposite signs: whoever is on top through a swing falls
      back, and whoever is on top by a block average carries momentum (§2z-bw,
      §2z-by, §2z-cm).
-   - This addresses the estimation bias that SPT names and leaves open.
-4. **An open universe.** Entry and exit are exact terms. On Reddit, entry is
+   - No SPT calibration found treats this drift bias; Itkin & Larsson's
+     open question is the analogous one for volatility.
+4. **An open universe.** Entry and exit are exact terms for a finite top-K
+   universe. Rank-based entry and exit in continuum form are Baker & Smyth's,
+   so this is accounting, not a new idea. On Reddit, entry is
    29–41% of the incumbents' slide on comments and 8–19% on submissions
    (§2z-cc). On comments entry is what holds the ladder flat (§2z-cd, §2z-ck).
 5. **Out of equilibrium, through dated platform changes.**
@@ -127,6 +157,23 @@ pending the targeted search now running (to be added as §6).
    - *Climbing.* A typical newcomer's climb to the head takes decades at
      measured rates. In a stationary ladder the chance of ever climbing from
      rank m to rank k is k/m, and the climb lengthens as 1/slide² (§2z-ck).
+
+## 5a. Positioning, in one paragraph
+
+The paper cannot claim the law's mathematics. It can claim:
+- the first test of a rank-based balance out of equilibrium, with the crossing
+  term predicted from measured lasting volatility and crowding and checked
+  rank by rank and year by year against measured crossings;
+- named-cohort estimation that removes the drift bias of ranking by current
+  position, which rank-based calibrations leave untreated;
+- the first application of this framework to online attention, through a
+  dated platform algorithm change.
+
+It must cite and position against Fernholz (2017), Fernholz & Koch, Itkin &
+Larsson (2024), Baker & Smyth (2026) and Gabaix, Lasry, Lions & Moll (2016),
+and for the domain Blumm et al. (2012) and Iñiguez et al. (2022). It must
+disclose that n(x_k) = k/S_k is a continuum density standing in for the
+gap density at zero, exact only for exponential gaps.
 
 ## 5. What the paper still needs
 
