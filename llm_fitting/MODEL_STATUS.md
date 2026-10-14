@@ -9374,3 +9374,75 @@ has done. Platform growth as such is not the driver.
 
 **Ledgers.** No gate evaluation. The panels' weekly totals were read
 (DEVELOPMENT); logged.
+
+## 2z-ci. 2026-10-14 — EXPLORATORY MEASUREMENT (owner-requested): how fast a change in drift by rank can be detected. A change the size of the slide is detectable within 4–13 weeks in strata of thousands of communities and needs a quarter to half a year at the head (hundreds). June 2021 shows within one to two weeks, but as the top falling and the middle rising, not the pooled head falling as predicted. A post hoc scan finds drift by rank on comments departing from its recent past in about half of all windows, with a repeating summer-winter pattern: detecting a change needs a seasonal baseline first. Three of four predictions held; nothing adopted
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; design,
+predictions, runner and tests committed at 7206cf2 before the run. That commit
+went in with one test failing: a chained command let it through after the
+health check reported FAIL (the test indexed a stratum that became NaN when
+the top stratum was added). Fixed at 2097e45 with the health check gating the
+commit; the runner was unaffected._
+
+**The owner's question.** "Can we reliably detect when drift by rank changes?
+How long of a time series do we need? If we can detect it quickly we are in
+good shape!"
+
+**Method.** `runs/2026-10-14_drift_detection/DESIGN.md`; `mts_drift_detect.py`.
+Weekly levels as 4-week means; cohort fixed by permanent rank on the 26 weeks
+before each window; each stratum's drift is its members' mean change per
+week minus the cohort's; head (ranks 1 to K/16) and tilt as before. 200
+endpoint bootstraps within strata, at start weeks every 4 weeks. Detectable
+change MDE(τ) = 3 √(SE(τ)² + SE(26)²). June 2021: trailing 4- and 8-week
+windows against the 26 weeks before. Planted test: a change at the head of a
+small world is found when it exceeds the detectable size, and none is found
+without one.
+
+**Result: detectable change** (per 1,000 weeks; the slide is about 4.3).
+Comments: top K/16 7.8, 4.4, 3.4 after 4, 13, 26 weeks; ranks 12,500–25,000
+2.6, 1.4, 1.0. Submissions: top K/16 8.9, 5.9, 5.2; ranks 1–39 15.1, 10.5, 8.9;
+ranks 5,000–10,000 3.1, 1.8, 1.4. Full table in `REPORT.md`.
+
+**Result: June 2021.** Submissions, 4-week windows, one to three weeks after:
+ranks 1–39 z −1.3 to −2.4; ranks 156–312 +2.1 to +3.1; ranks 625–1,250 up to
++2.4; ranks 5,000–10,000 −2.8 to −2.6; pooled head +3.0, +3.3 in weeks one and
+two. Comments: every stratum above rank 6,250 z +2 to +8 from the first week,
+the bottom stratum −9 to −12. No window in the 8 weeks before had |z| ≥ 3 on
+either panel's pooled head.
+
+**Post hoc scan** (every 4 weeks through the panel; written after the scored
+results). Head departs at |z| ≥ 3 in 42% (4-week) and 55% (8-week) of windows
+on comments, 5% and 14% on submissions; the tilt in 38–68%. On comments the
+largest departures recur each summer (May–June 2020 +7, +6; July 2021 +10; July
+2022 +9) and reverse in winter (January 2022 −8). June 2021 on either panel is
+about the size of the other summers in this statistic; the daily positional
+shares of §2z-ca remain its distinctive signature.
+
+**Predictions scored** (`DESIGN.md`). D1, the largest stratum's 13-week
+detectable change under 2.0 on both panels: PASS (1.4, 1.8). D2, the head's
+above 2.0: PASS (4.4, 5.9). D3, on comments the head's drift changes between
+successive windows by more than its 26-week detectable change in at least half
+the pairs: PASS (two of three). D4, June 2021 detected at the submissions head
+as a fall within 8 weeks with no earlier false alarm: FAIL; the departures
+were of the other sign, at z 2–3.
+
+**What it means** (my reading).
+
+1. A broad change in drift by rank of the slide's size is seen within weeks;
+   at the head within months; the very top needs daily positional statistics.
+2. Drift by rank on comments has an annual cycle, small communities gaining on
+   the head in winter and losing in summer. That is forecastable, and a
+   candidate for the comments forecast failures of §2z-ce and §2z-cg. It may
+   be partly the endpoint-specific annual cycle of §2z-aw seen through cohorts
+   selected a year earlier; not separated.
+3. The series needed is two-part: two or three years to learn the seasonal
+   pattern of drift by rank, then weeks to months after a change.
+
+**Not run.** A seasonal model of drift by rank, and the comments forecast
+with it. A correction for monitoring every week.
+
+**Commands.** `caffeinate -dims python scripts/heavy_lock.py -- python -u
+llm_fitting/mts_drift_detect.py run <panel>`; `python llm_fitting/mts_drift_detect.py
+report`; `PYTHONPATH=. python llm_fitting/runs/2026-10-14_drift_detection/scan_post_hoc.py`.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.

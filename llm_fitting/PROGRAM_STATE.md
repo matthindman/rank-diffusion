@@ -140,7 +140,10 @@ movement through the ladder (§2z-ce), it works on submissions, where the
 drift by rank persisted after 2020, and fails on comments, where it turned
 every half year. Forecasting structure is forecasting the drift by rank; what
 sets that drift is the open question. Forecasts of the 2023 ladders are fixed
-in a draft protocol (§2z-cf). None of this is reviewed by Codex yet.
+in a draft protocol (§2z-cf). None of this is reviewed by Codex yet. A change in drift by
+rank the size of the slide is detectable within weeks in large strata and
+months at the head (§2z-ci); on comments drift by rank has an annual cycle,
+so detection needs a seasonal baseline first.
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate
