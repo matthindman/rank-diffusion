@@ -175,15 +175,17 @@ def analyse(df, K, block=BLOCK, boot=BOOT, seed=0):
     return out
 
 
-def run(panel, block=BLOCK):
-    """block 26 for the Reddit panels (2z-cm); 13 for facebook_a, whose Era A has 86 weeks (one start)."""
+def run(panel, block=BLOCK, K=None):
+    """block 26 for the Reddit panels (2z-cm); 13 for facebook_a, whose Era A has 86 weeks (one start).
+    K: the universe size, default the panel's registered K; other values are robustness runs (2z-cu)."""
     import minimal_rankdiff as mrd
     cfg = m1.PANELS[panel]
     df = mrd.load_panel(mrd.PLATFORMS[cfg["platform"]])
-    res = analyse(df, cfg["K"], block=block)
+    KK = cfg["K"] if K is None else int(K)
+    res = analyse(df, KK, block=block)
     res.update(panel=panel, finished=time.strftime("%Y-%m-%d %H:%M:%S"))
     (OUT / "cells").mkdir(parents=True, exist_ok=True)
-    tag = "" if block == BLOCK else f"__block{block}"
+    tag = ("" if block == BLOCK else f"__block{block}") + ("" if K is None else f"__K{KK}")
     (OUT / "cells" / f"boundary__{panel}{tag}.json").write_text(json.dumps(res, indent=1, default=float))
     print(f"[{panel}] T={res['T']} blocks={res['n_blocks']} certified_top={res['certified_top']} written", flush=True)
 
@@ -267,6 +269,8 @@ def main():
         run(args[1])
     elif args[:1] == ["run"] and len(args) == 3 and args[1] in m1.PANELS:
         run(args[1], int(args[2]))
+    elif args[:1] == ["run"] and len(args) == 4 and args[1] in m1.PANELS:
+        run(args[1], int(args[2]), int(args[3]))
     elif args[:1] == ["report"]:
         report()
         score()
