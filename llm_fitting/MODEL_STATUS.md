@@ -10045,3 +10045,60 @@ was killed.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`
 (two rows).
+
+## 2z-cp. 2026-10-15 — PLANNING ONLY and POST HOC ARITHMETIC (no new data contact; nothing adopted): a proposed revision of the draft 2023 protocol that makes the boundary theory its primary test; the theory note's argument corrected to claim explanation and counterfactual, not superior forecasts; how fast each ladder relaxes toward the shape its movement sustains (comments 5–22 years, submissions 2–6); core figures
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; started
+from d9511c6._
+
+1. **Proposed protocol revision** (appended to
+   `BRIDGE_FORECAST_PROTOCOL_DRAFT_2026-10-14.md`, not adopted).
+   - *Primary test:* the boundary theory replicated on the bridge. Crossings
+     from the 2022 H1 block to 2023 H1 and 2024 H1 against σ²/(2S) from the
+     same blocks, with §2z-cm's rules at K/64 … K on comments and K/8 … K on
+     submissions.
+   - *Forecasts* become secondary, scored against "repeat last change" as well
+     as "no change".
+   - *Added conditions:* the blackout straddling the 2023 block boundary, and
+     comments' missing May 2023 treated as a common hole (a declared deviation
+     the owner may refuse).
+   - *Why.* §2z-co found that the law forecasts no better than trend at the
+     scales available, while its boundary theory is the part that is not
+     accounting.
+   - Adoption and the first contact with the bridge are the owner's.
+2. **Theory note** (`BALANCE_LAW_THEORY_NOTE_2026-10-14.md`).
+   - Its argument now claims explanation and counterfactual, not superior
+     forecasts.
+   - It records the platform change's effect on mobility at the head as well
+     as on drift.
+   - It points to the figures.
+3. **Relaxation toward the sustained slope** (post hoc arithmetic on the
+   cells of §2z-cd). For a ladder of uniform slope between k and K,
+   shape_k = S ln(K/k) and dS/dt = (σ²/2S − s̄)/ln(K/k). Linearised about the
+   sustained slope S*, the time constant is τ_k = S* ln(K/k)/c*, with
+   c* = σ²/(2S*).
+
+   | | K/64 | K/32 | K/16 | K/8 | K/4 | K/2 |
+   |---|---|---|---|---|---|---|
+   | comments, 2020→21 / 2021→22 (years) | 9 / 9 | 9 / 11 | 10 / 18 | 12 / 22 | 10 / 21 | 5 / 10 |
+   | submissions, 2020→21 / 2021→22 (years) | 4 / 3 | 3 / 2 | 3 / 3 | 3 / 4 | 4 / 6 | 3 / 4 |
+
+   - Movement in a year sets where a ladder is going. Getting there takes a
+     decade on comments and a few years on submissions.
+   - On submissions the sustained head slope, 0.25–0.46, is far below the
+     actual 0.84–0.98. If slides persist, the head keeps flattening for
+     years, as the 2023 forecasts fixed in §2z-cf already say.
+   - Order of magnitude only: uniform slope, linearised, and slides held
+     fixed. Baker & Smyth (§2z-cn) report relaxation from about 6 months at
+     the bottom to 53 years at the top of US equities.
+4. **Figures** (`runs/2026-10-15_figures/`, script `make_figures.py`, saved
+   outputs only).
+   - `fig_boundary_theory.png`: crossings against σ²/(2S) by rank, two
+     estimators, and by start.
+   - `fig_rate_law_and_head_mobility.png`: the same-year law's 60 cells, and
+     the crossings at the head of submissions around June 2021.
+   - **A slip.** I committed the figures (d9511c6) before running the health
+     check. It ran immediately after and passed; the commit touched only files
+     outside both test suites.
+
+**Ledgers.** No new data contact; no gate evaluation.

@@ -193,17 +193,28 @@ gap density at zero, exact only for exponential gaps.
    crossings at its boundary return what its members lose against the pack,
    plus what entrants take. The crossings are predicted from two measurable
    things, how much names at that rank move (lasting variance) and how crowded
-   the ladder is there (slope). That prediction holds rank by rank (§2z-cm).
+   the ladder is there (slope). That prediction holds rank by rank on comments
+   with two independent variance estimators, and over time; on submissions it
+   holds roughly in the body and cannot be measured at the head (§2z-cm,
+   §2z-co).
 3. **Out of equilibrium, the shape moves at the rate of the imbalance.**
-   - A platform change acts on the ladder through the drift of names by rank.
-     Reddit's June 2021 Home feed lowered the drift of the very top within
-     days.
+   - A platform change acts on the ladder through the drift of names by rank,
+     and through their mobility. Reddit's June 2021 Home feed lowered the drift
+     of the very top within days, and the crossings at the head of submissions
+     roughly tripled over the following year (§2z-cm, §2z-co).
    - The ladder then changes at the rate the law gives, and keeps changing
      while the imbalance lasts (§2z-cd, §2z-cg, §2z-ca).
-4. **So forecasting structure is forecasting drift by rank.** That is
-   possible where drift persists and not where it cycles. A change in it shows
-   within weeks across most of the ladder and within months at the head
-   (§2z-ce, §2z-ci).
+4. **Forecasting structure is forecasting drift by rank, and on this record
+   that is no better than trend.**
+   - The law forecasts where drift by rank persists (submissions), but no
+     better than repeating the ladder's own last change.
+   - Comments' head moved once, sharply, in mid-2021, and no forecast saw it
+     (§2z-ce, §2z-cg, §2z-co).
+   - A change in drift by rank shows within weeks across most of the ladder
+     and within months at the head (§2z-ci).
+   - So the paper should claim explanation and counterfactual (what slope the
+     measured movement sustains, how fast the ladder must move), not superior
+     forecasts.
 5. **Consequences.**
    - Falling entry, as platforms mature, steepens ladders unless drift by rank
      works against the head.
@@ -212,6 +223,9 @@ gap density at zero, exact only for exponential gaps.
    differences of spacings remove the biases that ranking by current position,
    passing swings and sampling interval put into rank-based estimates (§2z-cm).
 
-Evidence so far: two Reddit metrics, 2019–2022, DEVELOPMENT. Missing:
-- an outcome-blind test and a second system (sealed data, owner-gated);
+Evidence so far: two Reddit metrics, 2019–2022, DEVELOPMENT. Figures in
+`runs/2026-10-15_figures/`. Missing:
+- an outcome-blind test and a second system (sealed data, owner-gated; a
+  revised primary test centred on the boundary theory is proposed in the 2023
+  draft protocol);
 - Codex's review.

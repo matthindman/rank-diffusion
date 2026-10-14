@@ -90,3 +90,61 @@ evidence against the claim at the one-year horizon on this platform.
 ## Not covered
 
 Wikipedia. The first half of 2024. Any model fit. The frozen stacks.
+
+---
+
+## Proposed revision, 2026-10-15 (Claude; NOT ADOPTED, for the owner)
+
+_Added after §2z-cm and §2z-co. Nothing above is changed, and nothing here is
+adopted. No sealed file has been opened._
+
+**Why revise.** Two findings change what an outcome-blind test of this program
+should be:
+- *The boundary theory is the part that is not accounting* (§2z-cm, §2z-co).
+  Crossings at a rank's boundary return lasting variance over twice the local
+  slope, predicted rather than measured. On comments it holds at every rank
+  with two variance estimators.
+- *Forecasts lack a clear edge.* At the half-year and one-year scales the
+  forecasters do no better than repeating the ladder's own last change
+  (§2z-co; §2z-cd). A pass against "no change" alone would not show that
+  movement predicts structure beyond trend.
+
+**Proposed primary test: the boundary theory on new data.**
+- *Set-up.* 26-week blocks: the 2022 H1 block (DEVELOPMENT), and the 2023 H1
+  and 2024 H1 blocks (bridge).
+  - The persisting top k at the 2022 H1 block and its reordering gains to
+    2023 H1 (52 weeks) and to 2024 H1 (104 weeks) give the lasting crossing
+    gain R̃_k as in §2z-cm.
+  - The cohort fixed on the 2021 H2 block, over the same three blocks, gives
+    σ² by the variance route. The slope is that of those blocks.
+- *Rule, as §2z-cm B1.*
+  - Comments: R̃_k / (σ_k²/2S_k) in [0.75, 1.33] at ≥ 5 of the 7 cut-offs K/64 … K.
+  - Submissions: the same at the 4 cut-offs K/8 … K only, since its head
+    cannot be measured (§2z-cm, §2z-co).
+- *Second rule, as §2z-cm B2.* The lasting slide of whoever holds the top k
+  equals the cohort's.
+- *Why it suits the sealed data.* It needs no forecast and is immune to the
+  2023 shocks' effect on drift, because it relates crossings to volatility and
+  crowding in the same period. It is the out-of-sample replication of the
+  law's physics.
+
+**Forecast tests become secondary** and are scored against both baselines,
+"no change" and "repeat last change", with the forecasts fixed above. A
+forecaster that beats only "no change" is reported as not separating from
+trend.
+
+**Conditions, added to the four above:**
+- *The blackout of 12 June – 16 July 2023* straddles the 2023 H1 and H2
+  blocks. For the boundary test, the H1 block is computed with and without its
+  last five weeks.
+- *Comments' missing May 2023* is a hole common to every community. Proposed:
+  comments block means over the available weeks, with the presence rule
+  applied to those weeks. This is a declared deviation that the owner may
+  refuse, in which case comments stay NOT ADJUDICATED as above.
+- *2024 H1 needs the bridge through June 2024*, which the sealed folder's name
+  says it covers. Its completeness is checked first.
+
+**What it spends.** First value-level contact with the Reddit bridge (both
+kinds), the owner's decision. The sealed Wikipedia panels could take the same
+primary test as a second system. That needs a protocol written against their
+structure, which has not been inspected.
