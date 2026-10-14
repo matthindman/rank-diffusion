@@ -150,6 +150,16 @@ the rate law falling entry steepens a ladder (on comments entry holds it
 flat); it puts Reddit outside the premises of Codex's finite-age theorem; and
 it makes a community's age a rival to its size in explaining why volatility
 falls with size.
+**The boundary theory by rank (§2z-cm).** The law's one non-accounting part
+is that crossings at a rank's boundary return lasting variance over twice the
+local slope, predicted rather than measured. On comments that holds at every
+rank from K/64 to K (0.98–1.22 of prediction) and, post hoc, start by start
+through 2020–2022 (correlation 0.94). On submissions the variance estimates at
+the head are too noisy to test it; the body holds. Once one-time constants are
+removed, the slide of whoever holds a rank equals the cohort's. The theory
+note `BALANCE_LAW_THEORY_NOTE_2026-10-14.md` relates the law to stochastic
+portfolio theory (its stationary form is Fernholz's gap identity) and drafts
+the paper's argument for the owner.
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate

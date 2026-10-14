@@ -232,12 +232,40 @@ def report():
     print("\n".join(lines))
 
 
+def score():
+    """The four predictions of DESIGN.md, rules as registered there before the run."""
+    res = {pn: json.loads((OUT / "cells" / f"boundary__{pn}.json").read_text()) for pn in PANELS
+           if (OUT / "cells" / f"boundary__{pn}.json").exists()}
+    out, lasting, one = {}, [], []
+    for pn, r in res.items():
+        K, rows = r["K"], r["pooled"]
+        below = [x for x in rows if x["k"] < K]
+        b1 = sum(0.75 <= x["ratio"] <= 1.33 for x in rows)
+        b2 = sum((x["EL_diff_q"][0] <= 0 <= x["EL_diff_q"][1]) or abs(x["E_lasting"] - x["L_lasting"]) < 0.0005 for x in rows)
+        b4 = sum(np.sign(x["err_slide"]) != np.sign(x["err_boundary"]) for x in below)
+        out[pn] = dict(B1=f"{b1} of {len(rows)}: {'PASS' if b1 >= 5 else 'FAIL'}",
+                       B2=f"{b2} of {len(rows)}: {'PASS' if b2 >= 5 else 'FAIL'}",
+                       B4=f"{b4} of {len(below)}: {'PASS' if b4 >= 4 else 'FAIL'}")
+        lasting += [(x["obs_lasting"], x["pred_lasting"]) for x in below]
+        one += [(x["obs_one"], x["pred_one"]) for x in below]
+    if len(res) == 2:
+        o, pr = np.array(lasting).T
+        o1, p1 = np.array(one).T
+        slope = float((o * pr).sum() / (pr * pr).sum())
+        rms, rms1 = float(np.sqrt(((o - pr) ** 2).mean())), float(np.sqrt(((o1 - p1) ** 2).mean()))
+        out["B3"] = dict(slope=slope, rms_lasting=rms, rms_one=rms1, slope_one=float((o1 * p1).sum() / (p1 * p1).sum()),
+                         verdict="PASS" if 0.8 <= slope <= 1.25 and rms < rms1 else "FAIL")
+    print(json.dumps(out, indent=1))
+    return out
+
+
 def main():
     args = sys.argv[1:]
     if args[:1] == ["run"] and len(args) == 2 and args[1] in PANELS:
         run(args[1])
     elif args[:1] == ["report"]:
         report()
+        score()
     else:
         sys.exit(__doc__)
 

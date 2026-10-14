@@ -9696,3 +9696,142 @@ them:
 Any panel data.
 
 **Ledgers.** No data contact; no gate evaluation.
+
+## 2z-cm. 2026-10-14 — EXPLORATORY MEASUREMENT: the boundary theory by rank, the rate law's only non-accounting part. On comments, crossings at every rank from K/64 to K return what lasting variance over twice the local slope predicts (measured over predicted 0.98–1.22, 7 of 7 cut-offs); start by start, post hoc, they track it through 2020–2022 (20 of 21 cells, correlation 0.94). On submissions the crossings are smooth by rank, but the independent variance estimates in the head strata are too erratic to test them (3 of 7). With one-time constants removed by differencing two spacings, the slide of whoever holds the top k equals the slide of a cohort fixed by permanent rank on both panels (7 of 7 each). Three of four predictions held; nothing adopted, no fit, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; design,
+predictions, runner and planted-world tests committed at 0ba0854 before the
+run; results committed with this entry._
+
+**Tier.** Exploratory, DEVELOPMENT data, in sample. Data only.
+
+**The owner's request.** "continue the core movement-to-structure work. step
+back and identify the biggest thing you can do to make this a novel,
+publishable, important computational social science paper." My answer, in
+the theory note committed with this entry
+(`BALANCE_LAW_THEORY_NOTE_2026-10-14.md`):
+- The rate law's stationary form is Fernholz's gap identity in continuum
+  notation, and its dynamic form is the forward equation. So the mathematics
+  is not new.
+- In its same-year form the law is partly accounting (§2z-cg). What can make it
+  a finding is its one physical claim, that crossings at a rank's boundary
+  return σ²/(2S) per member, *predicted* from measured volatility and crowding.
+  Stochastic portfolio theory measures that term instead of predicting it.
+- That claim had been checked only at k = K (§2z-by, §2z-cc).
+
+**Method.** `runs/2026-10-14_boundary_law/DESIGN.md`; `mts_boundary_law.py`.
+
+- *The exact split.* For the persisting set and T_a, the top k at the start,
+  U_k(b) − U_k(a) = G_k + R_k: members' mean change plus a reordering gain
+  R_k ≥ 0. So the same-year law's error is (L_k − E_k)/D + (R_k/D − c_k), a
+  slide piece (cohort against whoever is on top) and a boundary piece.
+- *Removing one-time constants.* Comparisons from one start carry constants
+  of opposite sign: passing swings (whoever is on top falls back) and block
+  averaging (whoever is on top by a block mean carries momentum). A difference
+  of spacings 52 → 104 weeks from the same start removes both.
+- *Set-up.* 26-week blocks; starts 1–3, cohorts fixed on the block before;
+  σ² by the variance route (cohort of block 0, blocks 1, 3, 5); slope over
+  the interval measured; 200 endpoint bootstraps.
+- *Planted worlds* (exponential ladders, three seeds): the crossing estimator
+  is unbiased (0.97–1.16 of σ²/2S), lasting slides agree, and the two
+  constants appear with the predicted signs.
+
+**Result** (per endpoint per 1,000 weeks; lasting forms).
+
+| k (comments) | 195 | 391 | 781 | 1,562 | 3,125 | 6,250 | 12,500 |
+|---|---|---|---|---|---|---|---|
+| c = σ²/2S | 3.88 | 3.85 | 3.93 | 4.07 | 3.75 | 3.19 | 2.27 |
+| crossings R̃ | 4.72 | 4.63 | 4.24 | 3.98 | 3.72 | 3.54 | 2.72 |
+| R̃ / c (5–95%) | 1.22 (0.91–1.66) | 1.20 (1.00–1.50) | 1.08 (0.96–1.29) | 0.98 (0.87–1.09) | 0.99 (0.90–1.07) | 1.11 (1.04–1.18) | 1.20 (1.14–1.26) |
+
+| k (submissions) | 78 | 156 | 312 | 625 | 1,250 | 2,500 | 5,000 |
+|---|---|---|---|---|---|---|---|
+| c = σ²/2S | 2.94 | 2.15 | 5.20 | 6.37 | 4.25 | 4.54 | 4.36 |
+| crossings R̃ | 4.82 | 3.99 | 3.73 | 3.88 | 4.12 | 4.08 | 3.80 |
+| R̃ / c (5–95%) | 1.64 (0.86–3.08) | 1.86 (1.32–2.98) | 0.72 (0.46–1.55) | 0.61 (0.45–0.87) | 0.97 (0.76–1.26) | 0.90 (0.73–1.09) | 0.87 (0.77–0.97) |
+
+1. **Comments.** Crossings follow the theory at every rank, with intervals of
+   about ±10% in the body.
+2. **Submissions.** The crossings are nearly flat by rank, but c is not:
+   - the variance route gives 0.0019, 0.0047, 0.0054, 0.0033 and 0.0141 a
+     week in the five top strata, with 31–145 members each;
+   - that is the noise the planted worlds show for strata of this size;
+   - the variance the crossings imply, 2 S R̃, rises smoothly from 0.0075 at
+     the head to 0.0133 at K.
+3. **Lasting slides agree.** Whoever holds the top k and the cohort fixed by
+   permanent rank slide at the same lasting rate: within 0.0005 a week, or
+   with an interval containing zero, at every cut-off on both panels. Once
+   one-time constants are removed, ranking by current position and by
+   permanent rank give the same lasting slide.
+4. **One spacing.** The two pieces of the law's error offset (B4). The slide
+   piece is +0.0005 to +0.0007 a week on submissions, the momentum that block
+   averaging gives: about σ²L/(6S·D) = 0.0006–0.0008 at this panel's
+   variances and slopes (the planted worlds match this formula). On comments
+   it is +0.00005 to +0.0005, where passing swings offset part of it. In this configuration (26-week blocks, three starts pooled) the
+   same-year law has slope 0.99 and rms error 0.81 per 1,000 weeks, against
+   3.03 for no change. The 0.76 of §2z-cd does not recur here; its cause is
+   still not identified.
+
+**Predictions scored** (`DESIGN.md`; `mts_boundary_law.score`).
+
+| | comments | submissions |
+|---|---|---|
+| B1, R̃/c in [0.75, 1.33] at ≥ 5 of 7 | **PASS**, 7 of 7 | **FAIL**, 3 of 7 |
+| B2, lasting slides agree at ≥ 5 of 7 | **PASS**, 7 of 7 | **PASS**, 7 of 7 |
+| B4, the one-spacing pieces offset at ≥ 4 of 6 | **PASS**, 5 of 6 | **PASS**, 6 of 6 |
+
+B3, the lasting form of the law (pooled, 12 cells), **FAILS**: slope 0.80
+(needed 0.80–1.25, missed at the second decimal), rms error 1.12 against
+0.81 for the one-spacing form. Submissions' erratic c at 312 and 625 drives
+it. Three of four held.
+
+**Post hoc, start by start** (`by_start_post_hoc.py`, output beside it).
+Variance from each start's own cohort over blocks a, a + 2, a + 4, and slope
+over the interval measured. The crossings run between the blocks starting
+2020-06-29 and 2021-06-28, 2020-12-28 and 2021-12-27, and 2021-06-28 and
+2022-06-27.
+- *Comments:* 20 of 21 cells within [0.75, 1.33]; correlation of crossings
+  with c across cells 0.94; slope 0.91. At the head, c rises from 3.9 to 6.4
+  across the three starts and the crossings follow, from 3.9 to 5.5.
+- *Submissions:* 14 of 21 cells; correlation 0.44; slope 0.87.
+  - The body holds: 0.69–1.01 at K/4 to K.
+  - The head's crossings rose most after June 2021, from 2.4 to 7.8 at K/64,
+    while c rose from 3.3 to 5.0, with intervals too wide to say whether they
+    differ.
+
+**Verdict.** No adoption rule applies.
+- The rate law's physical claim holds, and holds over time, where lasting
+  variance is measured precisely: on comments, at every rank tested.
+- On submissions it holds in the body and is not testable at the head with
+  the present variance estimator.
+
+**What it means** (my reading).
+
+1. This is the result that separates the law from accounting and from an SPT
+   identity. Crossings at every rank are predicted from how much names there
+   move and how crowded the ladder is, rank by rank and year by year. The
+   balance is a law of the dynamics, not only a bookkeeping of them.
+2. The slide result is methodological. Rank-based (SPT) estimates condition
+   on current position, which the program has avoided since §2z-a. Here the
+   bias that conditioning brings is shown to be one-time constants of known
+   sign: a difference of spacings removes them, and then the current-position
+   and cohort estimates agree.
+3. The open measurement problem is the variance at the head of small panels.
+   Strata of 30–150 names give the variance route ±40%. A robust or pooled
+   estimator, or crossings themselves as an instrument for variance, is the
+   next step.
+
+**What it does not show.** Anything outside sample, about Facebook, or above
+K/64. Why the comments crossings run 10–20% above c at K/64 and at K. Whether
+the submissions head obeys the theory.
+
+**Not run.** A variance estimator robust at the head. Codex's review (added to
+row R5).
+
+**Commands.** `caffeinate -dims python scripts/heavy_lock.py -- python -u
+llm_fitting/mts_boundary_law.py run <panel>` for both panels; `python
+llm_fitting/mts_boundary_law.py report` (with scores); post hoc `python
+llm_fitting/runs/2026-10-14_boundary_law/by_start_post_hoc.py <panel>`. No run
+was killed.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
