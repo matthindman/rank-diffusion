@@ -10102,3 +10102,66 @@ from d9511c6._
      outside both test suites.
 
 **Ledgers.** No new data contact; no gate evaluation.
+
+## 2z-cq. 2026-10-15 — POST HOC, PLANTED WORLDS ONLY (no data; unscored): the boundary test is robust to heavy tails, jumps and heterogeneous persistent drifts, and is sensitive to fixed volatility types still sorting toward the head. None of these explains submissions' body deficit; comments' ratios near 1 at the head argue against strong ongoing type sorting there
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; started
+from 5dbdd22. `runs/2026-10-15_boundary_robustness/planted_robustness.py` and
+`output.txt`._
+
+**Question.** On submissions the body's crossings run 0.7–0.9 of σ²/(2S)
+(§2z-cm, §2z-co). Earlier I had argued two things without checking:
+- heavy tails can only raise the ratio, because the exact gain in an
+  exponential density weights upward moves by e^{z/S};
+- heterogeneous persistent drifts inflate crossings and both variance
+  estimators alike (each by 156δ²), and so cancel.
+
+**Method.** Exponential ladders (N = 25,600, K = 1,600, S = 1.5, σ² = 0.02 a
+week), eight 26-week blocks, three seeds. Each world departs from a plain walk
+in one way:
+- Student-t steps with 3 degrees of freedom;
+- 1% weekly jumps carrying half the variance;
+- named drifts with 156δ² = 0.3σ²;
+- fixed log-normal volatility types (log-sd 0.8), assigned independently of
+  level at the start.
+
+Scored, as in §2z-cm, by the module's own estimates: R̃/c.
+
+**Result** (mean ± sd over seeds).
+
+| world | k = 100 | 200 | 400 | 800 | 1,600 |
+|---|---|---|---|---|---|
+| plain walk | 1.00 ± 0.20 | 0.93 ± 0.13 | 0.92 ± 0.08 | 0.97 ± 0.02 | 1.02 ± 0.06 |
+| Student-t (3 df) | 1.23 ± 0.19 | 1.20 ± 0.20 | 1.13 ± 0.07 | 0.95 ± 0.02 | 1.00 ± 0.03 |
+| rare jumps | 0.84 ± 0.15 | 1.04 ± 0.24 | 0.95 ± 0.06 | 1.06 ± 0.05 | 1.04 ± 0.03 |
+| drift types | 0.95 ± 0.10 | 0.91 ± 0.06 | 0.94 ± 0.10 | 0.98 ± 0.04 | 0.98 ± 0.04 |
+| volatility types | 2.41 ± 0.56 | 1.68 ± 0.34 | 1.30 ± 0.17 | 1.29 ± 0.01 | 1.20 ± 0.06 |
+
+At k = 25–50 (25–50 members at the boundary) the plain walk's ratio is 1.3–1.5
+± 0.4–0.7: noise, as in §2z-cm's planted checks.
+
+1. **Heavy tails, jumps and drift heterogeneity** leave the ratio between
+   about 0.85 and 1.25. Both of my earlier arguments hold.
+2. **Fixed volatility types, still sorting**, raise it: 1.2–1.3 in the body
+   and 2–4 at the head.
+   - In a population four years old, volatile types are still climbing into
+     the head. The occupants at the boundary are then more volatile than the
+     cohort the variance was measured on, so crossings outrun c.
+   - A sorted, stationary type population would give about 1. So the ratio
+     tests composition still changing at the boundary, not types as such.
+3. **Neither result explains submissions' 0.7–0.9.** A ratio below 1 needs the
+   boundary's occupants to be *less* volatile than the cohort, or the slope to
+   be misread. Possible causes: attrition of volatile communities from the
+   persisting set, higher on submissions (§2z-cc), or a period mismatch.
+   Unresolved.
+4. **Comments.** At the head the ratios are 0.99–1.22 by two estimators,
+   against 2–4 in the sorting world. That is evidence against strong ongoing
+   sorting of fixed volatility types into the comments head, one of the
+   age-related rivals of §2z-ck.
+   - This is reading in my own terms only: the planted type spread (log-sd
+     0.8) is arbitrary, and no world was calibrated to the data's variance by
+     rank.
+   - It becomes a test only if V5 calibrates type and age worlds to the data,
+     which Codex's queue row asks for.
+
+**Ledgers.** No data contact; no gate evaluation.
