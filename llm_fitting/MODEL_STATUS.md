@@ -9142,3 +9142,80 @@ llm_fitting/mts_balance_law.py report`. Outputs in
 `runs/2026-10-14_balance_law/`. No run was killed.
 
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
+
+## 2z-ce. 2026-10-14 — OWNER DECISION: `main` pushed through 97f09c9; and EXPLORATORY MEASUREMENT: forward simulation of measured movement. On submissions, last year's movement by rank pushed through this year's ladder forecasts next year's change of shape with a quarter to a third of the error of "no change", one and two years ahead; on comments, where the full ladder barely moves, it is three to six times worse than "no change", because the movement by rank of 2019→2020 and 2020→2021 did not repeat. Two moments by rank suffice where it works; a two-parameter drift does not. Two of five predictions held; nothing adopted, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; design,
+predictions, runner and tests committed at 7b9ff2f before the run; results
+committed with this entry._
+
+**The push.** The owner, after §2z-cd: "amazing. commit and push this." Pushed
+`main` a75b9c2..97f09c9 (21 commits). As with V2 (§2z-br), this publishes
+Codex's two V4 archives (37 MB) through the merged branch's history, though
+they are not in `main`'s tree. The owner also asked to "pursue this line of
+research aggressively and rigorously" for four to five hours; work after the
+push is committed locally and not pushed.
+
+**Tier.** Exploratory, DEVELOPMENT data. Data only; the simulation draws from
+measured transitions and fits nothing to a ladder.
+
+**Question.** Is the information about where structure goes in last year's
+movement, with no theory in between? Do two moments by rank suffice, and do
+eight numbers? Does a forecast hold two years out?
+
+**Method.** `runs/2026-10-14_forward/DESIGN.md`; `mts_forward.py`. Top W = 2K
+of four 52-week blocks; strata of current block rank. A transition (a → a+1):
+changes of present members by stratum, attrition by stratum, entrants to the
+top W with their offsets from block a's K-th level. Applied to block b with
+40 draws. Versions: resampled changes; Gaussian with the stratum's two
+moments; eight numbers (linear mean and log variance in log rank, logistic
+attrition, entrant count and Gaussian offsets). Scored on the change of shape
+at K/64 to K/2 against "no change" and "repeat last change".
+
+**Result.** Rms error over the year, log units:
+
+| | no change | repeat last | resampled | two moments | eight numbers |
+|---|---|---|---|---|---|
+| submissions 2020→2021 | 0.188 | 0.065 | 0.062 | 0.056 | 0.200 |
+| submissions 2021→2022 | 0.133 | 0.056 | 0.036 | 0.075 | 0.036 |
+| submissions, two years ahead | 0.321 | — | 0.108 | 0.111 | 0.447 |
+| comments 2020→2021 | 0.085 | 0.279 | 0.263 | 0.265 | 0.531 |
+| comments 2021→2022 | 0.021 | 0.080 | 0.075 | 0.080 | 0.093 |
+| comments, two years ahead | 0.094 | — | 0.561 | 0.575 | 1.103 |
+
+In sample (a transition applied to its own start) the errors are 0.003–0.009,
+so the machinery reproduces what it is given. On submissions the head sank by
+0.29 and 0.21 log units at K/64 in the two years; the forecasts were −0.18
+and −0.26. On comments the forecast for 2020→2021 was a fall of 0.45 at K/64
+against an observed 0.14.
+
+**Diagnosis (post hoc).** Swapping parts of a transition between years: on
+comments, movement from the year before with entry from the target year
+still gives 0.248 and 0.041; movement from the target year with entry from
+the year before gives 0.021 and 0.026. What fails to carry over on comments
+is the movement of present endpoints by rank, in a window whose first year is
+the platform's growth year (§2z-bz).
+
+**Predictions scored** (`DESIGN.md`). F1, beats "no change" in three of four
+one-step cases and "repeat last change" in two: FAIL (two of four; all four).
+F2, two moments within 20% of resampled changes in three of four: PASS. F3,
+eight numbers within 30% in three of four: FAIL (two). F4, two steps beats
+"no change" on both panels: FAIL (submissions only). F5, slope error within
+five points of persistence's in three of four: PASS.
+
+**What it means** (my reading). Where the ladder moves, movement measured a
+year earlier forecasts where it goes, with no theory in between; that is the
+strongest out-of-sample evidence so far that structure follows movement.
+Where it holds still, a forecast needs the drift by rank to carry over, and on
+comments it did not. The drift by rank, measured in §2z-cc, is the
+time-varying ingredient. Two moments by rank are enough; a line in log rank
+for the drift is not.
+
+**Not run.** A structural forward simulation, with lasting drift from cohorts
+and lasting variance, which is the generative form of §2z-cd.
+
+**Commands.** `caffeinate -dims python scripts/heavy_lock.py -- python -u
+llm_fitting/mts_forward.py run <panel>`; `python llm_fitting/mts_forward.py
+report`; `PYTHONPATH=. python llm_fitting/runs/2026-10-14_forward/diagnose_hybrids.py`.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.

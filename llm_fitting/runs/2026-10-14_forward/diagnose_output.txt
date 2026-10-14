@@ -1,0 +1,14 @@
+Post hoc diagnosis (run after the scored results were seen):
+  PYTHONPATH=. python llm_fitting/runs/2026-10-14_forward/diagnose_hybrids.py
+
+reddit_comments_ext: rms error of the change of shape at [195, 391, 781, 1562, 3125, 6250] (log units over the year)
+  1->2: no change 0.0846; movement and entry from the year before (as run): 0.2619; movement from the year before, entry from the target year: 0.2482; movement from the target year, entry from the year before: 0.0213; both from the target year (in sample): 0.0045
+        entrants into the top 2K: year before 4804 at +0.21; target year 4956 at -0.17
+  2->3: no change 0.0214; movement and entry from the year before (as run): 0.0732; movement from the year before, entry from the target year: 0.0413; movement from the target year, entry from the year before: 0.0259; both from the target year (in sample): 0.0092
+        entrants into the top 2K: year before 4956 at -0.17; target year 4249 at -0.52
+
+reddit_submissions_long: rms error of the change of shape at [78, 156, 312, 625, 1250, 2500] (log units over the year)
+  1->2: no change 0.1881; movement and entry from the year before (as run): 0.0626; movement from the year before, entry from the target year: 0.0723; movement from the target year, entry from the year before: 0.0247; both from the target year (in sample): 0.0089
+        entrants into the top 2K: year before 1941 at +0.26; target year 1958 at -0.18
+  2->3: no change 0.1328; movement and entry from the year before (as run): 0.0333; movement from the year before, entry from the target year: 0.0261; movement from the target year, entry from the year before: 0.0135; both from the target year (in sample): 0.0071
+        entrants into the top 2K: year before 1958 at -0.18; target year 1796 at -0.50
