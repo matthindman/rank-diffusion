@@ -224,7 +224,9 @@ gap density at zero, exact only for exponential gaps.
    passing swings and sampling interval put into rank-based estimates (§2z-cm).
 
 Evidence so far: two Reddit metrics, 2019–2022, DEVELOPMENT. Figures in
-`runs/2026-10-15_figures/`. Missing:
+`runs/2026-10-15_figures/` and, perhaps the clearest single one, the exact
+half-year split of shape change into members' movement and steady crossings
+(`runs/2026-10-15_comments_2021_head/fig_shape_decomposition.png`, §2z-cr). Missing:
 - an outcome-blind test and a second system (sealed data, owner-gated; a
   revised primary test centred on the boundary theory is proposed in the 2023
   draft protocol);

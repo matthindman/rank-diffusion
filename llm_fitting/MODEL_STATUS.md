@@ -10165,3 +10165,64 @@ At k = 25–50 (25–50 members at the boundary) the plain walk's ratio is 1.3�
      which Codex's queue row asks for.
 
 **Ledgers.** No data contact; no gate evaluation.
+
+## 2z-cr. 2026-10-15 — POST HOC, DEVELOPMENT data, unscored: each half-year's change of the ladder's shape split exactly into members' movement and reordering. The reordering term is steady, +0.08 to +0.11 log units a half-year on comments at every rank and every half-year (0.04–0.12 on submissions), while the members' term swings; the comments head's gain of about March–September 2021 was broad (59% of the top 781 gained, the ten largest gainers 9% of all gains), not a few communities
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; started
+from 12b1886. `runs/2026-10-15_comments_2021_head/broad_or_few.py`, outputs
+`output_comments.txt`, `output_submissions.txt`, figure
+`fig_shape_decomposition.png`. No names read._
+
+**Question.** The one half-year in which the comments head gained (§2z-co)
+defeats every forecast. Was it a few communities exploding, or a broad shift
+of drift by rank?
+
+**Method.**
+- For each pair of consecutive 26-week blocks, take the persisting top k at
+  the start (k = K/64, K/16, K/4).
+- Split exactly: shape change = members' mean change against the change of
+  U_K, plus the reordering gain.
+- Report the members' median change, the share gaining, the share of all
+  gains carried by the ten largest gainers, and the mean without them.
+- This is the one-spacing split of §2z-cm, so both terms carry its one-time
+  constants.
+
+**Result, comments** (log units over the half-year; mid-block to mid-block).
+
+| top 781 | Oct 19–Mar 20 | Apr–Sep 20 | Oct 20–Mar 21 | Apr–Sep 21 | Oct 21–Mar 22 | Apr–Sep 22 |
+|---|---|---|---|---|---|---|
+| change of shape | −0.201 | −0.084 | −0.049 | **+0.175** | −0.013 | −0.042 |
+| members against the pack | −0.286 | −0.174 | −0.125 | **+0.072** | −0.103 | −0.127 |
+| reordering | +0.085 | +0.090 | +0.076 | +0.103 | +0.090 | +0.085 |
+| members' median | −0.261 | −0.168 | −0.111 | **+0.085** | −0.071 | −0.098 |
+| share gaining | 20% | 26% | 32% | **59%** | 40% | 34% |
+| ten largest gainers' share of gains | 26% | 20% | 22% | 9% | 16% | 17% |
+
+- At K/64 and K/4 the pattern is the same. Reordering is +0.080 to +0.111 in
+  all 18 cells.
+- In Apr–Sep 2021 the members' term at K/64 is +0.045, with a median of
+  +0.025 and 51% gaining. Without the ten largest gainers the mean is −0.004:
+  at the very top, part of the gain is concentrated.
+
+**Result, submissions.**
+- Reordering is +0.038 to +0.118 in all 18 cells, mostly 0.06–0.11.
+- The members' term is negative in every half-year, −0.09 to −0.29.
+- In the same Apr–Sep 2021 half-year the head's members fell most: −0.293 at
+  K/64, against +0.045 on comments.
+
+**What it means** (my reading).
+1. **Crossings are a steady restoring force.** In every half-year, at every
+   rank, they return about σ²/(2S) × 26 weeks: about 0.09 on comments, the
+   lasting rate of §2z-cm (0.0035 a week). The ladder's shape moves when, and
+   only when, the members' drift by rank changes. This is the law's division
+   of labour, visible directly. `fig_shape_decomposition.png` may be the
+   paper's clearest single figure.
+2. **The comments exception was a broad shift of drift by rank.** For one
+   half-year the top 3,125 on comments gained on the pack as a body. No law
+   that takes drift by rank as an input could have forecast it from the
+   earlier record. Its cause needs names or external evidence: the owner's
+   call.
+3. **The same half-year moved the two metrics' heads in opposite directions.**
+   That is worth checking against Reddit's mid-2021 changes. Unchecked.
+
+**Ledgers.** Data contact logged in `EXPOSURE_LEDGER.md`. No gate evaluation.

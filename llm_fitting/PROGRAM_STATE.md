@@ -166,6 +166,12 @@ and its head unmeasurable (§2z-co). Seasonal forecasts fail on comments: its
 head does not move by season at the half-year scale. On submissions the law
 forecasts no better than repeating the ladder's own last change, so the paper
 should claim explanation and counterfactual, not superior forecasts (§2z-co).
+Split exactly by half-year, crossings return a steady 0.08–0.11 log units on
+comments at every rank while members' drift by rank swings; the comments
+head's one gain (about March–September 2021) was broad, not a few
+communities (§2z-cr). Planted checks: the boundary test is robust to heavy
+tails, jumps and drift types, and rises above 1 when volatility types are
+still sorting (§2z-cq).
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate

@@ -1,0 +1,31 @@
+reddit_comments_ext: per member over the half-year, log units against the change of U_K
+
+2019-07-01 -> 2019-12-30
+  k=195: shape -0.212 = members -0.296 + reordering +0.084; median -0.273; gaining 17%; top-10 gainers 68% of all gains; mean without top 10 -0.338
+  k=781: shape -0.201 = members -0.286 + reordering +0.085; median -0.261; gaining 20%; top-10 gainers 26% of all gains; mean without top 10 -0.301
+  k=3125: shape -0.132 = members -0.212 + reordering +0.080; median -0.175; gaining 28%; top-10 gainers 9% of all gains; mean without top 10 -0.219
+
+2019-12-30 -> 2020-06-29
+  k=195: shape -0.085 = members -0.184 + reordering +0.099; median -0.159; gaining 26%; top-10 gainers 51% of all gains; mean without top 10 -0.226
+  k=781: shape -0.084 = members -0.174 + reordering +0.090; median -0.168; gaining 26%; top-10 gainers 20% of all gains; mean without top 10 -0.190
+  k=3125: shape -0.039 = members -0.120 + reordering +0.081; median -0.128; gaining 33%; top-10 gainers 7% of all gains; mean without top 10 -0.127
+
+2020-06-29 -> 2020-12-28
+  k=195: shape -0.088 = members -0.175 + reordering +0.086; median -0.146; gaining 26%; top-10 gainers 54% of all gains; mean without top 10 -0.218
+  k=781: shape -0.049 = members -0.125 + reordering +0.076; median -0.111; gaining 32%; top-10 gainers 22% of all gains; mean without top 10 -0.145
+  k=3125: shape -0.015 = members -0.094 + reordering +0.079; median -0.085; gaining 37%; top-10 gainers 6% of all gains; mean without top 10 -0.100
+
+2020-12-28 -> 2021-06-28
+  k=195: shape +0.150 = members +0.045 + reordering +0.105; median +0.025; gaining 51%; top-10 gainers 30% of all gains; mean without top 10 -0.004
+  k=781: shape +0.175 = members +0.072 + reordering +0.103; median +0.085; gaining 59%; top-10 gainers 9% of all gains; mean without top 10 +0.054
+  k=3125: shape +0.125 = members +0.032 + reordering +0.092; median +0.056; gaining 55%; top-10 gainers 3% of all gains; mean without top 10 +0.026
+
+2021-06-28 -> 2021-12-27
+  k=195: shape -0.032 = members -0.142 + reordering +0.111; median -0.128; gaining 33%; top-10 gainers 48% of all gains; mean without top 10 -0.184
+  k=781: shape -0.013 = members -0.103 + reordering +0.090; median -0.071; gaining 40%; top-10 gainers 16% of all gains; mean without top 10 -0.121
+  k=3125: shape +0.002 = members -0.079 + reordering +0.081; median -0.057; gaining 42%; top-10 gainers 5% of all gains; mean without top 10 -0.085
+
+2021-12-27 -> 2022-06-27
+  k=195: shape -0.052 = members -0.137 + reordering +0.086; median -0.130; gaining 29%; top-10 gainers 47% of all gains; mean without top 10 -0.175
+  k=781: shape -0.042 = members -0.127 + reordering +0.085; median -0.098; gaining 34%; top-10 gainers 17% of all gains; mean without top 10 -0.142
+  k=3125: shape -0.017 = members -0.115 + reordering +0.098; median -0.071; gaining 41%; top-10 gainers 6% of all gains; mean without top 10 -0.122
