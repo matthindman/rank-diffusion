@@ -10488,3 +10488,43 @@ from b273092._
 
 **Ledgers.** Data contact (item 1) logged in `EXPOSURE_LEDGER.md`. No gate
 evaluation.
+
+## 2z-cw. 2026-10-15 — POST HOC ARITHMETIC on saved outputs (no data file opened): slopes into shares. The top 78 Reddit submissions communities' share of the top 5,000's activity fell from 51% (2019) to 35% (2022); the movement of either recent year sustains 15–16%. On comments the top 195's share fell from 63% to 52%, and the latest year's movement sustains 53%
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; started
+from 0590460. `runs/2026-10-15_concentration/concentration.py`, output and
+JSON; figure `runs/2026-10-15_figures/fig_concentration.png`._
+
+**Method.**
+- Observed: shares within the top K computed from each year's block ladder
+  (§2z-cu), interpolated to every rank.
+- Sustained: the slope S*_k = σ_k²/(2(s̄_k − entry term)) of each primary
+  year pair (§2z-cd cells), integrated over log rank from K up to K/64. Above
+  K/64 the observed shape of the very top is kept, which is conservative.
+- The quantity is an index: shares of exp(block-mean log activity), the
+  geometric-mean activity, within the top K. It is not the share of total
+  karma.
+
+**Result.**
+
+| share of the top K held by | 2019 | 2020 | 2021 | 2022 | sustained by 2020→21 | by 2021→22 |
+|---|---|---|---|---|---|---|
+| comments, top 195 (K/64) | 63.2% | 59.2% | 54.1% | 51.9% | 44.3% | 52.6% |
+| comments, top 781 (K/16) | 82.6% | 78.6% | 75.4% | 74.1% | 66.9% | 78.2% |
+| submissions, top 78 (K/64) | 51.1% | 51.1% | 41.3% | 34.8% | 15.2% | 16.1% |
+| submissions, top 312 (K/16) | 71.4% | 69.9% | 62.1% | 56.4% | 29.9% | 32.0% |
+
+**What it means** (my reading).
+- *Submissions.* The head's concentration fell by a third in three years and
+  is less than halfway to where its own movement leads. With relaxation times
+  of 2–6 years (§2z-cp), the measured movement implies the top 78's share
+  goes on falling well below a fifth if slides persist. This is the
+  counterfactual the 2023 forecasts of §2z-cf encode.
+- *Comments.* Concentration also fell, and the latest year's movement
+  sustains about the present level: near balance.
+- The movement-to-structure law turns into the number a reader cares about,
+  how concentrated attention will be. It also says how far the current state
+  is from where current behaviour leads.
+- Index, not karma; in sample; slides held fixed.
+
+**Ledgers.** No data contact; no gate evaluation.

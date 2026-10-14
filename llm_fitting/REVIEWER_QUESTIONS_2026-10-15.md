@@ -67,6 +67,10 @@ members' drift by rank changes, as after Reddit's June 2021 Home-feed change
   days (§2z-ca), and crossings at the head roughly tripled over the next year
   (§2z-cm, §2z-co).
 - *Counterfactuals.*
+  - What concentration current movement sustains. The top 78 submissions
+    communities held 51% of the top 5,000's activity in 2019 and 35% in 2022;
+    their own movement sustains 15–16%. On comments it is 63%, then 52%,
+    sustaining 53% (§2z-cw; an index of geometric-mean activity).
   - What slope current movement sustains: the submissions head, 0.3–0.5
     against 0.9 observed.
   - How long a ladder takes to get there: 2–6 years on submissions, 5–22 on
@@ -193,7 +197,9 @@ members' drift by rank changes, as after Reddit's June 2021 Home-feed change
 4. **Structure from movement** (`fig_sustained_ladder.png`, with
    `fig_why_it_curves.png`): the ladder each year's movement sustains,
    against the observed ladder, and why it steepens down the ranks.
-5. **An intervention** (`fig_rate_law_and_head_mobility.png`): the same-year
+5. **Where concentration is going** (`fig_concentration.png`): the head's
+   share by year and the share its own movement sustains.
+6. **An intervention** (`fig_rate_law_and_head_mobility.png`): the same-year
    law over 60 cells, and the head's crossings around June 2021.
 
 **SI:**

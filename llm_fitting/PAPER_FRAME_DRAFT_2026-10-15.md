@@ -27,8 +27,8 @@ and that the full effect takes years.
 
 ## Abstract (draft; PNAS limit 250 words)
 
-The distribution of attention across online communities is extremely unequal
-and remarkably stable in form. Yet a fifth of every top set is replaced each
+Attention across online communities is extremely unequal and remarkably
+stable in form. Yet a fifth of every top set is replaced each
 year, and a typical community's rank moves by a fifth to a quarter (Reddit,
 2019–2022). We show how individual mobility and aggregate stability fit
 together.
@@ -40,22 +40,23 @@ quantities: the lasting volatility of communities at that rank, and the
 local slope of the rank-size curve.
 
 We measure both on cohorts fixed in advance, removing the
-regression-to-the-mean and averaging biases of ranking by current position. Measured crossings match the prediction at every rank from the
-top 200 to the top 12,500 on Reddit comments, over time and with two
+regression-to-the-mean and averaging biases of ranking by current position.
+Measured crossings match the prediction at every rank from the top 200 to the top 12,500 on Reddit comments, over time and with two
 estimators, and on Facebook pages. The crossing gain is nearly constant from
 one half-year to the next. Changes in the curve's shape therefore come from
 changes in drift by rank. After Reddit's 2021 Home-feed change, the drift of
 the very top fell within days and its mobility tripled.
 
-The same balance gives the slope current movement sustains, and how long a
-ladder takes to reach it: years on Reddit submissions, a decade on comments.
-It shows that falling entry, as platforms mature, steepens inequality. The
-law explains and constrains structure; it does not forecast it better than
-the curve's own recent trend.
+The same balance gives the concentration current movement sustains, and how
+long a ladder takes to reach it. The top 78 Reddit submissions communities'
+share fell from 51% to 35% in three years, and their movement sustains 16%.
+Falling entry, as platforms mature, steepens inequality. The
+law explains and constrains structure but does not out-forecast the curve's
+own trend.
 
 _Sources:_ §2z-cu (turnover, mobility), §2z-cm, §2z-co, §2z-ct (the boundary
 theory), §2z-cr (steady crossings), §2z-ca, §2z-cm (June 2021), §2z-cp
-(relaxation), §2z-ck (entry), §2z-co, §2z-cs (forecasting).
+(relaxation), §2z-cw (concentration), §2z-ck (entry), §2z-co, §2z-cs (forecasting).
 
 _Before submission:_ the abstract claims nothing out of sample. An
 outcome-blind test on the sealed 2023–24 Reddit data (§2z-cp) or Wikipedia

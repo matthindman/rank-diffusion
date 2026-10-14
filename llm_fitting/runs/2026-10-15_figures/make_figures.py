@@ -254,7 +254,40 @@ def fig_why_it_curves():
     fig.savefig(HERE / "fig_why_it_curves.png", dpi=150)
 
 
+def fig_concentration():
+    """The head's share of the top K's activity: observed by year and sustained by each year's movement
+    (runs/2026-10-15_concentration; an index of exp(mean log activity), within the top K)."""
+    c = load(R / "2026-10-15_concentration" / "concentration.json")
+    fig, ax = plt.subplots(1, 2, figsize=(10.5, 4.2), sharey=True)
+    for a, pn, lab, col in zip(ax, ("reddit_comments_ext", "reddit_submissions_long"), ("Reddit comments", "Reddit submissions"), (BLUE, ORANGE)):
+        d = c[pn]
+        K = d["K"]
+        k0, k1 = str(K // 64), str(K // 16)
+        yrs = list(d["observed_by_year"])
+        x = np.arange(len(yrs))
+        a.plot(x, [100 * d["observed_by_year"][y][k0] for y in yrs], "o-", color=col, label=f"top {int(k0):,} (K/64), observed")
+        a.plot(x, [100 * d["observed_by_year"][y][k1] for y in yrs], "s--", color=col, alpha=0.7, label=f"top {int(k1):,} (K/16), observed")
+        vals = [100 * v[k0] for v in d["sustained"].values()]
+        for i, v in enumerate(vals):
+            a.axhline(v, color=col, lw=1, ls=(0, (1, 2 + i)), alpha=0.9)
+        if abs(vals[0] - vals[1]) < 4:
+            a.text(len(yrs) - 0.95, max(vals) + 1, f"top K/64 sustained by 2020→21 and 2021→22 movement ({min(vals):.0f}–{max(vals):.0f}%)", fontsize=7, color=col, ha="right")
+        else:
+            for i, v in enumerate(vals):
+                a.text(len(yrs) - 0.95, v + 1, f"top K/64 sustained by {'2020→21' if i == 0 else '2021→22'} movement", fontsize=7, color=col, ha="right")
+        a.set_xticks(x)
+        a.set_xticklabels([str(int(y[:4]) + (1 if y[5:7] == "12" else 0)) for y in yrs])     # blocks start in the last days of December
+        a.set_xlim(-0.3, len(yrs) + 0.6)
+        a.set_title(lab)
+        a.set_ylabel("share of the top K's activity (%)")
+        a.legend(fontsize=7.5, loc="lower left" if pn == "reddit_comments_ext" else "upper right")
+    fig.suptitle("Where the head is going: its share now, and the share its own movement sustains", fontsize=11)
+    fig.tight_layout()
+    fig.savefig(HERE / "fig_concentration.png", dpi=150)
+
+
 if __name__ == "__main__":
+    fig_concentration()
     fig_why_it_curves()
     fig_sustained_ladder()
     fig_puzzle()
