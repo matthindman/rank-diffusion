@@ -17,7 +17,8 @@ that rank move (lasting variance) and how crowded the ladder is there (local
 slope), and the prediction holds rank by rank:
 - on Reddit comments, at every rank, with two estimators, and over time;
 - on Facebook pages;
-- on Reddit submissions in the body (§2z-cm, §2z-co, §2z-ct).
+- on Instagram accounts, with the "a"-query censoring modelled;
+- on Reddit submissions in the body (§2z-cm, §2z-co, §2z-ct, §2z-cx).
 
 Crossings return a steady amount each half-year. The ladder changes only when
 members' drift by rank changes, as after Reddit's June 2021 Home-feed change
@@ -89,6 +90,26 @@ members' drift by rank changes, as after Reddit's June 2021 Home-feed change
   with flagged weeks left out (§2z-cc).
 - Facebook pages use interactions, a different metric, and the law holds
   there (§2z-ct).
+
+**4a. Instagram's panels hold only posts whose caption contains "a".**
+- *The censoring is modelled* in three measured layers (§2z-c):
+  - thinning noise of about (1 + c²)/M;
+  - instrument dropout;
+  - low-q ghost accounts.
+- *Why it cannot create the result.* A persistent "a"-match share q_i is a
+  fixed offset in log activity. It cancels in changes and leaves the
+  exponential slope unchanged.
+- *Planted validation.* Worlds with the measured layers give the same ratio
+  as the truth (1.015 against 1.014); the default rules cannot read them at
+  all (§2z-cx).
+- *What it could touch is bounded.* The matching-post count carries at most
+  23–41% of Instagram's movement in the body, and engagement per matching
+  post, which q cannot touch, carries 60–70%.
+- *Result.* On Instagram totals the crossings are 0.94–1.12 of prediction at
+  every scored rank. The q-free per-post panel is too noisy to confirm (3 of
+  5); the raw panel cannot be read (§2z-cx).
+- *Scope:* "a-matching engagement" of the reliably measured accounts. No
+  level-ladder claim.
 
 **5. Regression to the mean and selection on current rank.**
 - This is the program's central methodological point (§2z-a onwards).
@@ -192,8 +213,9 @@ members' drift by rank changes, as after Reddit's June 2021 Home-feed change
    120 community paths, and turnover of the top sets.
 2. **The balance** (`fig_shape_decomposition.png`): each half-year's change of
    shape split exactly into members' movement and steady crossings.
-3. **One law, three ladders** (`fig_three_ladders.png`): measured crossings
-   against σ²/2S rank by rank, and the ratio by rank.
+3. **One law, four ladders** (`fig_four_ladders.png`): measured crossings
+   against σ²/2S rank by rank on Reddit comments and submissions, Facebook
+   pages and Instagram accounts, and the ratio by rank.
 4. **Structure from movement** (`fig_sustained_ladder.png`, with
    `fig_why_it_curves.png`): the ladder each year's movement sustains,
    against the observed ladder, and why it steepens down the ranks.
@@ -204,6 +226,7 @@ members' drift by rank changes, as after Reddit's June 2021 Home-feed change
 
 **SI:**
 - the boundary theory by start and by estimator (`fig_boundary_theory.png`);
+- Instagram's censoring, validated and bounded (`fig_instagram_censoring.png`, §2z-cx);
 - planted-world checks (§2z-cm, §2z-cq);
 - robustness to K and block length (§2z-cu);
 - the detection study (§2z-ci);

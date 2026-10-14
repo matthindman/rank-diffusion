@@ -223,8 +223,9 @@ gap density at zero, exact only for exponential gaps.
    differences of spacings remove the biases that ranking by current position,
    passing swings and sampling interval put into rank-based estimates (§2z-cm).
 
-Evidence so far: two Reddit metrics, 2019–2022, and Facebook pages (Era A),
-all DEVELOPMENT (§2z-ct). A draft title, significance statement, abstract and
+Evidence so far: two Reddit metrics, 2019–2022; Facebook pages (Era A); and
+Instagram accounts, through the censoring apparatus (§2z-ct, §2z-cx). All
+DEVELOPMENT. A draft title, significance statement, abstract and
 captions are in `PAPER_FRAME_DRAFT_2026-10-15.md`; reviewer questions are in
 `REVIEWER_QUESTIONS_2026-10-15.md`. Figures in
 `runs/2026-10-15_figures/` and, perhaps the clearest single one, the exact

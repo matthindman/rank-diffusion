@@ -1,0 +1,33 @@
+[instagram_hm] weeks 2023-02-27 .. 2023-12-25 (T = 44), rows 2373076
+  apparatus: k=156: R~/c 2.49 (-7.90-7.14), E~-L~ +1.23; k=312: R~/c 1.24 (0.41-4.17), E~-L~ +3.59; k=625: R~/c 0.96 (0.64-1.68), E~-L~ -0.07; k=1250: R~/c 0.94 (0.70-1.39), E~-L~ +2.62; k=2500: R~/c 0.94 (0.72-1.23), E~-L~ +0.77; k=5000: R~/c 1.02 (0.86-1.27), E~-L~ +0.47; k=10000: R~/c 1.12 (0.99-1.29), E~-L~ +0.83
+Traceback (most recent call last):
+  File "/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-15_instagram/ig_boundary.py", line 56, in <module>
+    X, Rk, floors, outside, ids = m1.matrices(d, K)
+                                  ^^^^^^^^^^^^^^^^^
+  File "/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/mts_step1.py", line 58, in matrices
+    x = sub.pivot(index="period", columns="entity_id", values="X").reindex(range(T))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/pandas/core/frame.py", line 9339, in pivot
+    return pivot(self, index=index, columns=columns, values=values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/pandas/core/reshape/pivot.py", line 570, in pivot
+    result = indexed.unstack(columns_listlike)  # type: ignore[arg-type]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/pandas/core/series.py", line 4615, in unstack
+    return unstack(self, level, fill_value, sort)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/pandas/core/reshape/reshape.py", line 517, in unstack
+    unstacker = _Unstacker(
+                ^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/pandas/core/reshape/reshape.py", line 154, in __init__
+    self._make_selectors()
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/pandas/core/reshape/reshape.py", line 210, in _make_selectors
+    raise ValueError("Index contains duplicate entries, cannot reshape")
+ValueError: Index contains duplicate entries, cannot reshape
+FAILED instagram_hm
+[instagram_pp] weeks 2023-02-27 .. 2023-12-25 (T = 44), rows 2299198
+  apparatus: k=156: R~/c 1.01 (-1.24-3.75), E~-L~ +3.66; k=312: R~/c 0.47 (0.14-1.84), E~-L~ -0.45; k=625: R~/c 1.13 (-2.14-6.73), E~-L~ -1.84; k=1250: R~/c 1.48 (0.46-6.40), E~-L~ -1.52; k=2500: R~/c 1.38 (0.94-2.75), E~-L~ +0.21; k=5000: R~/c 1.05 (0.85-1.39), E~-L~ -0.89; k=10000: R~/c 1.01 (0.90-1.19), E~-L~ -0.32
+[instagram] weeks 2023-02-27 .. 2023-12-25 (T = 44), rows 880000
+  default: NOT ADJUDICATED (needs six blocks and ranks to 1.42 K certified exact); certified top [3189, 3133, 3238, 3261, 3247, 3266]
+  apparatus: NOT ADJUDICATED (needs six blocks and ranks to 1.42 K certified exact); certified top [11268, 10984, 11163, 11184, 11281, 11381]
+exit done

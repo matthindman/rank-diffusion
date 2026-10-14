@@ -10528,3 +10528,143 @@ JSON; figure `runs/2026-10-15_figures/fig_concentration.png`._
 - Index, not karma; in sample; slides held fixed.
 
 **Ledgers.** No data contact; no gate evaluation.
+
+## 2z-cx. 2026-10-15 — EXPLORATORY MEASUREMENT, registered: the boundary theory on Instagram, through the §2z-c censoring apparatus. On Instagram totals crossings at K/16 … K are 0.94–1.12 of σ²/(2S) (5 of 5); on the q-free per-post panel 3 of 5 cut-offs are in the band, with wide intervals; the raw top-50k panel cannot be adjudicated, as predicted. Planted censoring worlds show the "a"-query layers leave the ratio unbiased, and the matching-post count carries at most 23–41% of Instagram's displacement variance in the body. Two of three predictions held; nothing adopted, no fit, no calibration
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; design,
+predictions, runner, planted censoring simulator (`ig_censoring_sim.py`),
+tests (`tests/test_ig_censoring_boundary.py`) and the opt-in options of
+`mts_boundary_law.analyse` (presence threshold; present-weeks permanent
+rank) committed at b89af6b before the run. Defaults unchanged. The owner's
+request: "Now do Instagram. The instagram data is much much more noisy …
+only posts with the word 'a' in them. Think hard about how to model and
+validate how this censoring process impacts our data, and incorporate the
+Instagram data into our analysis."_
+
+**Tier.** Exploratory, DEVELOPMENT through the apparatus (`instagram_hm`,
+`instagram_pp`). The raw `instagram` panel is used only as the declared
+negative control (RESTRICTED); nothing is calibrated to Instagram.
+
+**How the censoring enters the law** (`runs/2026-10-15_instagram/DESIGN.md`).
+§2z-c's measured model: log Y_obs = log Y_true + log q_i + thinning noise of
+variance about (1 + c²)/M (c² = 0.253), plus week-correlated instrument
+dropout (10–17%) and low-q ghosts.
+1. **A persistent q_i** is a fixed offset per account. It cancels in changes,
+   and in an exponential ladder it leaves the local slope unchanged. So
+   crossings and σ²/(2S) are unaffected, while the level ladder is not; level
+   claims stay out of scope.
+2. **Thinning noise** is passing: block means and spacing differences remove
+   it.
+3. **Dropout is missingness, not behaviour.** The default rules (90%
+   presence; absence counted at the floor rank) would sort accounts by
+   dropout luck. The apparatus options use presence 0.5 and a permanent rank
+   averaged over the weeks present. Universe membership stays §2z-c's
+   absence-penalised rule, which sinks ghosts.
+4. **A drifting q_i** is unidentifiable, but bounded: log Y = log M + log Ȳ,
+   and q enters only M, the matching-post count.
+
+**Planted validation** (six seeds; two in the test suite). Ratio R̃/c pooled
+over K/8 … K:
+
+| world | ratio | note |
+|---|---|---|
+| truth | 1.014 | |
+| censored | 1.015 | difference 0.001, per-seed spread 0.17 |
+| q drifting at 0.002 a week | 1.03 | the drift adds to σ² |
+| q log-sd 2 | 0.93 | |
+
+The default rules cannot adjudicate the censored panels.
+
+**Set-up.**
+- Weeks 9–52 of 2023, with the collection ramp dropped: 44 weeks, six 7-week
+  blocks, one start.
+- K = 10,000, the measurability universe registered in §2z-c.
+- With one year the spacings are 14 and 28 weeks. Passing swings do not fully
+  fade, so both sides of the test are displacement variances at those
+  horizons, not lasting variances. Their ratio is the tested quantity.
+
+**Result, totals** (`instagram_hm`; per account per 1,000 weeks).
+
+| k | 156 (K/64) | 312 | 625 | 1,250 | 2,500 | 5,000 | 10,000 |
+|---|---|---|---|---|---|---|---|
+| slope S | 1.00 | 0.97 | 0.97 | 1.01 | 1.09 | 1.21 | 1.30 |
+| c = σ²/2S | 3.8 | 9.3 | 12.2 | 11.8 | 10.9 | 9.2 | 7.7 |
+| crossings R̃ | 9.5 | 11.5 | 11.7 | 11.1 | 10.3 | 9.4 | 8.6 |
+| R̃ / c (5–95%) | 2.49 (noise) | 1.24 (0.41–4.17) | 0.96 (0.64–1.68) | 0.94 (0.70–1.39) | 0.94 (0.72–1.23) | 1.02 (0.86–1.27) | 1.12 (0.99–1.29) |
+
+- The two head cut-offs rest on strata of 47–102 accounts.
+- The lasting slides of the current top and of the cohort agree at 6 of 7
+  cut-offs.
+- Instagram's crossing rates, 9–12 per 1,000 weeks, are two to three times
+  Reddit's. That is partly real mobility and partly passing swings at these
+  horizons.
+
+**Result, per post** (`instagram_pp`, q-free).
+- R̃/c at K/16 … K: 1.13, 1.48, 1.38, 1.05, 1.01, of which 3 of 5 are in the
+  band.
+- The intervals are wide (0.46–6.40 at K/8), since per-post engagement adds
+  the thinning noise c²/M directly.
+
+**Result, raw negative control** (`instagram`, the per-week top-50k cut). NOT
+ADJUDICATED under both rule sets. The per-week cut leaves ranks complete only
+to about 3,200 under the default rules and about 11,000 under the apparatus
+options, short of the 14,200 needed.
+
+**The censoring's share of movement** (totals, displacement variance per week
+by stratum, 14 → 28 weeks).
+
+| stratum | accounts | log Y | log M (matching posts) | log Ȳ (per post, q-free) | M share |
+|---|---|---|---|---|---|
+| (625, 1,250] | 405 | 0.0213 | 0.0088 | 0.0150 | 0.41 |
+| (1,250, 2,500] | 859 | 0.0249 | 0.0082 | 0.0149 | 0.33 |
+| (2,500, 5,000] | 1,718 | 0.0233 | 0.0066 | 0.0144 | 0.28 |
+| (5,000, 10,000] | 3,991 | 0.0216 | 0.0050 | 0.0142 | 0.23 |
+| (10,000, 20,000] | 9,297 | 0.0193 | 0.0049 | 0.0132 | 0.26 |
+
+Engagement per matching post, which q cannot touch, carries 60–70% of the
+movement. The matching-post count carries 23–41%. That count mixes real
+changes in posting volume with any drift of the "a"-match share, so it is an
+upper bound on what caption drift could contribute.
+
+**Predictions scored.**
+
+| | rule | result |
+|---|---|---|
+| I1 | totals: R̃/c in [0.75, 1.33] at ≥ 4 of 5 cut-offs K/16 … K | **PASS** (5 of 5) |
+| I2 | per post: the same | **FAIL** (3 of 5; intervals wide) |
+| I3 | raw panel, default rules: NOT ADJUDICATED | **PASS** |
+
+**Verdict.** No adoption rule applies. With the censoring modelled and
+validated, the law's physical claim holds on Instagram totals. The ladders
+tested are now Reddit comments, Reddit submissions (body), Facebook pages and
+Instagram accounts.
+
+**What it means** (my reading).
+1. **The censoring does not create the result.**
+   - Planted worlds with the measured layers give the same ratio as the
+     truth.
+   - The default rules cannot read the censored panel at all, and the raw
+     panel cannot be read.
+   - The part of movement the censoring could touch is at most a quarter to
+     two fifths.
+2. **The q-free panel does not contradict it,** but it is too noisy to
+   confirm: per-post means of a few matching posts carry the thinning noise
+   in full.
+3. **Scope** stays §2z-c's: "weekly a-matching engagement of the reliably
+   measured population". The claim is about crossings and movement, not
+   about the true level ladder.
+
+**Limits.**
+- One year, one start; the head is unmeasurable.
+- Displacement variance at 14–28 weeks, not lasting variance.
+- The post-level dailies, which could measure q drift directly from caption
+  habits, were not used.
+
+**Commands.** `caffeinate -dims python scripts/heavy_lock.py -- python -u
+llm_fitting/runs/2026-10-15_instagram/ig_boundary.py <panel>` for
+`instagram_hm`, `instagram_pp`, `instagram`. The first totals run stopped in
+the decomposition step on duplicate account-weeks in the raw file. They are
+now resolved as the loader does, keeping the largest metric, and the totals
+panel was rerun; its boundary numbers were identical. No run was killed.
+
+**Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.

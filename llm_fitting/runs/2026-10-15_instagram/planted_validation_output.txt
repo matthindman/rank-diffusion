@@ -1,0 +1,5 @@
+truth                    adjudicated 6 of 6 pooled mean 1.014
+censored                 adjudicated 6 of 6 pooled mean 1.015
+censored, default rules  adjudicated 0 of 6 
+q drift 0.002/wk         adjudicated 6 of 6 pooled mean 1.031
+q log-sd 2               adjudicated 6 of 6 pooled mean 0.925

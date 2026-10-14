@@ -49,9 +49,12 @@ for name, kw in variants:
                                          f"E~-L~ {1000 * (x['E_lasting'] - x['L_lasting']):+.2f}" for x in r["pooled"]), flush=True)
 
 if panel == "instagram_hm":
-    raw = pd.read_parquet(ROOT / cfg["path"], columns=["date", "user_name", "n_posts"])
+    raw = pd.read_parquet(ROOT / cfg["path"], columns=["date", "user_name", "metric_value", "n_posts"])
     raw = raw.rename(columns={"user_name": "entity_id", "date": "ts"})
     raw["ts"] = pd.to_datetime(raw["ts"])
+    # duplicate (account, week) rows: keep the one the loader keeps, the largest metric (load_panel collapses by max)
+    raw = (raw.sort_values("metric_value", ascending=False).drop_duplicates(["entity_id", "ts"])
+              .drop(columns="metric_value"))
     d = df.merge(raw, on=["entity_id", "ts"], how="left")
     X, Rk, floors, outside, ids = m1.matrices(d, K)
     lm = d.assign(lm=np.log(d["n_posts"].clip(lower=1))).pivot(index="period", columns="entity_id", values="lm")

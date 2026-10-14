@@ -102,41 +102,45 @@ def fig_law_and_head():
     fig.savefig(HERE / "fig_rate_law_and_head_mobility.png", dpi=150)
 
 
-def fig_three_ladders():
+def fig_ladders(include_instagram=False):
     """Crossings against sigma^2/2S rank by rank on three ladders (2z-cm, 2z-ct)."""
     sets = [("reddit_comments_ext", "boundary__reddit_comments_ext.json", "Reddit comments", BLUE, "o"),
             ("reddit_submissions_long", "boundary__reddit_submissions_long.json", "Reddit submissions", ORANGE, "s"),
             ("facebook_a", "boundary__facebook_a__block13.json", "Facebook pages", "#2a9d5c", "^")]
+    if include_instagram:                                   # 2z-cx: through the censoring apparatus
+        sets.append(("instagram_hm", "IG", "Instagram accounts (a-matching activity)", "#8e44ad", "D"))
     fig, ax = plt.subplots(1, 2, figsize=(11.5, 4.8))
     a = ax[0]
-    xs = np.linspace(0, 13, 10)
+    xs = np.linspace(0, 14, 10)
     a.fill_between(xs, 0.75 * xs, 1.33 * xs, color="#dddddd", alpha=0.6, lw=0, label="within the registered band [0.75, 1.33]")
     a.plot(xs, xs, color=GREY, lw=1)
     for pn, f, lab, col, mk in sets:
-        d = load(R / "2026-10-14_boundary_law" / "cells" / f)
+        d = load(R / "2026-10-15_instagram" / "ig_boundary__instagram_hm.json")["apparatus"] if f == "IG" else load(R / "2026-10-14_boundary_law" / "cells" / f)
         K = d["K"]
         for r in d["pooled"]:
             c, cq = 1000 * r["c"], [1000 * v for v in r["c_q"]]
             x, xq = 1000 * r["R_lasting"], [1000 * v for v in r["R_lasting_q"]]
             small = r["k"] < K / 16 - 1 and pn != "reddit_comments_ext"
+            if pn == "instagram_hm" and r["k"] < K / 16 - 1:
+                continue                                        # head strata of 47-102 accounts: noise (2z-cx)
             a.errorbar(c, x, xerr=[[c - cq[0]], [cq[1] - c]], yerr=[[x - xq[0]], [xq[1] - x]], fmt=mk, color=col,
                        mfc="white" if small else col, ms=6, capsize=2, lw=0.8, alpha=0.9)
         a.plot([], [], mk, color=col, label=lab)
     a.plot([], [], "o", color="k", mfc="white", label="open: head cut-offs with < 150 names at the boundary")
-    a.set_xlim(0, 13)
-    a.set_ylim(0, 13)
+    a.set_xlim(0, 14)
+    a.set_ylim(0, 14)
     a.set_xlabel("predicted: lasting variance / (2 × local slope)")
     a.set_ylabel("measured: lasting crossing gain")
     a.set_title("Per member per 1,000 weeks, cut-offs K/64 … K")
     a.legend(fontsize=7.5, loc="upper left")
     a = ax[1]
     for pn, f, lab, col, mk in sets:
-        d = load(R / "2026-10-14_boundary_law" / "cells" / f)
+        d = load(R / "2026-10-15_instagram" / "ig_boundary__instagram_hm.json")["apparatus"] if f == "IG" else load(R / "2026-10-14_boundary_law" / "cells" / f)
         K = d["K"]
         rel = np.array([r["k"] / K for r in d["pooled"]])
         rat = np.array([r["ratio"] for r in d["pooled"]])
         q = np.array([r["ratio_q"] for r in d["pooled"]])
-        a.errorbar(rel * {"reddit_comments_ext": 0.94, "reddit_submissions_long": 1.0, "facebook_a": 1.06}[pn], rat,
+        a.errorbar(rel * {"reddit_comments_ext": 0.92, "reddit_submissions_long": 0.97, "facebook_a": 1.03, "instagram_hm": 1.08}[pn], rat,
                    yerr=[rat - q[:, 0], q[:, 1] - rat], fmt=mk + "-", color=col, capsize=2, lw=1, label=lab)
     a.axhspan(0.75, 1.33, color="#dddddd", alpha=0.6, lw=0)
     a.axhline(1, color=GREY, lw=1)
@@ -146,10 +150,19 @@ def fig_three_ladders():
     a.set_ylabel("measured / predicted")
     a.set_title("The ratio by rank (5–95% intervals)")
     a.legend(fontsize=8, loc="upper right")
-    fig.suptitle("One law on three ladders: crossings at a rank's boundary follow lasting variance over twice the slope", fontsize=11)
+    n = "four" if include_instagram else "three"
+    fig.suptitle(f"One law on {n} ladders: crossings at a rank's boundary follow lasting variance over twice the slope", fontsize=11)
     fig.tight_layout()
-    fig.savefig(HERE / "fig_three_ladders.png", dpi=150)
+    fig.savefig(HERE / ("fig_four_ladders.png" if include_instagram else "fig_three_ladders.png"), dpi=150)
 
+
+
+def fig_three_ladders():
+    fig_ladders(False)
+
+
+def fig_four_ladders():
+    fig_ladders(True)
 
 def fig_puzzle():
     """The opening facts: the ladder barely changes while the names on it move (2z-cu)."""
@@ -286,7 +299,51 @@ def fig_concentration():
     fig.savefig(HERE / "fig_concentration.png", dpi=150)
 
 
+def fig_instagram_censoring():
+    """Instagram's "a"-query censoring and the boundary test (2z-cx): planted validation, and how much of the
+    movement the matching-post count could carry."""
+    v = load(R / "2026-10-15_instagram" / "planted_validation.json")
+    d = load(R / "2026-10-15_instagram" / "ig_boundary__instagram_hm.json")["decomposition"]
+    fig, ax = plt.subplots(1, 2, figsize=(11.5, 4.4))
+    a = ax[0]
+    names = ["truth", "censored", "q drift 0.002/wk", "q log-sd 2"]
+    labels = ["truth", "censored\n(persistent q)", "censored,\nq drifting", "censored,\nwide q spread"]
+    for i, nm in enumerate(names):
+        vals = np.array([np.mean(x) for x in v[nm] if x is not None])
+        a.scatter(np.full(vals.size, i) + np.linspace(-0.12, 0.12, vals.size), vals, color="#8e44ad" if i else "k", s=22)
+        a.plot([i - 0.25, i + 0.25], [vals.mean()] * 2, color="#8e44ad" if i else "k", lw=2)
+    a.axhspan(0.75, 1.33, color="#dddddd", alpha=0.6, lw=0)
+    a.axhline(1, color=GREY, lw=1)
+    a.set_xticks(range(len(names)))
+    a.set_xticklabels(labels, fontsize=8)
+    a.set_ylim(0.4, 1.6)
+    a.set_ylabel("measured / predicted crossings, pooled K/8 … K")
+    a.set_title("Planted worlds: the censoring leaves the test unbiased\n(default rules cannot read the censored panel: 0 of 6)", fontsize=9.5)
+    a = ax[1]
+    rows = [j for j, r in enumerate(d["log Y"]) if r["n"] >= 400]
+    lab = [f"({d['log Y'][j]['lo']:.0f}, {d['log Y'][j]['hi']:.0f}]" for j in rows]
+    m = np.array([d["log M"][j]["sigma2"] for j in rows]) * 1000
+    y = np.array([d["log Ybar"][j]["sigma2"] for j in rows]) * 1000
+    tot = np.array([d["log Y"][j]["sigma2"] for j in rows]) * 1000
+    x = np.arange(len(rows))
+    a.bar(x - 0.2, y, 0.4, color="#2a9d5c", label="engagement per matching post (q-free)")
+    a.bar(x + 0.2, m, 0.4, color="#8e44ad", label="matching-post count (posting volume and q)")
+    a.plot(x, tot, "ko-", label="total")
+    a.set_xticks(x)
+    a.set_xticklabels(lab, fontsize=7.5, rotation=15)
+    a.set_xlabel("stratum of permanent rank")
+    a.set_ylabel("displacement variance per 1,000 weeks (14→28 weeks)")
+    a.set_title("Instagram totals: what the movement is made of", fontsize=9.5)
+    a.set_ylim(0, 1.45 * tot.max())
+    a.legend(fontsize=7.5, loc="upper right", ncol=1)
+    fig.suptitle("Instagram's \"a\"-query censoring: modelled, validated, and bounded", fontsize=11)
+    fig.tight_layout()
+    fig.savefig(HERE / "fig_instagram_censoring.png", dpi=150)
+
+
 if __name__ == "__main__":
+    fig_instagram_censoring()
+    fig_four_ladders()
     fig_concentration()
     fig_why_it_curves()
     fig_sustained_ladder()

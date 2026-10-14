@@ -1,0 +1,58 @@
+{
+ "panel": "instagram",
+ "K": 10000,
+ "block": 7,
+ "date_min": "2023-02-27",
+ "first_date": "2023-02-27",
+ "last_date": "2023-12-25",
+ "default": {
+  "K": 10000,
+  "T": 44,
+  "block": 7,
+  "n_blocks": 6,
+  "certified_top": [
+   3189,
+   3133,
+   3238,
+   3261,
+   3247,
+   3266
+  ],
+  "ks": [
+   156,
+   312,
+   625,
+   1250,
+   2500,
+   5000,
+   10000
+  ],
+  "starts": [],
+  "not_adjudicated": "needs six blocks and ranks to 1.42 K certified exact"
+ },
+ "apparatus": {
+  "K": 10000,
+  "T": 44,
+  "block": 7,
+  "n_blocks": 6,
+  "certified_top": [
+   11268,
+   10984,
+   11163,
+   11184,
+   11281,
+   11381
+  ],
+  "ks": [
+   156,
+   312,
+   625,
+   1250,
+   2500,
+   5000,
+   10000
+  ],
+  "starts": [],
+  "not_adjudicated": "needs six blocks and ranks to 1.42 K certified exact"
+ }
+}
