@@ -186,6 +186,7 @@ def analyse(df, K, block=BLOCK, boot=BOOT, seed=0, pres=None, rank_rule="absence
         obs1 = float(np.mean([r["obs"] for r in one]))
         pooled.append(dict(k=int(k), S=S_late[k], S_one=S_one[k], sigma2=float(s2[k]), c=float(c), c_q=q(cb), c_one=float(c1),
                            R_lasting=R, R_lasting_q=q(Rb), ratio=R / c if c else np.nan, ratio_q=q(Rb / cb),
+                           ratio_draws=[float(x) for x in (Rb / cb)],  # bootstrap draws, for pooled summaries (2z-da)
                            E_lasting=E, E_lasting_q=q(Eb), L_lasting=L, L_lasting_q=q(Lb), EL_diff_q=q(Eb - Lb),
                            R_one=R1, E_one=E1, L_one=L1, obs_one=obs1, pred_one=float(c1 - L1),
                            err_one=float(obs1 - (c1 - L1)), err_slide=float(L1 - E1), err_boundary=float(R1 - c1),
