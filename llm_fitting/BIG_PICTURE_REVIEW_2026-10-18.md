@@ -55,9 +55,15 @@ boundary = σ²/(2S), predicted and measured separately:
     A's simulated panels, to find which term over-concentrates its head.
     Not done. _(Corrected 2026-10-18 shortly after writing; an earlier
     sentence said B explains A's failure.)_
-- A's "upper movement tails under-dispersed" and B's under-forecast of
-  staying are the same fact seen twice. Movement is two-speed: most names
-  drift slowly while a few make block-scale jumps (§2z-cz).
+- A hypothesis, not a finding: A's "upper movement tails under-dispersed"
+  and B's under-forecast of staying may both reflect two-speed movement,
+  with most names drifting slowly and a few making block-scale jumps
+  (§2z-cz).
+  - They concern different distributions, conditioning and horizons.
+  - §2z-cz shows block jumps are sufficient among the planted rivals tried,
+    not that they are the cause.
+  - _(Corrected 2026-10-18 after the gpt-6-astra review; it said "the same
+    fact seen twice".)_
 
 **Decision for the owner:** one integrated paper (recommended) or two. The
 binding claim paragraph would need an amendment; that is the owner's.
@@ -168,8 +174,15 @@ binding claim paragraph would need an amendment; that is the owner's.
 
 ## 6. What I think is most important that we are under-using
 
-- **The integration of A and B** (section 1), and in particular that B
-  explains A's main failure.
+- **The integration of A and B** (section 1), through an executable bridge:
+  B's diagnostics run on A's simulated panels to localise A's structural
+  error. Not done.
+  - §2z-av already attributes A's Reddit head error largely to
+    initialisation.
+  - Its Facebook and Instagram excess is largely attributed to passing-shock
+    spike weeks.
+  - _(Corrected 2026-10-18; an earlier sentence said B explains A's
+    failure.)_
 - **The ex ante lock-in result as the policy-relevant headline.** It is
   registered and holds on four ladders. Its under-forecast is itself a
   finding: incumbents are stickier than average movement says.

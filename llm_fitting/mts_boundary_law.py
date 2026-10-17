@@ -306,3 +306,37 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# --------------------------------------------------------------------------- #
+# The finite-horizon remainder of the spacing difference (2z-da; opt-in, after the gpt-6-astra review)
+# --------------------------------------------------------------------------- #
+def remainder(M, which, st, ks, K, a, b, c):
+    """On the endpoints present at a, b and c (one population), split the spacing difference exactly:
+        R_ac - R_ab = R_bc + C,   C = G_bc(T_b) - G_bc(T_a),
+    where T_t is the top k at t, R_xy the reordering gain of x's top k by y and G_bc(T) the mean change
+    b -> c of T's members.  C mixes one-time constants (T_b is selected at b) with the different later
+    drift of the two sets.  Its drift part is estimated from the cohort `which` (strata of permanent rank
+    fixed before a): C_drift = sum_j (share_j(T_b) - share_j(T_a)) * l_j, with l_j the mean change b -> c of
+    the cohort's stratum j.  Returns per cut-off, in log units over the interval: R_ab, R_ac, R_bc, C,
+    C_drift, and the identity's residual."""
+    ix = np.flatnonzero(np.isfinite(M[a]) & np.isfinite(M[b]) & np.isfinite(M[c]))
+    La, Lb, Lc, wj = M[a][ix], M[b][ix], M[c][ix], which[ix]
+    oa, ob = np.argsort(-La, kind="stable"), np.argsort(-Lb, kind="stable")
+    lad_b, lad_c = np.sort(Lb)[::-1], np.sort(Lc)[::-1]
+    dbc = Lc - Lb
+    lj = np.array([dbc[wj == j].mean() if (wj == j).sum() >= 5 else np.nan for j in range(len(st))])
+    out = []
+    for _, k in ks:
+        Ta, Tb = oa[:k], ob[:k]
+        R_ab = lad_b[:k].mean() - Lb[Ta].mean()
+        R_ac = lad_c[:k].mean() - Lc[Ta].mean()
+        R_bc = lad_c[:k].mean() - Lc[Tb].mean()
+        C = dbc[Tb].mean() - dbc[Ta].mean()
+        sa = np.array([(wj[Ta] == j).mean() for j in range(len(st))])
+        sb = np.array([(wj[Tb] == j).mean() for j in range(len(st))])
+        okj = np.isfinite(lj)
+        C_drift = float(((sb - sa)[okj] * lj[okj]).sum())
+        out.append(dict(k=int(k), n=int(ix.size), R_ab=float(R_ab), R_ac=float(R_ac), R_bc=float(R_bc), C=float(C),
+                        C_drift=float(C_drift), residual=float((R_ac - R_ab) - (R_bc + C))))
+    return out
