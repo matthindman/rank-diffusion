@@ -98,3 +98,30 @@ needs the same statistic.
 | Z1 | raw β < 0.10 on all three ladders |
 | Z2 | lasting β < 0.10 on both Reddit ladders |
 | Z3 | the upper 95% bound of raw β is below 0.15, the low end of the firm range, on at least two ladders |
+
+## Added before its run: P, is a community's attention a portfolio of its posts?
+
+**Why.** Z found that size barely reduces volatility (β 0.01–0.08). For
+firms, β ≈ 0.2 is usually explained by diversification across sub-units. If
+a community's activity were the sum of n independent items (posts or
+comments), the volatility of its *engagement per item* would fall as
+n^(−1/2), an exponent of 0.5 against the item count. That is the benchmark.
+
+**Set-up** (`portfolio.py`; development panels).
+- Strata, blocks and presence as in Z.
+- The registered loader for activity, plus the panel's item-count column for
+  the same tracked endpoints:
+  - `submission_count` (submissions ladder);
+  - `comment_count` (comments ladder);
+  - `post_count` (Facebook pages).
+- One-year change split exactly: Δlog activity = Δlog items + Δlog (activity
+  per item).
+- For each part, the sd by stratum, against the stratum's mean log item
+  count.
+- Exponent γ = −(slope of log sd on log items).
+- 400 bootstrap draws over names.
+
+| | expectation |
+|---|---|
+| P1 | engagement per item: γ < 0.15 on all three ladders, far from the 0.5 of independent items |
+| P2 | the item-count part carries at least a quarter of the variance of the one-year change, on average over strata, on each ladder (descriptive) |
