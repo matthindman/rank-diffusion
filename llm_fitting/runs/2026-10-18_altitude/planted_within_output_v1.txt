@@ -1,0 +1,6 @@
+advantage top 100: within per year — naive -0.007 (-0.014 to +0.000); lagged -0.014 (-0.021 to +0.001); planted drift +0.104
+advantage top 400: within per year — naive -0.002 (-0.005 to -0.001); lagged -0.005 (-0.009 to +0.002); planted drift +0.104
+neutral   top 100: within per year — naive -0.009 (-0.016 to -0.000); lagged -0.015 (-0.023 to -0.000); planted drift +0.000
+neutral   top 400: within per year — naive -0.004 (-0.006 to -0.002); lagged -0.006 (-0.010 to +0.001); planted drift +0.000
+decay     top 100: within per year — naive -0.011 (-0.019 to -0.002); lagged -0.017 (-0.025 to -0.001); planted drift -0.104
+decay     top 400: within per year — naive -0.005 (-0.009 to -0.003); lagged -0.008 (-0.013 to +0.000); planted drift -0.104
