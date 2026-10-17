@@ -11506,3 +11506,177 @@ Owner-gated.
 - A joint block bootstrap.
 
 **Ledgers.** No data contact beyond planted worlds; no gate evaluation.
+
+## 2z-dc. 2026-10-18 — POST HOC MEASUREMENTS under an altitude prompt, designs committed before each run; nothing adopted, no claim language changed. Headline "leaders lose ground" KILLED by its method check. SIZE DOES NOT PROTECT: raw size–variance exponent 0.01–0.08 on three ladders, against 0.15–0.2 for firms (Z1–Z3 PASS). Displacement ahead of time holds on comments (0.944, O1 PASS) and fails on submissions (0.617, O2 FAIL). Calibrated jumps to random ranks are excluded (1.56) but fixed-ladder rank diffusion is not (1.05). Attention to a community moves as a unit, not as a portfolio: engagement per item barely steadies with the number of items (γ 0.04–0.12 against 0.5 for independent items; P1 PASS; P2 PARTIAL).
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-18; started
+from 0a7a4e9. The owner's request was to "write — and then follow — your own
+'higher altitude' and 'deeper' prompt … what would improve it to the point it
+would be enthusiastically endorsed by editors and reviewers at PNAS".
+Protocol v3 was set aside at the owner's request.
+- Files: prompt, memo and scripts in `runs/2026-10-18_altitude/`; the new
+  frame is `PAPER_FRAME_DRAFT_2026-10-18b.md`.
+- Designs: committed at 320e1e2 (A was already run; O, V), aace364 (Z) and
+  6290c13 (P), each before its run.
+- Exposure: three rows dated 2026-10-18 in `EXPOSURE_LEDGER.md`,
+  development panels only.
+- Health check: 320e1e2 and aace364 were committed without running it first.
+  It ran before 6290c13 and before this entry, and passed (14/15, churn
+  0.013); those commits touched only files outside both suites._
+
+### 1. The prompt and the choice
+
+`PROMPT.md` asks for three things:
+- **altitude:** the reader, the debate, the journalist's sentence, the
+  unreasonable target;
+- **range:** three headlines scored on enthusiasm × defensibility;
+- **depth:** run the analysis that answers the first hostile attack, with a
+  planted method check first.
+
+**Chosen** (`MEMO.md` §2): **"size does not protect the leaders of online
+attention"** as the headline, with the displacement balance as its
+mechanism.
+
+**Dropped:**
+- "leaders lose ground", killed (§2);
+- "platform design steers concentration", too weak (X1 failed, §2z-da).
+
+### 2. Test A: the headline killed by its method check (`planted_within.py`, planted only)
+
+**Set-up.** A Zipf-like ladder with passing swings and drift by current rank,
+three seeds. The within term of arithmetic shares, per year:
+
+| world, top 100 | naive one-step | lagged |
+|---|---|---|
+| rich get richer | +0.028 | −0.021 |
+| neutral | −0.029 | **−0.082** (−0.143 to +0.004) |
+| decay | −0.092 | −0.155 |
+
+**Verdict.**
+- In a neutral world the estimator is biased down by about as much as the
+  planted drift, and lagging the selection does not remove the bias.
+- In theory, a negative within term balanced by displacement is the generic
+  condition for a stationary power law.
+- **"Leaders lose ground" is neither cleanly measurable here nor a finding.**
+  It is recorded as a development negative result.
+- A first design (S 1.5, one common drift for the top K) read about −0.01 in
+  every world, because the normalisation cancels a common drift of a set
+  that holds most of the activity. It was replaced; its output is kept.
+
+### 3. O: displacement predicted ahead of time (`out_of_time.py`)
+
+**Set-up.** 13-week blocks. Volatility from the block-0 cohort over blocks 1,
+3 and 5 (2019 to mid-2020). Crossings from starts 6–11 (blocks 6–15, with no
+overlap). Slope at each window's origin.
+
+| ladder | ratio by cut-off, K/64 … K | pooled | rule [0.85, 1.18] |
+|---|---|---|---|
+| comments | 0.86, 1.34, 1.39, 0.85, 0.83, 1.02, 1.11 | 0.944 (K/8 … K) | **O1 PASS** |
+| submissions | 0.36, 0.69, 0.68, 0.59, 0.68, 0.59, 0.59 | 0.617 (K/4 … K) | **O2 FAIL** |
+
+- **O3** (that early volatility under-predicts later crossings) is **NOT
+  ADJUDICATED**: neither run has an in-period reference on the same blocks.
+  On submissions the error runs in the opposite direction to my expectation.
+- **Sources.** Comments from the saved run of §2z-cu, with no data file
+  opened. Submissions from one new analysis with 13-week blocks, saved as
+  `boundary__reddit_submissions_long__block13.json`.
+
+### 4. V: rank rivals calibrated to the data's turnover (`rivals_calibrated.py`, planted)
+
+Each rival is calibrated to a one-year retention of the top K/4 of 0.80.
+
+| rival | ratio by cut-off, K/64 … K | pooled K/8 … K | expectation |
+|---|---|---|---|
+| jumps to random ranks, p = 0.0042 a week | 0.90, 1.01, 1.08, 1.10, 1.39, 1.77, 2.20 | 1.56 (1.47–1.62) | V1 PASS: excluded, by the body only |
+| log-rank diffusion, fixed ladder, s = 0.070 | 0.86, 1.37, 1.32, 1.03, 1.03, 1.06, 1.08 | 1.05 (1.01–1.11) | V2 PASS: **not** excluded |
+| neighbour swaps | erratic | 0.88 (0.35–1.70) | V3 PASS |
+
+The claim "excludes rank exchange" narrows to "excludes jumps to random ranks
+and local swaps". Fixed-ladder rank diffusion passes. What separates it from
+level growth is that the ladder moves.
+
+### 5. Z: does size protect? (`size_variance.py`)
+
+β is the exponent in sd(one-year change of block-mean log activity) ∝
+size^(−β), over octave strata of permanent rank K/64 … K. Intervals from 400
+bootstrap draws over names.
+
+| ladder | raw, year 1 | raw, year 2 | lasting |
+|---|---|---|---|
+| comments | 0.075 (0.061–0.093) | 0.059 (0.038–0.091) | 0.047 (0.025–0.078) |
+| submissions | 0.045 (−0.013 to 0.143) | 0.082 (0.039–0.150) | 0.070 (0.032–0.128) |
+| Facebook pages (13-week blocks, 1 → 5) | 0.008 (−0.032 to 0.063) | — | — |
+
+| | expectation | result |
+|---|---|---|
+| Z1 | raw β < 0.10 on all three ladders | **PASS** |
+| Z2 | lasting β < 0.10 on both Reddit ladders | **PASS** |
+| Z3 | upper bound below 0.15 on at least two ladders | **PASS** (comments, Facebook; submissions year 2 reaches 0.150) |
+
+**Reading.**
+- Over the comments range (×650 in activity), firms' β = 0.2 would make the
+  sd fall 3.7-fold; it falls 1.6-fold.
+- The submissions top 78 were the most volatile stratum in 2020→21.
+- **Limits:**
+  - survivorship: 2–7% of the lower strata dropped by presence, which biases
+    β down;
+  - range: two to three decades of size;
+  - units: karma and interactions, not views.
+
+### 6. P: is a community's attention a portfolio of its items? (`portfolio.py`)
+
+One-year change split exactly into items (posts or comments) and engagement
+per item. γ is the exponent of the sd against the item count. Independent
+items would give 0.5.
+
+| ladder | items per year, bottom → top stratum | γ, activity | γ, items | γ, engagement per item | items' share of variance | expectations |
+|---|---|---|---|---|---|---|
+| Reddit comments | 13,753 → 1,936,813 | 0.072 (0.054–0.098) | 0.065 (0.046–0.088) | **0.042** (0.015–0.069) | 0.86 | P1 PASS, P2 PASS |
+| Reddit submissions | 6,797 → 170,290 | 0.117 (0.078–0.171) | 0.078 (0.033–0.138) | **0.120** (0.085–0.179) | 1.05 (items and engagement per item move against each other, corr −0.1 to −0.5) | P1 PASS, P2 PASS |
+| Facebook pages (quarterly posts) | 800 → 2,401 | 0.068 (−0.051 to 0.251) | 0.187 (0.067–0.395) | **0.072** (−0.035 to 0.250) | 0.24 | P1 PASS, **P2 FAIL** (0.24 against 0.25) |
+
+**Reading.**
+- On Reddit, a community's activity changes mainly because the *number* of
+  posts and comments it draws changes. That volume fluctuates about as much
+  for a community with two million comments a year as for one with fourteen
+  thousand.
+- The engagement each comment earns moves by a near-constant 12–15% a year
+  at every size. Independent items would make it all but constant for the
+  largest communities.
+- Attention to a community therefore moves as a unit, not as a portfolio of
+  independent items. The firm-style explanation of size–variance scaling,
+  diversification across sub-units, does not operate here.
+- **Not measured: the alternative of extremely heavy-tailed engagement per
+  item.** With a tail index α, sums fluctuate as n^(1/α − 1). γ ≈ 0.04 on
+  comments would need α ≈ 1.04, which is implausibly heavy for comment
+  karma. This is argued, not measured. Per-item scores from the raw archives
+  would settle it.
+- On Facebook the range of post counts is narrow (×3), and engagement per
+  post dominates the variance.
+
+### 7. Documents
+
+- `PAPER_FRAME_DRAFT_2026-10-18b.md`, a new frame beside the 10-18 one:
+  - recommended title "Size does not protect the leaders of online
+    attention";
+  - significance (118 words) and abstract (234 words);
+  - Figure 1 (`fig_contestable.png`);
+  - first paragraph;
+  - the evidence table and its limits.
+- `MEMO.md` §5 orders what would still stop an enthusiastic endorsement:
+  1. nothing out of sample;
+  2. the mechanism of size-independence;
+  3. range and survivorship;
+  4. units;
+  5. precedence (Gomez, Gibrat);
+  6. submissions.
+
+### 8. Not done
+
+- β over the whole tracked universe (ranks to 4K), with absences treated as
+  collapses.
+- Item-level tail indices (the WD drive).
+- The out-of-time test on Facebook: 86 weeks are too short.
+- An in-period reference for O3.
+
+**Ledgers.** Three exposure rows; no gate evaluation.

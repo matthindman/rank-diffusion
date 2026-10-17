@@ -1,0 +1,19 @@
+comments: K 12500, 16 blocks, late starts [6, 7, 8, 9, 10, 11]
+  k=   195: crossings 4.19 per 1,000 wk; predicted from 2019-20 volatility 4.86; out-of-time ratio 0.861; (same crossings over the pooled c of all starts: 0.867)
+  k=   391: crossings 3.94 per 1,000 wk; predicted from 2019-20 volatility 2.95; out-of-time ratio 1.338; (same crossings over the pooled c of all starts: 1.322)
+  k=   781: crossings 3.10 per 1,000 wk; predicted from 2019-20 volatility 2.23; out-of-time ratio 1.387; (same crossings over the pooled c of all starts: 1.423)
+  k=  1562: crossings 2.89 per 1,000 wk; predicted from 2019-20 volatility 3.41; out-of-time ratio 0.848; (same crossings over the pooled c of all starts: 0.854)
+  k=  3125: crossings 3.16 per 1,000 wk; predicted from 2019-20 volatility 3.79; out-of-time ratio 0.833; (same crossings over the pooled c of all starts: 0.860)
+  k=  6250: crossings 3.47 per 1,000 wk; predicted from 2019-20 volatility 3.41; out-of-time ratio 1.017; (same crossings over the pooled c of all starts: 1.068)
+  k= 12500: crossings 3.33 per 1,000 wk; predicted from 2019-20 volatility 3.02; out-of-time ratio 1.105; (same crossings over the pooled c of all starts: 1.192)
+  pooled out-of-time ratio over k/K in [0.125, 1]: 0.944  (in [0.85, 1.18]: True); with pooled c: 0.983
+submissions: K 5000, 16 blocks, late starts [6, 7, 8, 9, 10, 11]
+  k=    78: crossings 4.16 per 1,000 wk; predicted from 2019-20 volatility 11.51; out-of-time ratio 0.362; (same crossings over the pooled c of all starts: 0.374)
+  k=   156: crossings 4.26 per 1,000 wk; predicted from 2019-20 volatility 6.19; out-of-time ratio 0.689; (same crossings over the pooled c of all starts: 0.657)
+  k=   312: crossings 4.27 per 1,000 wk; predicted from 2019-20 volatility 6.29; out-of-time ratio 0.680; (same crossings over the pooled c of all starts: 0.679)
+  k=   625: crossings 3.73 per 1,000 wk; predicted from 2019-20 volatility 6.28; out-of-time ratio 0.593; (same crossings over the pooled c of all starts: 0.584)
+  k=  1250: crossings 3.25 per 1,000 wk; predicted from 2019-20 volatility 4.75; out-of-time ratio 0.683; (same crossings over the pooled c of all starts: 0.693)
+  k=  2500: crossings 3.37 per 1,000 wk; predicted from 2019-20 volatility 5.75; out-of-time ratio 0.587; (same crossings over the pooled c of all starts: 0.603)
+  k=  5000: crossings 3.73 per 1,000 wk; predicted from 2019-20 volatility 6.35; out-of-time ratio 0.587; (same crossings over the pooled c of all starts: 0.616)
+  pooled out-of-time ratio over k/K in [0.250, 1]: 0.617  (in [0.85, 1.18]: False); with pooled c: 0.636
+exit done

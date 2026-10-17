@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-18** (the paragraphs on §2z-da and §2z-db were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-18** (the paragraphs on §2z-da, §2z-db and §2z-dc were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -230,6 +230,20 @@ New measurements:
 
 The working draft frame is `PAPER_FRAME_DRAFT_2026-10-18.md` (not adopted).
 
+**The altitude prompt (§2z-dc, 2026-10-18).** A self-written prompt (owner's
+request) chose a new headline: *size does not protect the leaders of online
+attention*.
+- Raw size–variance exponent 0.01–0.08 on three ladders, against 0.15–0.2 for
+  firms.
+- Engagement per item barely steadies with item count (γ 0.04–0.12 against
+  0.5), so attention to a community moves as a unit.
+- Displacement predicted ahead of time holds on comments (0.944) and fails on
+  submissions (0.617).
+- Calibrated jumps to random ranks are excluded; fixed-ladder rank diffusion
+  is not.
+- "Leaders lose ground" was killed by its method check.
+- New frame beside the 10-18 one: `PAPER_FRAME_DRAFT_2026-10-18b.md`.
+
 **Owner decisions and Gomez (§2z-db, 2026-10-18).**
 - One paper with B as the spine; the old title is retired.
 - Gomez (2023) already predicts displacement from measured volatility and
@@ -397,7 +411,8 @@ is in the newest data-operation entries of MODEL_STATUS.
 - **Still open from these:**
   - approving the wording of the proposed B-spine binding paragraph (§2z-db
     §4);
-  - choosing a title (`paper/pnas_outline_v2.tex`);
+  - choosing a title and between the two frames: 10-18 ("fast names, slow
+    ladders") and 10-18b ("size does not protect", §2z-dc);
   - adopting protocol v3, then the first contact with the bridge;
   - the capture-delay and deletion audit (WD drive).
 

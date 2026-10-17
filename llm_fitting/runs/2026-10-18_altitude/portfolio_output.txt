@@ -1,0 +1,34 @@
+facebook_a: activity  sd of one-year change vs log item count: gamma +0.068 (5-95% -0.051 to +0.251)
+facebook_a: items     sd of one-year change vs log item count: gamma +0.187 (5-95% +0.067 to +0.395)
+facebook_a: per_item  sd of one-year change vs log item count: gamma +0.072 (5-95% -0.035 to +0.250)
+   ranks      1-54     n    54  mean items       2401  sd: activity 0.861, items 0.346, per item 0.787; corr +0.01; items' share of variance 0.16
+   ranks     55-108    n    52  mean items       2102  sd: activity 0.806, items 0.407, per item 0.702; corr -0.02; items' share of variance 0.26
+   ranks    109-216    n   104  mean items       1865  sd: activity 0.981, items 0.457, per item 0.837; corr +0.07; items' share of variance 0.22
+   ranks    217-432    n   205  mean items       1507  sd: activity 0.892, items 0.443, per item 0.776; corr -0.01; items' share of variance 0.25
+   ranks    433-864    n   412  mean items       1223  sd: activity 0.875, items 0.482, per item 0.792; corr -0.12; items' share of variance 0.30
+   ranks    865-1728   n   813  mean items       1145  sd: activity 0.914, items 0.464, per item 0.786; corr +0.00; items' share of variance 0.26
+   ranks   1729-3456   n  1552  mean items        800  sd: activity 0.933, items 0.441, per item 0.836; corr -0.03; items' share of variance 0.22
+   items' share of the variance of the one-year change, mean over strata: 0.24
+reddit_submissions_long: activity  sd of one-year change vs log item count: gamma +0.117 (5-95% +0.078 to +0.171)
+reddit_submissions_long: items     sd of one-year change vs log item count: gamma +0.078 (5-95% +0.033 to +0.138)
+reddit_submissions_long: per_item  sd of one-year change vs log item count: gamma +0.120 (5-95% +0.085 to +0.179)
+   ranks      1-78     n    76  mean items     170290  sd: activity 0.425, items 0.395, per item 0.211; corr -0.12; items' share of variance 0.86
+   ranks     79-156    n    75  mean items      65864  sd: activity 0.283, items 0.330, per item 0.180; corr -0.52; items' share of variance 1.36
+   ranks    157-312    n   153  mean items      50653  sd: activity 0.353, items 0.407, per item 0.225; corr -0.50; items' share of variance 1.32
+   ranks    313-624    n   306  mean items      31742  sd: activity 0.428, items 0.451, per item 0.248; corr -0.37; items' share of variance 1.11
+   ranks    625-1248   n   613  mean items      20781  sd: activity 0.444, items 0.431, per item 0.230; corr -0.21; items' share of variance 0.94
+   ranks   1249-2496   n  1213  mean items      12542  sd: activity 0.474, items 0.462, per item 0.263; corr -0.24; items' share of variance 0.95
+   ranks   2497-4992   n  2363  mean items       6797  sd: activity 0.521, items 0.464, per item 0.294; corr -0.11; items' share of variance 0.79
+   items' share of the variance of the one-year change, mean over strata: 1.05
+reddit_comments_ext: activity  sd of one-year change vs log item count: gamma +0.072 (5-95% +0.054 to +0.098)
+reddit_comments_ext: items     sd of one-year change vs log item count: gamma +0.065 (5-95% +0.046 to +0.088)
+reddit_comments_ext: per_item  sd of one-year change vs log item count: gamma +0.042 (5-95% +0.015 to +0.069)
+   ranks      1-195    n   191  mean items    1936813  sd: activity 0.441, items 0.410, per item 0.116; corr +0.13; items' share of variance 0.87
+   ranks    196-390    n   192  mean items     671686  sd: activity 0.466, items 0.449, per item 0.138; corr -0.03; items' share of variance 0.93
+   ranks    391-780    n   385  mean items     386689  sd: activity 0.522, items 0.493, per item 0.129; corr +0.10; items' share of variance 0.89
+   ranks    781-1560   n   761  mean items     214546  sd: activity 0.540, items 0.489, per item 0.141; corr +0.24; items' share of variance 0.82
+   ranks   1561-3120   n  1525  mean items     100686  sd: activity 0.574, items 0.520, per item 0.146; corr +0.25; items' share of variance 0.82
+   ranks   3121-6240   n  3019  mean items      42647  sd: activity 0.587, items 0.534, per item 0.147; corr +0.24; items' share of variance 0.83
+   ranks   6241-12480  n  5822  mean items      13753  sd: activity 0.624, items 0.575, per item 0.145; corr +0.22; items' share of variance 0.85
+   items' share of the variance of the one-year change, mean over strata: 0.86
+exit done
