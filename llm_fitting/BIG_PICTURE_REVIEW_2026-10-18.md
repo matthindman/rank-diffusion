@@ -41,12 +41,20 @@ boundary = σ²/(2S), predicted and measured separately:
 - The lasting/passing decomposition is central to both. B's spacing
   differences and variance route are the structural counterpart of A's
   permanent–transitory model.
-- **A's recorded failure is explained by B.** A's simulator produces an
-  "excessively concentrated stationary head" because it assumes a stationary
-  ladder. B finds the real head out of balance: on submissions the movement
-  sustains a head slope of 0.3–0.5 against 0.9 observed, and is relaxing over
-  years (§2z-cd, §2z-cp, §2z-cw). A stationary law fitted to a non-stationary
-  head is the wrong target.
+- **B bears on A's recorded failure, but does not explain it.**
+  - A's simulator produces an "excessively concentrated stationary head":
+    the top share is about 2.7–2.9× the observed on Facebook and Instagram
+    (§2z-d).
+  - B finds the real head out of balance. On submissions the movement
+    sustains a head slope of 0.3–0.5 against 0.9 observed, relaxing over
+    years (§2z-cd, §2z-cp, §2z-cw). So a stationary head law is a
+    questionable target.
+  - The directions differ: A's steady state is more concentrated than
+    observed, B's less.
+  - Reconciling them needs B's decomposition (σ² and slides by rank) run on
+    A's simulated panels, to find which term over-concentrates its head.
+    Not done. _(Corrected 2026-10-18 shortly after writing; an earlier
+    sentence said B explains A's failure.)_
 - A's "upper movement tails under-dispersed" and B's under-forecast of
   staying are the same fact seen twice. Movement is two-speed: most names
   drift slowly while a few make block-scale jumps (§2z-cz).
