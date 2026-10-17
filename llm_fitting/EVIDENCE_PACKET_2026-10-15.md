@@ -148,12 +148,20 @@ pandas 2.x). Heavy runs go through
 
 - The law's mathematics is established: the forward equation for ordered
   levels, Fernholz's gap identity, the Atlas-model slope.
+- [c, 2026-10-18] **Gomez (2023)**, read in full (theory note §9), already
+  has four things: the within/displacement decomposition of top shares, the
+  displacement formula and its extensions, the stationary balance, and a
+  predicted-against-measured test of displacement on the Forbes 400. The
+  first item below is withdrawn as stated. What remains new is the test
+  rank by rank across whole ladders under heavy passing movement, with rank
+  exchange excluded.
 - New, as far as a targeted search found:
-  - the out-of-equilibrium test of a predicted crossing term;
+  - ~~the out-of-equilibrium test of a predicted crossing term~~ (anticipated
+    by Gomez for one top set; ours is whole-ladder);
   - named-cohort estimation that removes the drift bias of ranking by current
     position;
   - the application to online attention and a dated algorithm change;
   - ex ante lock-in forecasts scored against outcomes.
-- Must cite: Fernholz 2017; Fernholz & Koch; Itkin & Larsson 2024; Baker &
+- Must cite: Gomez 2023 (framework); Batty 2006; Ichiba et al. 2011; Fernholz 2017; Fernholz & Koch; Itkin & Larsson 2024; Baker &
   Smyth 2026; Gabaix, Lasry, Lions & Moll 2016; Blumm et al. 2012; Iñiguez et
   al. 2022 (§2z-cn; `runs/2026-10-14_boundary_law/NOVELTY_SEARCH.md`).

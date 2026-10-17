@@ -1,6 +1,6 @@
 # Paper frame, revised after three external reviews (DRAFT, for the owner)
 
-_Claude Opus 5.5 (Anthropic), 2026-10-18. NOT ADOPTED. This replaces
+_Claude Opus 5.5 (Anthropic), 2026-10-18. NOT ADOPTED. Owner decisions of 2026-10-18 (§2z-db): one paper with B as spine; the old title retired. The outline is now `paper/pnas_outline_v2.tex`. This replaces
 `PAPER_FRAME_DRAFT_2026-10-15.md` as the working draft. The binding claim set
 is the owner's (MODEL_STATUS §6 addendum, 2026-07-12) and is not changed
 here: changing claim language, making B the spine, and the title are all the
@@ -18,6 +18,7 @@ their checks are in `runs/2026-10-18_external_critiques/SYNTHESIS.md` and
 | "drift of the very top fell within days and its mobility tripled" | the daily onset is 23–24 June, before the announcement. Against placebo years, the head's weekly fall does not stand out from its slide in 2022 (X1 FAIL). What is distinctive: attention moved to the next tier and to the same communities' comments. The rise in mobility is not claimed | §2z-ca; intervals touch, unregistered (§2z-cn) |
 | lock-in "as well as a model fitted to past outcomes" | rank carries retention; Gaussian movement under-forecasts staying, which points to rare large jumps | the logistic wins on all four ladders (§2z-da) |
 | "has not been documented as a single empirical object" | positioned against Batty (2006), Gomez (2023), hybrid Atlas models | literature checks (§2z-da) |
+| the crossing law as the paper's new result | Gomez's within/displacement decomposition is the framework; his displacement term, its cumulant extension and the stationary balance are his. Ours is the test rank by rank across whole ladders under heavy passing movement, with rank exchange excluded | Gomez read in full (theory note §9; §2z-db) |
 
 ## The paper in one paragraph
 

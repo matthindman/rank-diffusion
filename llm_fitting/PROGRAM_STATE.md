@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-18** (the paragraph on §2z-da was added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-18** (the paragraphs on §2z-da and §2z-db were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -230,6 +230,15 @@ New measurements:
 
 The working draft frame is `PAPER_FRAME_DRAFT_2026-10-18.md` (not adopted).
 
+**Owner decisions and Gomez (§2z-db, 2026-10-18).**
+- One paper with B as the spine; the old title is retired.
+- Gomez (2023) already predicts displacement from measured volatility and
+  tail index, and tests it on the Forbes 400. Our novelty is the whole-ladder
+  test under heavy passing movement, with rank exchange excluded.
+- The outline is now `paper/pnas_outline_v2.tex`.
+- Bridge protocol v3 (draft) sets a margin by power: [0.85, 1.18] excludes the
+  volatility-sorting rival, which the old band admitted 25% of the time.
+
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate
 is numerically vacuous. Proofs 4 to 6, 8 and 9 and a second audit of Proof 7
@@ -380,16 +389,17 @@ is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
 
-- **From the external reviews (§2z-da):**
-  - one paper with B as the spine and A as the movement measurement, which
-    needs the binding paragraph amended;
-  - retiring "Eulerian stability" from the outline's title;
-  - reading Gomez (2023) in full before any novelty sentence;
-  - redesigning the bridge protocol's primary tests to discriminate:
-    out-of-time ratios at a tight margin, empirical-shape lock-in against the
-    logistic, deceleration of the submissions head against trend, and the
-    June 2023 blackout with comments as control;
-  - the capture-delay and deletion audit on the raw archives (WD drive).
+- **Decided by the owner on 2026-10-18 (§6 addendum, §2z-db):**
+  - one paper with B as the spine;
+  - the "Eulerian stability" title retired;
+  - Gomez read: claim (a) withdrawn, remaining novelty in theory note §9;
+  - the bridge protocol redesigned (`BRIDGE_PROTOCOL_V3_DRAFT_2026-10-18.md`).
+- **Still open from these:**
+  - approving the wording of the proposed B-spine binding paragraph (§2z-db
+    §4);
+  - choosing a title (`paper/pnas_outline_v2.tex`);
+  - adopting protocol v3, then the first contact with the bridge;
+  - the capture-delay and deletion audit (WD drive).
 
 - **The draft protocol for forecasting the 2023 Reddit ladders** (§2z-cf;
   `BRIDGE_FORECAST_PROTOCOL_DRAFT_2026-10-14.md`): its forecasts are fixed;

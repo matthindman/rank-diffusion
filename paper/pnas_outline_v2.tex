@@ -1,0 +1,186 @@
+%% ============================================================================
+%% pnas_outline_v2.tex — PNAS research-article OUTLINE (not a draft), B as spine
+%% 2026-10-18, after the owner's decisions of 2026-10-18 (MODEL_STATUS §2z-db):
+%%   1. one paper, with the movement-to-structure balance (B) as the spine;
+%%   2. the title "Eulerian stability with Lagrangian churn ..." is retired;
+%%   3. positioned against Gomez (2023) after reading it (theory note §9);
+%%   4. the sealed-bridge protocol is redesigned around discriminating tests.
+%% Supersedes paper/pnas_outline.tex (the A-spine outline of 2026-07-06), which
+%% is kept unchanged except for a banner. Claim language here is DRAFT: the
+%% binding claim paragraph is the owner's (MODEL_STATUS §6), and the proposed
+%% B-spine paragraph in §6 awaits the owner's approval of its wording.
+%%
+%% Same conventions as the old outline: every planned paragraph has a PLAN
+%% block (job / direction / numbers with MODEL_STATUS sections / claim flags);
+%% no article prose; \plansfalse hides the plans. Sources:
+%%   llm_fitting/PAPER_FRAME_DRAFT_2026-10-18.md (abstract, significance)
+%%   llm_fitting/EVIDENCE_PACKET_2026-10-15.md (claims C1-C14, corrected)
+%%   llm_fitting/BALANCE_LAW_THEORY_NOTE_2026-10-14.md §8-§9 (theory, Gomez)
+%%   llm_fitting/runs/2026-10-18_external_critiques/SYNTHESIS.md (reviews)
+%% Compile: cd paper && pdflatex pnas_outline_v2
+%% ============================================================================
+
+\documentclass[9pt,twocolumn,twoside]{pnas-new}
+\templatetype{pnasresearcharticle}
+\usepackage{graphicx}
+
+\newif\ifplans\planstrue
+\newcommand{\todo}[1]{\textcolor{red!65!black}{\textbf{[TODO: #1]}}}
+\newcommand{\PLAN}[4]{\ifplans\par\begingroup
+  \footnotesize\sffamily\color{black!60}%
+  \noindent\rule{\linewidth}{0.4pt}\par
+  \textbf{JOB:} #1\par
+  \textbf{DIRECTION:} #2\par
+  \textbf{NUMBERS:} #3\par
+  \if\relax\detokenize{#4}\relax\else\textbf{CLAIM FLAGS:} #4\par\fi
+  \noindent\rule{\linewidth}{0.4pt}\par
+\endgroup\fi}
+\newcommand{\WT}[1]{\ifplans{\par\noindent\footnotesize\sffamily\color{black!60}[section target: #1 words]\par}\fi}
+
+%% WORD BUDGET (body ~4,000): Intro 500; R1 350; R2 450; R3 450; R4 650;
+%% R5 500; R6 450; R7 250; Discussion 450; M&M 600 (small type). Figures: 5
+%% main (Figs 1-5), lock-in and Instagram censoring to SI.
+
+%% ---- TITLE (working; the owner chooses) -------------------------------------
+%% Retired by the owner 2026-10-18: "Eulerian stability with Lagrangian churn
+%% in digital attention rankings" (the ladder is not stationary, §2z-cw, §2z-da).
+%% T1 "Fast names, slow ladders: how measured mobility sets the inequality of
+%%     online attention" (WORKING TITLE)
+%% T2 "A balance at every rank: mobility, drift and the slow change of
+%%     attention inequality"
+%% T3 "Contestable but concentrated: the dynamics of who holds online attention"
+\title{Fast names, slow ladders: how measured mobility sets the inequality of online attention}
+
+\articletype{Social Sciences (classification placeholder)}
+\author[a,1]{Author One}
+\affil[a]{Affiliation placeholder}
+\leadauthor{One}
+\authorcontributions{Placeholder.}
+\authordeclaration{The authors declare no competing interest.}
+\correspondingauthor{\textsuperscript{1}Placeholder.}
+
+\significancestatement{\todo{Draft in PAPER\_FRAME\_DRAFT\_2026-10-18.md (114 words). Revise after the owner approves claim wording; keep "displacement" vocabulary consistent with Gomez (2023).}}
+\keywords{attention inequality $|$ rank dynamics $|$ displacement $|$ mobility $|$ platform governance}
+
+\begin{abstract}
+\todo{Draft in PAPER\_FRAME\_DRAFT\_2026-10-18.md (249 words). Two edits after reading Gomez: (i) name the crossing gain as the "displacement" term of top-share dynamics, generalised from one top set to every rank; (ii) do not imply the law itself is new.}
+\end{abstract}
+
+\dates{This manuscript was compiled on \today}
+
+\begin{document}
+\maketitle
+\thispagestyle{firststyle}
+\ifthenelse{\boolean{shortarticle}}{\ifthenelse{\boolean{singlecolumn}}{\abscontentformatted}{\abscontent}}{}
+
+%% ============================================================================
+\WT{500}
+\PLAN{Intro par.~1, the fact. Attention is concentrated in a few communities, and the communities change places constantly.}
+{From the reader's experience of platforms to the two speeds: names churn in years while the ladder's shape changes slowly. The fact is NOT new (rank clocks for cities and firms); what is open is how the speeds connect.}
+{A fifth of each top set replaced a year, at about the same rate from the top 195 to the top 12,500 (§2z-cu); median annual change of log rank 0.19--0.24 (§2z-cu); arithmetic share of the top 78 submissions communities 50.2\% $\to$ 34.0\%, 2019--2022 (§2z-da).}
+{Cite Batty 2006 and Duranton 2007 as having documented stable rank-size over churning membership; never claim the joint regularity is undocumented (§2z-da). Never say "stable form" or "stationary" (owner, 2026-10-18).}
+
+\PLAN{Intro par.~2, the theory that links them, and whose it is.}
+{From the fact to the accounting: a top set's share changes by its members' drift (within) plus a displacement gain from crossings at its boundary, plus entry. Gomez (2023) derived and measured this for top wealth shares; stochastic portfolio theory gives the rank-based mathematics; Gabaix and GLLM give the stationary form and the speed question.}
+{Gomez: displacement $\tfrac12(\zeta-1)\nu^2$ for arithmetic shares, predicted 2.0\% against measured 2.3\% a year on the Forbes 400 (theory note §9). Our shape index is the mean-log version: crossing gain $\sigma^2/(2S)$, $S = 1/\zeta$.}
+{State plainly that the law, its cumulant extension and the stationary balance are Gomez's and SPT's (theory note §8--§9).}
+
+\PLAN{Intro par.~3, what is not known.}
+{From the precedent to the gap. The precedent tests one top set, in wealth, where growth has almost no transitory part (AR(1) about 0.01) and where conditioning on current members costs little. Attention has large passing swings, so selection on current rank is the main bias, and the ranking-dynamics literature models movement as rank exchange. Open: does displacement theory hold rank by rank across a whole ladder when most movement is passing; can rank exchange be excluded; and what moves the shape when a platform changes its design?}
+{Iñiguez et al.\ 2022 (rank-exchange models); Blumm et al.\ 2012; Wu \& Huberman 2007.}
+{}
+
+\PLAN{Intro par.~4, findings preview (numbered).}
+{One sentence each, in the order of Results.}
+{(1) Exact balance at every rank (§2z-cr). (2) With permanent-rank cohorts and spacing differences, crossings match lasting variance over twice the slope across ranks on four ladders, pooled 0.96 (0.89--1.05) (§2z-cm, §2z-ct, §2z-cx, §2z-da). (3) Rank exchange fails; movement is level growth with lasting volatility nearly independent of size, $\beta$ 0--0.09 (§2z-cv, §2z-da). (4) Shape changes through drift by rank; concentration relaxes toward what movement sustains over years (§2z-cp, §2z-cw). (5) Around Reddit's 2021 feed change attention moved one tier down and toward comments (§2z-da).}
+{In sample, development data; no forecasting claim.}
+
+\section*{Results}
+
+\subsection*{Fast names, slow ladders}
+\WT{350}
+\PLAN{R1. The two speeds, measured on four ladders and three platforms.}
+{Data table first (Reddit comments and submissions 2019--2022; Facebook pages 86 weeks; Instagram 2023 through the censoring apparatus), then turnover, then concentration in arithmetic shares.}
+{Turnover 0.79/0.82/0.84 a year at k = 195, 1,562, 12,500 (§2z-cu); Facebook 0.69--0.82 (§2z-cu); arithmetic shares (§2z-da, table in §5).}
+{Fig.~1. Scale-invariant turnover is a regularity in its own right (Opus 5.5 review); keep descriptive.}
+
+\subsection*{An exact balance at every rank}
+\WT{450}
+\PLAN{R2. Gomez's within/displacement decomposition, applied at every cut-off and to the ladder's shape.}
+{Define the shape of the top $k$ (mean log level against the field), its exact split into members' movement, reordering and entry, then show the half-year decomposition.}
+{Comments: crossings +0.08 to +0.11 log units every half-year at every rank while members' term swings $-0.29$ to $+0.07$ (§2z-cr); submissions reordering varies threefold (§2z-cr).}
+{Parallel to Gomez's finding that business-cycle movement of top shares is in the within term; post hoc (C2). Fig.~2 on comments and submissions; Facebook and Instagram \todo{decomposition not yet run}.}
+
+\subsection*{Measuring lasting movement}
+\WT{450}
+\PLAN{R3. The method contribution: why attention needs it and what it does.}
+{Passing swings dominate weekly movement; ranking by current position selects on them. Cohorts fixed by permanent rank before the window; the difference of two spacings removes one-time constants; the estimand includes a composition term.}
+{Current-rank and cohort slides agree once one-time constants are removed, 7 of 7 cut-offs on three ladders, 6 of 7 on Instagram (§2z-cm, §2z-ct, §2z-cx); $R_{ac}-R_{ab} = R_{bc} + C$ exact, $C$ +25--35\% on Reddit, $-30$\% on Facebook (§2z-da). Gomez's transitory-error bias $-2\rho$ is the first-order case.}
+{The lock-in forecaster stratifies by current rank (declared deviation, §2z-da) --- keep it out of this section.}
+
+\subsection*{Crossings identify movement in level space}
+\WT{650}
+\PLAN{R4. The one test that is not accounting, stated as what it is.}
+{The prediction, its four exit routes (theory note §8), the measurement on four ladders, the rivals that fail and the ones that cannot be told apart, then lasting variance by rank from three estimators and the size--variance exponent.}
+{Pooled K/16--K: comments 1.069 (1.011--1.127), submissions 0.802 (0.680--1.004), Facebook 0.977 (0.802--1.202), Instagram 0.995 (0.852--1.213), all four 0.955 (0.889--1.054) (§2z-da). Rank exchange 2.4--3.6 and neighbour swaps 0.3--1.7 (§2z-cv); level variants 0.85--1.25 (§2z-cq). $\beta$ = 0.047, 0.085, 0.002, $\approx$0 against about 0.2 for firms (§2z-da).}
+{A near-identity for level diffusion: never "law of the dynamics". State the ranges with their rank spans (K/16--K for Facebook and Instagram). Disclose that Reddit pooled ratios are not time-aligned (§2z-cm note). Submissions: head unmeasurable; 300--600 shortfall unexplained, and its own slide profile does not explain it (§2z-da). Fig.~3: ratio by rank (left) and variance by rank, three estimators (right).}
+
+\subsection*{Drift by rank sets the shape and where it is going}
+\WT{500}
+\PLAN{R5. From movement to structure: the sustained ladder, the destination and the speed.}
+{Gomez's stationary balance ($\zeta = 1 - 2\mu/\nu^2$) applied rank by rank gives the ladder current movement sustains; compare with the observed ladder; relaxation time; the GLLM question of transition speed.}
+{Submissions head sustained slope 0.3--0.5 against 0.9 (§2z-cd, §2z-cp); sustained index 15--16\% against 34.8\% observed (§2z-cw); relaxation 2--6 years (submissions), 5--22 (comments) (§2z-cp); entry net of exit 29--41\% of the slide on comments (§2z-cc).}
+{The sustained share is an index (geometric means); an arithmetic translation \todo{not computed}. Slides measured in one year; give the by-start spread (Opus 5.5 review). Fig.~4.}
+
+\subsection*{A dated change}
+\WT{450}
+\PLAN{R6. Reddit's June 2021 Home-feed change, against placebo years and a control ladder.}
+{Daily onset first, then the event study with placebo years 2019, 2020, 2022 and the comments ladder, then what moved: the next tier and the same communities' comments; then the capture regime of 1 July 2021.}
+{Onset 23--24 June (§2z-ca). Registered event study (§2z-da): submissions head $-0.048$ ($-0.106$, $+0.004$), not distinctive against 2022 ($-0.075$) --- X1 FAIL; next tier $+0.068$ ($+0.035$, $+0.107$), comments head $+0.088$, the 78 leaders' comment activity $+0.107$ ($+0.045$, $+0.158$), all above every placebo year; post hoc sensitivity agrees (§2z-da).}
+{Never "the drift of the very top fell within days" or "mobility tripled" (§2z-da). The comments head rose, which argues against a common deletion artefact; removal specific to submissions is not excluded \todo{capture-delay audit, WD drive}. Fig.~5: event-study $\Delta$ by year and tier, two ladders.}
+
+\subsection*{Who stays}
+\WT{250}
+\PLAN{R7. Retention, briefly; detail to SI.}
+{Rank carries retention; movement adds little to rank; Gaussian movement under-forecasts staying, and rare large jumps reproduce the under-forecast. Gomez's first-passage result (Prop.~8) is the theory of time at the top.}
+{Brier: movement 0.1252/0.1357/0.1607/0.1621 against logistic 0.1244/0.1309/0.1587/0.1615 (§2z-da); under-forecast 2--5 points at the first horizon (§2z-cy); empirical-shape variant halves it (post hoc, §2z-cz).}
+{Never "at par with a logistic" or "an answer to the platforms' claim" (§2z-da). SI figure.}
+
+\section*{Discussion}
+\WT{450}
+\PLAN{Disc.~1, what is new and what is not.}
+{Not new: the accounting, the displacement formula, its cumulant extension, the stationary balance (Gomez; SPT; Gabaix). New: the test rank by rank across whole ladders, under heavy passing movement, with permanent-rank cohorts; the exclusion of rank exchange; the size-independence of lasting volatility; the application to attention and to a dated design change on several platforms.}
+{Theory note §9 (comparison table).}
+{Novelty sentence only after the owner reads theory note §9.}
+
+\PLAN{Disc.~2, limits.}
+{In sample; no forecast advantage over trend or rank; the submissions head and 300--600 band; Instagram scope (a-captioning accounts, mostly English and Romance languages); karma is approval-weighted activity, not views; capture delay not audited.}
+{§2z-co, §2z-cs, §2z-cx, §2z-da.}
+{}
+
+\PLAN{Disc.~3, why it matters for platform governance.}
+{A change in drift by rank is detectable within weeks in large strata (§2z-ci); with the balance and the relaxation time it gives an audit of what a recommender change does to concentration from public ranked data (DSA Art.~34 and 40).}
+{§2z-ci, §2z-cp.}
+{Policy framing is the owner's choice.}
+
+\PLAN{Disc.~4, the out-of-sample test.}
+{The redesigned sealed-bridge protocol (2023--2024 Reddit) and its discriminating primary tests; Wikipedia as a long-span ladder.}
+{`BRIDGE\_PROTOCOL\_V3\_DRAFT\_2026-10-18.md` (owner decision 4).}
+{Only once run.}
+
+\matmethods{
+\PLAN{M\&M 1, data and universes.}{Panels, spans, top-K universes with absence-penalised membership, instrument eras, flagged weeks; CrowdTangle and Pushshift provenance and access status.}{EXPOSURE\_LEDGER; §2z-cb.}{Data availability: derived rank-level panels.}
+\PLAN{M\&M 2, cohorts and estimators.}{Permanent rank; block means; the variance route and the variogram; the crossing statistic and its composition term; the slope.}{§2z-cm, §2z-co, §2z-da.}{}
+\PLAN{M\&M 3, planted worlds and rivals.}{Known-answer tests, rank-exchange rivals, level variants, drift by current rank.}{§2z-cq, §2z-cv, §2z-da.}{}
+\PLAN{M\&M 4, Instagram censoring.}{The three measured layers and the planted validation; what a drifting q could do.}{§2z-c, §2z-cx, §2z-da.}{}
+\PLAN{M\&M 5, the movement model.}{The permanent--transitory model as the measurement of individual movement (E2: 0.032 against 0.171 out of era); its home-reversion mechanism is not part of the claims.}{§2z-q, §6 (owner decision 2026-10-18).}{Wording awaits the owner.}
+\PLAN{M\&M 6, registration and AI use.}{Designs committed before runs; ledgers; which results are post hoc; models used and how.}{GATE\_LEDGER, EXPOSURE\_LEDGER, provenance lines.}{}
+}
+\showmatmethods{}
+
+\begin{figure*}[t]\centering
+\fbox{\parbox{0.9\textwidth}{\centering Figure placeholders. Fig.~1 \texttt{fig\_puzzle.png}; Fig.~2 \texttt{fig\_shape\_decomposition.png}; Fig.~3 \texttt{fig\_four\_ladders.png} + \texttt{fig\_variance\_by\_rank.png}; Fig.~4 \texttt{fig\_sustained\_ladder.png} + \texttt{fig\_concentration.png}; Fig.~5 event study \todo{not drawn}. SI: \texttt{fig\_lockin.png}, \texttt{fig\_instagram\_censoring.png}.}}
+\caption{Display-item plan (see PAPER\_FRAME\_DRAFT\_2026-10-18.md for captions).}
+\end{figure*}
+
+\end{document}

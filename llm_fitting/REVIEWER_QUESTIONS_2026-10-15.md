@@ -36,8 +36,12 @@ submissions the reordering term varies threefold [c].
   equation for ordered levels. Its stationary form is Fernholz's gap identity,
   and its one-slide form is the Atlas or Gabaix slope σ²/2g (§2z-cn).
 - *What is new, as far as a targeted search found:*
-  - a test out of equilibrium in which the crossing term is predicted from
-    measured lasting volatility and slope, not measured from rank switching;
+  - [c, WITHDRAWN 2026-10-18 after reading Gomez in full, theory note §9]
+    ~~a test out of equilibrium in which the crossing term is predicted from
+    measured lasting volatility and slope~~. Gomez does this for the Forbes
+    400 (predicted 2.0% against measured 2.3% a year). Ours is the same test
+    rank by rank across whole ladders, where passing movement dominates, with
+    rank exchange excluded;
   - named-cohort estimation that removes the drift bias of ranking by current
     position (SPT calibrations condition on current rank);
   - the first application to online attention and a dated algorithm change.
@@ -47,9 +51,9 @@ submissions the reordering term varies threefold [c].
 - [c, added 2026-10-18] **Gomez (2023, *Econometrica*)** splits the growth of
   top wealth shares into within, between (rank mobility) and demography terms,
   with closed forms for random-growth models, estimated on the Forbes 400. It
-  is the balance law's closest precedent in economics. Whether its between
-  term is tested against an independently measured variance, as ours is, must
-  be checked in the full text before any novelty sentence is written. Also:
+  is the balance law's closest precedent in economics. Checked in the full
+  (2019 working-paper) text: it *is* tested against independently measured
+  volatility and tail index, on one top set (theory note §9). Also:
   - Ichiba et al. 2011 (hybrid Atlas models: drifts by name and by rank,
     which is the frame for A against B);
   - Kolli & Shkolnikov 2018 (finite-N fluctuations: a null for R̃);

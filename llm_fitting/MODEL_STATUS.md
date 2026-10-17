@@ -4088,6 +4088,24 @@ registered sensitivity / exploratory diagnostics / development negative
 result); the survivor-conditional scope line on the movement claim names the
 boundary-flux residual; S(k) stays "within recorded top-M".
 
+_Addendum 2026-10-18 (OWNER DECISIONS; record §2z-db):_ The owner wrote, in
+the conversation, in reply to the decisions listed after §2z-da: "decisions:
+1. yes, one paper with B as spin; 2. retire it; 3. read Gomez and rport back;
+4; yes." In order:
+1. **One paper, with the movement-to-structure balance (B) as its spine.**
+   The permanent–transitory model (A) becomes the measurement of individual
+   movement inside it. The 2026-07-12 claim paragraph above stays the binding
+   statement of A's confirmation results. The paper's spine paragraph is to be
+   rewritten around B; a PROPOSED wording is in §2z-db, and it binds only
+   once the owner approves the wording.
+2. **The title "Eulerian stability with Lagrangian churn in digital attention
+   rankings" is RETIRED.** So is the blockquote that opens this section, whose
+   premise was a stationary ladder (§2z-cw, §2z-da). Do not use either.
+3. Gomez (2023) has been read; the report is in theory note §9 and §2z-db.
+4. **The sealed-bridge protocol is to be redesigned around discriminating
+   tests.** The redesign is `BRIDGE_PROTOCOL_V3_DRAFT_2026-10-18.md`.
+   Adopting it and opening the bridge remain the owner's decisions.
+
 ## 2z-ae. 2026-07-16/17 — THE SUBMISSIONS BACKTEST EXECUTED (PREREG_2026-07-16, one pass, outcome-unseen cross-metric replication per §2z-w — NOT confirmation; Wikipedia remains the primary target): MIXED, but the headline hardened finding TRANSPORTS — the §2z-ac established-departure deficit REPLICATES on a second, outcome-unseen metric (P7 sim/emp ratio 2.74 at K/2, squarely in the pre-registered 2–3× point range) and amplitude collapse (b≈1) + era-dominance carry over; the monotone s-trend (P4a) and the functional VR share (P9b) do NOT replicate; IG P10/P11 are NOT ADJUDICATED (build fail-closed on the wrong observational unit + an infeasible registered reconciliation target)
 
 Panel: `reddit_submissions_long` (2018-12..2022-12, 142,438,022 daily /
@@ -11295,3 +11313,196 @@ python llm_fitting/runs/2026-10-15_figures/make_figures.py
 
 `scripts/health_check.sh` passes before each commit; the result is in the
 commit message.
+
+## 2z-db. 2026-10-18 — OWNER DECISIONS, Gomez REVIEWED, PLANNING ONLY. Decided: one paper with B as the spine; the "Eulerian stability" title RETIRED; the bridge protocol to be redesigned. Read in full: Gomez (2023) already contains the displacement law, its extensions, the stationary balance and a predicted-against-measured test on the Forbes 400, so novelty claim (a) is WITHDRAWN as stated. Drafted: a B-spine outline, a PROPOSED binding paragraph, and bridge protocol v3 (NOT ADOPTED) with a margin set by power. No sealed contact, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-18; started
+from 2db1602. At the owner's "push", and after one confirmation question that
+the owner answered with these decisions, 8cd0fac..2db1602 were pushed to
+origin/main. No data contact except planted worlds. The skills are those at
+8cd0fac._
+
+### 1. The owner's decisions (verbatim in the §6 addendum of 2026-10-18)
+
+Wording: "decisions: 1. yes, one paper with B as spin; 2. retire it; 3. read
+Gomez and rport back; 4; yes". This was a reply to the four decisions listed
+after §2z-da.
+
+1. **One paper, with B as the spine.**
+   - A becomes the measurement of individual movement.
+   - The 2026-07-12 paragraph stays the binding statement of A's confirmation
+     results.
+   - A spine paragraph for B is proposed in §4 below. It binds only once the
+     owner approves its wording.
+2. **The title is RETIRED,** with the §6 blockquote that shared its premise
+   of a stationary ladder.
+3. **Read Gomez and report** (§3).
+4. **Redesign the bridge protocol** around discriminating tests (§6).
+
+### 2. What changed in the documents
+
+**New:**
+- `paper/pnas_outline_v2.tex`, the B-spine outline. It compiles with
+  pdflatex and has the working title "Fast names, slow ladders: how measured
+  mobility sets the inequality of online attention".
+- `BRIDGE_PROTOCOL_V3_DRAFT_2026-10-18.md`.
+- `runs/2026-10-18_bridge_power/`.
+
+**Updated:**
+- `paper/pnas_outline.tex`: a SUPERSEDED banner only.
+- Theory note: §9 added, and a bracketed note at §4.
+- The 10-18 frame, the evidence packet's positioning, reviewer question 1,
+  and `SYNTHESIS.md`.
+
+### 3. Gomez (2023), read in full: the report (theory note §9)
+
+**Source.** The June 2019 working paper, "Displacement and the Rise in Top
+Wealth Inequality" (AEA 2020 conference paper). The published *Econometrica*
+version is paywalled and was not read.
+
+**What it contains:**
+- **The law.** dS/S = μ dt + g(q)q²ν²/(2S) dt, that is ½(ζ − 1)ν² with the
+  local tail index ζ. This is our crossing gain σ²/(2S) for the arithmetic
+  share; ours is for the mean-log index, with S = 1/ζ.
+- **Extensions:**
+  - scale dependence (variance at the threshold);
+  - heterogeneity (average variance at the threshold: our occupants);
+  - aggregate risk;
+  - jumps, Σ_j (ζ^{j−1} − 1) κ_j / j!, our cumulant expansion;
+  - demography (our entry term).
+- **The exact accounting with panel data** (Prop. 7).
+- **The stationary balance,** ζ = 1 − 2μ/ν² (our S*).
+- **A test, out of equilibrium, on one top set.** Forbes 400, 1983–2017:
+  measured displacement 2.3% a year against a predicted 2.0% (ν 27%, ζ 1.5),
+  2.1% with cumulants, tracked year by year.
+- **Fluctuations at business-cycle scale sit in the within term,** as our
+  steady crossings do (§2z-cr).
+- **Transitory measurement error** biases displacement by about −2ρ; for
+  wealth ρ ≈ 0.01.
+- **Mobility:** mean time in the top, independent of the percentile in the
+  stationary model, which matches our near scale-invariant turnover (§2z-cu).
+- **Cause:** innovation drives displacement.
+
+**Verdict.** Our novelty claim (a), "a test out of equilibrium in which the
+crossing term is predicted from measured lasting volatility and slope", is
+anticipated and WITHDRAWN as stated. It is struck through in the packet, the
+reviewer questions and theory note §4.
+
+**What remains ours:**
+- the test rank by rank across whole ladders (K/64 … K, four ladders),
+  against one top set;
+- the regime where passing movement dominates. Selection on current rank is
+  first-order there, hence permanent-rank cohorts, spacing differences and the
+  composition term, of which −2ρ is the first-order case;
+- ruling out rank exchange (§2z-cv);
+- lasting volatility nearly independent of size, β 0–0.09 (§2z-da);
+- the domain: attention, three platforms, a dated design change, censoring.
+
+**Two consequences for the paper:**
+- **Name the crossing gain the displacement term** and cite Gomez's
+  decomposition as the framework.
+- **Say which share a statement is about.** At a Zipf-like head (S ≈ 0.9,
+  ζ ≈ 1.1), displacement in *arithmetic* shares is only about 0.05σ², against
+  0.55σ² for the mean-log index. The arithmetic concentration of the head is
+  held almost entirely by members' own drift. Decomposing the arithmetic
+  shares of §2z-da in Gomez's terms is not yet done.
+
+### 4. PROPOSED binding paragraph for the B spine (wording for the owner's approval; NOT binding)
+
+"On four attention ladders from three platforms, the communities at the top
+change quickly while the ladder they stand on changes slowly. The change in
+any top set's share is exactly its members' drift against the field plus a
+displacement gain from communities crossing its boundary, the decomposition
+Gomez introduced for top wealth shares. Measured on cohorts fixed by
+permanent rank, which separates lasting movement from passing swings, the
+displacement gain at each rank where lasting movement can be measured matches
+lasting variance over twice the local slope of the rank-size curve (pooled
+ratio 0.955, 5–95% 0.889–1.054; development data, in sample). This
+identifies movement as growth in levels rather than exchange of ranks; it
+does not distinguish among level-growth mechanisms. Shape therefore changes
+through drift by rank. Around Reddit's 2021 feed change, attention moved from
+the leading submissions communities to the next tier and to their comments,
+and the leaders' arithmetic share fell from 50% to 34%, toward the lower level
+their movement sustains. The analysis explains structure and its
+counterfactuals but forecasts neither the curve better than its own trend nor
+retention better than rank. The permanent–transitory model supplies the
+measurement of individual movement (relative moment error 0.032 against 0.171
+out of era, §2z-q); its home-reversion mechanism and stationary ladder are
+not claimed."
+
+**Proposed framing rules:**
+- "displacement" vocabulary, with Gomez cited as the framework;
+- never present the law as new;
+- give every range with its rank span;
+- label post hoc results as post hoc;
+- name the share (arithmetic or index) in every concentration statement.
+
+### 5. Retired
+
+- The title "Eulerian stability with Lagrangian churn in digital attention
+  rankings".
+- The §6 blockquote ("the rank-size curve and the per-rank share are
+  stationary").
+- The old outline's claim that the joint regularity is undocumented.
+
+### 6. Bridge protocol v3 (DRAFT, NOT ADOPTED) and its power
+
+**Design.**
+- 26-week blocks: cohort 2021 H2; origin 2022 H1 (development);
+  2023 H1 … 2024 H1 (bridge).
+- Stage 0 first: an instrument audit of capture delay and removals by size
+  decile, plus the source switch, before any outcome.
+
+**Primary tests:**
+
+| | test |
+|---|---|
+| P1 | Boundary theory in period, pooled ratio within [0.85, 1.18]: comments K/8 … K, submissions K/4 … K |
+| P2 | The same with c predicted from development only (out of time) |
+| P3 | The 12 June 2023 blackout: (a) the head falls beyond placebo years; (b) the fall is passing, within ±0.05 by weeks +17 … +24; (c) the same on comments |
+| P4 | The empirical-shape lock-in forecaster non-inferior to the logistic on rank (Brier + 0.001) |
+
+**Secondary tests:**
+
+| | test |
+|---|---|
+| S1 | Deceleration of the submissions head |
+| S2 | The fixed 2023 forecasts |
+| S3 | Variogram sensitivity |
+| S4 | The composition term |
+
+**Power** (planted, one start, test-suite world, 20 seeds; pooled ratio over
+K/8 … K):
+
+| world | mean | SD | 5–95% |
+|---|---|---|---|
+| plain walk | 1.007 | 0.029 | 0.955–1.044 |
+| rare jumps | 1.047 | 0.057 | 0.979–1.156 |
+| volatility types still sorting (the rival) | 1.383 | 0.081 | 1.249–1.504 |
+
+| margin | plain | jumps | rival |
+|---|---|---|---|
+| [0.75, 1.33] | 20 of 20 | 20 of 20 | 5 of 20 |
+| [0.85, 1.18] | 20 of 20 | 20 of 20 | **0 of 20** |
+| [0.88, 1.14] | 20 of 20 | 17 of 20 | 0 of 20 |
+
+The old band therefore admitted the rival a quarter of the time. [0.85, 1.18]
+excludes it while keeping the level models.
+
+**Disclosures.** Submissions' range K/4 … K was chosen knowing that K/8 … K
+fails on development (≈ 0.83); that choice is disclosed in the protocol.
+
+**What adoption spends.** The first value-level contact with the bridge.
+Owner-gated.
+
+### 7. Not done
+
+- Decomposing the arithmetic shares in Gomez's terms.
+- Displacement implied by the model for unmeasurable heads (Gomez §5).
+- The B-spine prose itself.
+- The event-study figure.
+- The capture-delay audit on the development archive (WD drive).
+- Fitted rival classes run through the identical estimators.
+- A joint block bootstrap.
+
+**Ledgers.** No data contact beyond planted worlds; no gate evaluation.

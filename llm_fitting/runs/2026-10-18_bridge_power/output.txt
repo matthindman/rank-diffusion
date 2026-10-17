@@ -1,0 +1,7 @@
+plain             pooled K/8..K over 20 seeds: mean 1.007, sd 0.029, 5-95% 0.955-1.044
+jumps             pooled K/8..K over 20 seeds: mean 1.047, sd 0.057, 5-95% 0.979-1.156
+volatility_types  pooled K/8..K over 20 seeds: mean 1.383, sd 0.081, 5-95% 1.249-1.504
+margin [0.75, 1.33]: share inside — plain 1.00, jumps 1.00, volatility_types 0.25
+margin [0.85, 1.18]: share inside — plain 1.00, jumps 1.00, volatility_types 0.00
+margin [0.88, 1.14]: share inside — plain 1.00, jumps 0.85, volatility_types 0.00
+exit done

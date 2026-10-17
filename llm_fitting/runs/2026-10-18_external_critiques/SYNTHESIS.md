@@ -126,3 +126,18 @@ stands. They gave the same three reasons.
 
 - Gomez, M. (2023) [Decomposing the Growth of Top Wealth Shares](https://www.econometricsociety.org/publications/econometrica/2023/05/01/Decomposing-the-Growth-of-Top-Wealth-Shares), *Econometrica* 91(3), 979–1024.
 - Batty, M. (2006) [Rank clocks](https://ideas.repec.org/a/nat/nature/v444y2006i7119d10.1038_nature05302.html), *Nature* 444, 592–596.
+
+## Follow-up, 2026-10-18 (owner decision 3): Gomez read in full
+
+His working paper (June 2019) already contains six things:
+- the displacement law, ½(ζ − 1)ν² for arithmetic shares;
+- its extensions for scale dependence, heterogeneity, aggregate risk and
+  jumps (the cumulant series);
+- a demography term;
+- the exact accounting with panel data;
+- the stationary balance;
+- a test of predicted against measured displacement on the Forbes 400, out
+  of equilibrium.
+
+Our novelty claim (a) is therefore withdrawn as stated. Theory note §9 and
+§2z-db give what remains ours.

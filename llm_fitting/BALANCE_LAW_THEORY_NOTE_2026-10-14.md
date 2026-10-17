@@ -115,6 +115,8 @@ reading level tagged per item.
 
 ## 4. What this program adds
 
+_[CORRECTED 2026-10-18 by §9: Gomez (2023) already predicts the displacement (crossing) term from measured volatility and the local tail index and compares it with measured displacement, out of equilibrium, on the Forbes 400. Claim (a) below is withdrawn as stated; what remains is in §9.]_
+
 1. **The boundary term is predicted, not measured.** c_k = σ_k²/(2S_k) uses
    the lasting variance of named movement and the ladder's local slope, both
    measured independently of the crossings. Comparing it with the measured
@@ -311,3 +313,82 @@ These points narrow §4's claims; they do not withdraw the measurements._
   of β ≈ 0.05 (comments), 0.09 (submissions) and ≈ 0 (Facebook, Instagram),
   against about 0.2 for firms. Lasting volatility is nearly independent of
   size (§2z-da).
+
+## 9. Gomez (2023), read in full: what it already contains and what remains ours (added 2026-10-18, owner decision 3)
+
+_Read: "Displacement and the Rise in Top Wealth Inequality" (M. Gomez), the
+June 2019 version (first version November 2016), served by the AEA as its
+2020 conference paper. This is the working paper of the *Econometrica* 2023
+article. The published text is paywalled and was not read. Its abstract
+renames "displacement" as the "between" term and promises closed forms for a
+range of random-growth models. Formulas below are restated, not quoted.
+Record: MODEL_STATUS §2z-db._
+
+### What the paper contains, against this program
+
+| Gomez | this program |
+|---|---|
+| **Prop. 1.** The top share obeys dS/S = μ dt + g(q)q²ν²/(2S) dt. With the local tail index ζ = 1 + g(q)q²/S, the displacement term is ½(ζ − 1)ν² | Our crossing gain, σ²/(2S_k), is the same term for the *mean-log* shape, with local slope S_k = 1/ζ_k. The factor ζ against ζ − 1 comes from geometric against arithmetic shares |
+| **Prop. 2** (volatility depends on scale): displacement uses ν² *at the threshold* | the variance of names at the boundary; our "occupants" |
+| **Prop. 3** (heterogeneity): the average variance at the threshold | the cohort-versus-occupant route; the volatility-type world (§2z-cq) |
+| **Prop. 4** (aggregate risk): differences in exposure add to the variance | common shocks; not modelled here |
+| **Prop. 5** (jumps): displacement = Σ_j (ζ^{j−1} − 1) κ_j / j! | the cumulant expansion of §8, for the mean-log index |
+| **Prop. 6** (death, inheritance, population growth): a demography term | the entry and exit term (§2z-cc) |
+| **Prop. 7.** Exact accounting with panel data: within, plus displacement (entrants' and leavers' wealth against the threshold's), plus demography | the exact decomposition (`balance_accounting.py`, §2z-bu, §2z-cr), here at every cut-off and for the shape |
+| **Stationary case.** ζ = 1 − 2μ/ν², read as a balance equation for top shares | the sustained slope S* = σ²/(2 × net slide) (§2z-cd) |
+| **Test.** Forbes 400, 1983–2017. Measured displacement 2.3% a year against ½(ζ − 1)ν² = 2.0% (ν 27%, ζ 1.5); 2.1% with skewness and kurtosis. Tracked year by year (his Fig. 4). Out of equilibrium: inequality was rising | the boundary test, predicted against measured. Ours is done rank by rank |
+| Fluctuations of top shares over the business cycle sit in the within term | crossings steady, members' term swinging (§2z-cr) |
+| **Measurement error.** Transitory error biases displacement by about −2ρ (AR(1) of growth). For wealth ρ ≈ 0.01, so the bias is negligible | in attention passing swings are first-order. Hence permanent-rank cohorts, spacing differences, and the composition term (§2z-cm, §2z-da) |
+| Displacement implied by the model where no panel exists (top 1%, 0.1%, 0.01%, 1916–2012) | none |
+| **Mobility.** Mean time in the top percentile; in the stationary model it does not depend on the percentile; higher ν raises mobility even as it raises inequality | lock-in (§2z-cy). Turnover is nearly the same at every scale, 0.79/0.82/0.84 at k = 195, 1,562, 12,500 (§2z-cu), as his result implies. June 2021 combined higher mobility at the head with falling concentration |
+| Cause: innovation drives displacement | the owner's framing: agnostic about cause (§2z-cj) |
+
+### What this changes
+
+1. **Novelty claim (a) of §4 is anticipated and is withdrawn as stated.**
+   That claim was "a test out of equilibrium in which the crossing term is
+   predicted from measured lasting volatility and slope". Gomez predicts
+   displacement from measured volatility and the local tail index, compares
+   it with displacement measured by accounting, and does so out of
+   equilibrium, on one top set.
+2. **What remains ours, and must carry the paper's novelty:**
+   - **Rank by rank across whole ladders.** Seven cut-offs from K/64 to K, on
+     four ladders, against one top set. The formula then tests whether
+     movement is level diffusion at every scale, and shows where it fails:
+     the submissions band at ranks 300–600 and the heads.
+   - **The regime with heavy passing movement.** Selection on current rank is
+     the main bias in attention data, whereas it is negligible for wealth.
+     The permanent-rank cohort method, spacing differences and the
+     composition term are needed there, and Gomez's −2ρ correction is their
+     first-order case (C5, §2z-cm, §2z-da).
+   - **Ruling out rank exchange**, the movement model of the ranking-dynamics
+     literature, with planted rivals (§2z-cv).
+   - **Lasting volatility nearly independent of size**, β ≈ 0–0.09
+     (§2z-da). Gomez's ν differs across top percentiles mainly through equity
+     shares.
+   - **Attention on three platforms, a dated design change, and censoring.**
+3. **Arithmetic against geometric shares matters at a Zipf-like head.**
+   - In arithmetic shares the displacement is ½(ζ − 1)ν². With head slopes
+     S ≈ 0.9 (ζ ≈ 1.1), displacement in the *arithmetic* share is only about
+     0.05σ². The arithmetic concentration of a Zipf-like head is therefore
+     held almost entirely by the members' own drift, the within term.
+   - In the mean-log index the displacement gain is σ²/(2S) ≈ 0.55σ².
+   - The paper's statements about "what crossings restore" must name the
+     share they mean. Gomez's formula gives the arithmetic version directly,
+     so the arithmetic concentration of §2z-da can be decomposed in his terms.
+     Not yet done.
+4. **Vocabulary.** Call the crossing gain the **displacement** term, as Gomez
+   does, and cite his decomposition as the framework. Our contribution is then
+   a whole-ladder test, robust to passing movement, in a new domain.
+   Positioning sentence, draft for the owner: "Gomez showed that top wealth
+   shares change through a within term and a displacement term predicted by
+   the volatility of wealth and the local tail index. We test the same
+   relation at every rank of attention ladders, where most movement is
+   transitory, and find that it holds wherever lasting movement can be
+   measured, which identifies movement in levels rather than in ranks."
+5. **Two things to take from him.**
+   - The model-implied displacement for strata without panel data. This
+     would extend our heads and the Instagram head.
+   - Splitting the volatility term into within-group and between-group parts,
+     as his industries are split. For us that means within and between topic
+     clusters, which needs names: owner-gated.
