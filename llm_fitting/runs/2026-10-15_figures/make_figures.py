@@ -108,7 +108,7 @@ def fig_ladders(include_instagram=False):
             ("reddit_submissions_long", "boundary__reddit_submissions_long.json", "Reddit submissions", ORANGE, "s"),
             ("facebook_a", "boundary__facebook_a__block13.json", "Facebook pages", "#2a9d5c", "^")]
     if include_instagram:                                   # 2z-cx: through the censoring apparatus
-        sets.append(("instagram_hm", "IG", "Instagram accounts (a-matching activity)", "#8e44ad", "D"))
+        sets.append(("instagram_hm", "IG", "Instagram (a-matching; displacement variance, 14→28 weeks)", "#8e44ad", "D"))
     fig, ax = plt.subplots(1, 2, figsize=(11.5, 4.8))
     a = ax[0]
     xs = np.linspace(0, 14, 10)
@@ -126,13 +126,13 @@ def fig_ladders(include_instagram=False):
             a.errorbar(c, x, xerr=[[c - cq[0]], [cq[1] - c]], yerr=[[x - xq[0]], [xq[1] - x]], fmt=mk, color=col,
                        mfc="white" if small else col, ms=6, capsize=2, lw=0.8, alpha=0.9)
         a.plot([], [], mk, color=col, label=lab)
-    a.plot([], [], "o", color="k", mfc="white", label="open: head cut-offs with < 150 names at the boundary")
+    a.plot([], [], "o", color="k", mfc="white", label="open: boundary strata of < 150 names (Instagram above K/16 not drawn)")
     a.set_xlim(0, 14)
     a.set_ylim(0, 14)
     a.set_xlabel("predicted: lasting variance / (2 × local slope)")
     a.set_ylabel("measured: lasting crossing gain")
-    a.set_title("Per member per 1,000 weeks, cut-offs K/64 … K")
-    a.legend(fontsize=7.5, loc="upper left")
+    a.set_title("Per member per 1,000 weeks, cut-offs K/64 … K (Instagram K/16 … K)")
+    a.legend(fontsize=7.5, loc="lower right")
     a = ax[1]
     for pn, f, lab, col, mk in sets:
         d = load(R / "2026-10-15_instagram" / "ig_boundary__instagram_hm.json")["apparatus"] if f == "IG" else load(R / "2026-10-14_boundary_law" / "cells" / f)
@@ -140,8 +140,11 @@ def fig_ladders(include_instagram=False):
         rel = np.array([r["k"] / K for r in d["pooled"]])
         rat = np.array([r["ratio"] for r in d["pooled"]])
         q = np.array([r["ratio_q"] for r in d["pooled"]])
-        a.errorbar(rel * {"reddit_comments_ext": 0.92, "reddit_submissions_long": 0.97, "facebook_a": 1.03, "instagram_hm": 1.08}[pn], rat,
-                   yerr=[rat - q[:, 0], q[:, 1] - rat], fmt=mk + "-", color=col, capsize=2, lw=1, label=lab)
+        xo = rel * {"reddit_comments_ext": 0.92, "reddit_submissions_long": 0.97, "facebook_a": 1.03, "instagram_hm": 1.08}[pn]
+        a.plot(xo, rat, "-", color=col, lw=1, label=lab)
+        small = (rel < 1 / 16 - 1e-9) & (pn != "reddit_comments_ext")             # boundary strata of < 150 names
+        for s_, mfc in ((~small, col), (small, "white")):
+            a.errorbar(xo[s_], rat[s_], yerr=[rat[s_] - q[s_, 0], q[s_, 1] - rat[s_]], fmt=mk, color=col, mfc=mfc, capsize=2, lw=1)
     a.axhspan(0.75, 1.33, color="#dddddd", alpha=0.6, lw=0)
     a.axhline(1, color=GREY, lw=1)
     a.set_xscale("log")
@@ -151,8 +154,10 @@ def fig_ladders(include_instagram=False):
     a.set_title("The ratio by rank (5–95% intervals)")
     a.legend(fontsize=8, loc="upper right")
     n = "four" if include_instagram else "three"
-    fig.suptitle(f"One law on {n} ladders: crossings at a rank's boundary follow lasting variance over twice the slope", fontsize=11)
-    fig.tight_layout()
+    fig.suptitle(f"Crossings at a rank's boundary against lasting variance over twice the slope, {n} ladders", fontsize=11)
+    fig.text(0.01, 0.005, "Reddit: variance from the 2019 cohort over 2019-21, crossings pooled over 2020-22 (registered design, not time-aligned; "
+             "time-aligned ratios in 2z-cm by start). Open symbols: boundary strata of < 150 names.", fontsize=6.5, color=GREY)
+    fig.tight_layout(rect=(0, 0.03, 1, 1))
     fig.savefig(HERE / ("fig_four_ladders.png" if include_instagram else "fig_three_ladders.png"), dpi=150)
 
 
@@ -206,7 +211,7 @@ def fig_puzzle():
     a.set_ylabel("share of the top k still in the top k")
     a.set_title("Turnover of the top sets")
     a.legend(fontsize=6.5, loc="lower left", ncol=1)
-    fig.suptitle("Moving names, a slowly changing ladder: a fifth of each top set is replaced every year while the rank-size curve keeps its form", fontsize=11)
+    fig.suptitle("Moving names, a slowly changing ladder: a fifth of each top set is replaced every year while the rank-size curve changes far more slowly", fontsize=11)
     fig.tight_layout()
     fig.savefig(HERE / "fig_puzzle.png", dpi=150)
 
@@ -250,7 +255,8 @@ def fig_why_it_curves():
         for q, ls, tag in zip([q for q in d["pairs"] if q["primary"]], (":", "-"), ("2020→21", "2021→22")):
             rows = sorted(q["rows"], key=lambda r: r["k"])
             k = np.array([r["k"] for r in rows]) / K
-            ax[0].plot(k, [1000 * r["sigma2"] for r in rows], ls, color=col, marker="o", ms=3, label=f"{lab} {tag}")
+            if tag == "2020→21":                                      # one measurement per panel (2z-cv item 3)
+                ax[0].plot(k, [1000 * r["sigma2"] for r in rows], "-", color=col, marker="o", ms=3, label=f"{lab} (one measurement, 2019 cohort)")
             ax[1].plot(k, [1000 * (r["sbar"] - r["entry"]) for r in rows], ls, color=col, marker="o", ms=3, label=f"{lab} {tag}")
             ax[2].plot(k, [r["S"] for r in rows], ls, color="k", lw=1, alpha=0.6)
             ax[2].plot(k, [np.nan if r["S_star"] is None else r["S_star"] for r in rows], ls, color=col, marker="o", ms=3, label=f"{lab} sustained, {tag}")
@@ -292,9 +298,13 @@ def fig_concentration():
         a.set_xticklabels([str(int(y[:4]) + (1 if y[5:7] == "12" else 0)) for y in yrs])     # blocks start in the last days of December
         a.set_xlim(-0.3, len(yrs) + 0.6)
         a.set_title(lab)
-        a.set_ylabel("share of the top K's activity (%)")
+        ar = R / "2026-10-18_arithmetic_shares" / "arithmetic_shares.json"
+        if ar.exists() and pn in load(ar):
+            A = load(ar)[pn]["years"]
+            a.plot(x, [100 * A[str(i)]["arith"][k0] for i in range(len(yrs))], "x", color="k", ms=7, label="top K/64, arithmetic share of activity")
+        a.set_ylabel("index: share of exp(mean log activity) in the top K (%)")
         a.legend(fontsize=7.5, loc="lower left" if pn == "reddit_comments_ext" else "upper right")
-    fig.suptitle("Where the head is going: its share now, and the share its own movement sustains", fontsize=11)
+    fig.suptitle("Where the head is going: its concentration index now, and the index its own movement sustains", fontsize=11)
     fig.tight_layout()
     fig.savefig(HERE / "fig_concentration.png", dpi=150)
 
@@ -361,6 +371,8 @@ def fig_lockin():
                    label=f"forecast from movement, top {k:,}")
             a.plot(x, [1] + [np.mean([v["geometric"] for v in agg[h]]) for h in hs], ls, color=GREY, lw=0.8,
                    label=f"constant turnover, top {k:,}" if k == r["ks"][0] else None)
+            a.plot(x, [1] + [np.mean([v["logistic"] for v in agg[h]]) for h in hs], ls, color="#c0392b", lw=0.8,
+                   label="logistic on log rank, log horizon" if k == r["ks"][0] else None)
         for c in r["origins"]:
             for v in c["ks"].values():
                 for x_ in v["horizons"].values():
@@ -386,7 +398,7 @@ def fig_lockin():
     a.set_xlabel("forecast probability of staying")
     a.set_ylabel("share that stayed")
     a.set_title("Calibration, all ladders, origins, k, h", fontsize=10)
-    fig.suptitle("Ex ante forecasts of lock-in from measured movement, scored against what happened", fontsize=11)
+    fig.suptitle("Retention forecast ex ante from measured movement, against constant turnover and a logistic on rank fitted to earlier outcomes", fontsize=11)
     fig.tight_layout()
     fig.savefig(HERE / "fig_lockin.png", dpi=150)
 

@@ -101,3 +101,29 @@ def test_short_panels_with_13_week_blocks_have_one_start_and_still_cross_at_the_
     p = {r["k"]: r for r in res["pooled"]}
     for k in (400, 800, 1600):
         assert 0.75 < p[k]["R_lasting"] / theory(p[k]) < 1.33, (k, p[k]["R_lasting"] / theory(p[k]))
+
+
+def test_the_spacing_difference_splits_exactly_into_later_reordering_and_a_composition_term():
+    """2z-da: on one survivor population R_ac - R_ab = R_bc + C exactly, in stationary and pressed worlds; for
+    stationary walks the composition term C is small against the later reordering (0.02-0.22 of it in the body
+    at seed 11; block averaging gives it a small positive momentum part)."""
+    import balance_accounting as ba
+    import mts_balance_law as bl
+    out = {}
+    for kind in ("stationary", "pressed_head"):
+        X = world(kind)
+        M = ba.block_means(X, BLOCK, start=0, min_frac=0.9)
+        st, ks = bl.strata(K), bl.cutoffs(K)
+        R = np.zeros(X.shape, dtype=np.int64)
+        for t in range(X.shape[0]):
+            o = np.argsort(-X[t], kind="stable")
+            R[t, o] = np.arange(1, X.shape[1] + 1)
+        pr, pres = ba.perm_rank(R, 0, BLOCK)
+        which = bl._assign(pr, pres, st)
+        rows = bd.remainder(M, which, st, ks, K, 1, 3, 5)
+        for r in rows:
+            assert abs(r["residual"]) < 1e-9
+        out[kind] = {r["k"]: r for r in rows}
+    for k in BODY:
+        r = out["stationary"][k]
+        assert abs(r["C"]) < 0.35 * r["R_bc"], (k, r["C"], r["R_bc"])

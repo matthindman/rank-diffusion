@@ -288,10 +288,10 @@ def report():
         r = json.loads(f.read_text())
         bw = r["block"]
         lines += [f"\n## {pn} (K = {r['K']}; {bw}-week blocks; retention of the top k after h blocks)", "",
-                  "| origin | k | h (weeks) | members | observed | model | past turnover, geometric | logistic | Brier: model / geometric / logistic |",
-                  "|---|---|---|---|---|---|---|---|---|"]
-        for o, k, h, x in cells(r):
-            lines.append(f"| {r['first_week'][o]} | {k} | {h * bw} | {x['n']} | {x['observed']:.3f} | {x['model']:.3f} | {x['geometric']:.3f} | "
+                  "| origin block (information through its last week) | target block | k | h (weeks) | members | observed | model | past turnover, geometric | logistic | Brier: model / geometric / logistic |",
+                  "|---|---|---|---|---|---|---|---|---|---|"]
+        for o, k, h, x in cells(r):                     # labels: the block's first week; the forecast uses the whole block (2z-da)
+            lines.append(f"| {r['first_week'][o]} | {r['first_week'][o + h]} | {k} | {h * bw} | {x['n']} | {x['observed']:.3f} | {x['model']:.3f} | {x['geometric']:.3f} | "
                          f"{x['logistic']:.3f} | {x['brier_model']:.3f} / {x['brier_geometric']:.3f} / {x['brier_logistic']:.3f} |")
     (OUT / "report_tables.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))

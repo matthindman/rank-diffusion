@@ -9699,6 +9699,8 @@ Any panel data.
 
 ## 2z-cm. 2026-10-14 — EXPLORATORY MEASUREMENT: the boundary theory by rank, the rate law's only non-accounting part. On comments, crossings at every rank from K/64 to K return what lasting variance over twice the local slope predicts (measured over predicted 0.98–1.22, 7 of 7 cut-offs); start by start, post hoc, they track it through 2020–2022 (20 of 21 cells, correlation 0.94). On submissions the crossings are smooth by rank, but the independent variance estimates in the head strata are too erratic to test them (3 of 7). With one-time constants removed by differencing two spacings, the slide of whoever holds the top k equals the slide of a cohort fixed by permanent rank on both panels (7 of 7 each). Three of four predictions held; nothing adopted, no fit, no gate evaluation
 
+_[DISCLOSED 2026-10-18 by §2z-da: the pooled ratios take lasting variance from the block-0 cohort over blocks 1–5 and crossings from starts 1–3 over blocks 1–7, so the two sides are not aligned in time (time-aligned ratios by start: `runs/2026-10-14_boundary_law/by_start_post_hoc_output.txt`, comments head 1.01, 0.90, 0.86); the spacing difference is exactly R_bc + C, with a composition term C of +25–35% on Reddit (§2z-da).]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-14; design,
 predictions, runner and planted-world tests committed at 0ba0854 before the
 run; results committed with this entry._
@@ -10356,6 +10358,8 @@ and the theory tracks the difference.
 
 ## 2z-cu. 2026-10-15 — EXPLORATORY MEASUREMENT and FIGURES for the paper: (1) robustness of the boundary theory to the universe size and block length; at a given rank the ratio does not depend on K, and comments holds with 13-week blocks, but submissions shows a persistent shortfall of crossings at ranks of about 300–600 (0.61–0.72 of prediction by every estimator); (2) the descriptive facts of the paper's opening; (3) four figures and a draft of the questions reviewers will ask. One of two robustness predictions held, the other partly not adjudicated; nothing adopted
 
+_[CORRECTED IN PART 2026-10-18 by §2z-da: with 13-week blocks two values fall outside the band, 0.72 at K/64 and 1.41 at K/16, not one; "the ratio does not depend on K" is an algebraic property of the estimator (crossings and strata at rank k do not involve K), not a robustness result; the "9 of 17" tally counts §2z-cm … §2z-cu only.]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; the
 robustness design was committed at 5b78a84 before its runs. Figures by
 `runs/2026-10-15_figures/make_figures.py` from saved outputs. Reviewer
@@ -10491,6 +10495,8 @@ evaluation.
 
 ## 2z-cw. 2026-10-15 — POST HOC ARITHMETIC on saved outputs (no data file opened): slopes into shares. The top 78 Reddit submissions communities' share of the top 5,000's activity fell from 51% (2019) to 35% (2022); the movement of either recent year sustains 15–16%. On comments the top 195's share fell from 63% to 52%, and the latest year's movement sustains 53%
 
+_[SUPPLEMENTED 2026-10-18 by §2z-da: arithmetic shares of karma give the same fall (submissions top 78: 50.2% to 34.0%; comments top 195: 61.0% to 49.7%); the sustained 16% remains an index of geometric-mean activity.]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; started
 from 0590460. `runs/2026-10-15_concentration/concentration.py`, output and
 JSON; figure `runs/2026-10-15_figures/fig_concentration.png`._
@@ -10530,6 +10536,8 @@ JSON; figure `runs/2026-10-15_figures/fig_concentration.png`._
 **Ledgers.** No data contact; no gate evaluation.
 
 ## 2z-cx. 2026-10-15 — EXPLORATORY MEASUREMENT, registered: the boundary theory on Instagram, through the §2z-c censoring apparatus. On Instagram totals crossings at K/16 … K are 0.94–1.12 of σ²/(2S) (5 of 5); on the q-free per-post panel 3 of 5 cut-offs are in the band, with wide intervals; the raw top-50k panel cannot be adjudicated, as predicted. Planted censoring worlds show the "a"-query layers leave the ratio unbiased, and the matching-post count carries at most 23–41% of Instagram's displacement variance in the body. Two of three predictions held; nothing adopted, no fit, no calibration
+
+_[CORRECTED IN PART 2026-10-18 by §2z-da: the reading of the matching-post count as an upper bound on what caption drift could contribute is WITHDRAWN (Var log Y includes 2 Cov(log M, log Ȳ), and drift in q can enter both parts); per-post engagement is free of q only if q is persistent; on Instagram the test is of displacement variance at 14–28 weeks.]_
 
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-15; design,
 predictions, runner, planted censoring simulator (`ig_censoring_sim.py`),
@@ -10670,6 +10678,8 @@ panel was rerun; its boundary numbers were identical. No run was killed.
 **Ledgers.** No gate evaluation. Data contact logged in `EXPOSURE_LEDGER.md`.
 
 ## 2z-cy. 2026-10-15 — EXPLORATORY MEASUREMENT, registered: ex ante forecasts of lock-in. From measured movement alone, the probability that each member of today's top k is still in the top k later discriminates who stays on all four ladders (Brier score 13–21% below constant turnover, within 0.002–0.005 of a logistic fitted to past outcomes) and is calibrated within ±0.07 in 75% of cells. But it under-forecasts staying: incumbents are stickier than average movement implies, by 2–5 points at the first horizon and 5–17 points at longer ones, except at the very top of Reddit, which lost members faster than forecast at 1.5–2 years. Two of three predictions held; nothing adopted, nothing fitted to outcomes
+
+_[CORRECTED IN PART 2026-10-18 by §2z-da: "within 0.002–0.005 of a logistic fitted to past outcomes" hides the direction; the three-parameter logistic on log rank and log horizon has the lower Brier score on all four ladders (by 0.0006–0.0048) and about half the aggregate error; the training strata are by current rank, a departure from the permanent-rank rule now declared in the design.]_
 
 _[CORRECTED IN PART 2026-10-15 by §2z-cz: the post hoc calm-half split is partly mechanical (planted swing worlds without types give a calm excess of +0.02 to +0.04), so the reading that volatility persists within a name is withdrawn as stated; among planted mechanisms only block-scale jumps reproduce the under-forecast, and an outcome-free forecast with the empirical shape of training changes halves it on all four ladders (post hoc).]_
 
@@ -10874,3 +10884,414 @@ owner).
 
 **Ledgers.** Data contact for the rerun is covered by §2z-cy's row; no new
 gate evaluation.
+
+## 2z-da. 2026-10-18 — REVIEW, CORRECTIONS and POST HOC MEASUREMENTS. Three external critiques were checked against the code; nine statements are corrected and the Instagram bound is WITHDRAWN. Findings: lock-in forecasting loses to a logistic on rank; the boundary statistic splits exactly; arithmetic shares confirm the concentration fall (50.2% to 34.0%); submissions' slide profile does NOT explain its 300–600 shortfall; against placebo years the June 2021 fall of the submissions head is NOT distinctive (X1 FAIL, 3 of 4 held), while a shift to the next tier and to comments is; lasting volatility nearly independent of size. Nothing adopted, no gate evaluation, no claim language changed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-18; work
+started from 8cd0fac, the last pushed commit. Local commits 284fb7e, 5362ac9,
+f91e169, eb46624 and fc765f2 hold the review, the pooled ratio, and the
+designs written before each run. The skills are those at 8cd0fac. Owner's
+request: review everything, obtain independent critiques from gpt-6-astra,
+Fable 5.1 and a fresh Opus 5.5, summarise them, make the changes this session
+agrees with, then strengthen the paper with the data on hand. Exposure:
+`EXPOSURE_LEDGER.md`, five rows dated 2026-10-18; development panels only. No
+sealed path was touched._
+
+### 1. What was done
+
+- **A big-picture review.** `BIG_PICTURE_REVIEW_2026-10-18.md` (planning
+  only). Two of its sentences were corrected the same day: "B explains A's
+  failure" (the directions differ) and "the same fact seen twice".
+- **A critique brief** in the style the owner pointed to: altitude, depth,
+  range; a short seller who researches rather than opines; an unreasonable
+  target (`runs/2026-10-18_external_critiques/CRITIQUE_PROMPT.md`). It went to:
+  - gpt-6-astra, through the Codex CLI 0.163.0 in read-only mode;
+  - Claude Fable 5.1, as a subagent;
+  - a fresh Claude Opus 5.5, as a subagent.
+
+  All three worked read-only, with no data access. The reports are saved
+  verbatim in the same folder, and `SYNTHESIS.md` summarises and checks them.
+- **The shared verdict.** As it stands PNAS would not send this out, for
+  three reasons:
+  - it is two half-papers;
+  - no load-bearing result is both non-mechanical and out of sample;
+  - the claim language runs ahead of the numbers.
+
+  Fable 5.1 adds that model A's personal-home mechanism is contradicted by
+  §2z-ay and §2z-bu, the program's own measurements.
+
+### 2. Findings checked, and the corrections they force
+
+Each was re-derived here from code or saved outputs. Bracketed notes were
+added at §2z-cm, §2z-cu, §2z-cw, §2z-cx and §2z-cy. The evidence packet, the
+reviewer questions and the big-picture review are corrected in place, each
+change marked [c] or _(Corrected …)_.
+
+1. **Lock-in.** The registered movement forecast loses to the
+   three-parameter logistic on log rank and log horizon on every ladder.
+   Recomputed from `runs/2026-10-15_lockin/lockin__*.json`:
+
+   | ladder | Brier: model / empirical shape (post hoc) / constant turnover / logistic | aggregate MAE: model / logistic |
+   |---|---|---|
+   | comments | 0.1252 / 0.1237 / 0.1578 / 0.1244 | 0.035 / 0.022 |
+   | submissions | 0.1357 / 0.1315 / 0.1660 / 0.1309 | 0.069 / 0.031 |
+   | Facebook pages | 0.1607 / 0.1584 / 0.1855 / 0.1587 | 0.073 / 0.028 |
+   | Instagram | 0.1621 / 0.1610 / 0.2017 / 0.1615 | 0.030 / 0.018 |
+
+   - Share of cells within ±0.07 (126 cells):
+
+     | forecaster | share |
+     |---|---|
+     | model | 75.4% |
+     | empirical shape | 84.1% |
+     | constant turnover | 88.1% |
+     | logistic | 92.9% |
+
+   - §2z-cy's "within 0.002–0.005 of a logistic" hid the direction. Rank
+     carries the discrimination.
+   - The training strata are by *current* rank, an undeclared departure from
+     the permanent-rank rule. It is now declared in
+     `runs/2026-10-15_lockin/DESIGN.md`.
+   - The report labelled forecasts with the origin block's first week. It now
+     prints the target block too and says that information runs through the
+     block's end.
+2. **Concentration** is an index of geometric-mean activity (§2z-cw). The
+   draft abstract and the figure axis called it a share. Arithmetic shares are
+   in §5 below; the figure now carries both.
+3. **Time alignment.** The pooled ratios of §2z-cm take variance from the
+   block-0 cohort over blocks 1–5 and crossings from blocks 1–7. The by-start
+   ratios are aligned in time; the comments head gives 1.01, 0.90 and 0.86.
+   This was a registered choice and is now disclosed beside the pooled
+   numbers.
+4. **Ranges.** C3's Facebook (0.77–1.17) and Instagram (0.94–1.12) ranges are
+   for K/16 … K. At K/64 the values are 0.71 and 2.49.
+5. **§2z-cu, 13-week blocks.** Two values fall outside the band, 0.72 and
+   1.41, not one.
+6. **"Does not depend on K"** is an algebraic property of the estimator, not
+   a robustness result.
+7. **Instagram.** The matching-post count does not bound what drift in the
+   "a"-match share could contribute: Var log Y = Var log M + Var log Ȳ +
+   2 Cov, and drift in q can enter both terms. The bound is WITHDRAWN;
+   the split stays as a description.
+   - q is chiefly language and caption style. The scope is "a-captioning
+     accounts, mostly English and Romance languages".
+8. **Tallies.**
+   - Registered items since §2z-cm: 15 of 26 held.
+   - Without J3 and I3, which predicted that something would *not* be
+     readable or forecastable: 13 of 24.
+   - "9 of 17" (§2z-cu §4) counted §2z-cm … §2z-cu only.
+   - Precision of the submissions-head variance: ±40% (§2z-cm), not ±30%.
+9. **The registration language.** Registered tests had their designs
+   committed before their runs, but the development panels had been read many
+   times before (§2z-cd: "not blind"). C2, C8, C9, the by-start r = 0.94, the
+   June 2021 mobility contrast and the lock-in repair are post hoc.
+
+**Literature** (Fable 5.1, Opus 5.5).
+- Gomez (2023, *Econometrica* 91:979–1024) decomposes top-share growth into
+  within, between (rank mobility) and demography terms, with closed forms for
+  random-growth models, on the Forbes 400. The abstract is confirmed. It is
+  the balance law's closest precedent. Whether its between term is tested
+  against an independently measured variance needs the full text: an
+  owner-facing item before any novelty sentence.
+- Batty (2006, *Nature*, rank clocks) documented stable rank-size over
+  churning membership, so the outline's claim that the joint regularity is
+  undocumented has to go.
+- Ichiba et al. (2011, hybrid Atlas models) is the frame for drift by name
+  (A) against drift by rank (B).
+- Also: Kolli & Shkolnikov 2018, Duranton 2007, Jones & Kim 2018, Stanley et
+  al. 1996, Riccaboni et al. 2008, Guvenen et al. 2021.
+- Positioning is in `BALANCE_LAW_THEORY_NOTE_2026-10-14.md` §8.
+
+**Theory** (Opus 5.5, Fable 5.1; accepted). On a locally exponential ladder,
+R̃ = S·κ(1/S) = σ²/(2S)·[1 + κ₃/(3σ²S) + …] at every instant. The boundary
+test is therefore a near-identity for level diffusion:
+- it rejects rank exchange (§2z-cv);
+- it cannot separate level models;
+- it can leave 1 only through four routes: position-dependent increments,
+  cumulants, a mismatch between the cohort and the occupants, or a misread
+  density.
+
+"Law of the dynamics" and "out of equilibrium as the hard part" are retired
+from the draft frame.
+
+### 3. Pooled ratio per ladder (commit f91e169; post hoc summary of registered cells)
+
+The geometric mean of R̃/c over the cut-offs, with bootstrap draws (200 per
+ladder):
+
+| ladder | K/16 … K | K/64 … K |
+|---|---|---|
+| comments | 1.069 (1.011–1.127) | 1.108 (1.030–1.205) |
+| submissions | 0.802 (0.680–1.004) | 1.001 (0.837–1.257) |
+| Facebook pages | 0.977 (0.802–1.202) | 0.928 (0.708–1.192) |
+| Instagram | 0.995 (0.852–1.213) | 1.171 (0.717–1.543) |
+| all four ladders, K/16 … K | 0.955 (0.889–1.054) | |
+
+Caveats:
+- the draws for R̃ and c are not joint;
+- communities are resampled independently;
+- the spread across estimators (about ±10%, §2z-co) exceeds these intervals.
+
+### 4. The boundary statistic split exactly, on one survivor population (design eb46624, written before the run)
+
+On the endpoints present at a, b = a + D and c = a + 2D, the identity
+R_ac − R_ab = R_bc + C holds to 10⁻¹⁵ on every panel.
+
+- **Comments.**
+  - The common-survivor ratio is within 0.044 of §2z-cm's at every cut-off:
+    1.227, 1.194, 1.095, 0.973, 1.011, 1.153 against 1.217, 1.204, 1.081,
+    0.978, 0.992, 1.109.
+  - R_bc is 2.5–3.7 and C is +0.95 to +1.26 per 1,000 weeks.
+- **Submissions.**
+  - Common-survivor ratios: 1.63, 1.83, 0.69, 0.63, 0.98, 0.95, 0.98.
+  - Original: 1.64, 1.86, 0.72, 0.61, 0.97, 0.90, 0.87.
+  - C is +0.24 to +1.62.
+- **Facebook pages (13-week blocks).**
+  - Ratios within 0.04 of the original: 0.71, 0.94, 0.82, 0.91, 1.14, 1.06,
+    1.00.
+  - C is −1.5 to −4.8.
+
+| | expectation | result |
+|---|---|---|
+| E1 | comments within ±0.05 at every cut-off | **PASS** (largest gap 0.044) |
+| E2 | submissions and Facebook within ±0.10 at K/8 … K | **PARTIAL**: Facebook passes; submissions at K moves 0.87 → 0.98 (gap 0.110) |
+| E3 | residual below 10⁻⁹ | **PASS** (largest 6 × 10⁻¹⁵) |
+
+- **Reading.** C is about +25–35% of the statistic on Reddit and about −30%
+  on Facebook. Persistent differences in drift dominate on Reddit; spike
+  weeks that reverse dominate on Facebook. The planted calibration of §2z-cm
+  covers R_bc + C together. The estimand is the lasting reordering gain
+  *including* its composition term, and the paper must say so.
+- **Survivorship.** Taking R_ab and R_ac on different survivor sets does not
+  drive the results, except submissions at K.
+
+**Planted, before the real run (this session).**
+- Drift that depends on *current* rank pulls the statistic below the
+  crossing gain:
+  - 0.62 at the edge of a pressed head and 0.78 one octave below it;
+  - 0.81–0.92 with a smooth tilt of 0.25 C per octave;
+  - 0.89–0.98 with 0.10 C per octave.
+- A correction from cohort (permanent-rank) slides makes it worse, because
+  the drift follows current position.
+
+**Hypothesis killed: submissions' own slide profile explains its shortfall
+at ranks 300–600.** (`runs/2026-10-18_remainder/planted_slide_profile.py`,
+post hoc.)
+- **Setup.** The test-suite world, with submissions' measured members' slide
+  by relative rank as drift by current rank: 1.5, 0.91, 0.61, 0.49, 0.27,
+  0.12 and 0 times c at K/64 … K. Three seeds.
+- **Result.** Ratios 0.80, 0.89, 1.07, 0.90, 0.90, 0.93, 0.98. At K/16 and
+  K/8 that is 1.07 and 0.90, against the data's 0.72 and 0.61.
+- **Contrast.** Comments' profile gives 0.90–1.12.
+- **Verdict.** The measured profile accounts for at most about 0.1 of the
+  shortfall. The 300–600 shortfall stays unexplained. Still open:
+  - the stratum-variance noise there (adjacent strata 0.0033 and 0.0141,
+    Fable);
+  - the June 2021 step;
+  - capture-delay deletion.
+
+### 5. Arithmetic shares (post hoc; `runs/2026-10-18_arithmetic_shares/`)
+
+- **What is measured.** The total karma of the year's top k by total, over
+  the total of the top K, on the 52-week blocks of §2z-cu. Endpoints are those
+  ever in the weekly top 4K. The 10th–90th percentiles of the weekly share are
+  given in brackets.
+
+| ladder, top set | 2019 | 2020 | 2021 | 2022 | index of §2z-cw, 2019 → 2022 |
+|---|---|---|---|---|---|
+| submissions, top 78 | 50.2% (49.5–52.8) | 49.8% | 41.8% (35.4–47.7) | 34.0% (31.7–38.6) | 51.1% → 34.8% |
+| submissions, top 312 | 70.4% | 68.8% | 62.1% | 55.3% | 71.4% → 56.4% |
+| comments, top 195 | 61.0% (60.1–65.7) | 56.6% | 52.6% | 49.7% (49.5–54.5) | 63.2% → 51.9% |
+| comments, top 781 | 80.9% | 76.7% | 73.9% | 72.2% | 82.6% → 74.1% |
+
+- The arithmetic fall matches the index within about 1–2 points.
+- The Jensen gap, log(arithmetic mean) − mean log, is 0.05–0.15 at the head
+  every year, and smaller at the submissions head in 2022 (0.05).
+- **Verdict.** The concentration fall is not an artefact of geometric means
+  (Opus 5.5's conjecture, not supported). The sustained 15–16% (§2z-cw) is
+  still an index. An arithmetic translation needs the within-year spread by
+  rank to stay as it is; not done.
+
+### 6. Lasting variance by rank, three estimators, and the size–variance exponent (post hoc; saved outputs only; `runs/2026-10-18_variance_by_rank/`)
+
+- **Estimators.** Variance route (cohort), variogram (Reddit), and the
+  variance implied by the crossings, 2S·R̃. See `fig_variance_by_rank.png`.
+- **Agreement.** The median |log(route / implied)| over K/16 … K is:
+
+  | ladder | median gap |
+  |---|---|
+  | comments | 0.08 |
+  | submissions | 0.14 |
+  | Facebook pages | 0.09 |
+  | Instagram | 0.06 |
+
+  The crossing-implied curve is the smooth one. The cohort route is erratic
+  where strata are small: submissions 3.95 and 10.41 per 1,000 weeks at
+  k = 156 and 312.
+- **Size–variance exponent.** β = −d log sd / d level = (d log σ² / d log k)
+  / 2S, from the crossing-implied curve over K/16 … K:
+
+  | ladder | β |
+  |---|---|
+  | comments | 0.047 |
+  | submissions | 0.085 |
+  | Facebook pages | 0.002 |
+  | Instagram | ≈ 0 |
+
+  For firms the figure is about 0.2 (Stanley et al. 1996; Riccaboni et al.
+  2008). Lasting volatility in attention is nearly independent of size: close
+  to Gibrat in the second moment.
+- **Caveat.** Cross-sectional by rank within the top K. A's
+  permanent-innovation variance by rank has not been added (§8).
+
+### 7. June 2021 against placebo years and control ladders (design fc765f2, written before the run; exploratory)
+
+**Design.**
+- Cohorts by permanent rank over the 13 weeks before the event week:
+  - head: top K/64;
+  - upper: K/64 … K/16;
+  - control: K/4 … K.
+- Δ = (post − pre change of the cohort's mean log level) − (the same for the
+  control). Pre window: weeks −8 … −1; post: +1 … +8.
+- Event week: the week containing 28 June, 2019–2022. 2021 is the event; the
+  other three years are placebos.
+- 5–95% intervals from 1,000 bootstrap draws over communities.
+- Output: `runs/2026-10-18_event_study/output.txt`.
+
+| Δ (5–95%) | 2019 | 2020 | 2021 | 2022 |
+|---|---|---|---|---|
+| submissions, head (78) | +0.000 (−0.065, +0.059) | +0.014 (−0.026, +0.051) | **−0.048 (−0.106, +0.004)** | −0.075 (−0.106, −0.047) |
+| submissions, upper (234) | −0.009 | −0.002 | **+0.068 (+0.035, +0.107)** | −0.108 (−0.208, −0.038) |
+| comments, head (195) | −0.074 (−0.117, −0.033) | −0.028 (−0.061, +0.009) | **+0.088 (+0.054, +0.127)** | +0.006 (−0.026, +0.035) |
+| comments, upper (585) | −0.043 | −0.042 | **+0.102 (+0.071, +0.130)** | +0.038 |
+| the submissions head's own comment activity | −0.045 (−0.132, +0.024) | −0.038 (−0.081, +0.003) | **+0.107 (+0.045, +0.158)** | +0.034 (−0.009, +0.078) |
+
+| | expectation | result |
+|---|---|---|
+| X1 | submissions head, 2021: Δ < 0 and below every placebo by more than its half-width | **FAIL**: −0.048 with an interval reaching +0.004; 2022's placebo is lower (−0.075) |
+| X2 | comments head, 2021: not negative beyond its interval | **PASS**: +0.088, and above every placebo year |
+| X3 | the submissions head's own comment activity, 2021: not negative | **PASS**: +0.107, and above every placebo year |
+| X4 | submissions head, placebo Δ within ±0.10 | **PASS**: 0.000, +0.014, −0.075 |
+
+**Reading.**
+- At weekly resolution, with ±8 weeks, the submissions head's fall in June
+  2021 is not distinguishable from its continuing slide a year later. The
+  daily onset of §2z-ca dates a change; this design does not show its size.
+- The registered pre window contains the onset of 23–24 June (the week of 21
+  June is week −1), which biases the 2021 Δ toward zero.
+- What *is* distinctive about mid-2021, against all three placebo years:
+  - the next tier of submissions (ranks 79–312) gained, +0.068;
+  - the comments head and upper tier gained, +0.088 and +0.102;
+  - the same 78 communities that lead submissions gained comment activity
+    relative to the comments ladder, +0.107.
+- So in the same weeks the head's submission karma flattened while its comment
+  karma rose, and attention moved one tier down the submissions ladder. That
+  is a within-community signature of a change in exposure, not in
+  participation (Fable 5.1's proposal).
+- **Capture regime.** It changes on 1 July 2021 for both ladders. A deletion
+  artefact that hits large communities would *lower* the comments head after
+  July 2021, and it rose. This argues against a common capture artefact. It
+  does not exclude removals specific to submissions.
+
+**Post hoc sensitivity** (`event_study_post_hoc.py`, written after the
+registered results).
+- The event week is moved to the week containing 21 June, so that the 2021
+  pre window ends before the onset.
+- A trend adjustment: Δ minus the same contrast one window earlier.
+- The cohort is fixed on weeks −29 … −17, before all three windows. The
+  submissions 2019 window does not fit.
+
+| Δ / trend-adjusted (5–95%) | 2019 | 2020 | 2021 | 2022 |
+|---|---|---|---|---|
+| submissions, head | — | +0.035 / −0.075 (−0.132, −0.016) | **−0.052 (−0.101, −0.004) / −0.035 (−0.097, +0.028)** | −0.085 / −0.086 (−0.182, −0.010) |
+| submissions, upper | — | −0.005 / −0.027 | **+0.056 (+0.025, +0.089) / +0.044 (+0.001, +0.084)** | −0.119 / −0.047 |
+| comments, head | −0.054 / +0.050 | +0.001 / +0.051 | **+0.089 / +0.075 (+0.019, +0.124)** | +0.032 / +0.174 |
+| comments, upper | −0.055 / +0.020 | −0.017 / +0.024 | **+0.114 / +0.091** | +0.030 / +0.129 |
+
+**Verdict on June 2021.**
+- The submissions head's fall in June 2021 does not stand out from other
+  years at weekly resolution. Moving the window makes it significant
+  (−0.052), but 2022 is lower still. Trend-adjusted it is −0.035, inside the
+  range of the placebo years.
+- The one signature distinctive in both forms is the gain of the next tier of
+  submissions (ranks 79–312): +0.056 and, trend-adjusted, +0.044. Every other
+  year's sign is negative.
+- The comments ladder's gain is distinctive as a step and not after the trend
+  adjustment, because 2022's adjusted value (+0.174) reflects a falling
+  pre-trend.
+- **For the paper.** The daily onset (§2z-ca) dates a change. "The drift of
+  the very top fell" is not shown to be distinctive against placebo years.
+  Supportable, with this evidence: around the feed change, attention moved
+  from the head of submissions to the next tier, and the same communities'
+  comment activity rose, in a summer when the comments ladder's head also
+  rose. The draft frame is worded to that.
+
+### 8. Not done, and still open
+
+- **Fitted rival classes run through the identical estimators** (all three
+  reviews): Iñiguez rank-displacement, Yule–Simon, two-type GLLM, block-jump
+  diffusion. This is the step that would turn "level, not rank" into model
+  selection.
+- **A joint block-over-time bootstrap** (R̃ and c together, common shocks).
+- **A's σ_perm(z)** against B's lasting variance by rank.
+- **The out-of-time boundary prediction** (Opus 5.5). With 26-week blocks and
+  four years, the variance and crossing windows cannot be fully separated on
+  the development panels. That makes the sealed bridge the place for it.
+- **The decomposition figure on Facebook and Instagram**, and S* on both.
+- **Capture-delay and deletion audit** on the raw archives (Fable 5.1's most
+  dangerous alternative). Needs the WD drive and a long run.
+- **The within-community production-versus-engagement split** (gpt-6-astra).
+  Needs post counts.
+- **Owner-gated:**
+  - one paper with B as spine;
+  - amending the binding paragraph;
+  - the title;
+  - Gomez in full;
+  - the sealed bridge, with the discriminating primary tests the reviews
+    propose: out-of-time ratios at a tight margin, the empirical-shape lock-in
+    forecast against the logistic, deceleration of the submissions head
+    against linear trend, and the June 2023 blackout with comments as control;
+  - Wikipedia;
+  - names for event analyses.
+
+### 9. Documents
+
+- `PAPER_FRAME_DRAFT_2026-10-18.md`: a new working draft, NOT ADOPTED. It
+  supersedes the 10-15 frame as the draft:
+  - "stable form" retired;
+  - the boundary result stated as a near-identity that identifies level-space
+    movement;
+  - arithmetic shares;
+  - lock-in demoted to supplementary;
+  - B as spine, proposed to the owner.
+- `EVIDENCE_PACKET_2026-10-15.md`, `REVIEWER_QUESTIONS_2026-10-15.md`,
+  `BIG_PICTURE_REVIEW_2026-10-18.md`: corrected in place, marked.
+- `BALANCE_LAW_THEORY_NOTE_2026-10-14.md` §8: what the statistic is exactly;
+  precedents.
+- Figures (`runs/2026-10-15_figures/make_figures.py`):
+
+  | figure | change |
+  |---|---|
+  | four ladders | neutral title; Instagram labelled displacement variance; open symbols by stratum size in both panels; time-alignment footnote |
+  | concentration | axis says index; arithmetic shares overlaid |
+  | lock-in | logistic shown |
+  | puzzle | "keeps its form" retired |
+  | why it curves | one variance measurement per panel, drawn once |
+
+### 10. Commands
+
+```
+python llm_fitting/runs/2026-10-18_pooled_ratio/pooled_ratio.py
+python llm_fitting/runs/2026-10-18_remainder/remainder_run.py reddit_comments_ext
+python llm_fitting/runs/2026-10-18_remainder/remainder_run.py reddit_submissions_long
+python llm_fitting/runs/2026-10-18_remainder/remainder_run.py facebook_a 13
+python llm_fitting/runs/2026-10-18_remainder/planted_slide_profile.py
+python llm_fitting/runs/2026-10-18_arithmetic_shares/arithmetic_shares.py
+python llm_fitting/runs/2026-10-18_variance_by_rank/variance_by_rank.py
+python llm_fitting/runs/2026-10-18_event_study/event_study.py
+python llm_fitting/mts_lockin.py report
+python llm_fitting/runs/2026-10-15_figures/make_figures.py
+```
+
+`scripts/health_check.sh` passes before each commit; the result is in the
+commit message.

@@ -1,0 +1,19 @@
+reddit_comments_ext K 12500
+  year from 2018-12-31: top 195: arithmetic 61.0% (weekly 60.1-65.7%), index 63.2%; top 781: arithmetic 80.9% (weekly 80.5-84.7%), index 82.6%; top 3125: arithmetic 94.7% (weekly 94.5-96.2%), index 95.6%
+     Jensen gap log(arith mean) - mean log by band: 1-195 0.10, 195-781 0.13, 781-3125 0.15, 3125-12500 0.23
+  year from 2019-12-30: top 195: arithmetic 56.6% (weekly 57.1-59.6%), index 59.2%; top 781: arithmetic 76.7% (weekly 77.0-79.4%), index 78.6%; top 3125: arithmetic 92.5% (weekly 92.6-93.8%), index 93.5%
+     Jensen gap log(arith mean) - mean log by band: 1-195 0.15, 195-781 0.13, 781-3125 0.14, 3125-12500 0.19
+  year from 2020-12-28: top 195: arithmetic 52.6% (weekly 52.3-56.5%), index 54.1%; top 781: arithmetic 73.9% (weekly 74.6-76.1%), index 75.4%; top 3125: arithmetic 91.6% (weekly 91.6-92.6%), index 92.4%
+     Jensen gap log(arith mean) - mean log by band: 1-195 0.10, 195-781 0.15, 781-3125 0.15, 3125-12500 0.19
+  year from 2021-12-27: top 195: arithmetic 49.7% (weekly 49.5-54.5%), index 51.9%; top 781: arithmetic 72.2% (weekly 72.2-75.6%), index 74.1%; top 3125: arithmetic 91.0% (weekly 91.1-92.5%), index 92.1%
+     Jensen gap log(arith mean) - mean log by band: 1-195 0.10, 195-781 0.11, 781-3125 0.15, 3125-12500 0.19
+reddit_submissions_long K 5000
+  year from 2018-12-31: top 78: arithmetic 50.2% (weekly 49.5-52.8%), index 51.1%; top 312: arithmetic 70.4% (weekly 70.0-73.1%), index 71.4%; top 1250: arithmetic 88.6% (weekly 88.2-90.2%), index 89.2%
+     Jensen gap log(arith mean) - mean log by band: 1-78 0.10, 78-312 0.10, 312-1250 0.11, 1250-5000 0.13
+  year from 2019-12-30: top 78: arithmetic 49.8% (weekly 49.2-51.4%), index 51.1%; top 312: arithmetic 68.8% (weekly 68.5-70.2%), index 69.9%; top 1250: arithmetic 86.7% (weekly 86.2-87.9%), index 87.4%
+     Jensen gap log(arith mean) - mean log by band: 1-78 0.14, 78-312 0.09, 312-1250 0.08, 1250-5000 0.11
+  year from 2020-12-28: top 78: arithmetic 41.8% (weekly 35.4-47.7%), index 41.3%; top 312: arithmetic 62.1% (weekly 57.4-66.8%), index 62.1%; top 1250: arithmetic 83.1% (weekly 80.8-85.2%), index 83.4%
+     Jensen gap log(arith mean) - mean log by band: 1-78 0.09, 78-312 0.08, 312-1250 0.07, 1250-5000 0.10
+  year from 2021-12-27: top 78: arithmetic 34.0% (weekly 31.7-38.6%), index 34.8%; top 312: arithmetic 55.3% (weekly 53.2-59.0%), index 56.4%; top 1250: arithmetic 79.2% (weekly 77.7-81.3%), index 80.2%
+     Jensen gap log(arith mean) - mean log by band: 1-78 0.05, 78-312 0.05, 312-1250 0.06, 1250-5000 0.10
+exit done

@@ -235,3 +235,79 @@ half-year split of shape change into members' movement and steady crossings
   revised primary test centred on the boundary theory is proposed in the 2023
   draft protocol);
 - Codex's review.
+
+## 8. What the boundary statistic is, exactly (added 2026-10-18, after three external reviews)
+
+_Sources: `runs/2026-10-18_external_critiques/` and MODEL_STATUS §2z-da.
+These points narrow §4's claims; they do not withdraw the measurements._
+
+**A near-identity for level diffusion.**
+- On a locally exponential ladder, where log density falls by 1/S per log
+  unit, increments Δ that do not depend on position shift the whole ladder by
+  S·log E[e^{Δ/S}]. So the reordering gain is
+
+      R̃ = S·κ(1/S) = σ²/(2S)·[1 + κ₃/(3σ²S) + κ₄/(12σ²S²) + …],
+
+  where κ_j are the cumulants of the lasting increment.
+- This holds at every instant, in or out of equilibrium. §2 never uses
+  stationarity.
+- The measured ratio can therefore leave 1 only through four routes:
+  - increments that depend on position within about √V of the boundary;
+  - cumulants at the scale S;
+  - a cohort whose variance is not the boundary occupants';
+  - a misread density (n ≠ k/S).
+- The planted results match this list:
+  - every level-diffusion variant gives 0.85–1.25 (§2z-cq);
+  - rank exchange fails (§2z-cv);
+  - fixed volatility types still sorting into the head give 1.2–1.3 in the
+    body, through the third route.
+- **What the test establishes.** Lasting movement near each boundary is
+  diffusion of levels at the measured variance. It does not establish a
+  mechanism, and it cannot separate level models such as random growth,
+  cumulative advantage and Hawkes-type bursts.
+- **Next.** The cumulant terms can be measured directly. The comparison then
+  becomes a prediction with a correction, judged against a margin justified by
+  power against fitted rivals.
+
+**The finite-horizon statistic** (gpt-6-astra review).
+- The spacing difference is exactly R_ac − R_ab = R_bc + C. Here R_bc is the
+  later reordering of b's top set, and C = G_bc(T_b) − G_bc(T_a) is how b's
+  top set moves afterwards compared with a's.
+- C is zero in expectation for a pure random walk. It is negative when
+  passing shocks reverse, and positive when persistent drifts differ across
+  names.
+- On the data (§2z-da), C is about +25–35% of the statistic on Reddit and
+  about −30% on Facebook pages. On Reddit drift heterogeneity dominates; on
+  Facebook, spike weeks that reverse.
+- The planted calibration of §2z-cm covers the whole statistic, R_bc + C.
+  The estimand is "the lasting reordering gain including its composition
+  term", and the paper should say so.
+- Drift that depends on *current* rank pulls the statistic below the
+  crossing gain. In planted worlds:
+  - 0.62 at the edge of a pressed head;
+  - 0.81–0.92 with a smooth tilt of 0.25 C per octave.
+- **The variance route** estimates σ² + 3D·Var(μ_i) under heterogeneous
+  drifts. "Lasting variance" therefore includes drift heterogeneity on both
+  sides of the comparison.
+
+**Closest precedents that §3 and §4 did not cite.**
+- Gomez (2023, *Econometrica* 91:979–1024) splits the growth of top wealth
+  shares into within, between (rank mobility) and demography terms, with
+  closed forms for random-growth models, estimated on the Forbes 400. It is
+  the balance law's twin in the inequality literature. Before novelty claim
+  (a) of §4 can stand, the full text has to show whether the between term is
+  tested there against an independently measured variance.
+- Ichiba, Papathanakos, Banner, Karatzas & Fernholz (2011, hybrid Atlas
+  models): drifts by name *and* by rank. This is the formal frame for the
+  program's two descriptions. Model A puts drift on names, as homes. Model B
+  puts drift on ranks, as slides.
+- Kolli & Shkolnikov (2018): fluctuations at finite N, a null distribution
+  for R̃.
+- Batty (2006, rank clocks) and Duranton (2007): stable rank-size over
+  churning membership, already documented for cities and firms. The outline's
+  claim that the joint regularity "has not been documented" has to go.
+- Size–variance scaling (Stanley et al. 1996; Riccaboni et al. 2008). On our
+  ladders the crossing-implied lasting variance gives a size–variance exponent
+  of β ≈ 0.05 (comments), 0.09 (submissions) and ≈ 0 (Facebook, Instagram),
+  against about 0.2 for firms. Lasting volatility is nearly independent of
+  size (§2z-da).

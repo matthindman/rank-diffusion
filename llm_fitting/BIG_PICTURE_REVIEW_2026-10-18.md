@@ -27,13 +27,17 @@ amplitude and R5 validation. Its text is mostly `\todo`.
 σ_k²/(2S_k) − s̄_k (+ entry). Its one non-accounting claim, crossings at a
 boundary = σ²/(2S), predicted and measured separately:
 - holds rank by rank on Reddit comments (0.85–1.22 by two estimators),
-  Facebook pages (0.77–1.17) and Instagram totals (0.94–1.12);
+  Facebook pages (0.77–1.17) and Instagram totals (0.94–1.12). _(Corrected
+  after the reviews: the Facebook and Instagram ranges are for K/16 … K; at
+  K/64 the values are 0.71 and 2.49. The Reddit pooled ratios are not
+  time-aligned; §2z-da.)_
 - holds partly on Reddit submissions (body 0.7–1.0; head unmeasurable;
   shortfall 0.61–0.72 at ranks 300–600);
 - crossings are a steady restoring force, so shape moves only with drift by
   rank (§2z-cr);
 - ex ante lock-in forecasts discriminate who stays (Brier 13–21% below
-  constant turnover) but under-forecast staying (§2z-cy, §2z-cz).
+  constant turnover) but under-forecast staying (§2z-cy, §2z-cz). _(Corrected:
+  a logistic on rank does slightly better on all four ladders; §2z-da.)_
 
 **They are compatible, and the paper is stronger as one.** A is a model of
 *individual movement* (lasting plus passing parts, one amplitude); B is the
@@ -87,7 +91,7 @@ binding claim paragraph would need an amendment; that is the owner's.
 - Data limits that bound what can be claimed:
   - Facebook has one start and Instagram one year.
   - The submissions head has strata of 30–150 names, so its lasting variance
-    is about ±30% by any estimator (§2z-co).
+    is about ±40% by the variance route (§2z-cm). _(Corrected from ±30%.)_
   - The Reddit window holds dated platform changes, so no era is stationary.
 
 ## 3. Models and estimators
@@ -105,8 +109,10 @@ binding claim paragraph would need an amendment; that is the owner's.
   - the lock-in forecaster (`mts_lockin.py`);
   - the Instagram censoring simulator (`ig_censoring_sim.py`).
 - **Testing.** Every registered analysis has planted-world tests, and the
-  suite has about 565 tests. Every test was designed with predictions
-  committed before the data were read.
+  suite has about 565 tests. _(Corrected after the reviews.)_ Every
+  registered test had its design and predictions committed before the run.
+  The development panels had been read many times before, and several
+  headline results are post hoc (§2z-da).
 
 ## 4. Strength of evidence, as I would rate it for a referee
 
@@ -183,9 +189,11 @@ binding claim paragraph would need an amendment; that is the owner's.
     spike weeks.
   - _(Corrected 2026-10-18; an earlier sentence said B explains A's
     failure.)_
-- **The ex ante lock-in result as the policy-relevant headline.** It is
-  registered and holds on four ladders. Its under-forecast is itself a
-  finding: incumbents are stickier than average movement says.
+- **The ex ante lock-in result as the policy-relevant headline.** _(Corrected
+  after the reviews; not a headline.)_ T1 and T2 passed and T3 failed. A
+  logistic on rank discriminates slightly better, and the aggregate forecast
+  is biased low on every ladder. The under-forecast stays a finding about the
+  shape of movement, with rare large jumps (§2z-cz, §2z-da).
 - **Two-speed movement.** Rare block-scale jumps plus slow drift appear in A
   (under-dispersed tails), in B (lock-in under-forecast) and in the
   Instagram decomposition. A jump-diffusion view could unify them. Not
@@ -201,3 +209,21 @@ binding claim paragraph would need an amendment; that is the owner's.
 - reading community names, for the event analyses;
 - claim language in the draft frame;
 - Codex's reviews R5 and R6 and its planted worlds V5, all outstanding.
+
+## 8. After the external reviews (added 2026-10-18)
+
+Three independent critiques: gpt-6-astra, Fable 5.1 and a fresh Opus 5.5.
+They are summarised and checked in
+`runs/2026-10-18_external_critiques/SYNTHESIS.md`, with the record in §2z-da.
+The corrections above are marked. What they changed in this review's
+judgement:
+- C3 is a near-identity for level diffusion. It establishes that movement
+  happens in level space at the measured variance; it is not a law of the
+  dynamics.
+- Lock-in is complementary evidence, not a headline.
+- Concentration is an index unless stated as an arithmetic share.
+- "Stable form" is retired.
+- Gomez (2023) and Batty (2006) are precedents that a novelty statement must
+  face.
+- Capture-delay deletion is an open alternative explanation for drift by rank
+  after July 2021.

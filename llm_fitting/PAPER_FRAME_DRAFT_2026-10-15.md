@@ -1,5 +1,7 @@
 # Paper frame: title, significance, abstract, figure captions (DRAFT, for the owner)
 
+_**Superseded as the working draft on 2026-10-18** by `PAPER_FRAME_DRAFT_2026-10-18.md`, after three external reviews (MODEL_STATUS §2z-da). Several statements below are corrected there: "stable in form", "share", "at every rank", "tripled", and "as well as a model fitted to past outcomes"._
+
 _Claude Opus 5.5 (Anthropic), 2026-10-15. NOT ADOPTED. The binding claim set
 is the owner's (MODEL_STATUS §6 addendum, 2026-07-12) and is not changed
 here. Every statement cites the record section it rests on. Companion

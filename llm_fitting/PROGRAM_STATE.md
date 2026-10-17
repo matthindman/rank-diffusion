@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-13.** This page is a digest for starting a session quickly.
+**As of 2026-10-18** (the paragraph on §2z-da was added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -176,27 +176,59 @@ On Facebook pages (Era A) the boundary theory holds too: crossings at K/16 … K
 are 0.77–1.17 of prediction, at rates about twice Reddit's (§2z-ct). A quarter
 of movement after June 2021 does not forecast the next year better than the
 ladder's own trend (§2z-cs).
-At a given rank the boundary ratio does not depend on K, and comments holds
-with 13-week blocks; submissions crosses only 0.61–0.72 of prediction at ranks
+At a given rank the boundary ratio does not depend on K (an algebraic property
+of the estimator, §2z-da), and comments holds with 13-week blocks at 5 of 7
+ranks; submissions crosses only 0.61–0.72 of prediction at ranks
 of about 300–600 by every estimator, not explained by neighbours moving
 together (§2z-cu, §2z-cv). Rank-only dynamics fail the boundary test (ratios
-2.4–3.6), so its agreement on the data is not automatic (§2z-cv). In shares:
-the top 78 submissions communities went from 51% to 35% of the top 5,000's
-activity in 2019–2022, and their movement sustains 16%; comments is near
-balance (§2z-cw). Paper materials for the owner, none adopted:
+2.4–3.6), so its agreement on the data is not automatic (§2z-cv). In an index of geometric-mean activity, the top 78 submissions communities
+went from 51% to 35% of the top 5,000 in 2019–2022, and their movement sustains
+16%; comments is near balance (§2z-cw). In arithmetic shares of karma the fall
+is the same, 50.2% to 34.0% (§2z-da). Paper materials for the owner, none adopted:
 `PAPER_FRAME_DRAFT_2026-10-15.md` (title, significance, abstract, captions),
 `REVIEWER_QUESTIONS_2026-10-15.md`, figures in `runs/2026-10-15_figures/`.
 On Instagram, through the §2z-c censoring apparatus (presence 0.5 and a
 present-weeks permanent rank, both opt-in), crossings are 0.94–1.12 of
 prediction at K/16 … K. Planted censoring worlds show the "a"-query layers
-leave the test unbiased, and the matching-post count carries at most 23–41%
-of the movement; the q-free per-post panel is too noisy to confirm (§2z-cx).
+leave the test unbiased; the matching-post count carries 23–41% of the
+movement (its reading as a bound on caption drift is WITHDRAWN, §2z-da); the
+per-post panel is too noisy to confirm (§2z-cx).
 Ex ante lock-in forecasts from movement discriminate who stays in a top set on
-all four ladders (Brier 13–21% below constant turnover, at par with a fitted
-logistic) but under-forecast staying; block-scale heavy tails are the planted
+all four ladders (Brier 13–21% below constant turnover, but slightly worse
+than a logistic on rank on all four, §2z-da) but under-forecast staying; block-scale heavy tails are the planted
 mechanism, and an outcome-free empirical-shape forecast halves the
 under-forecast (post hoc) (§2z-cy, §2z-cz). The evidence packet is
 `EVIDENCE_PACKET_2026-10-15.md`.
+
+**Three external critiques and what they changed (§2z-da, 2026-10-18).** The
+reviewers were gpt-6-astra (Codex CLI), Fable 5.1 and a fresh Opus 5.5, all
+read-only (`runs/2026-10-18_external_critiques/`, with `SYNTHESIS.md`). Their
+shared verdict is that PNAS would not send the paper out as it stands, for
+three reasons:
+- two half-papers;
+- no load-bearing result both non-mechanical and out of sample;
+- claim language ahead of the numbers.
+
+Nine statements are corrected. Whether model A's personal home is contradicted
+by §2z-ay and §2z-bu is the owner's question for the paper. The boundary test
+is a near-identity for level diffusion (cumulant expansion, theory note §8).
+It establishes level-space movement and rejects rank exchange; it does not
+pick a mechanism.
+
+New measurements:
+- the statistic splits exactly into a later reordering plus a composition
+  term (+25–35% on Reddit, −30% on Facebook). On one survivor population the
+  ratios barely move;
+- submissions' own slide profile, planted, does not explain its 300–600
+  shortfall;
+- lasting volatility is nearly independent of size (β 0–0.09, against about
+  0.2 for firms);
+- June 2021 against placebo years: the submissions head's fall is not
+  distinguishable from its slide in mid-2022 (X1 FAIL). The next tier of
+  submissions, the comments head and the same 78 communities' comment activity
+  all rose that summer, unlike in any placebo year.
+
+The working draft frame is `PAPER_FRAME_DRAFT_2026-10-18.md` (not adopted).
 
 **The count-identification proofs (§2z-bo).** Proof 7 was reviewed: no gap
 found, no existing instrument supplies its experiment, and its certificate
@@ -347,6 +379,17 @@ after a disk write error at 18:01 (§2z-am, observation). Its current state
 is in the newest data-operation entries of MODEL_STATUS.
 
 ## Decisions waiting on the owner
+
+- **From the external reviews (§2z-da):**
+  - one paper with B as the spine and A as the movement measurement, which
+    needs the binding paragraph amended;
+  - retiring "Eulerian stability" from the outline's title;
+  - reading Gomez (2023) in full before any novelty sentence;
+  - redesigning the bridge protocol's primary tests to discriminate:
+    out-of-time ratios at a tight margin, empirical-shape lock-in against the
+    logistic, deceleration of the submissions head against trend, and the
+    June 2023 blackout with comments as control;
+  - the capture-delay and deletion audit on the raw archives (WD drive).
 
 - **The draft protocol for forecasting the 2023 Reddit ladders** (§2z-cf;
   `BRIDGE_FORECAST_PROTOCOL_DRAFT_2026-10-14.md`): its forecasts are fixed;

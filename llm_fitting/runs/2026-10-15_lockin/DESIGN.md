@@ -85,3 +85,24 @@ pressed head:
 ## Not in this design
 
 Sealed data; fitting anything to retention outcomes.
+
+## Added 2026-10-18 after the external reviews (disclosure; nothing in the design above is changed)
+
+**Rank rule.** The training moments are stratified by *current* rank at block a−2, not by permanent
+rank. This departs from the AGENTS.md rule ("estimate and stratify by permanent rank, never current
+rank") and the design above did not say so.
+- The departure is deliberate for this question. A forecast for today's top-k members has to
+  condition on where they stand today, and the training pairs reproduce that conditioning one and two
+  blocks earlier, so the regression to the mean that current rank selects is inside the training
+  moments as well.
+- It is still a departure, and the paper has to state it beside C5, the permanent-rank method.
+
+**The stronger baseline.** The logistic on log rank and log horizon (baseline L) has a lower Brier
+score than the registered movement forecast on all four ladders: 0.1244 against 0.1252, 0.1309
+against 0.1357, 0.1587 against 0.1607 and 0.1615 against 0.1621. It is also about twice as accurate
+in aggregate retention. The sentence "as well as a model fitted to past outcomes" (§2z-cy) is
+corrected in MODEL_STATUS §2z-da.
+
+**Labels.** The report's origin column shows an origin block's first week. The forecast uses the
+whole block, so information runs through that block's last week. The report now also prints the
+target block.

@@ -8,21 +8,32 @@ owner's; nothing here changes the binding claim set (§6 addendum,
 2026-07-12). Companion documents: `PAPER_FRAME_DRAFT_2026-10-15.md`,
 `REVIEWER_QUESTIONS_2026-10-15.md`, `BALANCE_LAW_THEORY_NOTE_2026-10-14.md`._
 
+_**Corrected 2026-10-18** after three external reviews
+(`runs/2026-10-18_external_critiques/`, MODEL_STATUS §2z-da). Corrected
+statements are marked [c]; the earlier wording is in git history. The newer
+frame is `PAPER_FRAME_DRAFT_2026-10-18.md`._
+
 ## The argument in five sentences
 
-1. Attention ladders keep their form while the names on them churn. A fifth
-   of each top set is replaced each year.
+1. Attention ladders change form slowly while the names on them churn. A
+   fifth of each top set is replaced each year, while the head's
+   concentration falls by a few points a year (§2z-cw, §2z-da). [c: was
+   "keep their form"]
 2. A balance at every rank holds the form: crossings at a top set's boundary
    return what its members lose against the field, and the crossings are
    predicted by lasting volatility over twice the local slope.
-3. The prediction holds rank by rank on Reddit comments, Facebook pages,
-   Instagram (censoring modelled) and the body of Reddit submissions. It is
-   not automatic: rank-only dynamics fail it.
-4. Crossings return a steady amount each half-year, so the ladder changes
-   only when members' drift by rank changes, as after Reddit's June 2021
-   feed change.
-5. The same quantities forecast, ex ante, who stays in the top. Incumbents
-   turn out stickier than average movement implies.
+3. The prediction holds rank by rank where lasting variance can be
+   measured: Reddit comments at K/64 … K, Facebook pages and Instagram
+   (censoring modelled) at K/16 … K, and the body of Reddit submissions
+   except ranks of about 300–600. It rejects rank-only dynamics, but any
+   model in which levels diffuse passes it, so it establishes level-space
+   movement at the measured variance, not a mechanism. [c]
+4. On comments, crossings return a steady amount each half-year, so
+   changes in the ladder's shape track changes in members' drift by rank. On
+   submissions the reordering term varies threefold (§2z-cr). [c]
+5. Ex ante forecasts of who stays, from the same quantities, discriminate
+   well but no better than a logistic on rank. They under-forecast staying,
+   which points to rare large jumps rather than Gaussian movement. [c]
 
 ## Claims and evidence
 
@@ -30,15 +41,15 @@ owner's; nothing here changes the binding claim set (§6 addendum,
 |---|---|---|---|---|---|---|
 | C1 | **The puzzle**: ladders keep their form while names churn | 79–84% of a Reddit top set remains after a year, 58–67% after three; median annual change of log rank 0.19–0.24; 7–10% halve or double their rank a year | §2z-cu | `fig_puzzle.png` | `runs/2026-10-15_puzzle/puzzle_data.py` | descriptive |
 | C2 | **The exact balance**: shape change = members' movement + reordering; reordering is steady | comments: reordering +0.08 to +0.11 log units in every half-year at every rank, while members' term swings −0.29 to +0.07 | §2z-cr | `fig_shape_decomposition.png` | `runs/2026-10-15_comments_2021_head/broad_or_few.py` | exact accounting; post hoc |
-| C3 | **The boundary theory**: crossings = σ²/(2S), predicted, rank by rank | comments 0.98–1.22 (variance route) and 0.85–1.01 (variogram) at every rank, K/64 … K; by start r = 0.94; Facebook 0.77–1.17; Instagram 0.94–1.12; submissions body 0.7–1.0 | §2z-cm, §2z-co, §2z-ct, §2z-cx | `fig_four_ladders.png`, `fig_boundary_theory.png` | `mts_boundary_law.py`, `mts_variogram.py`; `tests/test_mts_boundary_law.py`, `test_mts_variogram.py`, `test_ig_censoring_boundary.py` | registered: holds on comments, Facebook and Instagram totals; partial on submissions (head unmeasurable; shortfall at ranks of about 300–600) |
+| C3 | **The boundary theory**: crossings = σ²/(2S), predicted, rank by rank | comments 0.98–1.22 (variance route) and 0.85–1.01 (variogram), K/64 … K; by start r = 0.94; Facebook 0.77–1.17 and Instagram 0.94–1.12 **at K/16 … K** (K/64: 0.71 and 2.49) [c]; submissions body 0.7–1.0. Pooled K/16 … K: comments 1.07 (1.01–1.13), submissions 0.80, Facebook 0.98, Instagram 1.00 (§2z-da). Reddit pooled ratios take variance from 2019–21 and crossings from 2020–22 (registered, not time-aligned); time-aligned comments ratios by start 0.71–1.11 [c]. Estimand includes a composition term (§2z-da) | §2z-cm, §2z-co, §2z-ct, §2z-cx | `fig_four_ladders.png`, `fig_boundary_theory.png` | `mts_boundary_law.py`, `mts_variogram.py`; `tests/test_mts_boundary_law.py`, `test_mts_variogram.py`, `test_ig_censoring_boundary.py` | registered: holds on comments, Facebook and Instagram totals; partial on submissions (head unmeasurable; shortfall at ranks of about 300–600) |
 | C4 | **Not automatic** | rank-only rivals 2.4–3.6 (random displacement) and 0.3–1.7 (neighbour swaps); heavy tails, jumps and drift types 0.85–1.25; volatility types still sorting 1.2–1.3 (body), 2–4 (head) | §2z-cq, §2z-cv | — | `runs/2026-10-15_boundary_robustness/` | planted worlds |
 | C5 | **Method**: once one-time constants are removed, ranking by current position and by permanent rank give the same lasting slide | lasting slides agree at 7 of 7 cut-offs on comments, submissions and Facebook, and 6 of 7 on Instagram; the one-time constants have the planted signs and size, e.g. momentum ≈ σ²L/(6S·D) | §2z-cm, §2z-ct, §2z-cx | — | `mts_boundary_law.py` | registered (B2, F2) |
 | C6 | **The rate law accounts for change** | same-year form: 60 cells, slope 0.88, r 0.90 (half-year starts); 0.99 and rms 0.81 per 1,000 weeks with 26-week blocks over three starts | §2z-cd, §2z-cg, §2z-cm | `fig_rate_law_and_head_mobility.png` (A) | `mts_balance_law.py` | accounting with a boundary theory (§2z-cg's qualification) |
 | C7 | **Structure from movement** | comments: observed ladder between the ladders each year's movement sustains; submissions head sustained far flatter. The ladder steepens down the ranks because variance rises (~0.007 to 0.013 a week) and the net slide falls (~0.005–0.011 to 0.003–0.004) | §2z-cd cells, §2z-cv | `fig_sustained_ladder.png`, `fig_why_it_curves.png` | `make_figures.py` | in sample |
-| C8 | **Concentration counterfactual** | submissions top 78: 51% (2019) to 35% (2022) of the top 5,000's activity; movement sustains 16%. Comments top 195: 63% to 52%, sustained 53% | §2z-cw | `fig_concentration.png` | `runs/2026-10-15_concentration/` | index of geometric-mean activity; in sample |
+| C8 | **Concentration counterfactual** | **index of geometric-mean activity** [c]: submissions top 78: 51% (2019) to 35% (2022); movement sustains 16%. Comments top 195: 63% to 52%, sustained 44–53%. Arithmetic shares of karma: §2z-da (comments top 195: 61.0% to 49.7%) | §2z-cw | `fig_concentration.png` | `runs/2026-10-15_concentration/` | index of geometric-mean activity; in sample |
 | C9 | **Relaxation** | time constant of shape toward S*: comments 5–22 years, submissions 2–6 | §2z-cp | — | arithmetic on §2z-cd cells | order of magnitude |
-| C10 | **A platform change** acts through drift and mobility | June 2021: onset 23–24 June; share of the first submissions position 8.3% to 4.3% in a quarter; head crossings 2.4 to 7.8 per 1,000 weeks across the three windows | §2z-bz, §2z-ca, §2z-cm, §2z-co | `fig_rate_law_and_head_mobility.png` (B) | `mts_boundary_law.py` (by start) | dated; causal magnitude not claimed |
-| C11 | **Ex ante lock-in forecasts** | per-member Brier 13–21% below constant turnover on all four ladders, at par with a logistic fitted to outcomes; aggregate within ±0.07 in 75% of 126 cells; under-forecasts staying by 2–5 points at the first horizon, growing with horizon; fails against constant turnover at ≥ 3 blocks | §2z-cy, §2z-cz | `fig_lockin.png` | `mts_lockin.py`; `tests/test_mts_lockin.py` | registered: T1, T2 pass; T3 fails |
+| C10 | **A platform change** acts through drift and mobility | June 2021: onset 23–24 June; share of the first submissions position 8.3% to 4.3% in a quarter; head crossings 2.4 to 7.8 per 1,000 weeks across the three windows | §2z-bz, §2z-ca, §2z-cm, §2z-co | `fig_rate_law_and_head_mobility.png` (B) | `mts_boundary_law.py` (by start) | dated; causal magnitude not claimed. [c] Against placebo years (2019, 2020, 2022) and the comments ladder, the head's weekly fall is NOT distinctive (X1 FAIL). The next tier's gain and the same communities' comment gain are (§2z-da). The rise in head crossings is unregistered, with intervals that touch |
+| C11 | **Ex ante lock-in forecasts** | per-member Brier 13–21% below constant turnover on all four ladders, **but above a three-parameter logistic on log rank and log horizon on all four** (0.1252 against 0.1244, 0.1357/0.1309, 0.1607/0.1587, 0.1621/0.1615), with about twice its aggregate error [c]; aggregate within ±0.07 in 75% of 126 cells (logistic 93%, constant turnover 88%); stratified by current rank (declared deviation, §2z-da); under-forecasts staying by 2–5 points at the first horizon, growing with horizon; fails against constant turnover at ≥ 3 blocks | §2z-cy, §2z-cz | `fig_lockin.png` | `mts_lockin.py`; `tests/test_mts_lockin.py` | registered: T1, T2 pass; T3 fails |
 | C12 | **Instagram's censoring** modelled, validated and bounded | planted ratio 1.015 censored against 1.014 truth; default rules cannot read it; matching-post count ≤ 23–41% of movement | §2z-c, §2z-cx | `fig_instagram_censoring.png` | `ig_censoring_sim.py`; `runs/2026-10-15_instagram/` | registered (I1 pass, I2 fail, I3 pass) |
 | C13 | **Forecasting structure is no better than trend** | submissions: law ≈ repeating the last change; comments: no change best; after June 2021 a quarter's movement did not beat trend | §2z-ce, §2z-co, §2z-cs | — | `mts_forward.py`, `mts_seasonal.py`, `mts_intervention.py` | registered failures, reported as a limit |
 | C14 | **Entry and maturity** | entry net of exit 29–41% of the slide on comments, 8–19% on submissions; removing it would steepen comments' sustained slope 18–51% | §2z-cc, §2z-ck | — | `mts_replenish.py` | in sample |
@@ -66,7 +77,11 @@ the run.
 | §2z-cx | I1 Instagram totals; I2 per post; I3 raw unreadable | PASS, FAIL, PASS |
 | §2z-cy | T1 discriminates; T2 calibrated; T3 extrapolates | PASS, PASS, FAIL |
 
-**Tally: 15 of 26 scored items held; one not adjudicated.**
+**Tally: 15 of 26 scored items held; one not adjudicated.** [c] Two of the
+15 (J3, I3) are predictions that something would *not* be readable or
+forecastable; without them, 13 of 24. The figure "9 of 17" in
+`REVIEWER_QUESTIONS` and §2z-cu §4 counts a different window (§2z-cm …
+§2z-cu); reconciled in §2z-da.
 - The successes are the boundary theory where variance can be measured, the
   method, Facebook, Instagram totals, and lock-in discrimination.
 - The failures cluster in forecasting structure, the submissions head and
@@ -76,10 +91,13 @@ the run.
 
 1. **Reddit submissions.**
    - At the head, strata of 30–150 communities limit any estimate of lasting
-     variance to about ±30%, so the theory cannot be tested there (§2z-co).
+     variance to about ±40% (§2z-cm) [c: was ±30%], so the theory cannot be
+     tested there.
    - At ranks of about 300–600 crossings run 0.61–0.72 of prediction by every
-     estimator. Neighbours moving together is ruled out; unexplained
-     (§2z-cu, §2z-cv).
+     estimator. Neighbours moving together is ruled out. On one survivor
+     population the shortfall stays (0.69, 0.63); planted worlds show that
+     drift depending on current rank biases the statistic down by this much
+     (§2z-da). Not established for the data.
 2. **Forecasting.** The law forecasts structure no better than the ladder's
    own trend (§2z-co, §2z-cs).
 3. **Lock-in forecasts under-forecast staying.**

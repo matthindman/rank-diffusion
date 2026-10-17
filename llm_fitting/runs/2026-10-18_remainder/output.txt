@@ -1,0 +1,22 @@
+reddit_comments_ext k=195: ratio common 1.227 vs original 1.217; R_bc 3.72, C +1.04 per 1,000 weeks; residual 4.0e-15
+reddit_comments_ext k=391: ratio common 1.194 vs original 1.204; R_bc 3.34, C +1.26 per 1,000 weeks; residual 1.9e-15
+reddit_comments_ext k=781: ratio common 1.095 vs original 1.081; R_bc 3.20, C +1.10 per 1,000 weeks; residual 3.3e-15
+reddit_comments_ext k=1562: ratio common 0.973 vs original 0.978; R_bc 3.02, C +0.95 per 1,000 weeks; residual 3.0e-15
+reddit_comments_ext k=3125: ratio common 1.011 vs original 0.992; R_bc 2.77, C +1.02 per 1,000 weeks; residual 2.9e-15
+reddit_comments_ext k=6250: ratio common 1.153 vs original 1.109; R_bc 2.53, C +1.14 per 1,000 weeks; residual 2.0e-15
+reddit_comments_ext k=12500: ratio common 1.356 vs original 1.199; R_bc 2.25, C +0.82 per 1,000 weeks; residual 1.7e-15
+reddit_submissions_long k=78: ratio common 1.633 vs original 1.641; R_bc 3.18, C +1.62 per 1,000 weeks; residual 5.8e-15
+reddit_submissions_long k=156: ratio common 1.831 vs original 1.856; R_bc 3.69, C +0.24 per 1,000 weeks; residual 2.6e-15
+reddit_submissions_long k=312: ratio common 0.689 vs original 0.718; R_bc 3.13, C +0.46 per 1,000 weeks; residual 2.4e-15
+reddit_submissions_long k=625: ratio common 0.631 vs original 0.609; R_bc 3.00, C +1.02 per 1,000 weeks; residual 3.2e-15
+reddit_submissions_long k=1250: ratio common 0.980 vs original 0.968; R_bc 2.93, C +1.24 per 1,000 weeks; residual 3.4e-15
+reddit_submissions_long k=2500: ratio common 0.953 vs original 0.899; R_bc 2.92, C +1.40 per 1,000 weeks; residual 3.1e-15
+reddit_submissions_long k=5000: ratio common 0.982 vs original 0.872; R_bc 3.00, C +1.27 per 1,000 weeks; residual 7.8e-16
+facebook_a k=55: ratio common 0.706 vs original 0.706; R_bc 11.02, C -3.53 per 1,000 weeks; residual 1.3e-15
+facebook_a k=109: ratio common 0.943 vs original 0.943; R_bc 9.77, C -2.45 per 1,000 weeks; residual 4.2e-16
+facebook_a k=219: ratio common 0.816 vs original 0.775; R_bc 10.30, C -1.45 per 1,000 weeks; residual 2.1e-15
+facebook_a k=438: ratio common 0.912 vs original 0.918; R_bc 11.17, C -4.59 per 1,000 weeks; residual 3.1e-15
+facebook_a k=875: ratio common 1.140 vs original 1.170; R_bc 11.28, C -4.84 per 1,000 weeks; residual 4.5e-15
+facebook_a k=1750: ratio common 1.055 vs original 1.065; R_bc 9.14, C -3.90 per 1,000 weeks; residual 3.7e-15
+facebook_a k=3500: ratio common 1.003 vs original 1.003; R_bc 7.41, C -2.97 per 1,000 weeks; residual 2.9e-15
+exit done
