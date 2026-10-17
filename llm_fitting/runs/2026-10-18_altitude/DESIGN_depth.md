@@ -70,3 +70,31 @@ K/4 is 0.80. This is the data's value for the top K/4 on both Reddit ladders,
 displacement to random ranks and local swaps", not "excludes rank exchange".
 What would then separate level diffusion from fixed-ladder rank diffusion is
 whether the ladder itself moves, as it does in the data (§2z-cw, §2z-da).
+
+## Added before its run: Z, the size–variance exponent measured as the firm literature measures it
+
+**Why.** The candidate headline "size does not protect" rests on β. That is
+the exponent in sd(growth) ∝ size^(−β). The value in §2z-da is read from the
+crossing-implied lasting variance, which is model-based. Stanley et al.
+(1996) and Riccaboni et al. (2008) measure the *raw* spread of annual log
+growth against size, and find β ≈ 0.15–0.2 for firms. A fair comparison
+needs the same statistic.
+
+**Set-up** (`size_variance.py`; development panels).
+- Cohorts by permanent rank over the first block. Strata are octaves of
+  rank, K/64 … K.
+- Size is the stratum's mean block-mean log activity.
+- Raw growth is the change of block-mean log level over one year:
+  - Reddit, 52-week blocks: block 1 → block 2, and block 2 → block 3;
+  - Facebook pages, 13-week blocks: block 1 → block 5.
+- The lasting version (Reddit only) is Var(Δ over two years) − Var(Δ over
+  one year), each from block 1.
+- Members present in ≥ 90% of the weeks of every block used.
+- β is −(slope of log sd on size), by least squares over strata.
+- Intervals: 5–95%, from 400 bootstrap draws over names within strata.
+
+| | expectation |
+|---|---|
+| Z1 | raw β < 0.10 on all three ladders |
+| Z2 | lasting β < 0.10 on both Reddit ladders |
+| Z3 | the upper 95% bound of raw β is below 0.15, the low end of the firm range, on at least two ladders |
