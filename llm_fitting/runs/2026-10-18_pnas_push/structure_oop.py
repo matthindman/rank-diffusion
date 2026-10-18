@@ -25,6 +25,8 @@ import rankdiff_kalman as rk  # noqa: E402
 import rankdiff_rdm as rdm  # noqa: E402
 
 panel = sys.argv[1]
+ARMS = tuple(sys.argv[2].split(",")) if len(sys.argv) > 2 else ("home", "movinghome")     # R3-C: "home,movinghome_vp"
+TAG = "" if ARMS == ("home", "movinghome") else "__" + "_".join(ARMS)
 K = m1.PANELS[panel]["K"]
 BLOCK, PRES, SEEDS = 52, 0.9, 20
 EST = dict(obs_frac=0.5, temper=True, min_knot_n=8, md_lags=6, t_tails=True, md_vr_long=True,
@@ -114,7 +116,7 @@ def sim_matrix(Xs, ids):
 
 
 arms = {}
-for lasting in ("home", "movinghome"):
+for lasting in ARMS:
     runs = []
     for sd in range(SEEDS):
         Xs, ids = rdm.simulate_panel(p, levels.to_numpy(), T - t_origin, seed=sd, lasting=lasting)
@@ -145,4 +147,4 @@ print(f"  baselines: retention carried forward MAE {base_mae:.3f}; share carried
       f"data kurtosis of 26-week changes (start names) {data['kurt']:.2f}", flush=True)
 out = dict(panel=panel, K=K, t_origin=t_origin, data=data, arms=arms, baseline_ret_mae=base_mae,
            params=dict(sigma0=p.sigma0, beta=p.beta))
-Path(__file__).with_name(f"structure_oop__{panel}.json").write_text(json.dumps(out, indent=1, default=float))
+Path(__file__).with_name(f"structure_oop__{panel}{TAG}.json").write_text(json.dumps(out, indent=1, default=float))

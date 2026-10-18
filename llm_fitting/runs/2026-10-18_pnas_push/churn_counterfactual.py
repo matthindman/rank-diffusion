@@ -25,6 +25,7 @@ import rankdiff_kalman as rk  # noqa: E402
 import rankdiff_rdm as rdm  # noqa: E402
 
 panel = sys.argv[1]
+FLAT_ONLY = len(sys.argv) > 2 and sys.argv[2] == "flat20"           # R3-C: the flat start alone, 20 seeds, with bands
 K = m1.PANELS[panel]["K"]
 EST = dict(obs_frac=0.5, temper=True, min_knot_n=8, md_lags=6, t_tails=True, md_vr_long=True,
            mix_hetero=panel != "reddit_submissions_long")
@@ -86,7 +87,7 @@ def run(q, Lstart, weeks, seed, record_every=4):
     return np.array(path), slide / max(n_sl, 1), S_end, sig2
 
 
-worlds = {
+worlds = {} if FLAT_ONLY else {
     "churn_slide": p,
     "slide_only": replace(p, sigma0=0.0),
     "churn_only": replace(p, drift_g=np.zeros_like(p.drift_g)),
@@ -107,7 +108,7 @@ for name, q in worlds.items():
           f"{np.round((c - sl) * 52, 3).tolist()}; slope start {np.round(S0, 2).tolist()} end {np.round(S_end, 2).tolist()}", flush=True)
 # (iv) flat start, 30 years
 flat = np.full(N, float(np.median(L0)))
-runs = [run(p, flat, 30 * 52, s, record_every=52) for s in range(10)]
+runs = [run(p, flat, 30 * 52, s, record_every=52) for s in range(20 if FLAT_ONLY else 10)]
 S_end = np.mean([r[2] for r in runs], axis=0)
 sl = np.mean([r[1] for r in runs], axis=0)
 sig2 = np.mean([r[3] for r in runs], axis=0)
@@ -115,8 +116,10 @@ S_star = sig2 / (2 * np.maximum(sl, 1e-9))
 S_obs = np.array([slope_at(np.sort(L0)[::-1], k) for k in KS])
 traj = np.mean([r[0] for r in runs], axis=0)
 out["flat_start"] = dict(S_end=S_end.tolist(), S_star_sim=S_star.tolist(), S_observed=S_obs.tolist(), slide_week=sl.tolist(),
-                         shape_by_year=traj.tolist())
+                         shape_by_year=traj.tolist(), n_seeds=len(runs),
+                         S_end_q=[np.quantile([r[2] for r in runs], q, axis=0).tolist() for q in (0.05, 0.95)],
+                         shape_q=[np.quantile([r[0] for r in runs], q, axis=0).tolist() for q in (0.05, 0.95)])
 print(f"  flat start, 30 years: slope at k={KS}: {np.round(S_end, 2).tolist()}; sigma^2/(2 slide) in the simulation "
       f"{np.round(S_star, 2).tolist()}; observed ladder {np.round(S_obs, 2).tolist()}", flush=True)
 print(f"  flat start: shape at K/64 by year {np.round(traj[:, 0], 2).tolist()}", flush=True)
-Path(__file__).with_name(f"churn_counterfactual__{panel}.json").write_text(json.dumps(out, indent=1, default=float))
+Path(__file__).with_name(f"churn_counterfactual__{panel}{'__flat20' if FLAT_ONLY else ''}.json").write_text(json.dumps(out, indent=1, default=float))

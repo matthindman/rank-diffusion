@@ -320,3 +320,103 @@ They sit beside (b) `homedrift` (fixed home that slides by rank) and A
 **Expectation (A5-3 restated):** on both long panels the four arms A, (b),
 (a′) and RDM′ are within 0.03 of each other. The gate cannot identify the
 lasting process at its horizons. Prior 60%.
+
+## Addendum R3, before the runs: the round-3 referees (SYNTHESIS_R3.md)
+
+### R3-A. Null worlds (`null_worlds.py`)
+
+Every headline statistic is computed, with the paper's own estimators, in
+four simulated worlds. The aim is to separate statistics that hold
+automatically from discoveries. All four are planted except (iv).
+
+**Common setup** (worlds i and ii): N = 20,000, K = 5,000, T = 212 weeks.
+- Start: a Zipf ladder (S = 1) plus noise of sd 0.3.
+- Passing parts: an AR(1) swing (half-life 5 weeks, stationary sd 0.3)
+  plus white noise of sd 0.3.
+
+**The worlds:**
+- **(i) Driftless Gibrat:** lasting σ = 0.10 a week, no drift. The top K is
+  re-selected weekly.
+- **(ii) Firm-like Gabaix/Atlas:** σ(L) = 0.10·exp(−0.2(L − L_K)) (β = 0.2),
+  a common drift −0.005, and a reflecting floor at the start's lowest level.
+- **(iii) Neutral copying (Wright–Fisher):**
+  - M = 1.5·10⁶ posts a week;
+  - each copies last week's community distribution, or innovates a new
+    community with μ = 0.003;
+  - 300 weeks of burn-in; activity is the count.
+- **(iv) The data-calibrated model:** RDM′ (`movinghome_vp`, hold drift),
+  estimated in sample on `reddit_submissions_long` and simulated for
+  212 weeks.
+
+**The statistics:**
+- turnover by k and the top 10 (52-week blocks);
+- Eq. 1's ratio;
+- the pooled boundary ratio over K/16 … K (`mts_boundary_law.analyse`, 26-week
+  blocks);
+- the slide s̄_k and the crossing gain c_k, and corr(shape change, −s̄)
+  against corr(shape change, c − s̄) (`mts_balance_law.analyse`, 52-week
+  blocks);
+- β (strata of permanent rank, year 1 → 2);
+- gapped persistence at gaps 13 and 26;
+- Iñiguez's rank change C(R): the probability that the occupant of rank R
+  differs from the previous week.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| NW-1 | Eq. 1 (exact form) within [0.8, 1.25] in ≥ 80% of cells in every world: it is kinematics | 85% |
+| NW-2 | the pooled boundary ratio within [0.85, 1.18] in worlds i, ii and iv (level diffusions) | 75% |
+| NW-2 | the same in world iii | 50% |
+| NW-3 | s̄_k > 0 at every cut-off in every world, driftless Gibrat included: the slide is partly definitional | 85% |
+| NW-4 | β: world i \|β\| < 0.05; ii in 0.12–0.28; iii ≥ 0.3; iv within ±0.05 of the data's 0.045–0.082. The data's 0.01–0.08 then discriminates against ii and iii | 80% |
+| NW-5 | gapped persistence within ±0.05 in all four worlds, so the data's +0.14 to +0.20 discriminates | 85% |
+| NW-6 | C(R) rises with R in every world and in the data (a stable top by Iñiguez's measure), while top-10 set replacement exceeds top-K/2 replacement wherever S is smaller at the head | 70% |
+| NW-7 | in the null worlds, too, corr(obs, −s̄) ≥ corr(obs, c − s̄): the slide carries the variation in any world | 60% |
+
+### R3-B. C(R) on the three data ladders
+
+Computed from the weekly ranks, in the same script. **Expectation:** C(R)
+rises with R on every ladder. It is below 0.5 a week at R ≤ 3 and above 0.9
+at R ≥ 100. Prior 75%.
+
+### R3-C. One model
+
+- A6 rerun with `movinghome_vp`.
+- The flat start rerun with 20 seeds and bands.
+
+**Expectations:**
+- **C-1:** RDM′'s one-year retention MAE is within 0.01 of the frozen
+  form's on each ladder.
+- **C-2:** the flat-start slopes (20 seeds) are within 5% of the 10-seed
+  values.
+
+Prior 60%, 90%.
+
+### R3-D. Persistence, repaired
+
+The universe is chosen from the cohort window only (`member_window`). The
+split is at the true sign of change 1, with conditional means. The factor
+comparison uses matched origins.
+
+**Expectations:**
+- **D-1:** the gapped statistic with prefix-only membership is within 0.03
+  of the full-membership value on both ladders.
+- **D-2:** at the true sign, the persistence of fallers exceeds that of
+  risers on both ladders. Both conditional means are on the same side as
+  change 1.
+
+Prior 75%, 70%.
+
+### R3-E. Gomez, done properly
+
+- The general displacement term ½·f(q)q²/(p·ā_top)·ν², with f the density of
+  activity at the threshold.
+- Cohorts fixed on permanent rank; a regression-to-the-mean baseline from a
+  share-stable year.
+
+**Expectation:**
+- **E-1:** where ζ > 1, the measured between term exceeds the implied one by
+  at most a factor of 2.5.
+
+Prior 50%.
