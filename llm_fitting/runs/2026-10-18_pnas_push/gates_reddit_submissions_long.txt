@@ -43,3 +43,31 @@ REDDIT_SUBMISSIONS_LONG — Gate v1, RDM (hold, lasting=movinghome_nodrift)
     T0=80: kappa_m 0.200, sigma0 0.1156, beta +0.009, lam 0.0000, pi 0.00, scale 0.35; drift at ranks 1/20/100/1000 [-0.009, -0.009, -0.0071, -0.0042]
     T0=106: kappa_m 0.200, sigma0 0.1089, beta +0.011, lam 0.0000, pi 0.00, scale 0.25; drift at ranks 1/20/100/1000 [-0.0075, -0.0078, -0.0017, -0.0062]
     T0=132: kappa_m 0.500, sigma0 0.1095, beta +0.031, lam 0.0000, pi 0.00, scale 0.00; drift at ranks 1/20/100/1000 [-0.0065, -0.0068, -0.0088, -0.0049]
+    T0=159: kappa_m 0.140, sigma0 0.1070, beta +0.046, lam 0.0000, pi 0.00, scale 0.70; drift at ranks 1/20/100/1000 [-0.0059, -0.006, -0.0071, -0.0033]
+    T0= 53  model relErr 0.121 | persistence 0.131 | dR1 in CI: True
+    T0= 80  model relErr 0.214 | persistence 0.180 | dR1 in CI: False
+    T0=106  model relErr 0.283 | persistence 0.086 | dR1 in CI: True
+    T0=132  model relErr 0.371 | persistence 0.200 | dR1 in CI: False
+    T0=159  model relErr 0.346 | persistence 0.216 | dR1 in CI: False
+  MODEL rel err = 0.267 ± 0.091   |   persistence = 0.163 ± 0.048
+  coverage 40%;  per-moment model rel err: dRank1 0.267, dRank4 0.290, dRank13 0.370, RACF1 0.220, coll1 0.919, coll5 0.163, coll20 0.068
+ARM DONE movinghome_nodrift exit 0
+
+========================================================================
+REDDIT_SUBMISSIONS_LONG — Gate v1, RDM (hold, lasting=homedrift)
+========================================================================
+  T=212  test_len=53  origins=[53, 80, 106, 132, 159]  universe=top-5000
+    T0=53: kappa_m 0.500, sigma0 0.1271, beta +0.024, lam 0.0000, pi 0.00, scale 0.50; drift at ranks 1/20/100/1000 [-0.0042, -0.0041, -0.0067, -0.005]
+    T0=80: kappa_m 0.200, sigma0 0.1156, beta +0.009, lam 0.0000, pi 0.00, scale 0.35; drift at ranks 1/20/100/1000 [-0.009, -0.009, -0.0071, -0.0042]
+    T0=106: kappa_m 0.200, sigma0 0.1089, beta +0.011, lam 0.0000, pi 0.00, scale 0.05; drift at ranks 1/20/100/1000 [-0.0075, -0.0078, -0.0017, -0.0062]
+    T0=132: kappa_m 0.500, sigma0 0.1095, beta +0.031, lam 0.0000, pi 0.00, scale 0.05; drift at ranks 1/20/100/1000 [-0.0065, -0.0068, -0.0088, -0.0049]
+    T0=159: kappa_m 0.140, sigma0 0.1070, beta +0.046, lam 0.0000, pi 0.00, scale 0.00; drift at ranks 1/20/100/1000 [-0.0059, -0.006, -0.0071, -0.0033]
+    T0= 53  model relErr 0.185 | persistence 0.131 | dR1 in CI: True
+    T0= 80  model relErr 0.148 | persistence 0.180 | dR1 in CI: True
+    T0=106  model relErr 0.125 | persistence 0.086 | dR1 in CI: True
+    T0=132  model relErr 0.170 | persistence 0.200 | dR1 in CI: False
+    T0=159  model relErr 0.227 | persistence 0.216 | dR1 in CI: True
+  MODEL rel err = 0.171 ± 0.035   |   persistence = 0.163 ± 0.048
+  coverage 80%;  per-moment model rel err: dRank1 0.167, dRank4 0.130, dRank13 0.174, RACF1 0.120, coll1 0.800, coll5 0.108, coll20 0.088
+ARM DONE homedrift exit 0
+STREAM DONE

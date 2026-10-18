@@ -212,14 +212,18 @@ The gapped statistic of §2z-df, with the gaps as stated:
 
 ## A5 / A5b. Long-panel gates (Gate v1, 20 reps, 2,000 draws; one harness)
 
-| arm | `reddit_submissions_long` | paired against A | dRank13 error | `reddit_comments_ext` |
-|---|---|---|---|---|
-| persistence | 0.163 ± 0.048 | — | — | (pending) |
-| A, fixed home (`home`) | 0.188 ± 0.063 (frozen A in Codex's harness: 0.194) | — | 0.199 | (pending) |
-| RDM frozen (`movinghome`) | **0.246 ± 0.085** | better 2/5 | 0.370 (13-week median 4–6 against 7–8: under-dispersed) | (running) |
-| RDM corrected (`movinghome_vp`, post hoc V4) | **0.175 ± 0.072** | better 3/5 | 0.227 (median 8–10 against 6–8: over-dispersed, like A) | (queued) |
-| (a) `movinghome_nodrift` | (running) | | | |
-| (b) `homedrift` | (queued) | | | |
+| arm | home random walk | drift by rank | `reddit_submissions_long` | dRank13 err | `reddit_comments_ext` | dRank13 err |
+|---|---|---|---|---|---|---|
+| persistence | | | 0.163 ± 0.048 | — | 0.167 ± 0.039 | — |
+| A (`home`) | no | no | 0.188 ± 0.063 (frozen A in Codex's harness 0.194) | 0.199 | **0.123 ± 0.051** | 0.085 |
+| (b) `homedrift` | no | yes | **0.171 ± 0.035** | 0.174 | (queued) | |
+| (a) `movinghome_nodrift`, frozen variance | yes | no | 0.267 ± 0.091 | 0.370 | (running) | |
+| RDM frozen (`movinghome`) | yes | yes | 0.246 ± 0.085 | 0.370 | 0.145 ± 0.057 | 0.162 |
+| RDM corrected (`movinghome_vp`, post hoc V4) | yes | yes | 0.175 ± 0.072 | 0.227 | (running) | |
+| (a′) `movinghome_vp_nodrift` | yes | no | (running) | | (queued) | |
+
+Paired splits, submissions: frozen RDM better than A in 2/5; corrected in
+3/5; (b) in 4/5. Comments: frozen RDM better than A in 1/5.
 
 **Expectations, submissions:**
 - **A5-1** (frozen RDM ≤ A + 0.05): **FAIL** (0.246 against 0.238).
@@ -229,6 +233,9 @@ The gapped statistic of §2z-df, with the gaps as stated:
 - **A5b-2** (13-week median within ±1 in at least 4 of 5 splits): **FAIL**
   (2 of 5; it now overshoots by 0–3).
 - **A5b-3** (corrected below frozen): **PASS.**
+
+**Comments** (frozen form): A5-1 PASSES (0.145 ≤ 0.173) and A5-2 FAILS
+(dRank13 0.162 against A's 0.085). A beats persistence on both measures.
 
 **Reading.**
 - The frozen form's long-panel failure is the V4 algebra, and the correction
