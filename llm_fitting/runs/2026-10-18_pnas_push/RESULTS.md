@@ -350,3 +350,75 @@ no-drift arm reproduces 0.175 to every digit, and the comments run started
 
   It is not a claim to better weekly forecasts. The paper says "at least as
   well as".
+
+## R3-A / R3-B. Null worlds and rank change (`null_worlds.py`)
+
+The expectations were written in PLAN.md (addendum R3) before any world ran.
+They were committed at 845f71a, after the first world (Gibrat) had run; that
+ordering is disclosed. The same estimators are used throughout.
+
+| statistic | (i) Gibrat, size-blind | (ii) firm-like, β = 0.2 planted | (iii) neutral copying | (iv) data-calibrated model | data |
+|---|---|---|---|---|---|
+| turnover a year: top 10 / 25 / K/64 / K/16 / K/4 / K/2 | 0.33 / 0.27 / 0.23 / 0.24 / 0.25 / 0.22 | 0.17 / 0.13 / 0.13 / 0.19 / 0.23 / 0.24 | 0.03 / 0.08 / 0.15 / 0.30 / 0.31 / 0.30 | 0.30 / 0.21 / 0.25 / 0.19 / 0.16 / 0.14 | submissions 0.33 / 0.29 / 0.21 / 0.20 / 0.18 / 0.18 (A1, A7) |
+| Eq. 1 within [0.8, 1.25] (median) | 100% (1.01) | 92% (1.00) | 100% (1.01) | 100% (0.96) | 100% (0.98) |
+| β estimated | −0.005 | 0.114 (attenuated by passing noise) | 0.357 | 0.070 | 0.01–0.08 |
+| gapped persistence, g 13 / 26 | −0.032 / −0.025 | −0.073 / −0.063 | −0.106 / −0.100 | −0.098 / −0.099 | +0.17 / +0.14 (submissions) |
+| pooled boundary ratio, K/16 … K | 1.057 | 1.067 | **0.578** | 1.081 | 0.94 (joint, three ladders) |
+| mean crossing gain c / slide s̄ / shape change, a week | 0.0053 / 0.0044 / +0.0006 | 0.0027 / 0.0048 / −0.0021 | 0.0044 / 0.0048 / −0.0011 | 0.0030 / 0.0037 / −0.0004 | 0.0040 / 0.0055 / −0.0016 |
+| slide s̄_k > 0 at every cut-off | yes (min 0.0032) | yes | yes | yes | yes |
+| corr(shape change, c − s̄) / corr(·, −s̄) | 0.18 / 0.25 | 0.80 / 0.06 | −0.26 / −0.82 | 0.80 / 0.83 | 0.90 / 0.97 |
+| weekly rank change C(R) at R = 1 / 3 / 10 / 100 | 0.13 / 0.65 / 0.94 / 0.99 | 0.09 / 0.76 / 0.92 / 0.99 | 0 / 0 / 0.36 / 0.94 | 0.03 / 0.30 / 0.73 / 0.98 | submissions 0.07 / 0.36 / 0.79 / 0.99; comments 0.03 / 0.46 / 0.87 / 0.99; Facebook 0.52 / 0.74 / 0.94 / 1.00 |
+
+**Scored:**
+- **NW-1 PASS:** Eq. 1 holds in every world. It is kinematics, not
+  evidence.
+- **NW-2 PASS:** the boundary ratio is about 1 for the level diffusions
+  (1.06, 1.07); neutral copying gives 0.58, outside the band. The ratio
+  discriminates against copying, not among level diffusions.
+- **NW-3 PASS:** the slide is positive in every world, driftless Gibrat
+  included. "Every community loses ground" is largely definitional.
+- **NW-4 PASS:** Gibrat 0, firm-like 0.11, neutral 0.36, the
+  data-calibrated model 0.070 (within ±0.05 of the data). The data's
+  0.01–0.08 sits with Gibrat and the model. With planted β = 0.2 the estimator
+  returns 0.11 under this passing noise, so the data's raw β also
+  understates the lasting β somewhat.
+- **NW-5 PASS:** no null world persists (−0.03 to −0.11); the data's
+  +0.14 to +0.20 discriminates.
+- **NW-6 PASS:** C(R) rises with R in every world and on every ladder, a
+  stable top in Iñiguez's sense.
+  - Top-10 set replacement exceeds top-K/2 replacement only in the
+    size-blind world (0.33 against 0.22) and in the data.
+  - The firm-like and neutral worlds protect the top (0.17 against 0.24;
+    0.03 against 0.30).
+- **NW-7 MIXED:** −s̄ carries the correlation in Gibrat and neutral, c − s̄
+  in the firm-like world.
+
+**The data-calibrated model (iv)** reproduces:
+- the data's turnover profile, top fastest;
+- β;
+- the boundary ratio;
+- C(R) at the top: 0.03 / 0.30 against submissions' 0.07 / 0.36;
+- a mild flattening.
+
+It lacks persistence (−0.10).
+
+**Reading (what is automatic and what is discovered).**
+- **Automatic in any random-growth ladder:**
+  - Eq. 1;
+  - a positive slide;
+  - turnover replenishing at about σ²/(2S) (the boundary ratio about 1);
+  - a top stable in rank order (C(R) rising).
+- **Discovered, because the data side with the size-blind world:**
+  - β about 0;
+  - the top set turning over fastest. A firm-like β or neutral copying
+    would make the top the most protected set;
+  - the boundary ratio about 1, which excludes neutral copying.
+- **Discovered, against every null world:**
+  - persistence (+0.14 to +0.20);
+  - a balance that flattens (c < s̄; shape −0.0016 a week), where the
+    size-blind world steepens (+0.0006).
+- **Rank change and set replacement are two views of one ladder.** The
+  occupant of rank 1 rarely changes, because the gap to rank 2 is about S;
+  yet a third of the top-ten set is replaced each year, because the slope
+  is flattest at the top. This reconciles the data with Iñiguez et al.
+  (2022): different statistics, the same kinematics.
