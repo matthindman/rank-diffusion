@@ -210,3 +210,45 @@ Prior: 75%, 50%.
   approved).
 - **A11:** frame d, the manuscript draft and the figures.
 - **A12:** a round-3 referee review.
+
+## Addendum, before its run: A6, the repaired harness and an out-of-period structure test
+
+**Repairs** (round-2 referees V2 and V3):
+- Simulated reborn slots are kept as new names, each in its own column, as
+  the data keep later entrants. Data and simulations are then ranked on the
+  same footing: everything present.
+- Shares are arithmetic: weekly activity (expm1 of the log level) summed over
+  each 52-week block, then the share of the year's top k by total within its
+  top K, as in §2z-da.
+
+**Out-of-period design** (`structure_oop.py`):
+- Estimate on weeks 4–107 only (2019–2020, blocks 0–1).
+- Simulate from the filtered state at week 108 through week 211 (blocks 2–3,
+  2021–2022), 20 seeds.
+- Arms: model A's dynamics; the moving home (hold closure from the end-2020
+  ladder, the frozen form).
+- Statistics, data against each arm, block 2 → 3:
+  - one-year retention at K/64, K/16, K/8 and K;
+  - the arithmetic share of the top K/64 in block 3, and its change since
+    block 1;
+  - momentum: Spearman of (block 2 − block 1, block 3 − block 2), block 1
+    from the data;
+  - excess kurtosis of 26-week changes.
+- **Baselines:** retention carried forward from block 0 → 1, the last fully
+  observed year before the origin; the block-1 share carried forward (no
+  change).
+
+**Expectations:**
+- **A6-1:** the RDM's mean absolute retention error over the four cut-offs
+  is ≤ A's on both Reddit ladders.
+- **A6-2:** neither arm beats retention carried forward. The stationary
+  models have no information about the year beyond the ladder.
+- **A6-3:** both arms forecast a change of the top-K/64 arithmetic share
+  smaller in magnitude than half the observed change on submissions. The
+  stationary closures do not forecast the fall.
+- **A6-4:** both arms' momentum is within ±0.05 of 0.
+- **A6-5:** keeping entrants changes the RDM's simulated one-year retention
+  by less than 0.02 at every cut-off. This is checked in sample on the
+  full-panel run, so the V3 mismatch would be minor.
+
+Prior: 55%, 70%, 80%, 85%, 50%.

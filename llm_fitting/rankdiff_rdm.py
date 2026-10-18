@@ -432,6 +432,8 @@ class _State:
         ne = int(ex.sum())
         if ne:
             self.L[ex] = b.bottom_mu[rng.integers(0, b.bottom_mu.size, ne)]
+            self.ids[ex] = np.arange(self.next_id, self.next_id + ne)      # reborn slots are new names (no draw)
+            self.next_id += ne
             if self.ts > 0:
                 self.sqv[ex] = np.sqrt(rng.lognormal(-0.5 * self.ts ** 2, self.ts, ne))
             if self.vel is not None:

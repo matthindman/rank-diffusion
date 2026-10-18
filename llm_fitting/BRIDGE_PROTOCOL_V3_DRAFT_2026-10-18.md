@@ -1,4 +1,4 @@
-# The Reddit bridge, 2023-01 … 2024-06: protocol v3, redesigned around discriminating tests — DRAFT, NOT ADOPTED
+# The Reddit bridge, 2023-01 … 2024-06: protocol v3.1, redesigned around discriminating tests — DRAFT, NOT ADOPTED
 
 _Claude Opus 5.5 (Anthropic), 2026-10-18. Written after the owner's decision
 of 2026-10-18 ("4; yes": redesign the sealed-bridge protocol around the tests
@@ -89,6 +89,33 @@ activity totals are formed.
 
 Each is reported as PASS, FAIL or NOT ADJUDICATED, at equal prominence, with
 every condition below applied.
+
+## Amendment v3.1 (2026-10-18): three primaries added at the owner's instruction
+
+The owner, after the round-2 referees, in the conversation: "Yes, add them"
+(MODEL_STATUS §6 addendum; §2z-dg). The three are momentum, the size–variance
+exponent, and the moving-home model's gate.
+- All three were chosen knowing the development results recorded in
+  §2z-dc … §2z-df, and the thresholds say where.
+- The development code is `runs/2026-10-18_momentum/gapped_momentum.py`,
+  `runs/2026-10-18_pnas_push/exponent_robustness.py` and
+  `runs/2026-10-18_pnas_push/gate_arm.py`, frozen at the commit that adopts
+  this protocol.
+- Adoption and first contact remain the owner's decisions.
+
+| | test | rule (fixed now) | why it discriminates |
+|---|---|---|---|
+| **P5** | Momentum carries into new data (the gapped statistic of §2z-df) | Change 1 = mean log level over 2022 Q3 minus 2021 Q3 (13-week windows, 52 weeks apart; development). Change 2 = 2024 Q1 minus 2023 Q1 (bridge). The gap is 2022 Q4, so the two changes share no weeks. Cohort: the top K by mean level over 2021 Q1–Q2. Presence ≥ 0.9 in every window. Spearman with a 5–95% bootstrap over communities. **PASS (persistence carries into 2023–24):** ρ > 0 with the interval excluding 0 on both ladders. **Reading, fixed now:** ≥ +0.10 strong persistence (development, gap 13: +0.15 to +0.17); +0.03 to +0.10 weak; < +0.03 none, consistent with a 2020–21 episode. | It separates persistence by community, which carries forward, from an episode of the pandemic years, which predicts about 0. On development the later origins were lower (submissions +0.11 at the last origin). The outcome is open. |
+| **P6** | Size gives little protection on new data (§2z-dc; robustness §2z-dg) | Raw one-year growth: block means 2022 (development) and 2023 (bridge), 52-week blocks, seven octave strata of permanent rank over the 2022 block, as `size_variance.py`. **PASS:** β ≤ 0.10 on comments and ≤ 0.12 on submissions, with each 95th percentile (bootstrap over communities) below 0.15, the firm literature's lower end. The fold change of the sd from the largest to the smallest stratum is reported, with the leave-one-stratum-out range. | The headline's number, out of sample. A β at the firm value (≥ 0.15) fails it. On development comments gives 0.059–0.075; submissions 0.045–0.082, unstable when one stratum is left out (0.00–0.19). That instability is why submissions has the wider bound. |
+| **P7** | The moving-home model forecasts held-out movement on new data | Gate v1 (`rankdiff_rdm.oos_rdm`, 20 reps, 2,000 draws) with **rolling origins inside the bridge**: origins at 2023-01-02 + 13j weeks, j = 0 … 4, test windows of 26 weeks (horizons 1, 4, 13). Train on everything before each origin (development plus the bridge so far), with the universe from train only, as Gate v1. Arms: the moving home (frozen form with the long-panel flags), model A's dynamics in the same harness, and persistence. **PASS:** the moving home is ≤ A + 0.05 and below persistence, on both ladders. **G2 on new data:** its dRank13 error is below A's on both, reported with the 90th percentile of 13-week displacement. | The first rolling-origin gate on unseen weeks, for both models. Splits touching the blackout (12 June – 16 July 2023) are reported with and without it. |
+
+**Verdicts added.**
+- **Growth persistence carries forward:** P5 passes on both ladders.
+- **Size gives little protection, out of sample:** P6 passes on both.
+- **The generative model forecasts new data:** P7 passes on both.
+
+**Stage-order addition.** P5–P7 are computed after P1–P4 and before any
+secondary test. Nothing else is computed from the bridge first.
 
 ## Secondary tests
 
