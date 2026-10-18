@@ -1,0 +1,9 @@
+reddit_submissions_long 1->2: beta +0.045; leave-one-out [0.189, -0.0, 0.026, 0.045, 0.044, 0.04, 0.005]; fold end-to-end 0.86, max/min 2.58; to 4K with absences at the floor +0.067 (absent share by stratum [0.0, 0.0, 0.013, 0.006, 0.01, 0.023, 0.036, 0.059, 0.076])
+reddit_submissions_long 2->3: beta +0.082; leave-one-out [0.14, 0.082, 0.067, 0.082, 0.077, 0.081, 0.058]; fold end-to-end 1.34, max/min 1.91; to 4K with absences at the floor +0.109 (absent share by stratum [0.013, 0.0, 0.0, 0.003, 0.003, 0.016, 0.039, 0.053, 0.078])
+reddit_submissions_long: retention of the top 10 by pair [0.7, 0.7, 0.6]; top 25 [0.72, 0.68, 0.72]
+reddit_comments_ext 1->2: beta +0.075; leave-one-out [0.074, 0.068, 0.079, 0.075, 0.074, 0.076, 0.081]; fold end-to-end 1.58, max/min 1.58; to 4K with absences at the floor +0.042 (absent share by stratum [0.005, 0.0, 0.003, 0.012, 0.01, 0.017, 0.039, 0.105, 0.226])
+reddit_comments_ext 2->3: beta +0.059; leave-one-out [0.066, 0.049, 0.062, 0.058, 0.059, 0.052, 0.07]; fold end-to-end 1.33, max/min 1.50; to 4K with absences at the floor +0.013 (absent share by stratum [0.01, 0.0, 0.003, 0.005, 0.009, 0.018, 0.043, 0.098, 0.188])
+reddit_comments_ext: retention of the top 10 by pair [0.7, 0.8, 0.7]; top 25 [0.72, 0.84, 0.64]
+facebook_a 1->5: beta +0.008; leave-one-out [0.008, -0.001, 0.015, 0.007, 0.007, 0.009, 0.01]; fold end-to-end 1.03, max/min 1.21; to 4K with absences at the floor +0.057 (absent share by stratum [0.0, 0.019, 0.028, 0.047, 0.031, 0.047, 0.076, 0.082, 0.113])
+facebook_a: lasting beta (13-week blocks, two-step minus one-step) +0.019; lasting sd by stratum [0.454, 0.436, 0.511, 0.492, 0.514, 0.462, 0.489]
+facebook_a: retention of the top 10 by pair [0.6, 0.7]; top 25 [0.64, 0.72]

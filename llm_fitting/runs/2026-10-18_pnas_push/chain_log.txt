@@ -1,0 +1,3 @@
+JOB DONE turnover_kinematics.py exit 0
+JOB DONE churn_counterfactual.py reddit_comments_ext exit 0
+JOB DONE churn_counterfactual.py reddit_submissions_long exit 0

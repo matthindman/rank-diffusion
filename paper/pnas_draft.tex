@@ -1,0 +1,177 @@
+%% ============================================================================
+%% pnas_draft.tex — PNAS research article, FIRST FULL DRAFT (frame d)
+%% Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-18, under the owner's
+%% decisions of 2026-10-18 (MODEL_STATUS §6 addenda; record §2z-dg):
+%%   - the title states the foundational issue: how churn creates and
+%%     maintains a (stable-ish) structure;
+%%   - the core of the generative model is in the main text;
+%%   - the balance (B) is the spine (decision of 2026-10-18, §2z-db).
+%% Every number cites its MODEL_STATUS section in a comment (%% §...).
+%% Development data only; nothing from the sealed bridge or Wikipedia.
+%% Compile: cd paper && pdflatex pnas_draft && bibtex pnas_draft && pdflatex pnas_draft (x2)
+%% Supersedes pnas_outline_v2.tex as the working text; the outlines are kept.
+%% ============================================================================
+
+\documentclass[9pt,twocolumn,twoside]{pnas-new}
+\templatetype{pnasresearcharticle}
+\usepackage{graphicx}
+\graphicspath{{../llm_fitting/runs/2026-10-18_pnas_push/}}
+\newcommand{\todo}[1]{\textcolor{red!65!black}{\textbf{[TODO: #1]}}}
+
+%% Title options (the owner chooses; §2z-dg):
+%%  T1 "The churn that unseats online leaders creates the hierarchy they lead"  (USED)
+%%  T2 "Turnover creates and sustains the hierarchy of online attention"
+%%  T3 "Online attention keeps its hierarchy by replacing its leaders"
+\title{The churn that unseats online leaders creates the hierarchy they lead}
+
+\articletype{Social Sciences (classification placeholder)}
+\author[a,1]{Author One}
+\affil[a]{Affiliation placeholder}
+\leadauthor{One}
+\authorcontributions{Placeholder.}
+\authordeclaration{The authors declare no competing interest.}
+\correspondingauthor{\textsuperscript{1}Placeholder.}
+
+\significancestatement{Attention online is concentrated in a few communities, pages and channels, yet their leaders keep changing: a fifth or more of every top set is replaced each year, and the very top turns over fastest. How can a hierarchy persist when its occupants do not? In weekly records of Reddit communities and Facebook pages we show that the churn is what holds the hierarchy up. Every community loses ground to the ranking, and risers cross each rank's boundary at a rate set by how much communities move and how steep the ranking is there. That inflow balances the losses. Size gives little protection from this churn. Where the balance tips, the hierarchy changes, but slowly.}
+
+\keywords{attention inequality $|$ rank dynamics $|$ turnover $|$ random growth $|$ online platforms}
+
+\begin{abstract}
+Online attention is highly concentrated, yet its leaders change constantly. In weekly activity records of Reddit communities (2019--2022) and Facebook pages (2020--2022), a fifth to a third of every top set, from the top ten to the top 12,500, is replaced each year, while the rank--size hierarchy changes slowly. We show that the churn sustains the hierarchy. Size gives leaders little protection: the volatility of a community's annual change falls with size with an exponent of 0.01--0.08, against 0.15--0.2 for firms. Turnover at every scale then follows, with no fitted parameter, from the spread of annual changes at a rank's boundary and the local steepness of the hierarchy; it is highest at the top, where the hierarchy is flattest. Every community loses ground against the ranking, and risers cross each rank's boundary at the rate set by lasting volatility over twice the local slope (measured over predicted, 0.96 pooled over four ladders). Where this inflow balances the losses the hierarchy holds, and the imbalance accounts for how fast it changes. A generative model built on these principles---wandering lasting levels, drift by rank and fast passing swings---\todo{forecast sentence after the long-panel gates (A5)}, and from complete equality it builds a hierarchy whose steepness is churn over drift. Reddit also shows what the model lacks: growth that persists beyond a random walk (rank correlation 0.14--0.20 between changes that share no weeks; none on Facebook). At the head of Reddit submissions, losses outrun the inflow, and the 78 leading communities' share fell from 50\% to 34\% in three years.
+\end{abstract}
+
+\dates{This manuscript was compiled on \today}
+
+\begin{document}
+\maketitle
+\thispagestyle{firststyle}
+\ifthenelse{\boolean{shortarticle}}{\ifthenelse{\boolean{singlecolumn}}{\abscontentformatted}{\abscontent}}{}
+
+\dropcap{A}ttention online is concentrated. On every large platform a small number of communities, pages and channels receive most of the activity, and the distribution of activity across them follows a steep rank--size curve. Yet the occupants of that curve do not stay. In the data we study, about one in five of the top 12,500 Reddit communities is replaced within a year, and among the top ten the share is closer to one in three. The hierarchy, meanwhile, changes slowly: year after year the curve looks much the same. How can a hierarchy persist when its occupants do not?
+%% turnover §2z-cu; top 10/25 §2z-dg A7-5; ladders by year §2z-cu
+
+Two familiar answers do not fit. The first is entrenchment. Large firms are steadier than small ones---the spread of a firm's annual growth falls with its size as a power with exponent near 0.2 \cite{stanley1996,amaral1997}---and cumulative advantage lets early leaders accumulate more \cite{merton1968,salganik2006,vanderijt2014}. If attention worked this way, the top would be the stablest part of the ranking. It is the least stable. The second answer is pure chance. Random growth with a floor or a drift produces Zipf-like distributions \cite{gibrat1931,champernowne1953,gabaix1999,gabaix2009}, and stochastic portfolio theory relates the steepness of a ranked distribution to the volatility and the relative drift of whoever holds each rank \cite{fernholz2002,banner2005,fernholz2017}. Gomez showed that a top wealth share grows through the drift of its members plus a displacement term that the volatility at the threshold and the local tail predict, and confirmed it for the Forbes 400 \cite{gomez2023}. These results say that churn and a stable shape can coexist. They do not show, for a real hierarchy, that the measured churn is what holds it up, rank by rank, or why the churn is so large at the top.
+%% theory note §3, §9; Gomez's Appendix F applies the decomposition across income percentiles (§2z-df V11)
+
+Here we show it for online attention, with three measured pieces and a model. First, size gives little protection: a community's volatility barely falls with its size, so churn is nearly the same at every scale, and turnover at each scale follows from that churn and the local steepness of the hierarchy alone. Second, every community loses ground against the ranking, and risers cross each rank's boundary at exactly the rate that the lasting volatility there and the local steepness predict; where that inflow balances the losses the hierarchy holds, and where it does not the hierarchy changes at the rate of the imbalance. Third, a generative model with only these ingredients---lasting levels that wander, drift that depends on rank, and fast passing swings---\todo{forecast clause (A5)} and builds the hierarchy from complete equality. The steepness it builds is set by churn relative to drift: without churn the hierarchy would not exist. What the model lacks, Reddit shows: growth persists beyond a random walk, and where it tips the balance, as at the head of Reddit's submissions ranking, concentration falls.
+
+The mathematics behind the balance is not new \cite{fernholz2002,gabaix2009,gomez2023}. What is new is the measurement: a test of the balance at every rank of whole ladders, with named units whose activity is dominated by passing swings; the finding that size does not dampen those swings, which is why turnover is fast at every scale and fastest at the top; and a generative account of attention dynamics whose failures we register as tests on new data.
+
+\section*{Results}
+
+\subsection*{A fast churn and a slow hierarchy}
+We study three ladders (\textit{Materials and Methods}): the weekly comment karma of Reddit communities and their submission karma, each from December 2018 to December 2022, and the weekly interactions of Facebook pages from November 2020 to June 2022. Each ladder is a top-$K$ universe ($K$ = 12,500 comment communities, 5,000 submission communities, 3,500 pages) with names entering and leaving it. Fig.~1\textit{A} shows the rank--size curve of each ladder year by year. Its shape moves little. The names on it move a great deal (Fig.~1\textit{B}). In a year, 16--21\% of each Reddit top set is replaced, from the top 195 to the top 12,500; 27--33\% of each top ten; and on Facebook, 18--35\% of each top set in half a year (Fig.~1\textit{C}). The top turns over fastest.
+%% §2z-cu; §2z-dg A7-5, A1
+
+\begin{figure*}[t]\centering
+\includegraphics[width=\textwidth]{fig1_puzzle}
+\caption{A fast churn and a slow hierarchy. (\textit{A}) The rank--size curve of each ladder, one curve per year (Reddit) or half-year (Facebook), darker = later; curves offset. (\textit{B}) Weekly ranks of 100 random communities from the 2019 top 12,500 of Reddit comments. (\textit{C}) The share of the top $k$ replaced within a year (Facebook: half a year), from the top ten to the universe.}
+\end{figure*}
+
+\subsection*{Size gives little protection, so churn is scale-free}
+For firms, the standard deviation of annual growth falls with size as $\mathrm{size}^{-\beta}$ with $\beta \approx 0.15$--$0.2$ \cite{stanley1996,amaral1997}. We measure $\beta$ the same way, with communities stratified by permanent rank (their mean rank over a fixed block, with absences counted at the floor) and the one-year change of each community's mean log activity. On Reddit comments $\beta = 0.075$ (5--95\%: 0.061--0.093) and 0.059 in the following year; on Facebook pages $\beta = 0.008$ (Fig.~2\textit{A}). Across a 600-fold range of size, the spread of annual change on comments falls only 1.6-fold; at $\beta = 0.2$ it would fall 3.6-fold. These exponents survive leaving out any size stratum (comments 0.05--0.08), extending the strata to four times the universe with disappearances counted as falls to its floor (all ladders $< 0.11$), and isolating the lasting part of the change (Facebook 0.02). On Reddit submissions the exponent is unstable: 0.045 and 0.082 in successive years, and 0.00--0.19 when one stratum is left out, because the top 78 communities moved violently in 2020--21. Nor does a community's activity average out over its items: on Reddit, neither the number of posts nor the engagement each earns steadies with size (exponents 0.04--0.12 against 0.5 for independent items). Attention to a community moves as a unit. Day-to-day fluctuations of web traffic show the same lack of scaling \cite{menezes2004,eisler2008}; here it holds for the annual, lasting growth of named units.
+%% §2z-dc; §2z-dg A7; §2z-df V1
+
+Scale-free churn explains scale-free turnover. On a ladder that is locally straight in log rank with slope $S_k$ at rank $k$, the number of names more than $u$ log units above the rank-$k$ level is $k\,e^{-u/S_k}$. A name a distance $u$ above the boundary leaves the top $k$ when its change, relative to the boundary's, falls below $-u$. Integrating over the names gives the replaced share
+\begin{equation}
+f_k \;=\; \mathbb{E}\!\left[\,1 - e^{-D^{+}/S_k}\right],
+\label{eq:turnover}
+\end{equation}
+where $D^{+}$ is the downward move of a name near the boundary relative to the boundary itself (plus the small share of names that vanish). Eq.~\ref{eq:turnover} has no free parameter. Evaluated with each year's measured changes and slopes, it reproduces the observed turnover in all 48 cells of three ladders and up to six cut-offs (ratios 0.82--1.18, median 0.98; Fig.~2\textit{B}). Its two ingredients behave differently across scale (Fig.~2\textit{C}): the typical downward move is nearly constant, 0.25--0.40 log units at every cut-off, while the slope rises from about 0.8--1.0 at the head to 1.5--2.1 deeper in the ladder. Turnover is therefore high at every scale because the churn is, and highest at the top because the hierarchy is flattest there. Leaders are not the most protected names in the ranking; they are the most exposed.
+%% §2z-dg A1 (exact form post hoc; the registered linear-density form over-predicted by a median 1.27-1.45)
+
+\begin{figure*}[t]\centering
+\includegraphics[width=\textwidth]{fig2_scale_free}
+\caption{Size gives little protection, so churn is scale-free. (\textit{A}) Standard deviation of the one-year change of log activity against size, by stratum of permanent rank; dashed, the firm benchmark $\beta = 0.2$. (\textit{B}) The replaced share of the top $k$ predicted by Eq.~\ref{eq:turnover} against the observed share, all ladders, year pairs and cut-offs. (\textit{C}) The two ingredients of Eq.~\ref{eq:turnover} by cut-off: the mean downward move at the boundary (solid) and the local slope (dotted).}
+\end{figure*}
+
+\subsection*{Churn sustains the hierarchy}
+Why does the hierarchy hold its shape while its names turn over so fast? Follow the top $k$ of the persisting communities over a year. Its mean level changes for two reasons \cite{gomez2023}. Its members, on average, lose ground against the ranking: the slide $\bar s_k$, measured against the mean of the universe, is 0.002--0.011 log units a week, larger at the head (Fig.~3\textit{B}). And the top $k$ gains from crossings at its boundary, as risers replace fallers. If names move by diffusion with lasting variance $\sigma_k^2$ per week near the boundary, the crossing gain per member is
+\begin{equation}
+c_k \;=\; \frac{\sigma_k^2}{2S_k},
+\label{eq:crossing}
+\end{equation}
+so the shape of the hierarchy, $U_k - U_K$ with $U_k$ the mean of the top $k$, changes at
+\begin{equation}
+\frac{d}{dt}\left(U_k - U_K\right) \;=\; \frac{\sigma_k^2}{2S_k} \;-\; \bar s_k \;+\; (\text{entry and exit}).
+\label{eq:rate}
+\end{equation}
+Eq.~\ref{eq:crossing} is the mean-log form of Gomez's displacement term \cite{gomez2023}; its stationary version, $S_k = \sigma_k^2/(2\bar s_k)$, is Fernholz's gap identity \cite{fernholz2017} and, with one slide, the Atlas slope \cite{banner2005}.
+
+Testing Eq.~\ref{eq:crossing} in attention data needs care, because most week-to-week movement is passing: a community whose rank is high this week is likely to be high partly by chance, so statistics conditioned on current rank select on noise. We therefore follow cohorts fixed by permanent rank, measure lasting variance from changes over long spacings, and measure crossings as the difference of reordering gains over two spacings, which removes passing swings and leaves a small composition term that we report (\textit{Materials and Methods}). With these estimators, measured crossings match $\sigma_k^2/(2S_k)$ at every rank on three ladders and on Instagram through a model of its sampling (Fig.~3\textit{A}): pooled over four ladders the ratio of measured to predicted is 0.96 (0.89--1.05). Predicted a year ahead from the earlier volatility, the crossings on comments come in at 0.94 of prediction; on submissions they fall short (0.62), mainly at ranks 300--600, a shortfall we have not explained. Calibrated alternatives in which names jump to random ranks are excluded (1.56); a diffusion in rank space with a fixed ladder is not (1.05), so the test speaks against jumps, not against every rank-space description.
+%% §2z-cm, §2z-ct, §2z-cx, §2z-da (pooled 0.955, 0.889-1.054); §2z-dc (out of time; rivals)
+
+\begin{figure*}[t]\centering
+\includegraphics[width=\textwidth]{fig3_balance}
+\caption{Churn sustains the hierarchy. (\textit{A}) Measured lasting crossing gain at each cut-off $K/64 \ldots K$ against Eq.~\ref{eq:crossing}, three ladders (5--95\% intervals; open symbols, boundary strata of $<150$ names). (\textit{B}) The crossing gain against the slide of the names above $k$, Reddit, two year pairs; larger symbols are higher ranks. On the diagonal the hierarchy holds. (\textit{C}) The change of the hierarchy's shape against crossing gain minus slide, half-year starts (60 cells).}
+\end{figure*}
+
+The two terms of Eq.~\ref{eq:rate} are of the same size (Fig.~3\textit{B}). On Reddit comments the crossing gain (0.0025--0.0045 a week) and the slide (0.0022--0.0043) are of the same size at every rank, and the shape changes by less than 0.003 a week. On Reddit submissions they match below the top 1,250 but not at the head, where the slide (0.006--0.011) is 1.6 to 3.5 times the crossing gain; there the hierarchy flattens. Over sixty year-long intervals with half-year starts, the imbalance accounts for the change of shape with slope 0.88 and correlation 0.90 (Fig.~3\textit{C}). This same-year form is an accounting of the change by named movement with a theory of the boundary, not a forecast; forecast from the previous year's slides it beats ``no change'' on submissions and fails on comments, where drift by rank reversed every half-year. Where the balance holds, the steepness of the hierarchy is the churn over the slide, $S_k \approx \sigma_k^2/(2\bar s_k)$: on comments the two agree within about a third at every rank. Because both terms are small against the span of the hierarchy, its shape relaxes toward the steepness its movement sustains over years---2 to 6 on the submissions head and 5 to 22 on comments---so a hierarchy can look stable while it is out of balance.
+%% §2z-cd, §2z-cg (60 cells, slope 0.88, corr 0.90; lagged forecasts); law cells S vs S*; §2z-cp (relaxation)
+
+\subsection*{A generative model}
+These measurements imply a model with three ingredients, and we built it (\textit{Materials and Methods}; SI). The observed log activity of community $i$ is a lasting level plus passing swings,
+\begin{equation}
+x_i(t) = L_i(t) + m_i(t) + \varepsilon_i(t),
+\end{equation}
+where the passing parts---a swing that decays within weeks and observation noise---make weekly ranks jitter without changing the structure. The lasting level wanders under drift that depends only on rank,
+\begin{equation}
+dL_i = g\big(r_i(t)\big)\,dt + \sigma(L_i)\,dW_i ,\qquad \sigma(L) \propto e^{-\beta L},
+\end{equation}
+with nearly scale-free volatility ($\beta$ small, estimated) and $g$ the slide by rank; communities exit at a rank-dependent rate and are replaced at the bottom. Unlike our earlier model, in which each community returned to a fixed home level, the lasting level here has no home: the data show no return toward a community's own past level at a year, and the ranking is held by drift by rank, not by reversion. The model has no parameter tuned to the structure; every quantity is estimated from declared moments of individual movement, and the drift by rank is either taken from the measured slides or solved so that the end-of-training ladder is held, which makes the ladder an input and is disclosed as such.
+
+Three results follow. First, held-out movement. In rolling-origin tests that score the predicted distribution of weekly rank changes over 1 to 13 weeks against held-out data, the model \todo{A5 long-panel results: RDM vs A vs persistence, both ladders, and the ablation}. On a short Reddit panel it beats our earlier fixed-home model in all five splits (error 0.097 against 0.128), and on comments it is better in four of five (0.152 against 0.163), with the median 13-week displacement much closer to the data (error 0.088 against 0.211), though its largest movers move too little. Second, the model creates the hierarchy. Started from complete equality, with the measured churn and slides, it builds a rank--size hierarchy within about a decade (Fig.~4\textit{B}), and the steepness it reaches at every rank is $\sigma_k^2/(2\bar s_k)$ within 10\%. Without churn there would be no hierarchy; without the slide it would spread without limit. The body of the hierarchy it sustains matches the observed one within 20\%; its head is flatter than today's, consistent with the observed head being above the level its movement can hold. Third, \todo{A6 out-of-period structure test: retention, share and momentum in 2021--22 from a 2019--20 fit}.
+%% §2z-dd (model; gates on short panels); §2z-df §8 (G2); §2z-dg A3 (flat start), A5, A6
+
+\begin{figure*}[t]\centering
+\fbox{\parbox{0.9\textwidth}{\centering \todo{Fig.~4: (A) the model's core in one diagram; (B) the hierarchy forming from equality (shape by year against the observed ladder); (C) held-out movement, four arms and persistence, two long panels; (D) out-of-period retention and share.}}}
+\caption{A generative model in which churn creates and sustains the hierarchy.}
+\end{figure*}
+
+\subsection*{Where the balance tips: persistent growth}
+The model lacks one feature of Reddit. A community's growth in one year predicts its growth in the next. The obvious statistic, the correlation of consecutive changes of annual mean activity, is $+0.32$ to $+0.45$ on Reddit, but averaging a random walk over blocks alone makes consecutive block changes correlate by about $+0.24$ \cite{working1960}. We therefore correlate changes that share no weeks: the change between two 13-week windows a year apart, and the same change starting 13 or 26 weeks after the first ends. Any process with independent increments, plus noise, gives zero; we confirmed this in simulation ($-0.005$). On Reddit the correlation is $+0.14$ to $+0.20$ on both ladders, positive at every origin and still $+0.14$ with a half-year gap; on Facebook it is negative ($-0.03$ to $-0.11$) (Fig.~5\textit{A}). \todo{A4: which part carries it (items vs engagement per item), shared vs community-specific (residualised), sign asymmetry, lag profile, Reddit at Facebook's settings}. Persistent growth is what the balance in Eq.~\ref{eq:rate} does not contain: it adds lasting variance at long horizons beyond a random walk and shifts who crosses. At the head of Reddit submissions, where the slide outran the crossing gain, the arithmetic share of the 78 leading communities fell from 50.2\% to 34.0\% between 2019 and 2022 \todo{A8: Gomez decomposition of the fall into within and displacement terms}.
+%% §2z-df (gapped momentum); §2z-de; §2z-da (arithmetic shares); §2z-dg A4, A8
+
+\begin{figure*}[t]\centering
+\fbox{\parbox{0.9\textwidth}{\centering \todo{Fig.~5: (A) gapped momentum by gap, Reddit against Facebook, with the averaging null; (B) the decomposition of momentum; (C) the arithmetic share of the submissions head and its within/displacement split.}}}
+\caption{Where the balance tips.}
+\end{figure*}
+
+\section*{Discussion}
+The occupants of an attention hierarchy change much faster than the hierarchy does, and the two speeds are connected. The churn that unseats leaders is the inflow that holds every rank up: at each rank the communities crossing into the top set return what its members lose, at the rate that their volatility and the local steepness set. The same churn sets the steepness. In random-growth theory this is the familiar statement that a power law is held by volatility against drift \cite{champernowne1953,gabaix1999,gllm2016}; here it is measured rank by rank, for named units, in a domain where most movement is passing noise and where size does not dampen it.
+
+Two consequences matter beyond attention. First, entrenchment. A leading community is not protected by its size from losing its place; it is the most exposed, because the hierarchy is flattest at the top. Persistent growth, not size, is what lets a community rise or keep rising---and on Reddit it exists, while on Facebook pages we see none. Second, platform design. A change to how a platform distributes attention acts on the balance through the drift by rank and through who crosses; because the hierarchy relaxes over years, a design change can move concentration for years after it is made, and the balance gives a way to read that from public ranked data.
+
+The limits are those of the data. All results here are from development data, examined many times, and several are post hoc, which we label (the exact turnover formula, the averaging-aware momentum statistic). The units are karma and interactions, measures of engaged activity rather than views. The size range is two to three decades. The submissions exponent and the submissions head are unstable or unexplained. Persistent growth predates a July 2021 change in how the archive captured Reddit, but other capture effects are not audited. We have therefore registered the main claims as tests on new data before seeing it: the balance in period and a year ahead, the size exponent, persistent growth, and the model's held-out movement on 2023--2024 Reddit data held sealed for the purpose.
+%% bridge protocol v3.1 (P1-P7), not adopted at writing
+
+\matmethods{
+\subsection*{Data}
+Reddit ladders are built from the Pushshift archive of comments and submissions \cite{baumgartner2020}: for each community and day, comment karma and submission karma (negative daily values set to zero), summed to weeks, December 2018 to December 2022. Facebook ladders are weekly page interactions from CrowdTangle, restricted to the instrument era from November 2020 to June 2022 in which coverage was stable, with flagged days excluded. Each ladder is a top-$K$ universe of named endpoints (Reddit comments $K$ = 12,500, submissions 5,000, Facebook 3,500), with membership penalised for absence; endpoints ever ranked inside $4K$ in a week are tracked. Log activity is $x = \log(1 + \text{activity})$. All data contact is logged in the repository's exposure ledger; a 2023--2024 Reddit extension and a Wikipedia ladder are held sealed for registered tests.
+
+\subsection*{Cohorts and blocks}
+Analyses use non-overlapping blocks of 52 weeks (Facebook 13 or 26) aligned to the end of each panel; a block level requires presence in 90\% of its weeks. Permanent rank is a community's mean weekly rank over a fixed block, with absent weeks counted at that week's floor. Cohorts are fixed on a block disjoint from the blocks they are measured on, so that no cohort is selected on the noise it is measured with.
+
+\subsection*{The size exponent and turnover}
+$\beta$ is minus the slope of log standard deviation of one-year change on mean log size across seven octave strata of permanent rank ($K/64$ to $K$); intervals resample communities. Turnover is one minus the overlap of the top $k$ by block level in consecutive blocks. Eq.~\ref{eq:turnover} uses, for each cut-off and year pair, the slope from a regression of level on log rank over ranks $k/\sqrt2$ to $k\sqrt2$ at the start block, the change of the rank-$k$ level, the changes of communities ranked $k/2$ to $k$ present in both blocks, and the share of the top $k$ absent at the second block.
+
+\subsection*{Lasting variance, crossings and the slide}
+Lasting variance at rank $k$ is the growth of the variance of a cohort's changes with spacing, from blocks one to three years apart (a variogram estimator agrees within about 10\%). Crossings are the reordering gain of the top $k$ (the mean of the top $k$ at the end minus the mean of the initial members at the end) differenced between spacings of two and four half-years, which removes passing swings; the difference equals the lasting crossing gain plus a composition term that we report (+25--35\% of the statistic on Reddit). The slide is the mean change of a cohort's members above $k$ against the mean of the universe. Intervals resample communities; a joint block bootstrap over time is not built.
+
+\subsection*{The generative model and its tests}
+The model (code \texttt{rankdiff\_rdm.py}) is estimated from a structure function of each stratum's changes (lasting variance by band, giving $\sigma_0$ and $\beta$), the passing parts of the earlier permanent--transitory model, and exit rates by rank. Held-out movement is scored by a registered rolling-origin test: five origins, 20 simulations per origin, conditional on the filtered state at each origin, on the median absolute rank change at 1, 4 and 13 weeks, its first autocorrelation, and collision rates at the top; persistence of the training-window statistics is the baseline. All test evaluations are logged.
+
+\subsection*{Registration and AI use}
+Designs and expected outcomes were committed before each run; post hoc analyses are labelled. The analyses, code and drafts were produced with AI coding agents (Anthropic Claude; OpenAI Codex) under the authors' direction, with external review by further models; every number was checked against saved outputs.
+
+\subsection*{Data and code availability}
+Code, run outputs and the analysis record are in a public repository \todo{URL and DOI}. Derived rank-level panels \todo{availability statement: Pushshift redistribution terms; CrowdTangle access ended in 2024}.
+}
+\showmatmethods{}
+
+\acknow{\todo{Acknowledgements.}}
+\showacknow{}
+
+\bibliography{references}
+
+\end{document}
