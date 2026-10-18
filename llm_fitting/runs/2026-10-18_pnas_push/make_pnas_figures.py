@@ -302,18 +302,19 @@ def fig5():
         d = gm[pn]["gapped"]
         gs = sorted(d, key=lambda x: int(x))
         a.plot([int(g) for g in gs], [d[g]["mean"] for g in gs], "-", marker=MK[pn], color=COL[pn], ms=3.5, lw=1,
-               label=LAB[pn] + (" (26-wk changes)" if pn == "facebook_a" else ""))
-    for w, lab, col, ls in WORLDS:
+               label={"reddit_comments_ext": "Reddit comments", "reddit_submissions_long": "Reddit submissions", "facebook_a": "Facebook (26-wk)"}[pn])
+    for n, (w, lab, col, ls) in enumerate(WORLDS):
         nw = load(HERE / f"null_world__{w}.json")["gapped"]
-        a.plot([13, 26], [nw["13"], nw["26"]], "x", color=col, ms=4, mew=1, label=f"{lab} (simulated)")
+        a.plot([13, 26], [nw["13"], nw["26"]], "x", color="#666666", ms=4, mew=1, label="simulated worlds" if n == 0 else None)
     syn = gm["synthetic"]
-    a.plot([0, 13, 26], [syn["i"]["gapped"][g] for g in ("0", "13", "26")], "--", color=GREY, lw=1, label="random walk + noise (simulated)")
+    a.plot([0, 13, 26], [syn["i"]["gapped"][g] for g in ("0", "13", "26")], "--", color=GREY, lw=1, label="random walk + noise")
     a.axhline(0, color=GREY, lw=0.4)
     a.set_xlabel("gap between the two changes (weeks)")
     a.set_ylabel("rank correlation of changes")
     a.set_title("Changes persist on Reddit")
-    a.legend(loc="center right", frameon=False, fontsize=4.8, bbox_to_anchor=(1.02, 0.45))
-    a.set_ylim(-0.15, 0.3)
+    a.legend(loc="upper center", frameon=False, fontsize=4.6, ncol=2, columnspacing=0.5, handlelength=1.3, handletextpad=0.3)
+    a.set_ylim(-0.15, 0.39)
+    a.set_yticks([-0.1, 0, 0.1, 0.2])
     tag(a, "A")
     a = ax[1]
     cats = ("activity", "posts", "per\npost", "later\norigins", "net of\ntrend")
@@ -333,7 +334,8 @@ def fig5():
     a.set_xticklabels(cats, fontsize=5.5)
     a.set_ylabel("gapped momentum (13-wk gap)")
     a.set_title("Carried by participation")
-    a.legend(loc="upper right", frameon=False)
+    a.set_ylim(0, 0.235)
+    a.legend(loc="upper center", frameon=False, ncol=2, fontsize=5.5)
     tag(a, "B")
     a = ax[2]
     gd = load(HERE / "gomez_decomposition.json")
@@ -355,9 +357,9 @@ def fig5():
     from matplotlib.lines import Line2D
     hand = [Patch(color="#999999", alpha=0.55, label="within (members)"), Patch(color="#555555", label="displacement"),
             Line2D([], [], color="k", marker="_", ls="", ms=9, mew=1.5, label="share change")]
-    a.text(1, 0.105, "submissions top 78", ha="center", fontsize=6, color=COL["reddit_submissions_long"])
-    a.text(4.6, 0.105, "comments top 195", ha="center", fontsize=6, color=COL["reddit_comments_ext"])
-    a.set_ylim(-0.30, 0.13)
+    a.text(1, 0.095, "submissions\ntop 78", ha="center", fontsize=5.5, color=COL["reddit_submissions_long"])
+    a.text(4.6, 0.095, "comments\ntop 195", ha="center", fontsize=5.5, color=COL["reddit_comments_ext"])
+    a.set_ylim(-0.30, 0.145)
     a.set_ylabel("relative change of the share a year")
     a.set_title("Displacement steady; members fall")
     a.legend(handles=hand, loc="lower right", frameon=False, fontsize=5.5)
@@ -404,11 +406,12 @@ def fig2v2():
         kk = sorted(int(k) for k in t)
         a.plot(kk, [t[str(k)] for k in kk], ls, color=col, lw=1, label=lab)
     a.set_xscale("log")
-    a.set_ylim(0, 0.4)
+    a.set_ylim(0, 0.58)
+    a.set_yticks([0, 0.1, 0.2, 0.3, 0.4])
     a.set_xlabel("size of the top set, k")
     a.set_ylabel("share replaced in a year")
-    a.set_title("Only size-blind growth exposes the top")
-    a.legend(loc="lower right", frameon=False, fontsize=5)
+    a.set_title("Size-blind growth exposes the top")
+    a.legend(loc="upper center", frameon=False, fontsize=5, ncol=2, columnspacing=0.8, handlelength=1.8)
     tag(a, "B")
     a = ax[2]
     for pn in COL:
@@ -422,8 +425,8 @@ def fig2v2():
     a.set_xscale("log")
     a.set_ylim(-0.02, 1.05)
     a.set_xlabel("rank R")
-    a.set_ylabel("weekly chance the occupant changes")
-    a.set_title("Yet rank 1 rarely changes hands")
+    a.set_ylabel("weekly change of occupant")
+    a.set_title("Yet rank one rarely changes hands")
     a.legend(loc="lower right", frameon=False, fontsize=5.5)
     tag(a, "C")
     fig.tight_layout(w_pad=1.2)
@@ -477,14 +480,14 @@ def fig3v2():
     for w, lab, col, ls in WORLDS:
         L_ = NW[w]["law"]
         a.scatter([1000 * L_["mean_sbar"]], [1000 * L_["mean_c"]], marker="X", s=40, color=col, edgecolor="white", lw=0.5, label=lab + " (mean)")
-    a.text(10.6, 0.4, "slide wins:\nflattens", fontsize=6, color=GREY, ha="center")
-    a.text(1.6, 7.2, "crossings win:\nsteepens", fontsize=6, color=GREY, ha="center")
+    a.text(11.6, 0.3, "slide wins: flattens", fontsize=5.5, color=GREY, ha="right")
+    a.text(0.4, 8.4, "crossings win: steepens", fontsize=5.5, color=GREY, ha="left")
     a.set_xlim(lim)
-    a.set_ylim(0, 8)
+    a.set_ylim(0, 9)
     a.set_xlabel("slide of the names above k (per 1,000 wk)")
     a.set_ylabel("crossing gain σ²/2S (per 1,000 wk)")
     a.set_title("Crossings against the slide")
-    a.legend(loc="center right", frameon=False, fontsize=5, bbox_to_anchor=(1.02, 0.62))
+    a.legend(loc="upper right", frameon=False, fontsize=4.6, bbox_to_anchor=(1.03, 0.93), handletextpad=0.3)
     tag(a, "B")
     a = ax[2]
     for pn in COL:

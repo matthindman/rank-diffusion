@@ -13,6 +13,40 @@
 \templatetype{pnasresearcharticle}
 \usepackage{graphicx}
 \graphicspath{{../llm_fitting/runs/2026-10-18_pnas_push/}}
+
+%% First-page sidebar, set explicitly (2026-10-18): the repository's pnasresearcharticle.sty (v1.3, 2018) places the
+%% Significance box and author information with \afterpage, which does not fire with the 2025 class's output
+%% routine, so the box landed at the end of the document and body text ran into the sidebar. \Firstpage (2025
+%% template) sets the wide first-page column; \FirstPageBreak, placed where that column fills, sets the sidebar
+%% in the right column, ends page 1 and restores the normal column width.
+\additionalelement{}
+\makeatletter
+\newcommand{\FirstPageBreak}{%
+  {\parfillskip=0pt\par}%
+  \vfill\eject
+  \setlength{\columnwidth}{0.29\textwidth}\setlength{\linewidth}{0.29\textwidth}\setlength{\hsize}{0.29\textwidth}%
+  \noindent\begin{minipage}[t]{150pt}\sffamily
+    \mdfdefinestyle{pnassigstyle}{backgroundcolor=pnasblueback,linecolor=pnasblueback,fontcolor=pnasbluetext,innertopmargin=9.3pt,innerrightmargin=11.4pt,innerbottommargin=12pt,innerleftmargin=11.4pt,linewidth=0pt,userdefinedwidth=150pt}%
+    \begin{mdframed}[style=pnassigstyle]%
+      {\sffamily\bfseries\fontsize{10}{12}\selectfont\textcolor{pantone}{Significance}\par}\vskip6pt
+      \raggedright\fontsize{8.5}{12}\selectfont\textcolor{black}{\@significancestatement}
+    \end{mdframed}%
+  \end{minipage}\par
+  \vfill
+  \noindent\begin{minipage}[b]{150pt}\sffamily\scriptsize
+    \if!\AB@affillist!\else Author affiliations: \AB@affillist\par\vskip11.7pt
+    \hrule width 150pt height.5pt\par\vskip13.5pt\fi
+    \@ifundefined{@authorcontributions}{}{\@authorcontributions\par}\vskip3pt
+    \@ifundefined{@authordeclaration}{}{\@authordeclaration\par}\vskip3pt
+    \@ifundefined{@correspondingauthor}{}{\@correspondingauthor\par}
+  \end{minipage}\par
+  \vskip2pt
+  \eject
+  \normalcolwidth
+  \noindent\ignorespaces}
+\makeatother
+%% let tall double-column figures sit at the top of a text page rather than alone on a float page
+\renewcommand{\dbltopfraction}{0.85}\renewcommand{\dblfloatpagefraction}{0.8}\setcounter{dbltopnumber}{2}
 \newcommand{\todo}[1]{\textcolor{red!65!black}{\textbf{[TODO: #1]}}}
 
 %% Title (round-3 referees: "sustains" asserts a counterfactual; "slowly changing" is contradicted by arithmetic
@@ -44,13 +78,14 @@ Online attention is highly concentrated, yet its leaders change constantly. In w
 \maketitle
 \thispagestyle{firststyle}
 \ifthenelse{\boolean{shortarticle}}{\ifthenelse{\boolean{singlecolumn}}{\abscontentformatted}{\abscontent}}{}
+\Firstpage
 
 \dropcap{A}ttention online is concentrated: on every large platform a small number of communities, pages and channels receive most of the activity, along a steep rank--size curve. Yet the occupants of that curve do not stay, and attention to individual items decays within days \cite{wu2007}. In the data we study, about one in six of the top 12,500 Reddit communities is replaced within a year, and among the top ten between a quarter and a third. The curve itself changes slowly. How can a hierarchy persist when its occupants do not---and why are the leaders the least secure?
 %% §2z-cu; §2z-dg A1, A7-5
 
 Three bodies of work speak to this, and they point in different directions. Firm growth is size-dependent: the spread of a firm's annual growth falls with its size as a power with exponent near 0.2 \cite{stanley1996,amaral1997}, so large firms are steadier, and cumulative advantage lets early leaders accumulate more \cite{merton1968,salganik2006,vanderijt2014}. Studies of ranking dynamics across many systems find the top of a ranking the most stable part \cite{iniguez2022,blumm2012}, and cities show the same coexistence of a stable rank--size law with churning membership \cite{batty2006,duranton2007}. Random-growth theory explains how such laws can be stationary despite movement \cite{gibrat1931,champernowne1953,gabaix1999,gabaix2009,gllm2016}, and stochastic portfolio theory and Gomez's decomposition of top shares give the accounting: a top set's share changes through its members' growth and through displacement at its boundary, which volatility and the local steepness of the distribution predict \cite{fernholz2002,banner2005,ichiba2011,gomez2023}; rank-based models with entry and exit describe the same balance for equity markets \cite{bakersmyth2026}. Gomez tested that prediction for the Forbes 400 and applied the decomposition across the income distribution.
 
-We take these ideas to online attention and ask which features of its dynamics are automatic consequences of random growth and which are not. To separate them we compute every statistic, with the same estimators, in the data and in simulated worlds: size-blind random growth, firm-like size-dependent growth, neutral copying \cite{bentley2007}, and a model calibrated to the data. Three findings follow. Attention grows by Gibrat's law---size gives communities almost no protection---and that, not anything about attention per se, is why the top set turns over fastest, while the occupant of rank one, as in other rankings, rarely changes. Turnover replenishes the hierarchy at every rank at the rate random growth predicts, replacing about three quarters of what incumbents lose. And unlike any random-growth world, Reddit shows persistent decline in participation, which has been flattening the top of the hierarchy.
+We take these ideas to online attention and ask which features of its dynamics are automatic consequences of random growth and which are not. To separate them we compute every statistic, with the same estimators, in the data and in simulated worlds: size-blind random growth, firm-like size-dependent growth,\FirstPageBreak neutral copying \cite{bentley2007}, and a model calibrated to the data. Three findings follow. Attention grows by Gibrat's law---size gives communities almost no protection---and that, not anything about attention per se, is why the top set turns over fastest, while the occupant of rank one, as in other rankings, rarely changes. Turnover replenishes the hierarchy at every rank at the rate random growth predicts, replacing about three quarters of what incumbents lose. And unlike any random-growth world, Reddit shows persistent decline in participation, which has been flattening the top of the hierarchy.
 
 \section*{Results}
 
@@ -107,9 +142,9 @@ The informative quantity is therefore the level of the balance (Fig.~3\textit{B}
 \subsection*{A generative model}
 These ingredients define a model, which we built and tested (\textit{Materials and Methods}; \textit{SI Appendix}). Each community has a lasting level $H_i$ that wanders with nearly size-blind volatility under drift that depends on its rank,
 \begin{equation}
-H_i(t+1) = H_i(t) + g\big(r_i(t)\big) + \sigma(H_i)\,\eta_i(t),\qquad \sigma(H) = \sigma_0 e^{-\beta (H - H_0)},
+H_i(t+1) = H_i(t) + g\big(r_i(t)\big) + \sigma(H_i)\,\eta_i(t),
 \end{equation}
-and its observed log activity is $H_i$ plus deviations that revert toward it at rank-dependent rates (taken from our earlier permanent--transitory model, whose own fixed home this replaces), a fast swing and observation noise. Communities leave at rank-dependent rates and are replaced at the bottom. The volatility parameters come from a structure function of each stratum's changes; the drift by rank is either taken from the measured slides or solved so that the ladder at the end of the training window is held, which then makes the ladder an input. Including the inherited deviation profiles the model has many parameters; none is fitted to the statistics we test it on.
+with $\sigma(H) = \sigma_0 e^{-\beta (H - H_0)}$, and its observed log activity is $H_i$ plus deviations that revert toward it at rank-dependent rates (taken from our earlier permanent--transitory model, whose own fixed home this replaces), a fast swing and observation noise. Communities leave at rank-dependent rates and are replaced at the bottom. The volatility parameters come from a structure function of each stratum's changes; the drift by rank is either taken from the measured slides or solved so that the ladder at the end of the training window is held, which then makes the ladder an input. Including the inherited deviation profiles the model has many parameters; none is fitted to the statistics we test it on.
 
 Calibrated to Reddit submissions and run through the same estimators, the model reproduces the data's turnover profile (top ten 0.30 a year, $K/2$ 0.14), its size scaling ($\beta = 0.07$), the rarity of change at rank one (3\% of weeks) and the boundary ratio (1.08) (Fig.~2\textit{B}--\textit{C}). Its lasting core alone, started from complete equality with the measured volatility and slides, builds a hierarchy within about a decade (Fig.~4\textit{A}), whose steepness at each rank is $\sigma_k^2/(2\bar s_k)$ (Fig.~4\textit{B})---the stationary balance, which the simulation obeys as theory says it must---and which is flatter than the observed ladder at every rank, by 8--46\%: the measured volatility and slides would sustain a less steep hierarchy than the one observed, consistent with its flattening (20 simulations; the 90\% bands exclude the observed slope at every cut-off except the head of submissions). Without the slide the hierarchy steepens and without churn it collapses, but slowly: over two years either change moves the head by less than 0.3 log units a year against a span of 3--4 (Fig.~4\textit{C}).
 %% null_world__rdm.json; §2z-dg A3
@@ -118,7 +153,7 @@ On held-out weeks the model forecasts the distribution of rank changes over 1 to
 %% §2z-dg A5c (2x2), A6; GATE_LEDGER
 
 \begin{figure*}[tbp]\centering
-\includegraphics[width=0.82\textwidth]{fig4_model}
+\includegraphics[width=0.70\textwidth]{fig4_model}
 \caption{The generative model. (\textit{A}) From complete equality, the model's lasting core with the measured volatility and slides builds a hierarchy (shape at $K/64$ by year; 20 simulations, 90\% band). (\textit{B}) The local slope it reaches after 30 years (filled, 90\% band) against volatility over slide in the simulation, and the observed slopes (open). (\textit{C}) The rate of change of the shape at $K/64$ in two-year runs from the observed ladder with churn and slide, slide only and churn only. (\textit{D}) Held-out movement error on the four-year panels (mean $\pm$ sd over five origins; dotted, persistence) for a fixed home (the earlier model), a fixed home sliding by rank, a wandering home, a wandering home with drift by rank (the model), and the first frozen version.}
 \end{figure*}
 
