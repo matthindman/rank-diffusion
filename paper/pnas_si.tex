@@ -1,0 +1,154 @@
+%% pnas_si.tex — Supplementary Information for pnas_draft.tex (DRAFT)
+%% Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-18. Numbers cite MODEL_STATUS sections in comments.
+%% Compile: cd paper && pdflatex pnas_si
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,graphicx,booktabs,hyperref}
+\graphicspath{{../llm_fitting/runs/2026-10-18_pnas_push/}}
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\usepackage{xcolor}
+\title{Supplementary Information for\\ ``The churn that unseats online leaders creates the hierarchy they lead''}
+\date{Draft, \today}
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Data}
+\paragraph{Ladders.} Three weekly ladders of named endpoints: Reddit comment karma and submission karma by community (December 2018--December 2022, 212--213 weeks; daily negative karma set to zero before weekly sums) from the Pushshift archive, and Facebook page interactions from CrowdTangle (November 2020--June 2022, 86 weeks, the stable instrument era; days flagged by the day guard excluded). Universes: top $K$ = 12,500 (comments), 5,000 (submissions), 3,500 (pages), with membership penalised for absence; endpoints ever ranked inside $4K$ in a week are tracked so that every top-$k$ set with $k \le K$ is complete. Log activity $x=\log(1+a)$.
+\paragraph{Exposure and sealing.} Every contact with these panels is logged in \texttt{llm\_fitting/EXPOSURE\_LEDGER.md}. A 2023--2024 extension of both Reddit ladders and a Wikipedia ladder are sealed; nothing in the paper uses them. The registered tests for them are summarised in Section~\ref{sec:registered}.
+\paragraph{Instagram.} A fourth ladder, Instagram accounts, is sampled through a keyword query; its raw panels are not modelled. It enters only through a measured model of its censoring, which is how it contributes to the pooled boundary ratio (Section~\ref{sec:boundary}).
+
+\section{Blocks, cohorts and permanent rank}
+Blocks are non-overlapping and aligned to each panel's end (52 weeks; 26 for the boundary test; 13 or 26 on Facebook). A block level requires presence in 90\% of the block's weeks. Permanent rank is a community's mean weekly rank over a fixed block, absent weeks counted at that week's floor. Cohorts are fixed on a block disjoint from the blocks they are measured on. The reason is selection: a community observed high this week is high partly by passing chance, and conditioning on current rank selects on that noise. With weekly passing swings of the size measured here this bias is first-order.
+
+\section{Size gives little protection}
+\subsection{The exponent}
+For each of seven octave strata of permanent rank ($K/64$ to $K$), the standard deviation of the one-year change of block-mean log activity against the stratum's mean log size; $\beta$ is minus the slope of log sd on log size. Bootstrap over communities.
+%% §2z-dc; §2z-dg A7
+\begin{center}\begin{tabular}{lccc}
+\toprule
+ & comments & submissions & Facebook\\
+\midrule
+raw, year 1 (5--95\%) & 0.075 (0.061--0.093) & 0.045 ($-0.013$--0.143) & 0.008 ($-0.032$--0.063)\\
+raw, year 2 & 0.059 (0.038--0.091) & 0.082 (0.039--0.150) & ---\\
+leave one stratum out, year 1 & 0.068--0.081 & 0.00--0.19 & $-0.001$--0.015\\
+leave one stratum out, year 2 & 0.049--0.070 & 0.058--0.14 & ---\\
+strata to $4K$, absences at the floor & 0.042 / 0.013 & 0.067 / 0.109 & 0.057\\
+lasting part & 0.047 & 0.070 & 0.019\\
+item counts & 0.065 & 0.078 & 0.187\\
+activity per item & 0.042 & 0.120 & 0.072\\
+fold change of sd across strata & 1.58 / 1.33 & --- & 1.03\\
+\bottomrule
+\end{tabular}\end{center}
+The submissions exponent is unstable because the top 78 communities' annual changes in 2020--21 had sd 0.785 against 0.30--0.34 for the next two strata. Facebook's post counts do steady with size; engagement per post does not.
+
+\subsection{Retention of the very top}
+One-year retention of the top 10 and top 25 (block means): comments 0.7, 0.8, 0.7 and 0.72, 0.84, 0.64; submissions 0.7, 0.7, 0.6 and 0.72, 0.68, 0.72; Facebook (half-year) 0.6, 0.7 and 0.64, 0.72.
+
+\section{Turnover from churn and slope}\label{sec:turnover}
+\subsection{Derivation}
+Let the ladder be locally linear in log rank at rank $k$, $x(r) = x_k - S_k \log(r/k)$, so the number of names above level $x_k+u$ is $k e^{-u/S_k}$ and their density at height $u$ above the boundary is $(k/S_k)e^{-u/S_k}$. Over an interval the boundary moves by $\Delta\theta_k$ and a name at height $u$ by $\Delta_i$; it leaves the top $k$ when $\Delta_i < \Delta\theta_k - u$. If $\Delta_i$ does not depend on $u$ within the reach of a year's moves,
+\begin{equation}
+\frac{\mathbb{E}[\#\text{leaving}]}{k} = \frac{1}{S_k}\int_0^\infty e^{-u/S_k}\,\Pr(\Delta < \Delta\theta_k - u)\,du = \mathbb{E}\!\left[1-e^{-D^+/S_k}\right],\quad D = \Delta\theta_k - \Delta .
+\end{equation}
+Names of the top $k$ that vanish from the universe (share $v_k$) leave with certainty, giving $f_k = v_k + (1-v_k)\,\mathbb{E}[1-e^{-D^+/S_k}]$. For small moves $f_k \approx \mathbb{E}[D^+]/S_k$.
+\subsection{Registered and post hoc versions}
+The registered expectation used the small-move form with constant density, $v_k + (1-v_k)\mathbb{E}[D^+]/S_k$; it over-predicted on every ladder (median ratio 1.30, 1.27, 1.45) and failed its expectation (within $[0.8,1.25]$ in 11\%, 39\%, 25\% of cells). The exact form above was derived after that failure. It holds in all 48 cells (ratios 0.82--1.18, median 0.98 on each ladder; rmse 0.018, 0.009, 0.024). Inputs: $S_k$ from a regression of level on log rank over ranks $k/\sqrt2$--$k\sqrt2$ at the start block; $\Delta_i$ for names ranked $k/2$--$k$ present in both blocks.
+%% §2z-dg A1
+
+\section{The balance at every rank}\label{sec:boundary}
+\subsection{The rate law}
+Names move by Itô processes with local drift $\mu$ and variance $\sigma^2$; the density of levels obeys the forward equation, and integrating over the top $k$ gives $dU_k/dt = \overline{\mu}_{\text{top }k} + \sigma^2(x_k)/(2S_k)$. For the shape $U_k-U_K$ this gives Eq.~3 of the main text. The stationary form is $S_k = \sigma_k^2/(2\bar s_k)$, Fernholz's gap identity in continuum notation; the arithmetic-share analogue is Gomez's displacement term $\tfrac12(\zeta-1)\nu^2$ with $\zeta = 1/S$.
+\subsection{Estimators}
+\emph{Lasting variance}: for a cohort and three blocks $a<b<c$, $[\mathrm{var}(x_c-x_a) - \tfrac12(\mathrm{var}(x_b-x_a)+\mathrm{var}(x_c-x_b))]/(b-a)$, which cancels passing swings and the block-averaging offset; a variogram estimator agrees within about 10\%. \emph{Crossings}: the reordering gain of the top $k$ (mean of the top $k$ at the end minus the end-mean of the initial members), differenced between spacings of two and four half-years; the difference removes passing swings and equals the lasting crossing gain plus a composition term $C$, which is $+25$ to $+35$\% of the statistic on Reddit and $-30$\% on Facebook. \emph{Slide}: the mean change of a cohort's members above $k$ against the mean of the universe.
+\subsection{Results}
+Pooled ratio of measured to predicted (geometric mean over $K/16\ldots K$): comments 1.069 (1.011--1.127), submissions 0.802 (0.680--1.004), Facebook 0.977 (0.802--1.202), Instagram 0.995 (0.852--1.213); four ladders 0.955 (0.889--1.054). \todo{joint bootstrap (A9) intervals}. A year ahead from earlier variance: comments 0.944, submissions 0.617. Calibrated rivals: jumps to random ranks 1.56; fixed-ladder log-rank diffusion 1.05. The submissions shortfall at ranks 300--600 (0.61--0.72) is unexplained; on simulations of the generative model with known lasting variance the ratio is structured by cut-off (0.68--0.97 at $k$ = 625--1,250; 1.16--1.30 at 2,500--5,000), so part of it may be the estimator's interaction with the size law.
+%% §2z-cm, §2z-ct, §2z-cx, §2z-da, §2z-dc, §2z-df V9
+\subsection{Shape change and the stationary steepness}
+Same-year rate law over 60 year-long intervals with half-year starts: slope 0.88, correlation 0.90 (an accounting of the change by named movement with a theory of the boundary). Forecast from the previous year's slides: beats ``no change'' on submissions, fails on comments. Measured $S$ against $\sigma^2/(2\bar s)$ by rank and year pair: comments within about a third at every rank; submissions within about 30\% below rank 1,250, and at the head $S^\ast$ = 0.25--0.62 against $S$ = 0.84--1.12. Relaxation times toward the sustained steepness: 2--6 years (submissions head), 5--22 years (comments).
+%% §2z-cd, §2z-cg, §2z-cp; law cells
+
+\section{The generative model}
+\subsection{Specification}
+Observed log activity $x_i = L_i + m_i + \varepsilon_i$ with $\varepsilon$ observation noise and $m$ an AR(1) passing swing with $t$-tails. In the implementation (\texttt{rankdiff\_rdm.py}, \texttt{lasting="movinghome"}) the slow component follows the earlier permanent--transitory model's mean reversion toward a home $H_i$ that itself random-walks: $L_{t+1} = L_t - \kappa(L_t-H_t) + \epsilon_t$, $H_{t+1} = H_t + g(r(H_t)) + \eta_t$, $\mathrm{Var}\,\eta = \sigma_L^2 = \sigma_0^2 e^{-2\beta(H-L_{\rm ref})}$. The main text's lasting level is $H$; the reverting part of $L$ is the medium swing. Drift by rank $g$ is either the measured slide profile or the fixed point that holds the end-of-training ladder.
+\subsection{The variance error and its correction}
+With $\mathrm{Var}\,\epsilon = q$, the one-step variance of $L$ is $[2q+\kappa\sigma_L^2]/(2-\kappa)$. The frozen form set $q = \sigma_p^2-\sigma_L^2$, which is the earlier model's one-step variance minus $\sigma_L^2$; preserving it requires $q=\sigma_p^2-\kappa\sigma_L^2/2$ (\texttt{lasting="movinghome\_vp"}). A known-answer test confirms both statements.
+%% §2z-df V4; §2z-dg A5b
+\subsection{Held-out movement}
+\todo{Table: Gate v1 on all panels, the four ablation arms and the corrected variant, with persistence and paired splits (A5, A5b).}
+\subsection{Counterfactuals}
+The model's lasting core alone ($\sigma_L$ estimated on the whole panel; drift by rank from the measured slides, so the ladder is not an input), started from the observed end-of-2019 ladder, 20 seeds over 104 weeks; and from complete equality, 10 seeds over 30 years.
+%% §2z-dg A3
+\begin{center}\small\begin{tabular}{llcccccc}
+\toprule
+ & world & $K/64$ & $K/32$ & $K/16$ & $K/8$ & $K/4$ & $K/2$\\
+\midrule
+comments & churn + slide (shape change a year) & $-0.080$ & $-0.071$ & $-0.031$ & $+0.013$ & $+0.031$ & $+0.036$\\
+ & slide only & $-0.038$ & $-0.031$ & $+0.005$ & $+0.040$ & $+0.049$ & $+0.037$\\
+ & churn only & $+0.027$ & $+0.028$ & $+0.037$ & $+0.048$ & $+0.050$ & $+0.048$\\
+ & flat start, slope after 30 years & 0.54 & 0.65 & 0.83 & 1.11 & 1.54 & 1.97\\
+ & \quad $\sigma^2/(2\bar s)$ in the simulation & 0.52 & 0.62 & 0.82 & 1.12 & 1.62 & 2.17\\
+ & \quad observed slope & 0.99 & 1.21 & 1.32 & 1.38 & 1.74 & 2.13\\
+submissions & churn + slide & $-0.160$ & $-0.113$ & $-0.069$ & $-0.042$ & $-0.010$ & $+0.006$\\
+ & slide only & $-0.259$ & $-0.166$ & $-0.110$ & $-0.085$ & $-0.047$ & $-0.017$\\
+ & churn only & $+0.073$ & $+0.059$ & $+0.052$ & $+0.046$ & $+0.042$ & $+0.028$\\
+ & flat start, slope after 30 years & 0.53 & 0.66 & 0.82 & 0.95 & 1.13 & 1.37\\
+ & \quad $\sigma^2/(2\bar s)$ in the simulation & 0.50 & 0.65 & 0.81 & 0.93 & 1.09 & 1.37\\
+ & \quad observed slope & 0.85 & 0.93 & 1.02 & 1.26 & 1.32 & 1.55\\
+\bottomrule
+\end{tabular}\end{center}
+Registered expectations: the stationary slope (A3-4) held on both ladders; the sizes of the two-year counterfactual changes (A3-2, A3-3) were overstated, because they were set from the data's cohort slide (0.004--0.011 a week) while drift by rank in the model applies to whoever holds a rank.
+\subsection{Out-of-period structure}
+\todo{A6.}
+
+\section{Persistence}
+\subsection{The averaging null}
+For a random walk with increment variance $v$ averaged over blocks of $B$ steps, consecutive block-mean changes have variance $v(2B^2+1)/(3B)$ and covariance $v(B^2-1)/(6B)$, so correlation $(B^2-1)/(2(2B^2+1)) \to 1/4$ ($0.2499$ at $B=52$; Spearman $0.239$) \cite{working1960}.
+\subsection{The gapped statistic}
+Changes between windows of $w$ weeks $h$ weeks apart, the second change starting $g$ weeks after the first ends; any independent-increment process plus white noise gives zero; a short-memory swing gives a small negative value. Synthetic check (5 seeds): random walk + noise + OU, $-0.032$, $-0.009$, $-0.005$ at gaps 0, 13, 26; with drift by community (sd 0.4 a year), $+0.17$ to $+0.19$.
+\subsection{Decomposition}
+%% §2z-dg A4
+\begin{center}\small\begin{tabular}{lccc}
+\toprule
+gapped statistic (gaps 0 / 13 / 26 weeks; Facebook 0 / 4 / 8) & submissions & comments & Facebook\\
+\midrule
+activity & $+0.201$ / $+0.174$ / $+0.140$ & $+0.163$ / $+0.154$ / $+0.141$ & $-0.114$ / $-0.067$ / $-0.031$\\
+number of items & $+0.188$ / $+0.186$ / $+0.173$ & $+0.138$ / $+0.136$ / $+0.125$ & $-0.103$ / $-0.038$ / $-0.001$\\
+activity per item & $+0.015$ / $+0.018$ / $+0.035$ & $+0.045$ / $+0.058$ / $+0.071$ & $-0.114$ / $-0.078$ / $-0.036$\\
+raw, origins after week 52 & $+0.188$ / $+0.149$ / $+0.112$ & $+0.175$ / $+0.158$ / $+0.126$ & ---\\
+net of loading on the platform aggregate & $+0.149$ / $+0.054$ / $+0.006$ & $+0.168$ / $+0.161$ / $+0.130$ & ---\\
+net of co-movement cluster ($k=20$) & $+0.187$ / $+0.147$ / $+0.108$ & $+0.174$ / $+0.158$ / $+0.127$ & ---\\
+within risers / fallers (gap 13) & $+0.016$ / $+0.204$ & $-0.016$ / $+0.189$ & $-0.070$ / $-0.016$\\
+lag profile, gaps 0 / 26 / 52 & $+0.194$ / $+0.150$ / $+0.046$ & $+0.135$ / $+0.136$ / $+0.108$ & ---\\
+Reddit at Facebook's settings and dates & $+0.019$ / $+0.054$ / $+0.080$ & $-0.037$ / $+0.024$ / $+0.077$ & ---\\
+\bottomrule
+\end{tabular}\end{center}
+Loadings and clusters are estimated from weekly changes in the first year only; the residual statistics use later origins only.
+
+\section{Gomez's decomposition of the arithmetic shares}
+For consecutive 52-week blocks, with $P_a$ the top $k$ by total activity at $a$, $W$ the top-$k$ total and $D$ the top-$K$ total, the relative change of the share is exactly
+$\frac{s_b}{s_a}-1 = \big[(\sum_{P_a} t_b/W_a - D_b/D_a) + (W_b - \sum_{P_a} t_b)/W_a\big]/(D_b/D_a)$: a within term (the initial members against the total) and a between (displacement) term.
+%% §2z-dg A8
+\begin{center}\small\begin{tabular}{lccc}
+\toprule
+ & 2019$\to$20 & 2020$\to$21 & 2021$\to$22\\
+\midrule
+submissions top 78 & $-0.009 = -0.061 + 0.052$ & $-0.161 = -0.237 + 0.076$ & $-0.186 = -0.259 + 0.073$\\
+submissions top 312 & $-0.022 = -0.080 + 0.059$ & $-0.099 = -0.162 + 0.064$ & $-0.109 = -0.165 + 0.056$\\
+submissions top 1,250 & $-0.022 = -0.064 + 0.042$ & $-0.042 = -0.100 + 0.058$ & $-0.047 = -0.097 + 0.049$\\
+comments top 195 & $-0.072 = -0.125 + 0.053$ & $-0.072 = -0.150 + 0.078$ & $-0.054 = -0.123 + 0.069$\\
+comments top 781 & $-0.052 = -0.104 + 0.052$ & $-0.036 = -0.097 + 0.061$ & $-0.023 = -0.076 + 0.054$\\
+comments top 3,125 & $-0.023 = -0.067 + 0.044$ & $-0.010 = -0.059 + 0.049$ & $-0.006 = -0.043 + 0.037$\\
+\bottomrule
+\end{tabular}\end{center}
+Gomez's formula for the displacement term, $\tfrac12(\zeta-1)\nu^2$ with $\zeta$ the local arithmetic tail index and $\nu^2$ the lasting variance at the threshold, gives $-0.14$ to $+0.04$, negative wherever the local slope exceeds one, against a measured $+0.04$ to $+0.08$ everywhere. Measured displacement on block levels includes passing swings, which inflate it (Gomez's measurement-error bias, here first-order rather than negligible as for wealth). The main text's test therefore uses the mean-log form, permanent-rank cohorts and spacing differences.
+
+\section{Registration, post hoc analyses and test counts}\label{sec:registered}
+\todo{List of registered expectations with outcomes (PLAN.md / RESULTS.md), post hoc analyses, gate-ledger counts per panel, and the bridge protocol v3.1 primaries P1--P7.}
+
+\section{Use of AI}
+\todo{Statement.}
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+\end{document}

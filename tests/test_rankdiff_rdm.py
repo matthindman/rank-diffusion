@@ -105,3 +105,12 @@ def test_variance_preserving_home_keeps_model_A_one_step_variance():
     assert abs(out["home"] / target - 1) < 0.05
     assert abs(out["movinghome_vp"] / target - 1) < 0.05
     assert out["movinghome"] < target - 0.8 * sL ** 2
+
+
+def test_corrected_nodrift_arm_reduces_to_corrected_without_drift():
+    """2z-dg: with zero drift, 'movinghome_vp_nodrift' is exactly 'movinghome_vp' (same seed, same draws)."""
+    L0 = np.linspace(10.0, 1.0, 50)
+    p0 = _toy_params(0.0)
+    a = rdm.simulate_panel(p0, L0, 20, seed=5, lasting="movinghome_vp_nodrift")[0]
+    b = rdm.simulate_panel(p0, L0, 20, seed=5, lasting="movinghome_vp")[0]
+    assert np.array_equal(a, b)

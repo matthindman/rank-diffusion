@@ -455,13 +455,13 @@ class _State:
             kz = np.interp(zp, b.z_knots, b.kappa_z) if b.kappa_z is not None else b.kappa
             sp = np.interp(zp, b.z_knots, b.sigma_perm)
             self.L = self.L - kz * (self.L - self.home) + sp * self.sqw * rng.standard_normal(N)
-        elif self.lasting in ("movinghome", "movinghome_nodrift", "movinghome_vp"):   # A's OU toward a moving home (2z-dd)
+        elif self.lasting in ("movinghome", "movinghome_nodrift", "movinghome_vp", "movinghome_vp_nodrift"):   # A's OU toward a moving home (2z-dd)
             horder = np.argsort(-self.home)
             hrank = np.empty(N, np.int64)
             hrank[horder] = np.arange(1, N + 1)
             zh = np.log(np.clip((hrank - 0.5) / N, Z_CLIP, 1.0))
             sLh = _sigma_L(p, self.home)
-            gh = np.interp(zh, p.drift_z, p.drift_g) if self.lasting == "movinghome" else 0.0   # ablation (a): no drift
+            gh = np.interp(zh, p.drift_z, p.drift_g) if self.lasting in ("movinghome", "movinghome_vp") else 0.0   # ablation (a): no drift
             self.home = self.home + gh + sLh * math.sqrt(1.0 - p.pi) * rng.standard_normal(N)
             if self.vel is not None:                      # drift by name: a persistent velocity of the home
                 self.home = self.home + self.vel
@@ -473,7 +473,7 @@ class _State:
                     self.home[jmp] += sLh[jmp] * math.sqrt(p.pi / p.lam) * rng.standard_normal(nj)
             kz = np.interp(zp, b.z_knots, b.kappa_z) if b.kappa_z is not None else b.kappa
             sp2 = np.interp(zp, b.z_knots, b.sigma_perm) ** 2
-            if self.lasting == "movinghome_vp":         # 2z-dg A5b: subtract kappa*sigma_L^2/2, which preserves A's one-step variance
+            if self.lasting in ("movinghome_vp", "movinghome_vp_nodrift"):   # 2z-dg A5b: subtract kappa*sigma_L^2/2 (A's one-step variance)
                 sp = np.sqrt(np.maximum(sp2 - kz * sLh ** 2 / 2.0, 0.1 * sp2))
             else:                                       # the frozen form (2z-dd): short by sigma_L^2 at one step (2z-df V4)
                 sp = np.sqrt(np.maximum(sp2 - sLh ** 2, 0.1 * sp2))
@@ -571,7 +571,7 @@ def sim_cohort_conditional_rdm(p, df_tr, T_sim, seed=0, cohort_k=200, lasting="r
     filtered end-of-train state), same step-0 timing (recording from step 1), same cohort and collision
     bookkeeping."""
     rng = np.random.default_rng(seed)
-    if lasting in ("home", "movinghome", "homedrift", "movinghome_nodrift", "movinghome_vp"):
+    if lasting in ("home", "movinghome", "homedrift", "movinghome_nodrift", "movinghome_vp", "movinghome_vp_nodrift"):
         levels = rk._filtered_levels(df_tr, p.base)
         st = _State(p, levels.to_numpy(), rng, lasting=lasting)
     else:

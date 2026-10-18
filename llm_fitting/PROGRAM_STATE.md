@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-18** (the paragraphs on §2z-da … §2z-df were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-18** (the paragraphs on §2z-da … §2z-dg were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -234,6 +234,29 @@ The working draft frame is `PAPER_FRAME_DRAFT_2026-10-18.md` (not adopted).
 `PAPER_FRAME_DRAFT_2026-10-18c.md`. It consolidates three things: the B
 spine, "size does not protect", and the model and momentum. The outline
 `paper/pnas_outline_v2.tex` is revised to six Results sections and compiles.
+
+**The PNAS push (§2z-dg, 2026-10-18; owner decisions in the §6 addendum).**
+- **Title direction (owner):** how churn creates and maintains the
+  hierarchy. Working title: "The churn that unseats online leaders creates
+  the hierarchy they lead". The model's core is in the main text.
+- **The working text is `paper/pnas_draft.tex`,** a full draft; the frame
+  is `PAPER_FRAME_DRAFT_2026-10-18d.md`.
+- **New results:**
+  - turnover at every scale = E[1 − e^(−D⁺/S)] (post hoc exact form; all 48
+    cells 0.82–1.18), so the top turns over fastest;
+  - the exponent is robust except submissions;
+  - the model's lasting core builds the hierarchy from equality with
+    steepness σ²/(2s̄);
+  - "momentum" is persistent decline in participation: a shared trend on
+    submissions, community-specific on comments;
+  - displacement is steady, and the members' decline moves concentration.
+- **Model:** the frozen moving home FAILS the long submissions gate (0.246
+  against frozen A 0.194). The V4 variance error is corrected in the opt-in
+  `movinghome_vp`; its gates, the 2×2 ablation, the out-of-period structure
+  test (A6) and the joint bootstrap (A9) were running at writing. Check
+  `runs/2026-10-18_pnas_push/RESULTS.md` and GATE_LEDGER.
+- **Bridge protocol v3.1** adds P5–P7 (owner: "Yes, add them"). NOT
+  adopted.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it

@@ -306,3 +306,17 @@ Prior: 50%, 55%, 75%.
   Facebook; Instagram has its own apparatus and is left out) contains 1.
 
 Prior: 85%, 70%, 65%.
+
+## Addendum, before its run: A5c, the 2×2 ablation around the corrected model
+
+The ablation of A5 was planned around the frozen form. With the V4
+correction the moving-home arms are:
+- RDM′ `movinghome_vp`: random-walk home plus drift by rank;
+- (a′) `movinghome_vp_nodrift`: random-walk home without drift.
+
+They sit beside (b) `homedrift` (fixed home that slides by rank) and A
+(`home`).
+
+**Expectation (A5-3 restated):** on both long panels the four arms A, (b),
+(a′) and RDM′ are within 0.03 of each other. The gate cannot identify the
+lasting process at its horizons. Prior 60%.

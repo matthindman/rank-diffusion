@@ -1,5 +1,7 @@
 # Paper frame "c": the working draft after the model build (DRAFT, for the owner)
 
+_[SUPERSEDED 2026-10-18 by `PAPER_FRAME_DRAFT_2026-10-18d.md` and `paper/pnas_draft.tex` (owner title decision, §2z-dg).]_
+
 _Claude Opus 5.5 (Anthropic), 2026-10-18. NOT ADOPTED: claim language and the
 title are the owner's. It consolidates three earlier frames into one working
 draft:

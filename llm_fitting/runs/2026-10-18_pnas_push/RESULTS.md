@@ -209,3 +209,33 @@ The gapped statistic of §2z-df, with the gaps as stated:
   2020), Reddit's persistence is weak (−0.04 to +0.08). The platform contrast
   is clearest at the annual horizon, where Facebook has no data. This
   qualification goes into the paper.
+
+## A5 / A5b. Long-panel gates (Gate v1, 20 reps, 2,000 draws; one harness)
+
+| arm | `reddit_submissions_long` | paired against A | dRank13 error | `reddit_comments_ext` |
+|---|---|---|---|---|
+| persistence | 0.163 ± 0.048 | — | — | (pending) |
+| A, fixed home (`home`) | 0.188 ± 0.063 (frozen A in Codex's harness: 0.194) | — | 0.199 | (pending) |
+| RDM frozen (`movinghome`) | **0.246 ± 0.085** | better 2/5 | 0.370 (13-week median 4–6 against 7–8: under-dispersed) | (running) |
+| RDM corrected (`movinghome_vp`, post hoc V4) | **0.175 ± 0.072** | better 3/5 | 0.227 (median 8–10 against 6–8: over-dispersed, like A) | (queued) |
+| (a) `movinghome_nodrift` | (running) | | | |
+| (b) `homedrift` | (queued) | | | |
+
+**Expectations, submissions:**
+- **A5-1** (frozen RDM ≤ A + 0.05): **FAIL** (0.246 against 0.238).
+- **A5-2** (frozen RDM's dRank13 error below A's): **FAIL** (0.370 against
+  0.199).
+- **A5b-1** (corrected ≤ A + 0.05): **PASS** (0.175).
+- **A5b-2** (13-week median within ±1 in at least 4 of 5 splits): **FAIL**
+  (2 of 5; it now overshoots by 0–3).
+- **A5b-3** (corrected below frozen): **PASS.**
+
+**Reading.**
+- The frozen form's long-panel failure is the V4 algebra, and the correction
+  removes it.
+- The corrected model is at par with A (0.175 against 0.188).
+- **Neither model beats persistence on this panel on average** (0.163). A
+  had already lost to persistence here (GATE_LEDGER row 84). The weekly
+  movement of the top-200 cohort on long submissions is not better forecast
+  by either generative model than by carrying the training statistics
+  forward.
