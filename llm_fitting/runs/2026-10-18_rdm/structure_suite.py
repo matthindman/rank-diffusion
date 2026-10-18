@@ -84,6 +84,8 @@ def metrics(Bm, perm_rank):
         ok = inK & np.isfinite(Bm[0]) & np.isfinite(Bm[1]) & np.isfinite(Bm[2])
         x, y = Bm[1][ok] - Bm[0][ok], Bm[2][ok] - Bm[1][ok]
         res["no_return_slope"] = float(np.polyfit(x, y, 1)[0])
+        from scipy.stats import spearmanr                   # robust to the heavy tails (added after 2z-dd's check)
+        res["momentum_spearman"] = float(spearmanr(x, y).correlation)
     # S2 / S5: retention of the top k from block 1 to block 2 (one step) and block 1 to block 3 (two steps)
     for k in (K // 64, K // 16, K // 8, K):
         for steps in (1, 2):

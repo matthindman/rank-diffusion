@@ -221,3 +221,35 @@ not from a filter. That is declared; a three-state filter is not built.
 | V2 | submissions: the mean absolute error of one-year retention over the four cut-offs falls below the no-velocity model's |
 | V3 | Facebook pages (data slope −0.08): small V_v, and no momentum created (slope ≤ 0) |
 | V4 | must not worsen: β within ±0.05 of the data where it was; the head share no further from the data |
+
+## Addendum 3, before its runs: drift by name identified from momentum, tested by transport across ladders
+
+**What the structure suite established.** Both Reddit ladders show broad
+momentum in consecutive annual changes:
+- submissions: Spearman +0.373, Theil–Sen +0.365;
+- comments: Spearman +0.320.
+
+Facebook pages show none (Spearman −0.035). The moving home is neutral
+(−0.01, +0.03) and A reverts (−0.17, −0.03). The velocity identified from the
+52-week structure function was too short-lived (half-life at the 26-week
+grid edge) and gave only 0.04.
+
+**Design.**
+- **Calibration on submissions only.** For a grid of:
+  - q = (annual velocity sd) / (annual lasting sd at L_ref) = σ_v·52 / (σ_0√52),
+    over {0.25, 0.5, 0.75, 1.0, 1.5};
+  - the velocity half-life H, over {52, 104, 208} weeks;
+
+  the hold drift is re-solved with the velocity, then 5 seeds are simulated
+  from the end of block 0 and put through the suite's estimators. The chosen
+  (q, H) minimises |Spearman_sim − 0.373|.
+- **Transport to comments with no refit.** The same (q, H), with σ_v scaled
+  by comments' own σ_0. Hold drift re-solved; 10 seeds; the suite's
+  estimators.
+
+| | prediction |
+|---|---|
+| M1 (calibration) | some (q, H) on the grid gives submissions' Spearman momentum within ±0.05 |
+| M2 (transport; the target was not used) | comments' simulated momentum Spearman within ±0.08 of 0.320 |
+| M3 (transport) | comments' mean absolute error of two-year retention over its four cut-offs falls below the no-velocity RDM's 0.075 |
+| M4 (must not worsen, comments) | head share no further from the data than 0.608; β within ±0.05 of 0.072 |
