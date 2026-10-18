@@ -247,7 +247,9 @@ out. Twenty claims were checked (`runs/2026-10-18_external_critiques_round2/SYNT
   out. Comments and Facebook are robust.
 - **The moving-home model is a candidate.** Its gate win is on a 30-week
   panel, where it nearly is A (paired 5/5 against A in the same harness);
-  its new part is tested only in sample.
+  its new part is tested only in sample. G2 passes as registered: in the
+  same harness it beats A's dynamics on comments 4/5 (0.152 against 0.163)
+  and fits the median 13-week move, but its 90th percentile is too thin.
 - **Errors corrected:** the share label (geometric index), the head share
   wrongly blamed on momentum, the short-lag claim, the parameter count.
 - **Gomez's later version (Appendix F)** already applies the decomposition

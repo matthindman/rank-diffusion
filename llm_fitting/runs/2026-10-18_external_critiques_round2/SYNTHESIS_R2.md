@@ -37,7 +37,7 @@ momentum, is not yet shown to exceed what block-averaging alone produces.
 | V2 | `share_K64_last` is the geometric-mean index of §2z-cw, not an arithmetic share, yet §2z-dd S4 and frame c call it arithmetic | gpt, Fable | `structure_suite.py:107–110` and `velocity_transport.py:77–78` exponentiate block-mean log levels | **CONFIRMED.** "The measured slides reproduce half of the fall" (frame c, Results 6) compares an index with the arithmetic 50.2% → 34.0%. Withdrawn until computed on arithmetic shares |
 | V3 | The structure suite compares different populations: simulations drop reborn slots, while the data keep later entrants | gpt | `structure_suite.py:130–134` | **CONFIRMED in code;** size of the effect unknown. It affects retention and the head index, not the momentum or no-return statistics (those use block-0 members present in all three blocks) |
 | V4 | "σ_perm² reduced by σ_L² so short-lag increments are unchanged" is approximate | gpt, Fable, Opus | the `movinghome` branch of `_State.step` in `rankdiff_rdm.py`: the home innovation enters L through κ | **CONFIRMED.** One-week innovation variance is σ_perm² − (1−κ²)σ_L² while the floor is inactive. The gate scores stand as scores of the implemented model |
-| V5 | Comments: the 90th percentile of 13-week displacement is under-dispersed in every split | Fable | `em`/`sm` of `gate__reddit_comments.json` | **CONFIRMED.** Ratios 0.62 / 0.84 / 0.81 / 0.84 / 0.84; Facebook 0.23–1.30, under in 4 of 5. Whether A shares it awaits G2 (comments run in progress) |
+| V5 | Comments: the 90th percentile of 13-week displacement is under-dispersed in every split | Fable | `em`/`sm` of `gate__reddit_comments.json` | **CONFIRMED.** Ratios 0.62 / 0.84 / 0.81 / 0.84 / 0.84; Facebook 0.23–1.30, under in 4 of 5. G2 (§2z-df §8): A's tail matches (62, 64, 52, 48, 53 against 58, 55, 53, 51, 50) while A over-disperses the median, which the RDM gets right |
 | V6 | The submissions gate win is on a 30-week panel: train windows 12–17 weeks, no 13-week moment, below the 160 weeks recovery requires; the long panels were not gated | all three | `gate__reddit.json`; the `em` keys lack dRank13 | **CONFIRMED.** Paired by split, the RDM beats A on 5/5 (A in the same harness, G2 run: 0.128 ± 0.028, reproducing Codex's 0.129). It is a short-horizon result |
 | V7 | The too-concentrated head was blamed on momentum, yet adding velocity raised the head index | Fable, Opus | `velocity_calibration_output.txt`; `structure__…__vel.json` | **CONFIRMED.** The index was 0.466–0.561 across the grid and 0.572 at the chosen point, against 0.515 without velocity; measured slides give 0.436. The attribution in §2z-dd and frame c is withdrawn: the cause is the hold drift's stationarity, by construction |
 | V8 | κ_m and V_m are estimated and printed but unused by the frozen form; the dossier's parameter count describes the pre-freeze variant | Fable, Opus | `step()` uses A's κ(z) and σ_perm(z) knots | **CONFIRMED.** The frozen model is A plus σ_0, β and the drift closure, so strictly more complex than A |
@@ -212,3 +212,16 @@ with every origin positive on both Reddit ladders.
 - Kairam, Wang & Leskovec 2012 and Cunha et al. 2019 (online group growth);
 - Working 1960, for the averaging null;
 - Salganik et al. 2006 and van de Rijt et al. 2014 (cumulative advantage).
+
+## 5. Addendum: G2 completed (§2z-df §8)
+
+Model A's dynamics in the same harness, at 20 reps:
+- **Comments:** 0.163 ± 0.062. The RDM is better on 4/5 paired splits.
+  Frozen A in Codex's harness scored 0.137; the difference is unexplained.
+  The reviewers' "worse on 3 of 5" paired the RDM with that harness.
+- **Facebook (contaminated):** 0.110 ± 0.036. The RDM is better on 2/5.
+- **G2 (dRank13):** RDM below A on comments (0.088 against 0.211) and on
+  Facebook (0.134 against 0.147). PASS as registered, with one passing panel
+  contaminated and the 30-week panel unscorable.
+- **The tails:** the RDM gets the median quarter right and the 90th
+  percentile too thin; A is the reverse.

@@ -12258,3 +12258,36 @@ The reviewers' ranked steps (SYNTHESIS_R2 §4):
   about 0), β and the RDM gate as primaries.
 - **Data access:** names (clusters, the 2020 ban wave); the WD-drive audits
   and creation dates; Wikipedia.
+
+### 8. Addendum, same day: G2 completed (model A's dynamics in the RDM harness, 20 reps, 2,000 draws)
+
+| panel | A in the harness | RDM | frozen A (Codex V3, other harness) | RDM better, paired | dRank13 error, A against RDM |
+|---|---|---|---|---|---|
+| `reddit` (30 weeks) | 0.128 ± 0.028 | 0.097 ± 0.032 | 0.129 ± 0.028 | 5/5 | not scorable (no 13-week moment) |
+| `reddit_comments` | **0.163 ± 0.062** | 0.152 ± 0.029 | 0.137 ± 0.056 | 4/5 | **0.211 against 0.088** |
+| `facebook_a` (contaminated for the RDM) | 0.110 ± 0.036 | 0.123 ± 0.026 | 0.103 ± 0.044 | 2/5 | 0.147 against 0.134 |
+
+- **G2** asked that the RDM's dRank13 error be below A's on at least 2 of 3
+  panels. It is: on comments, clearly, and on Facebook, narrowly. **PASS as
+  registered, with two qualifications:**
+  - one of the two passing panels is contaminated by development, and its
+    margin is 0.013;
+  - the third panel cannot be scored.
+- **What drives the 13-week result.** A over-disperses the median 13-week
+  displacement on comments (simulated 14, 11, 13, 13, 12 against observed
+  10, 12, 11, 10, 11), and the RDM matches it (9, 9, 11, 10, 10). But at the
+  90th percentile A matches (62, 64, 52, 48, 53 against 58, 55, 53, 51, 50),
+  while the RDM's tail is too thin (36–46). The RDM gets the typical
+  quarter's movement right and the large movers wrong, consistent with its
+  missing kurtosis.
+- **On comments the harness matters.** A's dynamics, reimplemented in the
+  RDM harness, score 0.163, against frozen A's 0.137 from Codex's harness.
+  The submissions reproduction matched (0.128 against 0.129), so the comments
+  gap is unexplained. It may come from mix_b or the heterogeneous mixture.
+  The fair comparison of the moving home's increment is the same-harness
+  one: the RDM is better on 4/5 splits. Against frozen A it is within the
+  non-inferiority margin. The round-2 reviewers' "worse on 3 of 5" paired
+  the RDM with the other harness's splits.
+- **The coll1 attribution of §2z-dd is moot.** Both models fit coll1
+  poorly on comments (A 0.710, RDM 0.818), and in the same harness the RDM
+  has no gap to A.
