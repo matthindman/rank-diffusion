@@ -1,0 +1,18 @@
+
+========================================================================
+REDDIT_COMMENTS_EXT — Gate v1, RDM (hold, lasting=movinghome_vp)
+========================================================================
+  T=213  test_len=53  origins=[53, 80, 106, 133, 160]  universe=top-12500
+    T0=53: kappa_m 0.200, sigma0 0.1488, beta +0.056, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0066, -0.0062, -0.0069, -0.0038]
+    T0=80: kappa_m 0.070, sigma0 0.1118, beta +0.075, lam 0.0000, pi 0.00, scale 0.10; drift at ranks 1/20/100/1000 [-0.0032, -0.0029, -0.0034, -0.0023]
+    T0=106: kappa_m 0.100, sigma0 0.1232, beta +0.069, lam 0.0000, pi 0.00, scale 0.70; drift at ranks 1/20/100/1000 [-0.0025, -0.0003, -0.004, -0.0026]
+    T0=133: kappa_m 0.100, sigma0 0.1235, beta +0.081, lam 0.0000, pi 0.00, scale 0.25; drift at ranks 1/20/100/1000 [-0.0035, -0.0027, -0.0029, -0.0031]
+    T0=160: kappa_m 0.100, sigma0 0.1203, beta +0.092, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0019, -0.0006, -0.002, -0.0023]
+    T0= 53  model relErr 0.121 | persistence 0.193 | dR1 in CI: True
+    T0= 80  model relErr 0.224 | persistence 0.193 | dR1 in CI: False
+    T0=106  model relErr 0.152 | persistence 0.205 | dR1 in CI: True
+    T0=133  model relErr 0.085 | persistence 0.137 | dR1 in CI: True
+    T0=160  model relErr 0.071 | persistence 0.105 | dR1 in CI: True
+  MODEL rel err = 0.130 ± 0.054   |   persistence = 0.167 ± 0.039
+  coverage 80%;  per-moment model rel err: dRank1 0.095, dRank4 0.094, dRank13 0.088, RACF1 0.105, coll1 0.565, coll5 0.124, coll20 0.036
+ARM DONE movinghome_vp (drift applied) reddit_comments_ext exit 0

@@ -218,7 +218,7 @@ def fig4():
     CF = {pn: load(HERE / f"churn_counterfactual__{pn}.json") for pn in ("reddit_comments_ext", "reddit_submissions_long")}
     gates = {}
     for pn in ("reddit_submissions_long", "reddit_comments_ext"):
-        for arm in ("home", "movinghome", "movinghome_vp", "movinghome_nodrift", "homedrift"):
+        for arm in ("home", "movinghome", "movinghome_vp", "movinghome_nodrift", "homedrift", "movinghome_vp_nodrift"):
             f = HERE / f"gate_{arm}__{pn}.json"
             if f.exists():
                 gates[(pn, arm)] = load(f)
@@ -261,7 +261,8 @@ def fig4():
     a.legend(loc="lower left", frameon=False)
     tag(a, "C")
     a = ax[3]
-    arms = (("home", "fixed home (A)"), ("movinghome", "moving home"), ("movinghome_vp", "moving home, corrected"))
+    arms = (("home", "fixed\n(A)"), ("homedrift", "fixed\n+drift"), ("movinghome_vp_nodrift", "wander"),
+            ("movinghome_vp", "wander\n+drift"), ("movinghome", "first\nfrozen"))
     for j, pn in enumerate(("reddit_submissions_long", "reddit_comments_ext")):
         for i, (arm, lab) in enumerate(arms):
             g = gates.get((pn, arm))
@@ -272,8 +273,8 @@ def fig4():
         b = next((gates[(pn, arm)] for arm, _ in arms if (pn, arm) in gates), None)
         if b is not None:
             a.axhline(b["base_rel"], color=COL[pn], lw=0.8, ls=":")
-    a.set_xticks(range(3))
-    a.set_xticklabels([lab.replace(", ", ",\n") for _, lab in arms])
+    a.set_xticks(range(len(arms)))
+    a.set_xticklabels([lab for _, lab in arms], fontsize=5.5)
     a.set_ylabel("held-out movement error")
     a.set_title("Held-out movement, long panels")
     a.legend(loc="upper left", frameon=False)

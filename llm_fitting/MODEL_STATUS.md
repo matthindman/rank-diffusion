@@ -12454,3 +12454,60 @@ you have to …"). Run folder: `runs/2026-10-18_pnas_push/`:
     `*_NODRIFT_BUG_*`.
 - **Process slip.** Commit 77a8af4 (the A9 design and a script fix) was
   made without running the health check first.
+
+### 7. Results completed later the same day (RESULTS.md A5c, A6, A9; TITLE_GENRE_STUDY.md)
+
+**Long-panel gates: the 2×2 around the corrected variance** (Gate v1, 20
+reps, 2,000 draws, one harness):
+
+| arm | submissions | comments |
+|---|---|---|
+| A | 0.188 ± 0.063 | 0.123 ± 0.051 |
+| (b) fixed home + drift | **0.171 ± 0.035** | 0.114 ± 0.056 |
+| (a′) wandering home, no drift | 0.175 ± 0.072 | **0.100 ± 0.047** |
+| RDM′ wandering home + drift | 0.183 ± 0.074 | 0.130 ± 0.054 |
+| persistence | 0.163 ± 0.048 | 0.167 ± 0.039 |
+| frozen RDM | 0.246 ± 0.085 | 0.145 ± 0.057 |
+
+- **A5c PASS:** the spread is 0.017 on submissions and 0.030 on comments,
+  at the margin.
+- **RDM′ is non-inferior to A on both panels.**
+- **No arm's mean beats persistence on submissions;** every corrected arm
+  does on comments.
+- **Reading:** at 1–13 weeks the gate cannot see the lasting process. The
+  model's case for the main text is structural. The manuscript says "as
+  well as".
+
+**A6, out of period** (fit 2019–20, forecast 2021–22):
+- One-year retention is forecast within 0.02–0.04 at K/64 … K.
+- The moving home beats A on comments (MAE 0.019 against 0.041) and loses
+  on submissions (0.040 against 0.024).
+- Retention carried forward is as good or better on comments.
+- Neither model forecasts the fall of the head share (submissions 0.51 →
+  0.36 observed, about 0.50 forecast).
+- Keeping entrants changes nothing (V3 is immaterial).
+- Expectations: A6-3 and A6-5 PASS on both ladders; A6-1 and A6-2 split by
+  ladder; A6-4 FAIL except the RDM on comments.
+
+**A9, joint bootstrap.** One community weight shared by variance and
+crossings, with the starts resampled:
+- comments 1.069 (0.986–1.152);
+- submissions 0.802 (0.633–1.009);
+- Facebook 0.977 (0.840–1.119);
+- **three ladders 0.942 (0.855–1.040).**
+- Scored: A9-1 and A9-3 PASS; A9-2 PARTLY (submissions +16%).
+
+**Title.** At the owner's request, a subagent studied the 50 most-cited PNAS
+research titles of 2020–2024 (OpenAlex and Crossref; types checked against
+JATS headings; one year spot-checked). Picked: **"Continual turnover
+sustains a slowly changing hierarchy of online attention"**: a present-tense
+declarative on the measured result, with the contradiction stated literally.
+The hedged alternative carrying "creates" is in frame d.
+
+**Manuscript.**
+- `paper/pnas_draft.tex` compiles cleanly: 7 pages, abstract 249 words,
+  significance 115. Figure placement is `[tbp]`, because `[t]` pushed the
+  significance float to the end of the document.
+- The remaining TODOs are owner items: data availability and
+  acknowledgements.
+- The SI draft (`paper/pnas_si.tex`) compiles.

@@ -1,0 +1,22 @@
+waiting for a heavy-job slot; held by:
+  pid 30089 since 2026-10-18 17:46:09 in /Users/hindman/Documents/GitHub/rank-diffusion :: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u llm_fitting/runs/2026-10-18_pnas_push/gate_arm.py reddit_comments_ext 12500 movinghome_vp_nodrift
+  pid 28525 since 2026-10-18 17:23:35 in /Users/hindman/Documents/GitHub/rank-diffusion :: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u llm_fitting/runs/2026-10-18_pnas_push/gate_arm.py reddit_comments_ext 12500 movinghome_nodrift
+  pid 23534 since 2026-10-18 17:47:15 in /Users/hindman/Documents/GitHub/rank-diffusion :: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u llm_fitting/runs/2026-10-18_pnas_push/structure_oop.py reddit_submissions_long
+
+========================================================================
+REDDIT_SUBMISSIONS_LONG — Gate v1, RDM (hold, lasting=movinghome_vp)
+========================================================================
+  T=212  test_len=53  origins=[53, 80, 106, 132, 159]  universe=top-5000
+    T0=53: kappa_m 0.500, sigma0 0.1271, beta +0.024, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0042, -0.0041, -0.0067, -0.005]
+    T0=80: kappa_m 0.200, sigma0 0.1156, beta +0.009, lam 0.0000, pi 0.00, scale 0.05; drift at ranks 1/20/100/1000 [-0.009, -0.009, -0.0071, -0.0042]
+    T0=106: kappa_m 0.200, sigma0 0.1089, beta +0.011, lam 0.0000, pi 0.00, scale 0.05; drift at ranks 1/20/100/1000 [-0.0075, -0.0078, -0.0017, -0.0062]
+    T0=132: kappa_m 0.500, sigma0 0.1095, beta +0.031, lam 0.0000, pi 0.00, scale 0.25; drift at ranks 1/20/100/1000 [-0.0065, -0.0068, -0.0088, -0.0049]
+    T0=159: kappa_m 0.140, sigma0 0.1070, beta +0.046, lam 0.0000, pi 0.00, scale 0.00; drift at ranks 1/20/100/1000 [-0.0059, -0.006, -0.0071, -0.0033]
+    T0= 53  model relErr 0.210 | persistence 0.131 | dR1 in CI: True
+    T0= 80  model relErr 0.144 | persistence 0.180 | dR1 in CI: True
+    T0=106  model relErr 0.069 | persistence 0.086 | dR1 in CI: True
+    T0=132  model relErr 0.201 | persistence 0.200 | dR1 in CI: False
+    T0=159  model relErr 0.292 | persistence 0.216 | dR1 in CI: True
+  MODEL rel err = 0.183 ± 0.074   |   persistence = 0.163 ± 0.048
+  coverage 80%;  per-moment model rel err: dRank1 0.117, dRank4 0.170, dRank13 0.202, RACF1 0.131, coll1 1.037, coll5 0.084, coll20 0.079
+ARM DONE movinghome_vp (drift applied) reddit_submissions_long exit 0

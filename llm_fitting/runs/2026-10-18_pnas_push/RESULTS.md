@@ -314,3 +314,39 @@ no-drift arm reproduces 0.175 to every digit, and the comments run started
   contains.
 - The round-2 V3 concern (entrants dropped from simulations) does not matter
   here: no entrant reaches a top set within the window.
+
+
+## A5c. The 2×2 around the corrected model: final
+
+| arm (corrected variance where it applies) | home random walk | drift by rank | submissions | comments |
+|---|---|---|---|---|
+| A `home` | no | no | 0.188 ± 0.063 | 0.123 ± 0.051 |
+| (b) `homedrift` | no | yes | **0.171 ± 0.035** | 0.114 ± 0.056 |
+| (a′) `movinghome_vp_nodrift` | yes | no | 0.175 ± 0.072 | **0.100 ± 0.047** |
+| RDM′ `movinghome_vp` (drift applied) | yes | yes | 0.183 ± 0.074 | 0.130 ± 0.054 |
+| persistence | | | 0.163 ± 0.048 | 0.167 ± 0.039 |
+| (frozen variance, for the record) `movinghome` / `movinghome_nodrift` | | | 0.246 / 0.267 | 0.145 / 0.150 |
+
+**Scored:**
+- **A5c PASS:** the spread across the four arms is 0.017 on submissions and
+  0.030 on comments, the latter exactly at the margin.
+- **A5b-1 restated for RDM′, PASS on both panels:** 0.183 ≤ 0.238 and
+  0.130 ≤ 0.173.
+- **A5b-3 PASS:** 0.183 < 0.246.
+- RDM′ against A, paired: submissions 3/5, comments 2/5.
+- Against persistence: comments 4/5 for every corrected arm. On submissions
+  no arm's mean beats persistence.
+
+**Reading.**
+- With the variance bookkeeping corrected, the wandering home and drift by
+  rank neither help nor hurt held-out movement at 1–13 weeks. The gate
+  cannot see the lasting process. That was expected (A5-3) and is the
+  referees' point.
+- The model's claim to the main text is therefore structural:
+  - it builds the hierarchy (A3);
+  - it removes A's false reversion (§2z-dd);
+  - it forecasts one-year retention out of period to within 0.02–0.04
+    (A6).
+
+  It is not a claim to better weekly forecasts. The paper says "at least as
+  well as".

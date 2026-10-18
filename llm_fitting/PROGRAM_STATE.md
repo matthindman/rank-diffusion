@@ -237,8 +237,7 @@ spine, "size does not protect", and the model and momentum. The outline
 
 **The PNAS push (§2z-dg, 2026-10-18; owner decisions in the §6 addendum).**
 - **Title direction (owner):** how churn creates and maintains the
-  hierarchy. Working title: "The churn that unseats online leaders creates
-  the hierarchy they lead". The model's core is in the main text.
+  hierarchy. The model's core is in the main text.
 - **The working text is `paper/pnas_draft.tex`,** a full draft; the frame
   is `PAPER_FRAME_DRAFT_2026-10-18d.md`.
 - **New results:**
@@ -251,10 +250,18 @@ spine, "size does not protect", and the model and momentum. The outline
     submissions, community-specific on comments;
   - displacement is steady, and the members' decline moves concentration.
 - **Model:** the frozen moving home FAILS the long submissions gate (0.246
-  against frozen A 0.194). The V4 variance error is corrected in the opt-in
-  `movinghome_vp`; its gates, the 2×2 ablation, the out-of-period structure
-  test (A6) and the joint bootstrap (A9) were running at writing. Check
-  `runs/2026-10-18_pnas_push/RESULTS.md` and GATE_LEDGER.
+  against A 0.188). The V4 variance error is corrected in the opt-in
+  `movinghome_vp`.
+  - The corrected arms are all within 0.03 of A on both long panels
+    (RDM′ 0.183 / 0.130 against A 0.188 / 0.123). The gate cannot see the
+    lasting process, so the model's case is structural.
+  - A6 out of period: one-year retention within 0.02–0.04; neither model
+    forecasts the fall of the head.
+  - A9: joint three-ladder ratio 0.94 (0.86–1.04).
+  - A code error in the first `movinghome_vp` runs (no drift) was found and
+    corrected (§2z-dg §6).
+- **Title (picked from the PNAS title study):** "Continual turnover sustains
+  a slowly changing hierarchy of online attention".
 - **Bridge protocol v3.1** adds P5–P7 (owner: "Yes, add them"). NOT
   adopted.
 
