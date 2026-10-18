@@ -11683,6 +11683,8 @@ items would give 0.5.
 
 ## 2z-dd. 2026-10-18 — MODEL BUILD and VALIDATION (development data; nothing adopted; no default or frozen stack changed): the moving-home (rank-drift) model, in which model A's fixed personal home becomes a lasting level that random-walks and holds the ladder by drift by rank. It passes Gate v1 non-inferiority on both clean Reddit gates (submissions 0.097 against A's 0.129 and persistence's 0.168; comments 0.152 against 0.137) and removes A's false reversion (Facebook no-return slope reproduced). It is recovered on panels of 160 weeks or more. But it does not reproduce Reddit's broad MOMENTUM (Spearman +0.32 to +0.37 between consecutive annual changes), which also drives its too-sticky retention and too-concentrated head there. Drift by name calibrated on submissions reaches +0.18 and FAILS transport to comments. Not recommended as the structure model; a credible movement-stack candidate
 
+_[CORRECTED IN PART 2026-10-18 by §2z-df (round-2 referees, verified): the submissions gate is the 30-week `reddit` panel (train windows 12–17 weeks, no 13-week moment), below the 160 weeks recovery covers; "recovered on panels of 160 weeks or more" is six replications at 160 weeks, variant "move", not the hold closure; momentum is NOT shown to drive the too-concentrated head (adding velocity raised the head index, 0.515 → 0.572) nor the too-sticky retention (the structure suite drops simulated entrants while the data keep them); the S4 "arithmetic share" is the geometric-mean index; "short-lag increments unchanged" is approximate (one-week innovation variance σ_perm² − (1−κ²)σ_L²); κ_m and V_m are printed but unused by the frozen form; comments' 90th percentile of 13-week displacement is under-dispersed in 5 of 5 splits (0.62–0.84).]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-18; started
 from 7ec39cd.
 - Dossier and predictions committed at 8e6a2ac before any code; the frozen
@@ -12020,6 +12022,8 @@ python llm_fitting/runs/2026-10-18_rdm/fig_rdm.py   # fig_rdm.png; in panel C ci
 
 ## 2z-de. 2026-10-18 — EXPLORATORY MEASUREMENT (design committed at 6ccef16 before the run) and PLANNING: Reddit's momentum is a robust regularity, not an artefact of the July 2021 capture change and not a young-community lifecycle; drafts revised to frame c; a self-assessment before the second round of referee models. Four of five expectations held (D2 failed); nothing adopted, no gate evaluation
 
+_[CORRECTED IN PART 2026-10-18 by §2z-df: block averaging alone makes adjacent-block changes correlate by about +0.24 (Working 1960), so D1's +0.10 threshold is the wrong null; a gapped statistic with disjoint supports still gives +0.14 to +0.20 on both Reddit ladders (none on Facebook), so the regularity stands; D1 excludes the July 2021 change but not a 2020 episode (every pre-July triple contains 2020 H1); D2 measures first appearance in the panel, not age.]_
+
 _Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-18; started
 from ee0f0f3. The owner's request: "revise the draft / plan to be consistent
 with the new analysis. Then do a self-assessment … Do the obvious things next
@@ -12075,3 +12079,182 @@ either substantial builds (a momentum mechanism) or owner-gated (raw-archive
 audit, names, sealed data), and the referees' view of priorities is wanted
 first. Frame c §5 and the evidence packet C19 are updated with these
 results.
+
+## 2z-df. 2026-10-18 — REVIEW (three referee models, round 2) and EXPLORATORY MEASUREMENT (design committed at 5de56b7 before the run): all three find the paper closer to publishable. Twenty claims checked: 17 confirmed, 1 partly, 2 accepted as descriptions. Reddit momentum SURVIVES the averaging null (gapped Spearman +0.14 to +0.20 on both ladders; none on Facebook). The moving-home model is a candidate whose new part is tested only in sample; corrections of record made; G2 run. Nothing adopted
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-18; started
+from 84e6f36 (brief committed at 9266f50). The owner's request: "… otherwise
+go back to the original three models and get their revised feedback." The
+reviewers, all read-only, with no data files and no sealed paths:
+- gpt-6-astra, through the Codex CLI 0.163.0;
+- Claude Fable 5.1 and a fresh Claude Opus 5.5, as subagents.
+
+Reports: `runs/2026-10-18_external_critiques_round2/REVIEW_*.md`. Checks:
+`SYNTHESIS_R2.md` there._
+
+### 1. Verdicts
+
+All three: closer than round 1, and an editor would send it out. Their
+largest gaps fit one picture:
+- the moving-home model is tested out of sample only where it nearly
+  coincides with A (1–13 weeks);
+- its new part, the wandering home held by drift by rank, is tested only in
+  sample, where it misses the annual Reddit facts;
+- the leading candidate for those misses, momentum, had not been shown to
+  exceed what block averaging produces.
+
+The last point is now settled (§3).
+
+### 2. Verified findings (SYNTHESIS_R2 §2, V1–V20)
+
+- **V1. The submissions exponent is fragile.** Leaving out one stratum in
+  year 1 gives β **0.00–0.19** (0.19 without the top 78; 0.00 without ranks
+  79–156). Year 2 gives 0.082. Comments (0.067–0.081) and Facebook (−0.001
+  to 0.015) are robust. Fold change of the sd across strata: comments 1.58
+  over a 600-fold size range, Facebook 1.03.
+- **V2. The share label.** `share_K64_last` (`structure_suite.py`,
+  `velocity_transport.py`) is the geometric-mean index of §2z-cw, not an
+  arithmetic share. "The measured slides reproduce half of the fall" is
+  withdrawn.
+- **V3. Mismatched populations.** The structure suite drops simulated slots
+  once reborn, while the data keep later entrants. This affects retention
+  and the head index, not momentum or the no-return slope. Size of the
+  effect unknown.
+- **V4. Short-lag variance.** The claim is approximate: the one-week
+  innovation variance is σ_perm² − (1−κ²)σ_L².
+- **V5. Comments' 90th percentile** of 13-week displacement is
+  under-dispersed in 5 of 5 splits (ratios 0.62–0.84). On Facebook it is
+  under in 4 of 5.
+- **V6. The submissions gate** is the 30-week `reddit` panel: train windows
+  12–17 weeks, no 13-week moment. Every gate train window is under 160
+  weeks. Paired against A in the same harness, the RDM is better on 5 of 5
+  splits (§4).
+- **V7. The head-share attribution is withdrawn.** Velocity raised the head
+  index: 0.466–0.561 across the grid and 0.572 at the chosen point, against
+  0.515 without; measured slides give 0.436. The cause is the hold drift's
+  stationarity, by construction.
+- **V8. Parameter count.** κ_m and V_m are printed but unused. The frozen
+  model keeps A's κ(z) and σ_perm(z) and adds σ_0, β and the drift closure,
+  so it is more complex than A.
+- **V9. The RDM's own boundary ratios are structured by cut-off.** They run
+  0.68–0.97 at k = 625–1,250 and 1.16–1.30 at k = 2,500–5,000 in every seed;
+  A's simulations are not structured. The by-rank test needs a
+  model-derived null. A lead on the 300–600 shortfall.
+- **V10. Recovery** used variant "move" with zero slides, six replications,
+  at 86 and 160 weeks only.
+- **V11. Gomez's later author-hosted version** ("Decomposing the growth of
+  top wealth shares", submitted to Econometrica) already applies the
+  decomposition across every percentile of US income. Appendix F, Fig. F.1:
+  1979–1990, the IRS panel, three-year averages against transitory shocks,
+  and the model ingredients g·q²/(p·w) and ν² by percentile. "Whole
+  ladders" and "a flow quantity" are not novelty. What remains ours:
+  - the rank-by-rank test of measured displacement against the implied
+    term, with bands, over thousands of ranks on four ladders;
+  - the permanent-rank cohort estimator;
+  - the application and the dynamics.
+
+  Theory note §9 needs this addendum.
+- **V12. The averaging null.** Block averaging alone gives adjacent-block
+  changes a correlation of (B²−1)/(2(2B²+1)) = 0.250 (Spearman 0.239) at
+  B = 52 (Working 1960). Tested in §3.
+- **V13–V16, V19:**
+  - every pre-July-2021 triple contains 2020 H1;
+  - D2 measures first appearance, not age;
+  - the Facebook contrast is not like for like;
+  - the neighbour-swap rival was not calibrated (retention 0.993);
+  - "reproduces Facebook's absence of reversion" is in sample.
+
+  All confirmed.
+- **V17. Partly right.** "16–21% replaced each year" is supported on both
+  ladders by §2z-cu. The structure suite's 0.83–0.87 on submissions uses a
+  different window.
+- **V18. Outline v2's internal inconsistencies:** accepted, to fix at the
+  next revision.
+- **V20. A's harness home** is the filtered end-of-train state (accepted as
+  a description).
+
+### 3. Momentum against the averaging null (`runs/2026-10-18_momentum/`, DESIGN.md addendum R2)
+
+**The statistic:** the Spearman correlation of two one-year changes of
+13-week window means whose increment supports do not overlap. The second
+change starts g weeks after the first ends. The cohort is the top K by mean
+over weeks 0–25, disjoint from every window. On Facebook: 4-week windows,
+26-week changes.
+
+| | gap 0 | gap 13 (FB 4) | gap 26 (FB 8) | adjacent blocks | expectation | verdict |
+|---|---|---|---|---|---|---|
+| synthetic (i): random walk + noise + OU | −0.032 | −0.009 | −0.005 | +0.160 | I1 \|ρ\| ≤ 0.03 | **holds at 13 and 26; −0.032 at gap 0** (the OU sign; narrowly outside) |
+| synthetic (ii): + drift sd 0.4 a year | +0.171 | +0.190 | +0.194 | +0.389 | I2 ≥ +0.10 | **PASS** |
+| submissions | **+0.201** | **+0.174** | **+0.140** | +0.396 | G1 ≥ +0.10 at 13 and 26 | **PASS** |
+| comments | **+0.163** | **+0.154** | **+0.141** | +0.318 | G1 | **PASS** |
+| Facebook Era A | −0.114 | −0.067 | −0.031 | −0.069, −0.139, −0.043 | F ≤ +0.05 | **PASS** |
+
+The prior was 60% (submissions) and 55% (comments). Every origin is
+positive on both Reddit ladders.
+
+**Reading.**
+- The momentum is not an averaging artefact: with a half-year gap it is
+  +0.14 on both ladders, where a world without persistence gives −0.005.
+- On submissions it decays with the gap (0.20 → 0.14), and later origins are
+  lower. On comments it is nearly flat. Not yet separated: a finite-half-life
+  velocity, a 2020–21 episode, and drift by community.
+- Facebook rises from negative toward zero with the gap: short-memory
+  reversion, no persistence.
+- The adjacent-block values of §2z-dd/§2z-de stand as measurements, but
+  about +0.24 of each is averaging. Claims now use the gapped statistic.
+
+### 4. G2: model A in the RDM harness (`runs/2026-10-18_rdm/gate_runs_A.py`)
+
+- **`reddit` (30 weeks):** A 0.128 ± 0.028, against persistence 0.168. It
+  reproduces Codex's 20-rep 0.129.
+  - Per moment: dRank1 0.167, dRank4 0.267, RACF1 0.081, coll1 0.127, coll5
+    0.049, coll20 0.079.
+  - Paired by split, the RDM is better on 5 of 5: 0.153/0.171, 0.071/0.127,
+    0.084/0.131, 0.065/0.081, 0.110/0.132.
+  - This short panel has no dRank13, so G2 ("the long-horizon spread grows
+    as the data's") cannot be scored on it.
+- **`reddit_comments`:** running at the time of writing; recorded below when
+  done.
+
+### 5. Corrections of record made
+
+- Bracketed notes at §2z-dd and §2z-de.
+- A correction note appended to `runs/2026-10-18_rdm/DOSSIER.md`.
+- An addendum on Appendix F appended to theory note §9.
+- `PAPER_FRAME_DRAFT_2026-10-18c.md` revised [r2]:
+  - the significance (112 words) and abstract (238 words) rewritten: the
+    exponent by ladder with fold changes and the submissions instability;
+    "within the margin" in place of "as well as or better"; the gapped
+    momentum statistic; the in-sample Facebook claim dropped;
+  - Results 1–6 and "Does not claim" corrected;
+  - the title "Movement in levels, not ranks" withdrawn;
+  - the head-share and slide claims withdrawn.
+
+  The title and headline remain the owner's.
+
+### 6. Not run
+
+The reviewers' ranked steps (SYNTHESIS_R2 §4):
+- the momentum decomposition (items against engagement per item; factor or
+  cluster residualisation; sign asymmetry; lag profile; D(h) to 156 weeks;
+  Reddit at Facebook's dates);
+- long-panel gates for both models, with ablations and cross-model
+  recovery;
+- the structure-harness repair and an out-of-period structure test;
+- headline robustness (whole universe, noise-corrected Facebook β, items
+  only, top 10 and 25);
+- the Gomez decomposition of the arithmetic fall;
+- a joint block bootstrap;
+- the boundary estimator on β = 0 RDM simulations;
+- fitted level rivals;
+- outline v2's fixes.
+
+### 7. Owner-gated
+
+- **Paper decisions:** the title and claim language; whether the RDM stays
+  in Results 4 or moves to the SI.
+- **Bridge protocol v3,** before adoption. The reviewers ask to add
+  momentum (persistent: half-year gapped momentum > 0 in 2023–24; episode:
+  about 0), β and the RDM gate as primaries.
+- **Data access:** names (clusters, the 2020 ban wave); the WD-drive audits
+  and creation dates; Wikipedia.

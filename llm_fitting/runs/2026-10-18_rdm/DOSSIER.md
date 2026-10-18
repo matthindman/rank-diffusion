@@ -253,3 +253,26 @@ grid edge) and gave only 0.04.
 | M2 (transport; the target was not used) | comments' simulated momentum Spearman within ±0.08 of 0.320 |
 | M3 (transport) | comments' mean absolute error of two-year retention over its four cut-offs falls below the no-velocity RDM's 0.075 |
 | M4 (must not worsen, comments) | head share no further from the data than 0.608; β within ±0.05 of 0.072 |
+
+## Correction note (round-2 referees, 2026-10-18; MODEL_STATUS §2z-df)
+
+Verified in `runs/2026-10-18_external_critiques_round2/SYNTHESIS_R2.md`
+(V2, V4, V8, V10). The text above stands as the record of what was planned.
+- **§2, "Count of parameters"** describes the pre-freeze variant. The frozen
+  form keeps A's κ(z) and σ_perm(z) knot profiles and adds σ_0, β and the
+  drift closure, so it is strictly more complex than A. κ_m and V_m are
+  estimated and printed in `gate_output.txt` but not used by the frozen
+  form.
+- **"σ_perm² reduced by σ_L² so that short-lag increments are unchanged"**
+  is approximate. The home's innovation reaches the level through κ, so the
+  one-week innovation variance is σ_perm² − (1−κ²)σ_L² while the
+  0.1·σ_perm² floor is inactive.
+- **S4 "arithmetic share"** (`structure_suite.py`, `velocity_transport.py`)
+  is the geometric-mean index of §2z-cw: block-mean logs, exponentiated,
+  then summed. No arithmetic-share result exists for the model.
+- **Recovery** used variant "move" with zero slides. The hold closure was
+  not put through recovery. There were six replications, at 86 and 160 weeks
+  only.
+- **Structure-suite populations differ.** Simulated slots are dropped once
+  reborn, while the data keep later entrants. Retention and the head index
+  compare different populations; the size of the effect is unknown.

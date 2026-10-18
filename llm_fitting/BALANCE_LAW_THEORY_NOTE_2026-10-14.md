@@ -392,3 +392,52 @@ Record: MODEL_STATUS §2z-db._
    - Splitting the volatility term into within-group and between-group parts,
      as his industries are split. For us that means within and between topic
      clusters, which needs names: owner-gated.
+
+### Addendum (2026-10-18, after the round-2 referees; MODEL_STATUS §2z-df V11): the later version's Appendix F
+
+_Read: the author-hosted manuscript "Decomposing the Growth of Top Wealth
+Shares" (M. Gomez), marked "Submitted to Econometrica", from
+matthieugomez.com/files/topshares.pdf, pp. 50–54 (Appendices E and F).
+gpt-6-astra pointed to it in round 2. Whether the published article carries
+Appendix F was not checked._
+
+**What Appendix F does.**
+- It decomposes the growth of US *top income* shares, 1979–1990, using the
+  IRS public-use panel (5,523 joint filers).
+- It says income is a flow, so transitory shocks dominate short-run
+  dynamics. To target the permanent component, it averages income over
+  three-year periods before the accounting, and reports similar results
+  with six years.
+- Table F.I gives the within, between and demography terms for the top
+  100%, 10% and 2%.
+- **Fig. F.1a gives the three terms at every top percentile**, from the
+  top 100% to the top 1%. The between term rises with the percentile.
+- **Fig. F.1b gives the model ingredients by percentile,** g·q²/(p·w) and
+  ν². The model-implied between term rises monotonically.
+
+**What this changes in §9 item 2.**
+- "Rank by rank across whole ladders" is no longer a novelty claim by
+  itself. Gomez already decomposes across the whole distribution and shows
+  the model ingredients by percentile.
+- "The regime with heavy passing movement" is no longer new as a regime: he
+  names it and handles it by time-averaging. Our handling still differs:
+  - permanent-rank cohorts;
+  - spacing differences;
+  - the exact composition term;
+  - bands from resampling.
+- **What remains ours:**
+  - an explicit test, at each of seven cut-offs on four ladders, of
+    measured displacement against the term implied by measured lasting
+    variance and slope, with intervals. His appendix shows the measured
+    terms and the ingredients side by side, without a per-percentile test;
+  - the cohort estimator and its exact accounting;
+  - the size–variance and portfolio results;
+  - the calibrated rank rivals;
+  - the dynamics (the moving-home model and the momentum it misses);
+  - the attention application on three platforms.
+- The positioning sentence of item 4 should say "top wealth and income
+  shares" and cite Appendix F.
+- The by-rank test also needs a model-derived null. On moving-home
+  simulations with known lasting variance, the ratio is structured by
+  cut-off: 0.68–0.97 at k = 625–1,250 and 1.16–1.30 at 2,500–5,000 in every
+  seed (§2z-df V9).

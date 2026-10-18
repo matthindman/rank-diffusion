@@ -11,15 +11,22 @@ Those two files stay as the record of how the frame got here. The outline is
 `paper/pnas_outline_v2.tex`, revised to match. Every number cites its record
 section._
 
+_**Revised 2026-10-18 after the round-2 referees** (§2z-df;
+`runs/2026-10-18_external_critiques_round2/SYNTHESIS_R2.md`). Verified errors
+are corrected in place and marked [r2]: the model's gate evidence, the
+submissions exponent, the head-share attribution, the share label, Gomez's
+Appendix F, and the momentum statements. The title and headline choice remain
+the owner's._
+
 ## What changed with the model build, and how the frame absorbs it
 
 | new result | where it goes |
 |---|---|
 | Model A's "home" is a medium-term swing (σ_perm² 0.02–0.12 a week, κ 0.1–0.2), not a lasting level; the home "does two jobs" (§2z-ay, §2z-dd) | Methods and the model section: the reason for the new model |
-| **The moving-home model** (A's short-run block; a lasting level that random-walks under drift by rank). Gate v1 at 20 reps: submissions 0.097 (A 0.129, persistence 0.168); comments 0.152 (A 0.137); Facebook 0.123 (A 0.103, contaminated). No-return slope on Facebook reproduced (−0.089 against −0.076; A −0.157). Recovered on panels of 160 weeks or more (§2z-dd) | **Results 4**: a generative model consistent with the balance, validated on held-out movement |
+| **The moving-home model** (A's short-run block; a lasting level that random-walks under drift by rank). Gate v1 at 20 reps: submissions 0.097 (A 0.129, persistence 0.168); comments 0.152 (A 0.137); Facebook 0.123 (A 0.103, contaminated). No-return slope on Facebook reproduced (−0.089 against −0.076; A −0.157). Recovered on panels of 160 weeks or more (§2z-dd). [r2] The submissions gate is a 30-week panel, with 12–17-week train windows and no 13-week moment. Every gate train window is below the 160 weeks recovery covers, and recovery was six replications at 160 weeks. The model's new part is tested only in sample, where it misses the annual Reddit facts. The Facebook slope is in sample (§2z-df) | **Results 4**: a candidate generative model consistent with the balance. It loses nothing at weeks, but is not validated at a year [r2] |
 | Jumps estimated from kurtosis are rejected by the ladder's stability; the hold drift then matches the measured head slides (§2z-dd) | Results 4; SI |
-| **Reddit momentum:** consecutive annual changes correlate across communities (Spearman +0.37 submissions, +0.32 comments; robust to outliers); none on Facebook (−0.04). No tested model reproduces it; drift by name calibrated on submissions reaches +0.18 and fails transport to comments (§2z-dd) | **Results 5**: a new fact and the model's main open gap |
-| Size–variance β 0.01–0.08; attention moves as a unit, not a portfolio (§2z-dc) | Results 1: the headline |
+| **Reddit momentum:** consecutive annual changes correlate across communities (Spearman +0.37 submissions, +0.32 comments; robust to outliers); none on Facebook (−0.04). No tested model reproduces it; drift by name calibrated on submissions reaches +0.18 and fails transport to comments (§2z-dd). [r2] Block averaging alone gives about +0.24 to adjacent-block changes (Working 1960). With disjoint supports and a 26-week gap, momentum is still +0.140 (submissions) and +0.141 (comments), against −0.005 for a world without persistence; Facebook −0.031 (§2z-df) | **Results 5**: a new fact and the model's main open gap |
+| Size–variance β 0.01–0.08; attention moves as a unit, not a portfolio (§2z-dc). [r2] Robust on comments (leave one stratum out: 0.067–0.081) and Facebook (−0.001 to 0.015). Unstable on submissions in year 1 (0.00–0.19); year 2 gives 0.082. Precedent: fluctuation scaling with α ≈ 1 for web traffic (de Menezes & Barabási 2004; Eisler, Bartos & Kertész 2008) (§2z-df) | Results 1: the headline |
 
 **The paper's claim in one sentence.** The leaders of online attention are
 not protected by size. A balance at every rank, and a generative model built
@@ -32,39 +39,51 @@ Reddit's persistent growth (momentum) is the part neither explains yet.
 2. Fast names, slow ladders: mobility, momentum and the concentration of online attention
 3. A balance at every rank: how mobility sets the concentration of online attention
 
-## Significance (draft; PNAS limit 120 words)
+## Significance (draft; PNAS limit 120 words) [r2]
 
-Large firms are steadier than small ones, and that steadiness makes market
-leaders hard to dislodge. The leaders of online attention have almost no such
+Large firms are steadier than small ones, and that steadiness helps market
+leaders stay on top. The leaders of online attention have far less of this
 protection. On Reddit and Facebook, the year-to-year fluctuations of a
-community's activity barely shrink with its size, so about a fifth of every
-Reddit top set, at every scale, is replaced each year. A stochastic model in which each community's typical level wanders, and
-the ranking is held in shape by drift that depends on rank rather than by
-communities returning to fixed levels, forecasts held-out movement as well as
-or better than the previous model. What it cannot yet explain is Reddit's
-momentum: growth that persists from one year to the next.
+community's activity shrink only slightly with its size, and about a fifth of
+each Reddit top set, at every scale, is replaced each year. Displacement at
+each rank follows a balance between how far communities' lasting levels move
+and how steep the ranking is. On Reddit, but not on Facebook, growth also
+persists: changes in a community's activity a year apart stay correlated
+even when they share no weeks. No model we tested reproduces that
+persistence.
 
-## Abstract (draft; PNAS limit 250 words)
+## Abstract (draft; PNAS limit 250 words) [r2]
 
 Online attention is concentrated, yet its leaders change. We ask whether size
 protects them, as it protects large firms, whose growth fluctuates far less
 than small firms'. In weekly records of Reddit communities (2019–2022) and
-Facebook pages, the spread of a community's one-year change in activity
-scales as size to the power −0.01 to −0.08, against −0.15 to −0.2 for firms.
-On Reddit neither the volume of posts nor the engagement each earns steadies
-with size. Leaders are therefore displaced at similar rates at every scale:
-16–21% of each Reddit top set is replaced each year. Displacement at each rank
-follows a balance known from top wealth shares: communities crossing a rank's
-boundary return lasting variance over twice the local slope of the rank-size
-curve (pooled ratio 0.96; 0.89–1.05, four ladders). Models of jumps to random
-ranks fail this test. A generative model in which each community's lasting
-level random-walks, and the ranking is held by drift that depends on rank
-rather than by reversion to a fixed level, forecasts held-out weekly movement
-better than the previous model on Reddit submissions and as well on comments,
-and reproduces Facebook's absence of reversion. Unlike Facebook, Reddit shows
-momentum: a community's growth in one year predicts its growth in the next
-(rank correlation 0.32–0.37), which no model we tested reproduces. The 78
-leading submissions communities' share fell from 50% to 34% in three years.
+Facebook pages, the spread of a community's one-year change in activity falls
+only 1.6-fold across a 600-fold range of size on Reddit comments (exponent
+−0.07) and not at all on Facebook (−0.01), against −0.15 to −0.2 for firms.
+On Reddit submissions the exponent is unstable (0.00–0.19). Neither the
+volume of posts nor the engagement each earns steadies with size, and about a
+fifth of each Reddit top set is replaced each year at every scale.
+Displacement at each rank follows a balance known from top wealth and income
+shares: communities crossing a rank's boundary return lasting variance over
+twice the local slope of the rank-size curve (pooled ratio 0.96; 0.89–1.05,
+four ladders). Models of jumps to random ranks fail this test. A model in
+which each community's lasting level wanders, held in shape by drift that
+depends on rank, forecasts held-out weekly movement within the margin of the
+previous model. It misses Reddit's annual structure, including persistent
+growth: on Reddit, changes in activity a year apart stay correlated
+(Spearman +0.14 to +0.20) even when they share no weeks and are half a year
+apart, while Facebook pages show none. The 78 leading submissions
+communities' share fell from 50% to 34% in three years.
+
+_[r2] Changes from the earlier draft:
+- the exponent is reported by ladder, with fold changes and the
+  submissions instability;
+- "as well as or better" is replaced by "within the margin";
+- "reproduces Facebook's absence of reversion" is dropped (in sample);
+- momentum is stated by the gapped statistic that survives the averaging
+  null, not by the adjacent-block 0.32–0.37 (§2z-df);
+- "known from top wealth shares" becomes "wealth and income shares"
+  (Gomez Appendix F)._
 
 ## Figures
 
@@ -78,11 +97,15 @@ leading submissions communities' share fell from 50% to 34% in three years.
    - the exact split;
    - displacement against lasting variance over twice the slope;
    - lasting variance by rank from three estimators.
-3. **Movement in levels, not ranks** (`fig_contestable.png`, panel D): the
-   calibrated rank rivals.
+3. **Which rank models the balance excludes** (`fig_contestable.png`,
+   panel D): the calibrated rank rivals. [r2] The old title, "Movement in
+   levels, not ranks", is withdrawn: fixed-ladder rank diffusion passes
+   (1.05).
 4. **A generative model** (`runs/2026-10-18_rdm/fig_rdm.png`):
    - (A) held-out movement on three panels against model A and persistence;
-   - (C) turnover by scale;
+   - (C) turnover by scale. [r2] This is a failure panel: the RDM's
+     retention exceeds the data's at every cut-off on both Reddit ladders.
+     It also mixes 26-week (Facebook) and 52-week (Reddit) blocks;
    - (D) recovery.
 5. **Momentum** (`fig_rdm.png`, panel B; to be redrawn with the rank
    correlation and with the diagnostics of §2z-de): data against both models
@@ -98,9 +121,27 @@ leading submissions communities' share fell from 50% to 34% in three years.
    - β 0.01–0.08 against 0.15–0.2 for firms (§2z-dc).
    - Engagement per item has γ 0.04–0.12 against 0.5 for independent items
      (§2z-dc).
+   - [r2] Submissions β is unstable when one stratum is left out
+     (0.00–0.19). Lead with comments and Facebook, and report fold changes:
+     the sd falls 1.58-fold over the comments range, against 3.6-fold at
+     β = 0.2. Cite and differentiate fluctuation scaling (de Menezes &
+     Barabási 2004, α ≈ 1 for web traffic; Eisler et al. 2008): theirs is
+     day-to-day fluctuation around a mean, ours is the annual growth of named
+     units and its consequences. Coad (2007) gives the firm benchmark for
+     serial growth correlation.
 2. **A balance at every rank.**
    - Gomez's within/displacement decomposition, applied to every cut-off and
      to the mean-log shape (§2z-cr; theory note §9).
+   - [r2] Gomez's later author-hosted version already applies the
+     decomposition at every percentile of US income (Appendix F, Fig. F.1;
+     1979–1990; three-year averages against transitory shocks). "Whole
+     ladders" and "a flow quantity" are therefore not novelty. Ours is the
+     rank-by-rank test of measured displacement against the implied term,
+     with bands, over thousands of ranks on four ladders, plus the
+     permanent-rank cohort estimator (§2z-df).
+   - [r2] The by-rank test needs a model-derived null. On RDM simulations
+     with known lasting variance, the ratio runs 0.68–0.97 at k = 625–1,250
+     and 1.16–1.30 at k = 2,500–5,000 in every seed (§2z-df V9).
    - Lasting movement measured on permanent-rank cohorts. The estimand
      includes a composition term (§2z-da).
 3. **Movement in levels.**
@@ -122,20 +163,51 @@ leading submissions communities' share fell from 50% to 34% in three years.
      - its own boundary ratio near 1.
    - Limits: Facebook gate contaminated by development; jumps rejected;
      G2 not adjudicated.
-5. **Momentum on Reddit** (§2z-dd; diagnostics §2z-de).
+   - [r2] Further limits:
+     - the submissions gate is a 30-week panel;
+     - the long panels are not gated;
+     - the 90th percentile of 13-week displacement is under-dispersed on
+       comments in 5 of 5 splits (ratios 0.62–0.84);
+     - the frozen model keeps A's κ(z) and σ_perm(z) and adds σ_0, β and
+       the drift closure, so it is more complex than A;
+     - the hold drift makes the ladder an input, so reproducing the ladder
+       is not evidence;
+     - recovery covers 160 weeks only, with six replications, and not the
+       hold closure.
+
+     Present it as "A with a wandering home": no loss at weeks, no return
+     at a year on Facebook (in sample), and a measured list of what it
+     misses on Reddit.
+5. **Momentum on Reddit** (§2z-dd; diagnostics §2z-de; aggregation null
+   §2z-df).
    - Consecutive annual changes correlate (+0.32 to +0.37); Facebook shows
      none.
+   - [r2] Lead with the gapped statistic, which survives the averaging null:
+     +0.14 to +0.20 on both Reddit ladders and negative on Facebook. The
+     adjacent-block values (2019 → 21 +0.32 to +0.37; 2020 → 22 +0.43 to
+     +0.45) include about +0.24 from block averaging alone.
+   - [r2] Qualifications:
+     - D1 rules out the July 2021 capture change, not a 2020 episode: every
+       pre-July triple contains 2020 H1;
+     - D2 is about first appearance in the panel, not age;
+     - the Facebook contrast uses different horizons and dates (Reddit at
+       Facebook's dates not yet run).
    - Neither model makes it.
    - A stationary drift by name consistent with the turnover reaches only
      +0.18.
    - Diagnostics (§2z-de): present before the July 2021 capture change
      (half-year +0.29 and +0.20); at every size; robust to survivorship; not
-     a young-community lifecycle (D2 failed).
+     a lifecycle of communities first seen during the panel (D2 failed).
    - Remaining candidates: persistent trends of established communities, or
      trends shared by topic groups.
 6. **Concentration moves with drift by rank and persistent growth.**
    - Arithmetic shares 50.2% → 34.0% on submissions (§2z-da).
-   - The measured slides reproduce half of the fall in-sample (§2z-dd).
+   - ~~The measured slides reproduce half of the fall in-sample (§2z-dd).~~
+     [r2] Withdrawn: that comparison used the geometric-mean index, not an
+     arithmetic share. Following theory note §9 item 3, at a Zipf-like head
+     the arithmetic fall is mostly Gomez's *within* term. The balance (the
+     displacement term) does not carry it alone; decompose the 50 → 34% fall
+     in Gomez's terms on permanent-rank cohorts.
    - Around the 2021 feed change, attention shifted to the next tier
      (§2z-da).
 7. **Supplementary.**
@@ -149,7 +221,10 @@ leading submissions communities' share fell from 50% to 34% in three years.
 - that the displacement law is new (Gomez 2023), or that the joint
   regularity is undocumented (Batty 2006);
 - that the moving-home model reproduces Reddit's turnover, concentration or
-  tails: it does not, because of momentum (§2z-dd);
+  tails: it does not (§2z-dd). [r2] The misses are not attributed to
+  momentum. Adding velocity raised the head index, and the structure
+  comparison has a population mismatch and used the geometric index
+  (§2z-df);
 - that leaders "lose ground" (generic in random growth, §2z-dc);
 - that rank exchange of every kind is excluded;
 - prediction ahead of time on Reddit submissions;

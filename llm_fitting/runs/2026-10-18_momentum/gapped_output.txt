@@ -1,0 +1,20 @@
+synthetic world (i), drift sd 0.0/yr, 5 seeds: adjacent +0.160; gapped g0 -0.032, g13 -0.009, g26 -0.005
+synthetic world (ii), drift sd 0.4/yr, 5 seeds: adjacent +0.389; gapped g0 +0.171, g13 +0.190, g26 +0.194
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_momentum/gapped_momentum.py:33: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long (T 212, K 5000): cohort 5000; adjacent-block +0.396
+   gap  0: mean +0.201  by origin wk26 +0.194 (n 4987), wk39 +0.244 (n 4979), wk52 +0.208 (n 4975), wk65 +0.186 (n 4972), wk78 +0.171 (n 4924)
+   gap 13: mean +0.174  by origin wk26 +0.199 (n 4983), wk39 +0.201 (n 4975), wk52 +0.173 (n 4971), wk65 +0.125 (n 4922)
+   gap 26: mean +0.140  by origin wk26 +0.150 (n 4980), wk39 +0.158 (n 4972), wk52 +0.112 (n 4920)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_momentum/gapped_momentum.py:33: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_comments_ext (T 213, K 12500): cohort 12500; adjacent-block +0.318
+   gap  0: mean +0.163  by origin wk26 +0.135 (n 11969), wk39 +0.155 (n 11969), wk52 +0.163 (n 11805), wk65 +0.188 (n 11719), wk78 +0.173 (n 11606)
+   gap 13: mean +0.154  by origin wk26 +0.143 (n 11977), wk39 +0.158 (n 11808), wk52 +0.166 (n 11708), wk65 +0.151 (n 11617)
+   gap 26: mean +0.141  by origin wk26 +0.136 (n 11816), wk39 +0.160 (n 11712), wk52 +0.126 (n 11610)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_momentum/gapped_momentum.py:33: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+facebook_a (T 86, K 3500): cohort 3500; adjacent-block -0.069, -0.139, -0.043
+   gap  0: mean -0.114  by origin wk13 -0.144 (n 3212), wk17 -0.123 (n 3185), wk21 -0.108 (n 3127), wk25 -0.082 (n 3173)
+   gap  4: mean -0.067  by origin wk13 -0.100 (n 3169), wk17 -0.063 (n 3154), wk21 -0.038 (n 3140)
+   gap  8: mean -0.031  by origin wk13 -0.026 (n 3145), wk17 -0.037 (n 3164)

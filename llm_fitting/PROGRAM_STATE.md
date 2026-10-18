@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-18** (the paragraphs on §2z-da … §2z-dd were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-18** (the paragraphs on §2z-da … §2z-df were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -235,6 +235,31 @@ The working draft frame is `PAPER_FRAME_DRAFT_2026-10-18.md` (not adopted).
 spine, "size does not protect", and the model and momentum. The outline
 `paper/pnas_outline_v2.tex` is revised to six Results sections and compiles.
 
+**Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
+models re-reviewed frame c; all say it is closer, and an editor would send it
+out. Twenty claims were checked (`runs/2026-10-18_external_critiques_round2/SYNTHESIS_R2.md`).
+- **Momentum survives the averaging null.** Block averaging alone gives
+  adjacent-block changes about +0.24 (Working 1960). With disjoint supports
+  and a half-year gap, momentum is still +0.14 on both Reddit ladders,
+  against −0.005 for a world without persistence; Facebook shows none. Claims
+  now use the gapped statistic, +0.14 to +0.20.
+- **The submissions exponent is fragile:** 0.00–0.19 when one stratum is left
+  out. Comments and Facebook are robust.
+- **The moving-home model is a candidate.** Its gate win is on a 30-week
+  panel, where it nearly is A (paired 5/5 against A in the same harness);
+  its new part is tested only in sample.
+- **Errors corrected:** the share label (geometric index), the head share
+  wrongly blamed on momentum, the short-lag claim, the parameter count.
+- **Gomez's later version (Appendix F)** already applies the decomposition
+  across income percentiles. What remains ours is the rank-by-rank test with
+  bands, the cohort estimator, the application and the dynamics.
+- **Next with data on hand (reviewer consensus):**
+  1. the momentum decomposition;
+  2. long-panel gates with ablations;
+  3. the harness repair and an out-of-period structure test;
+  4. headline robustness;
+  5. the Gomez decomposition of the arithmetic fall.
+
 **The moving-home model (§2z-dd, 2026-10-18; development data; nothing
 adopted).** A new opt-in module, `rankdiff_rdm.py`. A's personal home
 becomes a lasting level that random-walks and holds the ladder by drift by
@@ -246,9 +271,11 @@ rank. The frozen code is untouched.
   gives 0.123, but it was contaminated by development.
 - **Reversion.** The model removes A's false reversion, reproducing the
   no-return slope on Facebook.
-- **Recovery** passes on panels of 160 weeks or more.
+- **Recovery** passes on panels of 160 weeks or more. [§2z-df: six
+  replications at 160 weeks; the hold closure untested.]
 - **What it misses on Reddit:** its turnover, concentration and kurtosis
-  targets. The root is broad MOMENTUM (Spearman +0.32 to +0.37 between
+  targets. [§2z-df: the attribution to momentum is withdrawn; velocity raised
+  the head index.] The root is broad MOMENTUM (Spearman +0.32 to +0.37 between
   consecutive annual changes; none on Facebook), which no tested model
   makes. Drift by name calibrated on submissions reaches +0.18 and FAILS
   transport to comments.
