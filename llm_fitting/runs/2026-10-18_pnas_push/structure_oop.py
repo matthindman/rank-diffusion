@@ -124,7 +124,8 @@ for lasting in ("home", "movinghome"):
         # momentum: block 1 from the data for the names that start the simulation (ids 0..N-1 are the start names)
         B1 = np.full(u.size, np.nan)
         is_start = u < start_ids.size
-        B1[is_start] = Bd[1][[dcols[e] for e in start_ids[u[is_start]]]]
+        cidx = np.array([dcols.get(e, -1) for e in start_ids[u[is_start]]])          # -1: not in the data universe
+        B1[np.flatnonzero(is_start)[cidx >= 0]] = Bd[1][cidx[cidx >= 0]]
         startcols = np.flatnonzero(is_start)
         Bdrop = Bs[:, startcols]
         runs.append(dict(ret_23=retention(Bs[0], Bs[1]), ret_23_dropped=retention(Bdrop[0], Bdrop[1]), share_3=ashare(Ts[1]),
@@ -138,7 +139,7 @@ for lasting in ("home", "movinghome"):
     print(f"  {lasting}: retention {summ['ret_23']} (MAE {summ['ret_mae']:.3f}); share 2022 {summ['share_3']:.3f} "
           f"({summ['share_3_q'][0]:.3f}-{summ['share_3_q'][1]:.3f}); momentum {summ['momentum']:+.3f}; kurtosis {summ['kurt']:.2f}; "
           f"retention with entrants dropped {summ['ret_23_dropped']}", flush=True)
-data["kurt"] = kurt26(Xd[t_origin:][:, [dcols[e] for e in start_ids]])
+data["kurt"] = kurt26(Xd[t_origin:][:, [dcols[e] for e in start_ids if e in dcols]])
 base_mae = float(np.mean([abs(data["ret_01"][k] - data["ret_23"][k]) for k in KS]))
 print(f"  baselines: retention carried forward MAE {base_mae:.3f}; share carried forward {data['share_1']:.3f} (observed {data['share_3']:.3f}); "
       f"data kurtosis of 26-week changes (start names) {data['kurt']:.2f}", flush=True)

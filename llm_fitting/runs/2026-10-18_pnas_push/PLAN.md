@@ -287,3 +287,22 @@ q = max(σ_p² − κ(z)·σ_L²/2, 0.1·σ_p²). There is no new parameter.
 - **A5b-3:** a lower gate error than the frozen form on submissions.
 
 Prior: 50%, 55%, 75%.
+
+## Addendum, before its run: A9, the joint bootstrap (`joint_bootstrap.py`)
+
+**Method.**
+- One Poisson(1) weight per community in each replicate, shared by the
+  variance cohort and every start's crossings.
+- The starts themselves are resampled with replacement.
+- Point estimates are the registered ones. The check is that the code
+  reproduces the K/16 … K pooled values of §2z-da: comments 1.069,
+  submissions 0.802, Facebook 0.977.
+
+**Expectations:**
+- **A9-1:** the point values reproduce §2z-da within 0.01.
+- **A9-2:** on both Reddit ladders the joint 5–95% interval is at least 20%
+  wider than the registered one.
+- **A9-3:** the three-ladder pooled interval (comments, submissions,
+  Facebook; Instagram has its own apparatus and is left out) contains 1.
+
+Prior: 85%, 70%, 65%.
