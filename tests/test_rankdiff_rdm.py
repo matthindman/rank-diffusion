@@ -114,3 +114,16 @@ def test_corrected_nodrift_arm_reduces_to_corrected_without_drift():
     a = rdm.simulate_panel(p0, L0, 20, seed=5, lasting="movinghome_vp_nodrift")[0]
     b = rdm.simulate_panel(p0, L0, 20, seed=5, lasting="movinghome_vp")[0]
     assert np.array_equal(a, b)
+
+
+def test_corrected_moving_home_applies_drift_by_rank():
+    """2z-dg bug guard: 'movinghome_vp' must apply the drift by rank to the home (fc28c25 ran it without drift);
+    'movinghome_vp_nodrift' must not.  With sigma0 = 0 the home moves by the drift alone."""
+    L0 = np.linspace(10.0, 1.0, 50)
+    p = _toy_params(-0.01)
+    p.sigma0 = 0.0
+    for arm, expect in (("movinghome_vp", -0.1), ("movinghome", -0.1), ("movinghome_vp_nodrift", 0.0), ("movinghome_nodrift", 0.0)):
+        st = rdm._State(p, L0, np.random.default_rng(0), lasting=arm)
+        for _ in range(10):
+            st.step()
+        assert np.allclose(st.home - L0, expect), arm

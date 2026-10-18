@@ -7,3 +7,7 @@ JOB DONE momentum_decomposition.py reddit_comments_ext exit 0
 JOB DONE momentum_decomposition.py facebook_a exit 0
 CHAIN DONE
 JOB DONE structure_oop reddit_submissions_long exit 1
+JOB DONE structure_oop reddit_comments_ext exit 1
+CHAIN2 DONE
+JOB DONE joint_bootstrap exit 0
+JOB DONE structure_oop reddit_submissions_long exit 0

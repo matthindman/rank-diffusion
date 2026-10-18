@@ -219,11 +219,12 @@ The gapped statistic of §2z-df, with the gaps as stated:
 | (b) `homedrift` | no | yes | **0.171 ± 0.035** | 0.174 | (queued) | |
 | (a) `movinghome_nodrift`, frozen variance | yes | no | 0.267 ± 0.091 | 0.370 | (running) | |
 | RDM frozen (`movinghome`) | yes | yes | 0.246 ± 0.085 | 0.370 | 0.145 ± 0.057 | 0.162 |
-| RDM corrected (`movinghome_vp`, post hoc V4) | yes | yes | 0.175 ± 0.072 | 0.227 | (running) | |
-| (a′) `movinghome_vp_nodrift` | yes | no | (running) | | (queued) | |
+| RDM corrected (`movinghome_vp`, post hoc V4), drift applied | yes | yes | (rerunning) | | (rerunning) | |
+| (a′) corrected, no drift (`movinghome_vp` at fc28c25, BUG: no drift; confirmed by `movinghome_vp_nodrift`) | yes | no | 0.175 ± 0.072 (reproduced exactly) | 0.227 | **0.100 ± 0.047** | 0.070 |
 
 Paired splits, submissions: frozen RDM better than A in 2/5; corrected in
-3/5; (b) in 4/5. Comments: frozen RDM better than A in 1/5.
+3/5; (b) in 4/5. Comments: frozen RDM better than A in 1/5; corrected in 4/5,
+and better than persistence in 5/5.
 
 **Expectations, submissions:**
 - **A5-1** (frozen RDM ≤ A + 0.05): **FAIL** (0.246 against 0.238).
@@ -234,8 +235,11 @@ Paired splits, submissions: frozen RDM better than A in 2/5; corrected in
   (2 of 5; it now overshoots by 0–3).
 - **A5b-3** (corrected below frozen): **PASS.**
 
-**Comments** (frozen form): A5-1 PASSES (0.145 ≤ 0.173) and A5-2 FAILS
-(dRank13 0.162 against A's 0.085). A beats persistence on both measures.
+**Comments**:
+- frozen form: A5-1 PASSES (0.145 ≤ 0.173) and A5-2 FAILS (dRank13 0.162
+  against A's 0.085);
+- corrected: A5b-1 PASSES (0.100, the best arm). A beats persistence on
+  both measures.
 
 **Reading.**
 - The frozen form's long-panel failure is the V4 algebra, and the correction
@@ -246,3 +250,35 @@ Paired splits, submissions: frozen RDM better than A in 2/5; corrected in
   movement of the top-200 cohort on long submissions is not better forecast
   by either generative model than by carrying the training statistics
   forward.
+
+## A9. Joint bootstrap of the pooled boundary ratio (`joint_bootstrap.py`)
+
+| ladder | point (K/16 … K) | registered 5–95% | joint 5–95% |
+|---|---|---|---|
+| comments | 1.069 | 1.011–1.127 | 0.986–1.152 (+43% wider) |
+| submissions | 0.802 | 0.680–1.004 | 0.633–1.009 (+16%) |
+| Facebook (one start) | 0.977 | 0.802–1.202 | 0.840–1.119 |
+| three ladders | 0.942 | — | **0.855–1.040** |
+
+**Scored:**
+- **A9-1 PASS:** the point values reproduce §2z-da exactly.
+- **A9-2 PARTLY:** comments +43%, submissions +16%, against ≥ 20% expected.
+- **A9-3 PASS:** the three-ladder interval contains 1.
+
+The four-ladder figure of §2z-da, 0.955 (0.889–1.054), used independent
+draws. The joint three-ladder figure, 0.94 (0.86–1.04), is the one to quote
+for Reddit and Facebook. Instagram's apparatus has no joint version.
+
+
+**CORRECTION (same day).** The "corrected" rows first recorded (0.175
+submissions, 0.100 comments) ran without drift by rank. At fc28c25 the drift
+line applied drift only for `lasting == "movinghome"`. The deliberate
+no-drift arm reproduces 0.175 to every digit, and the comments run started
+(16:55:57) before the fix (committed 17:00). They are arm (a′).
+- The fix is at b2836e6, with the guard test
+  `test_corrected_moving_home_applies_drift_by_rank`.
+- The drift-applied corrected model is rerun. A5b's scores for "the
+  corrected variant" are withdrawn until then.
+- The (a′) numbers stand as their own result. A random-walk home with the
+  variance correction and NO drift by rank is the best arm on comments at
+  1–13 weeks (0.100 against A 0.123), and at par on submissions.

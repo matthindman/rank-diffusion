@@ -12437,3 +12437,20 @@ you have to …"). Run folder: `runs/2026-10-18_pnas_push/`:
 - A6 (running).
 - Joint block bootstrap (A9).
 - A round-3 referee review.
+
+### 6. Corrections and slips, same day
+
+- **A code error in the corrected variant.** At fc28c25 the drift-by-rank
+  line of `_State.step` applied drift only for `lasting == "movinghome"`.
+  The first two `movinghome_vp` gates therefore ran without drift.
+  - Long submissions 0.175 ± 0.072; long comments 0.100 ± 0.047. Both are
+    arm (a′): a corrected random-walk home without drift.
+  - The deliberate `movinghome_vp_nodrift` run reproduces 0.175 to every
+    digit, and the comments run started before the fix.
+  - Fixed at b2836e6, with a guard test
+    (`test_corrected_moving_home_applies_drift_by_rank`). The drift-applied
+    arm is rerun.
+  - GATE_LEDGER carries a correction row; the artefacts are renamed
+    `*_NODRIFT_BUG_*`.
+- **Process slip.** Commit 77a8af4 (the A9 design and a script fix) was
+  made without running the health check first.
