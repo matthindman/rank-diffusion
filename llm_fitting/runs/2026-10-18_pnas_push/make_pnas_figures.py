@@ -34,7 +34,7 @@ def load(p):
 
 
 def tag(a, s):
-    a.text(-0.22, 1.02, s, transform=a.transAxes, fontsize=9, fontweight="bold", va="bottom")
+    a.text(-0.25, 1.02, s, transform=a.transAxes, fontsize=9, fontweight="bold", va="bottom")
 
 
 def save(fig, name):
@@ -302,19 +302,21 @@ def fig5():
     a.set_ylim(-0.15, 0.3)
     tag(a, "A")
     a = ax[1]
-    cats = (("x", "activity"), ("items", "posts"), ("per_item", "per post"), ("agg", "net of\nplatform trend"))
+    cats = ("activity", "posts", "per post", "activity,\nlater origins", "net of\nplatform trend")
     w = 0.38
     for j, pn in enumerate(("reddit_submissions_long", "reddit_comments_ext")):
         f = HERE / f"momentum_decomposition__{pn}.json"
-        if not f.exists():
+        f2 = HERE / f"persistence_r3__{pn}.json"
+        if not (f.exists() and f2.exists()):
             continue
-        d = load(f)
+        d, d2 = load(f), load(f2)["full_membership"]["factor"]
         g = "13"
-        vals = [d["D6"]["x"][g], d["D6"]["items"][g], d["D6"]["per_item"][g], d["D7"]["minus_aggregate_loading"][g]]
-        a.bar(np.arange(4) + (j - 0.5) * w, vals, w, color=COL[pn], label=LAB[pn])
+        vals = [d["D6"]["x"][g], d["D6"]["items"][g], d["D6"]["per_item"][g], d2["raw_matched"][g], d2["platform_total"][g]]
+        a.bar(np.arange(5) + (j - 0.5) * w, vals, w, color=COL[pn], label=LAB[pn])
+    a.axvline(2.5, color=GREY, lw=0.5, ls=":")
     a.axhline(0, color=GREY, lw=0.6)
-    a.set_xticks(range(4))
-    a.set_xticklabels([lab for _, lab in cats], fontsize=6)
+    a.set_xticks(range(5))
+    a.set_xticklabels(cats, fontsize=5.5)
     a.set_ylabel("gapped momentum (13-wk gap)")
     a.set_title("Carried by participation")
     a.legend(loc="upper right", frameon=False)
@@ -348,6 +350,147 @@ def fig5():
     tag(a, "C")
     fig.tight_layout(w_pad=1.0)
     save(fig, "fig5_tipping")
+
+
+WORLDS = (("gibrat", "size-blind random growth", "#444444", "--"), ("atlas", "firm-like (β = 0.2)", "#8e44ad", ":"),
+          ("neutral", "neutral copying", "#b5651d", "-."), ("rdm", "the model", "#999999", "-"))
+
+
+def fig2v2():
+    """Size-blindness and its consequence (R3-A): data against null worlds."""
+    rob = load(HERE / "exponent_robustness.json")
+    kin = load(HERE / "turnover_kinematics.json")
+    rc = load(HERE / "rank_change_data.json")
+    NW = {w: load(HERE / f"null_world__{w}.json") for w, *_ in WORLDS}
+    fig, ax = plt.subplots(1, 3, figsize=(W2, 2.35))
+    a = ax[0]
+    for pn in COL:
+        key = "1->2" if pn != "facebook_a" else "1->5"
+        d = rob[pn]["loo"][key]
+        a.plot(d["size"], d["sd"], "-", marker=MK[pn], color=COL[pn], ms=3.5, lw=1, label=f"{LAB[pn]}: β = {d['full']:.2f}")
+    xs = np.linspace(6.5, 14.5, 10)
+    a.plot(xs, 0.67 * np.exp(-0.2 * (xs - 6.5)), "--", color=GREY, lw=1, label="firms, β = 0.2")
+    a.set_yscale("log")
+    a.set_ylim(0.12, 1.3)
+    a.set_xlabel("size (mean log activity of the stratum)")
+    a.set_ylabel("sd of one-year change (log)")
+    a.set_title("Size gives little protection")
+    a.legend(loc="lower left", frameon=False, fontsize=5.5)
+    tag(a, "A")
+    a = ax[1]
+    for pn in ("reddit_submissions_long", "reddit_comments_ext"):
+        rows = kin[pn]
+        ks = sorted({r["k"] for r in rows})
+        ys = [np.mean([r["obs"] for r in rows if r["k"] == k]) for k in ks]
+        xk = [10, 25] + ks
+        yk = [1 - np.mean(rob[pn]["retention"]["10"]), 1 - np.mean(rob[pn]["retention"]["25"])] + ys
+        a.plot(xk, yk, "-", marker=MK[pn], color=COL[pn], ms=3.5, lw=1.2, label=LAB[pn] + " (data)")
+    for w, lab, col, ls in WORLDS:
+        t = NW[w]["turnover"]
+        kk = sorted(int(k) for k in t)
+        a.plot(kk, [t[str(k)] for k in kk], ls, color=col, lw=1, label=lab)
+    a.set_xscale("log")
+    a.set_ylim(0, 0.4)
+    a.set_xlabel("size of the top set, k")
+    a.set_ylabel("share replaced in a year")
+    a.set_title("Only size-blind growth exposes the top")
+    a.legend(loc="lower right", frameon=False, fontsize=5)
+    tag(a, "B")
+    a = ax[2]
+    for pn in COL:
+        d = rc[pn]
+        rr = sorted(int(r) for r in d)
+        a.plot(rr, [d[str(r)] for r in rr], "-", marker=MK[pn], color=COL[pn], ms=3, lw=1.2, label=LAB[pn])
+    for w, lab, col, ls in WORLDS:
+        d = NW[w]["C_R"]
+        rr = sorted(int(r) for r in d)
+        a.plot(rr, [d[str(r)] for r in rr], ls, color=col, lw=1)
+    a.set_xscale("log")
+    a.set_ylim(-0.02, 1.05)
+    a.set_xlabel("rank R")
+    a.set_ylabel("weekly chance the occupant changes")
+    a.set_title("Yet rank 1 rarely changes hands")
+    a.legend(loc="lower right", frameon=False, fontsize=5.5)
+    tag(a, "C")
+    fig.tight_layout(w_pad=1.2)
+    save(fig, "fig2_size_blind")
+
+
+def fig3v2():
+    """Turnover replenishes the hierarchy: the boundary test, crossings against the slide with null-world means, and
+    turnover decomposed into churn and slope (Eq. 1 as a decomposition)."""
+    NW = {w: load(HERE / f"null_world__{w}.json") for w, *_ in WORLDS}
+    kin = load(HERE / "turnover_kinematics.json")
+    sets = [("reddit_comments_ext", "boundary__reddit_comments_ext.json"), ("reddit_submissions_long", "boundary__reddit_submissions_long.json"),
+            ("facebook_a", "boundary__facebook_a__block13.json")]
+    fig, ax = plt.subplots(1, 3, figsize=(W2, 2.4))
+    a = ax[0]
+    xs = np.linspace(0, 14, 10)
+    a.plot(xs, xs, color=GREY, lw=0.8)
+    for pn, f in sets:
+        d = load(R / "2026-10-14_boundary_law" / "cells" / f)
+        K = d["K"]
+        for r in d["pooled"]:
+            c, cq = 1000 * r["c"], [1000 * v for v in r["c_q"]]
+            x, xq = 1000 * r["R_lasting"], [1000 * v for v in r["R_lasting_q"]]
+            small = r["k"] < K / 16 - 1 and pn != "reddit_comments_ext"
+            a.errorbar(c, x, xerr=[[c - cq[0]], [cq[1] - c]], yerr=[[x - xq[0]], [xq[1] - x]], fmt=MK[pn], color=COL[pn],
+                       mfc="white" if small else COL[pn], ms=3.5, capsize=1.5, lw=0.6)
+        a.plot([], [], MK[pn], color=COL[pn], ms=3.5, label=LAB[pn])
+    a.text(13.5, 1.0, "ratio, pooled: data 0.94\nsize-blind 1.06, firm-like 1.07\nneutral copying 0.58", ha="right", fontsize=5.5, color="#333333")
+    a.set_xlim(0, 14)
+    a.set_ylim(0, 14)
+    a.set_xlabel("predicted from churn: σ²/2S (per 1,000 wk)")
+    a.set_ylabel("measured crossing gain")
+    a.set_title("Crossings match churn")
+    a.legend(loc="upper left", frameon=False)
+    tag(a, "A")
+    a = ax[1]
+    lim = [0, 12]
+    a.plot(lim, lim, color=GREY, lw=0.8)
+    for pn in ("reddit_comments_ext", "reddit_submissions_long"):
+        d = load(R / "2026-10-14_balance_law" / "cells" / f"law__{pn}.json")
+        K = d["K"]
+        for q in d["pairs"]:
+            if not q["primary"]:
+                continue
+            rows = [r for r in q["rows"] if r["k"] < K]
+            c = np.array([r["c"] for r in rows]) * 1000
+            sb = np.array([r["sbar"] for r in rows]) * 1000
+            k = np.array([r["k"] for r in rows])
+            a.scatter(sb, c, s=6 + 30 * (np.log(K / k) / np.log(64)), marker=MK[pn], color=COL[pn], alpha=0.8, lw=0)
+        a.plot([], [], MK[pn], color=COL[pn], ms=3.5, label=LAB[pn])
+    for w, lab, col, ls in WORLDS:
+        L_ = NW[w]["law"]
+        a.scatter([1000 * L_["mean_sbar"]], [1000 * L_["mean_c"]], marker="X", s=40, color=col, edgecolor="white", lw=0.5, label=lab + " (mean)")
+    a.text(10.6, 0.4, "slide wins:\nflattens", fontsize=6, color=GREY, ha="center")
+    a.text(1.6, 7.2, "crossings win:\nsteepens", fontsize=6, color=GREY, ha="center")
+    a.set_xlim(lim)
+    a.set_ylim(0, 8)
+    a.set_xlabel("slide of the names above k (per 1,000 wk)")
+    a.set_ylabel("crossing gain σ²/2S (per 1,000 wk)")
+    a.set_title("Crossings against the slide")
+    a.legend(loc="center right", frameon=False, fontsize=5, bbox_to_anchor=(1.02, 0.62))
+    tag(a, "B")
+    a = ax[2]
+    for pn in COL:
+        rows = kin[pn]
+        ks = sorted({r["k"] for r in rows})
+        e = [np.mean([r["e"] for r in rows if r["k"] == k]) for k in ks]
+        S = [np.mean([r["S"] for r in rows if r["k"] == k]) for k in ks]
+        a.plot(ks, e, "-", marker=MK[pn], color=COL[pn], ms=3, lw=1)
+        a.plot(ks, S, ":", marker=MK[pn], color=COL[pn], ms=3, lw=1, mfc="white")
+    a.plot([], [], "-", color="k", label="churn: mean downward move at the boundary")
+    a.plot([], [], ":", color="k", mfc="white", marker="o", ms=3, label="local slope of the ladder")
+    a.set_xscale("log")
+    a.set_ylim(0, 2.6)
+    a.set_xlabel("size of the top set, k")
+    a.set_ylabel("log units")
+    a.set_title("Turnover = churn / slope")
+    a.legend(loc="upper left", frameon=False, fontsize=5.5)
+    tag(a, "C")
+    fig.tight_layout(w_pad=1.2)
+    save(fig, "fig3_replenish")
 
 
 if __name__ == "__main__":

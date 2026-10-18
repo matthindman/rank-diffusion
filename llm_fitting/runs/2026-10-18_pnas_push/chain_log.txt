@@ -12,3 +12,8 @@ CHAIN2 DONE
 JOB DONE joint_bootstrap exit 0
 JOB DONE structure_oop reddit_submissions_long exit 0
 JOB DONE structure_oop reddit_comments_ext exit 0
+R3DE DONE persistence_r3.py reddit_submissions_long exit 0
+R3DE DONE persistence_r3.py reddit_comments_ext exit 0
+R3C DONE structure_oop.py reddit_submissions_long home,movinghome_vp exit 0
+R3DE DONE gomez_r3.py exit 0
+R3C DONE structure_oop.py reddit_comments_ext home,movinghome_vp exit 0

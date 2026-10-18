@@ -422,3 +422,83 @@ It lacks persistence (−0.10).
   yet a third of the top-ten set is replaced each year, because the slope
   is flattest at the top. This reconciles the data with Iñiguez et al.
   (2022): different statistics, the same kinematics.
+
+## R3-D. Persistence, repaired (`persistence_r3.py`)
+
+| | submissions, full membership | submissions, prefix membership | comments, full | comments, prefix |
+|---|---|---|---|---|
+| gapped, g 0 / 13 / 26 | +0.201 / +0.174 / +0.140 | +0.207 / +0.183 / +0.148 | +0.163 / +0.154 / +0.141 | +0.163 / +0.154 / +0.142 |
+| true sign: share rising in change 1 | 0.64 | 0.62 | 0.66 | 0.65 |
+| Spearman within risers / fallers | +0.031 / +0.177 | +0.027 / +0.189 | +0.003 / +0.158 | +0.002 / +0.161 |
+| mean change 2: risers / fallers (all) | −0.140 / −0.331 (−0.209) | −0.156 / −0.374 (−0.238) | +0.042 / −0.163 (−0.028) | +0.044 / −0.160 (−0.027) |
+| mean rank of change 2 by change-1 quintile | 0.41, 0.49, 0.52, 0.53, 0.54 | 0.40, 0.50, 0.52, 0.53, 0.54 | 0.41, 0.49, 0.53, 0.55, 0.52 | 0.41, 0.49, 0.53, 0.55, 0.52 |
+| matched origins (≥ 52), g 0 / 13 / 26: raw | +0.188 / +0.149 / +0.112 | +0.194 / +0.157 / +0.118 | +0.175 / +0.158 / +0.126 | +0.173 / +0.157 / +0.127 |
+| net of cohort-mean loading | +0.149 / +0.054 / +0.006 | +0.159 / +0.112 / +0.102 | +0.168 / +0.161 / +0.130 | +0.167 / +0.159 / +0.130 |
+| net of platform-total loading | +0.132 / +0.020 / −0.029 | +0.167 / +0.063 / +0.010 | +0.191 / +0.177 / +0.141 | +0.178 / +0.166 / +0.135 |
+
+**Scored:**
+- **D-1 PASS:** prefix-only membership changes the gapped statistic by
+  ≤ 0.008.
+- **D-2 PARTLY:**
+  - fallers persist more than risers on both ladders (+0.16 to +0.19
+    against 0.00 to +0.03);
+  - the conditional means are on the same side as change 1 on comments
+    (+0.04 / −0.16);
+  - on submissions everyone fell in change 2 and risers fell less
+    (−0.14 against −0.33). The persistence there is relative.
+
+**Reading.**
+- The persistence is concentrated in declines on both ladders. The bottom
+  quintile's mean rank of change 2 is 0.40–0.41, the top's 0.52–0.54.
+- **Submissions: the shared-trend reading holds with the platform-total
+  factor** under both membership rules (+0.01 to +0.02 at a half-year gap,
+  and −0.03 with full membership).
+  - With the cohort-mean factor it depends on membership: +0.006 with full
+    membership, +0.102 with prefix membership.
+  - The paper quotes the platform-total factor and states the dependence.
+- **Comments:** neither factor removes it (+0.13 to +0.14); it is
+  community-specific.
+
+## R3-C. One model: A6 with the corrected moving home (`structure_oop.py … home,movinghome_vp`)
+
+**Submissions:**
+- **retention MAE:** A 0.024; RDM′ (corrected, drift applied) **0.028**;
+  frozen 0.040; carried forward 0.037;
+- **share of the head in 2022:** RDM′ 0.537 (0.48–0.72), A 0.528, against
+  0.356 observed;
+- **momentum:** RDM′ +0.026; **kurtosis:** RDM′ 2.9, against 22.1 in the
+  data.
+
+**C-1** (RDM′ within 0.01 of the frozen MAE): FAIL by 0.002. RDM′ is better
+(0.028 against 0.040), so the frozen form's A6 result understated the model.
+Comments are pending.
+
+## R3-E. Gomez with the general displacement term (`gomez_r3.py`)
+
+**Implied displacement** = ½ν²·(a_k/ā_top)/S_k, valid at any slope.
+
+| cut-off | measured between / implied, by year pair (current-year cohort) |
+|---|---|
+| submissions 78 | 0.67, 1.07, 0.82 |
+| submissions 312 | 2.17, 2.51, 1.70 |
+| submissions 1,250 | 1.71, 1.88, 1.26 |
+| comments 195 | 1.21, 1.49, 1.17 |
+| comments 781 | 1.55, 1.49, 1.12 |
+| comments 3,125 | 3.30, 2.52, 1.67 |
+
+**Scored:**
+- **E-1 PASS:** where ζ > 1 (the heads, S < 1) the ratio is 0.67–1.49,
+  within ×2.5. Deeper it runs to 3.3, measured above implied: plausibly
+  passing swings, which are not removed in this block-level accounting.
+- **Permanent-rank cohorts** leave the within term essentially unchanged.
+  - Submissions top 78: −0.074, −0.227, −0.256 against −0.061, −0.237,
+    −0.259.
+  - Comments top 195: −0.126, −0.138, −0.099 against −0.125, −0.150,
+    −0.123.
+  - The members' decline is not an artefact of selecting each year's
+    leaders. The between term of a permanent cohort is larger (it is not
+    the year's top set).
+
+**Reading.** A8-2's failure was the misapplied Pareto form. With the general
+formula, Gomez's displacement prediction holds at the head of both ladders,
+within a factor of 1.5.
