@@ -265,8 +265,9 @@ spine, "size does not protect", and the model and momentum. The outline
   - Null worlds now separate automatic statistics from discoveries:
     size-blindness exposes the top; persistence and the flattening balance
     are not random growth.
-  - Manuscript v2 retitled "Turnover replenishes a slowly flattening
-    hierarchy of online attention".
+  - Manuscript v2. Title, at the owner's direction that it be on where the
+    durable hierarchy comes from when churn is so high: "Constant turnover
+    holds up the durable hierarchy of online attention".
 - **Bridge protocol v3.1** adds P5–P7 (owner: "Yes, add them"). NOT
   adopted.
 

@@ -12659,3 +12659,24 @@ worlds, rank change, the registration ledger and the AI statement.
 - Cross-model recovery.
 - A calibrated time-block bootstrap of the full estimator.
 - A capture-delay audit (WD drive).
+
+### 8. Owner decision on the title, same day
+
+The owner wrote, in the conversation: "title is not good and needs to be
+fixed. framing is fine overall; needs to be on the question of where the
+durable / quasi-stable structural hierarchy comes from when overall churn is
+so high."
+
+**Title:** "Constant turnover holds up the durable hierarchy of online
+attention".
+- It gives the measured answer: crossings replace about three quarters of
+  what incumbents lose, at the rate churn and steepness set.
+- It states the contradiction: constant turnover, durable hierarchy.
+
+**Text changes.**
+- The abstract, significance and introduction now open on that question.
+- The framing is otherwise unchanged.
+- Alternatives are kept in the source comments.
+
+**PDF layout** fixed (5072178): first-page sidebar, figure placement and
+label overlaps.
