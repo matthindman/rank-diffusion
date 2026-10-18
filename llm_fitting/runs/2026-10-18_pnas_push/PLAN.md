@@ -252,3 +252,38 @@ Prior: 75%, 50%.
   full-panel run, so the V3 mismatch would be minor.
 
 Prior: 55%, 70%, 80%, 85%, 50%.
+
+## Addendum, before its run: A5b, the variance-preserving moving home (the V4 correction)
+
+**Why (post hoc, disclosed).** The frozen moving home failed on the long
+submissions panel: 0.246 ± 0.085, against persistence 0.163 and frozen A
+0.194 (§2z-dg A5). Simulated rank changes are too small at every horizon:
+median 13-week move 4–6 against 7–8 observed, with the 90th percentile low.
+The round-2 referees had found the cause in the algebra (§2z-df V4). This
+correction is made after seeing that failure.
+
+**The algebra.** Write
+- L_{t+1} = L_t − κ(L_t − H_t) + ε_t, Var ε = q;
+- H_{t+1} = H_t + g + η_t, Var η = σ_L².
+
+The stationary deviation then has Var(H − L) = (q + σ_L²)/(2κ − κ²), and
+the one-step increment of L has variance
+
+    Var ΔL = q + κ²(q + σ_L²)/(2κ − κ²) = [2q + κσ_L²]/(2 − κ)
+
+- **Model A** (fixed home, q = σ_p²): 2σ_p²/(2 − κ).
+- **The frozen form** (q = σ_p² − σ_L²): A's value minus σ_L². Its short-lag
+  movement is short by the whole lasting variance.
+- **Preserving A's one-step variance requires q = σ_p² − κσ_L²/2.**
+
+**The variant.** `lasting="movinghome_vp"` in `rankdiff_rdm.py` (opt-in; the
+frozen form is unchanged). It is the frozen form with
+q = max(σ_p² − κ(z)·σ_L²/2, 0.1·σ_p²). There is no new parameter.
+
+**Expectations, on both long panels at 20 reps:**
+- **A5b-1:** non-inferior to A in the same harness (≤ A + 0.05) on both.
+- **A5b-2:** the median simulated 13-week rank change within ±1 of the
+  observed in at least 4 of 5 splits on submissions.
+- **A5b-3:** a lower gate error than the frozen form on submissions.
+
+Prior: 50%, 55%, 75%.

@@ -78,3 +78,30 @@ def test_homedrift_moves_the_home_by_rank():
     for _ in range(10):
         st.step()
     assert np.allclose(st.home, L0 - 0.1)
+
+
+def test_variance_preserving_home_keeps_model_A_one_step_variance():
+    """2z-dg A5b: with a random-walking home, 'movinghome_vp' keeps model A's one-step variance of the level
+    (2 sigma_p^2 / (2 - kappa)) while the frozen 'movinghome' is short by about sigma_L^2."""
+    from types import SimpleNamespace
+    N, kap, sp, sL = 20000, 0.2, 0.1, 0.08
+    p = _toy_params(0.0)
+    p.sigma0 = sL
+    p.base.kappa_z = np.full(3, kap)
+    p.base.sigma_perm = np.full(3, sp)
+    p.base.sigma_trans = np.zeros(3)
+    p.base.sigma_obs = np.zeros(3)
+    p.base.phi = np.zeros(3)
+    L0 = np.linspace(9.0, 1.0, N)
+    out = {}
+    for arm in ("home", "movinghome", "movinghome_vp"):
+        st = rdm._State(p, L0, np.random.default_rng(1), lasting=arm)
+        for _ in range(150):
+            st.step()
+        L1 = st.L.copy()
+        st.step()
+        out[arm] = np.var(st.L - L1)
+    target = 2 * sp ** 2 / (2 - kap)
+    assert abs(out["home"] / target - 1) < 0.05
+    assert abs(out["movinghome_vp"] / target - 1) < 0.05
+    assert out["movinghome"] < target - 0.8 * sL ** 2
