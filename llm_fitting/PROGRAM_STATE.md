@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-18** (the paragraphs on §2z-da … §2z-dg were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-18** (the paragraphs on §2z-da … §2z-dh were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -260,8 +260,13 @@ spine, "size does not protect", and the model and momentum. The outline
   - A9: joint three-ladder ratio 0.94 (0.86–1.04).
   - A code error in the first `movinghome_vp` runs (no drift) was found and
     corrected (§2z-dg §6).
-- **Title (picked from the PNAS title study):** "Continual turnover sustains
-  a slowly changing hierarchy of online attention".
+- **Round 3 (§2z-dh):** three referee models reviewed the manuscript
+  (desk reject / send out / send out, none enthusiastic).
+  - Null worlds now separate automatic statistics from discoveries:
+    size-blindness exposes the top; persistence and the flattening balance
+    are not random growth.
+  - Manuscript v2 retitled "Turnover replenishes a slowly flattening
+    hierarchy of online attention".
 - **Bridge protocol v3.1** adds P5–P7 (owner: "Yes, add them"). NOT
   adopted.
 

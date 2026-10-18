@@ -502,3 +502,10 @@ Comments are pending.
 **Reading.** A8-2's failure was the misapplied Pareto form. With the general
 formula, Gomez's displacement prediction holds at the head of both ladders,
 within a factor of 1.5.
+
+**R3-C, comments:**
+- retention MAE: A 0.041; RDM′ **0.022**; frozen 0.019; carried forward
+  0.013;
+- head share in 2022: RDM′ 0.597 against 0.505 observed;
+- **C-1 PASS** on comments (within 0.003 of frozen). On submissions it is
+  0.012, with RDM′ better.

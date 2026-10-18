@@ -17,3 +17,4 @@ R3DE DONE persistence_r3.py reddit_comments_ext exit 0
 R3C DONE structure_oop.py reddit_submissions_long home,movinghome_vp exit 0
 R3DE DONE gomez_r3.py exit 0
 R3C DONE structure_oop.py reddit_comments_ext home,movinghome_vp exit 0
+R3C DONE churn_counterfactual.py reddit_comments_ext flat20 exit 0

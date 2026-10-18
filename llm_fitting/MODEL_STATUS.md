@@ -12511,3 +12511,151 @@ The hedged alternative carrying "creates" is in frame d.
 - The remaining TODOs are owner items: data availability and
   acknowledgements.
 - The SI draft (`paper/pnas_si.tex`) compiles.
+
+## 2z-dh. 2026-10-18 — REVIEW (three referee models, round 3, on the manuscript) and EXPLORATORY MEASUREMENT (expectations in PLAN.md addendum R3, written before the runs; committed at 845f71a after the first null world had run, disclosed). Null worlds separate automatic statistics from discoveries. Size-blind growth, not attention per se, is what exposes the top. Persistence and the flattening balance appear in no random-growth world. Repairs to persistence, Gomez and the model made; manuscript v2 retitled "Turnover replenishes a slowly flattening hierarchy of online attention". Nothing adopted
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-18; started
+from 33d7fb3 (brief at 69bc82e). Reviews:
+`runs/2026-10-18_external_critiques_round3/REVIEW_*.md` from gpt-6-astra,
+Fable 5.1 and Opus 5.5; checks in `SYNTHESIS_R3.md`; results in
+`runs/2026-10-18_pnas_push/RESULTS.md` (R3-A … R3-E)._
+
+### 1. Verdicts
+
+- gpt-6-astra: desk reject with encouragement.
+- Fable 5.1: send out, without enthusiasm yet.
+- Opus 5.5: send out, without enthusiasm.
+
+All three:
+- "sustains" overclaims;
+- "slowly changing" is unquantified and contradicted by arithmetic shares;
+- Eq. 1 and the boundary ratio are near-identities;
+- the model is three versions under one name;
+- about 15 numbers disagree with the outputs.
+
+Fable alone: the ranking-dynamics literature (Iñiguez et al. 2022) is
+missing. Opus alone: null worlds are needed.
+
+### 2. Verified (SYNTHESIS_R3 W1–W19)
+
+**The balance.**
+- The slide alone correlates 0.971 with the shape change, against 0.904 for
+  c − s̄.
+- The crossing term sets the level: rms 1.13 against 3.96 without it and
+  2.89 for "no change".
+- A ladder-wide constant gain fits better (0.58) than the rank-specific c.
+- Crossings return about three quarters of the slide.
+
+**Errors confirmed:**
+- the slide is partly definitional;
+- Eq. 1 is a contemporaneous decomposition, printed without its v_k term;
+- the model claims mix versions; the gates' cohort_k = 200 and noise-scale
+  recalibration were undisclosed;
+- the main-text model equations misdescribed the code;
+- the variance correction preserves the one-step variance only;
+- A5c fails by 0.0005;
+- D8 was a median split;
+- membership used the full panel;
+- Gomez's Pareto form was applied where ζ < 1;
+- the between term is non-negative by construction;
+- the stationary formula dropped the entry term.
+
+**Number errors (W19).** Each is corrected in v2 of the manuscript.
+
+### 3. Results (RESULTS.md R3-A … R3-E)
+
+**R3-A null worlds.**
+- **Automatic in any random-growth ladder:**
+  - Eq. 1 (92–100% of cells within band);
+  - a positive slide (the size-blind world has 0.0044 a week);
+  - a stable rank-1 occupant;
+  - a boundary ratio near 1 for level diffusions (1.06–1.08).
+- **The boundary ratio does discriminate one thing:** neutral copying gives
+  0.58.
+- **Discovered:**
+  - **size-blindness, β about 0:** size-blind world 0, firm-like 0.11,
+    neutral 0.36, the model 0.07, data 0.01–0.08;
+  - **its consequence:** the top set turns over fastest (size-blind 0.33
+    against 0.22 at K/2; firm-like 0.17 against 0.24; neutral 0.03 against
+    0.30; data 0.27–0.33 against 0.16–0.18);
+  - **persistence:** every null world −0.03 to −0.11, data +0.14 to +0.20;
+  - **a balance that flattens:** data c 0.0040 < s̄ 0.0055, where the
+    size-blind world steepens.
+- **The calibrated model** reproduces the turnover profile, β, the boundary
+  ratio and C(R), but not persistence.
+- Scored: NW-1 to NW-6 PASS; NW-7 MIXED.
+
+**R3-B rank change C(R).**
+- At R = 1 it is 0.03–0.07 (Reddit) and 0.52 (Facebook); at R = 50 it is
+  above 0.9.
+- The top is stable by Iñiguez's measure, while the top set turns over
+  fastest: two statistics, one kinematics (neighbour gap about S/R).
+- PASS.
+
+**R3-C one model.**
+- The corrected model out of period: retention MAE 0.028 (submissions) and
+  0.022 (comments); A 0.024 / 0.041; carry-forward 0.037 / 0.013.
+- Head share forecast 0.54 / 0.60, against 0.36 / 0.51 observed.
+- C-1: PASS on comments; FAIL on submissions by 0.002, with RDM′ better.
+- The flat start at 20 seeds is in §4 below.
+
+**R3-D persistence.**
+- Prefix-only membership changes the statistic by ≤ 0.008 (D-1 PASS).
+- At the true sign, fallers +0.16 to +0.19 and risers 0.00 to +0.03. The
+  conditional means are on the same side on comments; relative on
+  submissions (D-2 PARTLY).
+- Submissions: net of the platform-total factor the persistence is +0.01
+  to +0.02 (−0.03 to +0.01 at a half-year gap) under both membership rules.
+  The cohort-mean factor result depends on membership.
+- Comments: unaffected by either factor.
+
+**R3-E Gomez.**
+- The general displacement term is ½ν²(a_k/ā_top)/S_k.
+- Measured over implied is 0.67–1.49 at the heads (E-1 PASS) and up to 3.3
+  deeper.
+- Permanent-rank cohorts leave the within term unchanged.
+
+### 4. The manuscript, v2 (`paper/pnas_draft.tex`)
+
+**Title.** "Turnover replenishes a slowly flattening hierarchy of online
+attention".
+- The verb is the measured one, and "flattening" is honest.
+- The title study's norms hold: 9 words, a declarative.
+- The owner's direction holds: the contradiction, and how turnover
+  maintains the hierarchy.
+- The earlier pick and the alternatives are in the comments.
+
+**Structure:**
+- Introduction positioned against firm growth, ranking dynamics (Iñiguez,
+  Blumm, Batty, Duranton), random growth and Gomez.
+- Results 1, the puzzle, quantified.
+- Results 2, size-blindness exposes the top: the null worlds, C(R), and
+  Eq. 1 as a decomposition.
+- Results 3, turnover replenishes: the near-identity stated; neutral
+  copying excluded; the level of the balance.
+- Results 4, the model as coded (H and the reverting deviations), with the
+  gates disclosed.
+- Results 5, persistent decline (repaired), and Gomez with the general
+  term.
+
+**Figures** 2 and 3 are new: data against null worlds, and the replenishing
+balance.
+
+**Supplement.** The SI is filled: the gate table, out-of-period, null
+worlds, rank change, the registration ledger and the AI statement.
+
+**Protocol v3.1 (draft):**
+- P7 names the corrected model, with its development values stated against
+  its own rule;
+- the intervals row is updated.
+
+**Open items:**
+- data availability and authorship (owner);
+- the flat-start bands (20 seeds, pending at writing).
+
+### 5. Not run
+
+- Fitted level rivals (two-type GLLM, Yule–Simon).
+- Cross-model recovery.
+- A calibrated time-block bootstrap of the full estimator.
+- A capture-delay audit (WD drive).

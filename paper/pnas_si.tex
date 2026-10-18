@@ -7,7 +7,7 @@
 \graphicspath{{../llm_fitting/runs/2026-10-18_pnas_push/}}
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
 \usepackage{xcolor}
-\title{Supplementary Information for\\ ``Continual turnover sustains a slowly changing hierarchy of online attention''}
+\title{Supplementary Information for\\ ``Turnover replenishes a slowly flattening hierarchy of online attention''}
 \date{Draft, \today}
 \begin{document}
 \maketitle
@@ -75,7 +75,21 @@ Observed log activity $x_i = L_i + m_i + \varepsilon_i$ with $\varepsilon$ obser
 With $\mathrm{Var}\,\epsilon = q$, the one-step variance of $L$ is $[2q+\kappa\sigma_L^2]/(2-\kappa)$. The frozen form set $q = \sigma_p^2-\sigma_L^2$, which is the earlier model's one-step variance minus $\sigma_L^2$; preserving it requires $q=\sigma_p^2-\kappa\sigma_L^2/2$ (\texttt{lasting="movinghome\_vp"}). A known-answer test confirms both statements.
 %% §2z-df V4; §2z-dg A5b
 \subsection{Held-out movement}
-\todo{Table: Gate v1 on all panels, the four ablation arms and the corrected variant, with persistence and paired splits (A5, A5b).}
+Gate v1 (rolling origins; five origins; the top 200 communities at each origin simulated 20 times from the filtered state; median absolute rank change at 1, 4 and 13 weeks, its first autocorrelation and collision rates, as mean relative error; an observation-noise scale recalibrated on each training window; 2,000 bootstrap draws for coverage). Long panels (four years), one harness:
+%% GATE_LEDGER; §2z-dg A5c
+\begin{center}\small\begin{tabular}{lcccc}
+\toprule
+arm & home walks & drift by rank & submissions & comments\\
+\midrule
+fixed home (the earlier model) & no & no & $0.188\pm0.063$ & $0.123\pm0.051$\\
+fixed home sliding by rank & no & yes & $0.171\pm0.035$ & $0.114\pm0.056$\\
+wandering home, corrected variance & yes & no & $0.175\pm0.072$ & $0.100\pm0.047$\\
+wandering home + drift (the model) & yes & yes & $0.183\pm0.074$ & $0.130\pm0.054$\\
+first frozen version (variance error) & yes & yes & $0.246\pm0.085$ & $0.145\pm0.057$\\
+persistence of the training statistics & & & $0.163\pm0.048$ & $0.167\pm0.039$\\
+\bottomrule
+\end{tabular}\end{center}
+The corrected arms differ by at most 0.017 (submissions) and 0.031 (comments); the registered expectation that they lie within 0.03 of each other fails narrowly on comments. The model is better than the fixed home in 3 of 5 paired splits on submissions and 2 of 5 on comments. Its 13-week median overshoots the data by 0--3 ranks on submissions (expectation failed). The first corrected runs omitted the drift by rank through a code error, found when the deliberate no-drift arm reproduced them exactly; they are the third row. On a shorter 30-week submissions panel the first frozen version scored 0.097 against the fixed home's 0.128 (the corrected model was not run there).
 \subsection{Counterfactuals}
 The model's lasting core alone ($\sigma_L$ estimated on the whole panel; drift by rank from the measured slides, so the ladder is not an input), started from the observed end-of-2019 ladder, 20 seeds over 104 weeks; and from complete equality, 10 seeds over 30 years.
 %% §2z-dg A3
@@ -99,7 +113,19 @@ submissions & churn + slide & $-0.160$ & $-0.113$ & $-0.069$ & $-0.042$ & $-0.01
 \end{tabular}\end{center}
 Registered expectations: the stationary slope (A3-4) held on both ladders; the sizes of the two-year counterfactual changes (A3-2, A3-3) were overstated, because they were set from the data's cohort slide (0.004--0.011 a week) while drift by rank in the model applies to whoever holds a rank.
 \subsection{Out-of-period structure}
-\todo{A6.}
+Fitted on 2019--20 (weeks before 2021, with the universe chosen from those weeks), simulated through 2021--22, 20 seeds; data statistics use every community present.
+%% §2z-dg A6, R3-C
+\begin{center}\small\begin{tabular}{lccc}
+\toprule
+ & fixed home & corrected model & carried forward\\
+\midrule
+submissions: one-year retention MAE (four cut-offs) & 0.024 & 0.028 & 0.037\\
+submissions: head share 2022 (observed 0.356; 2020 0.508) & 0.528 & 0.537 & 0.508\\
+comments: one-year retention MAE & 0.041 & 0.022 & 0.013\\
+comments: head share 2022 (observed 0.505; 2020 0.569) & 0.559 & 0.597 & 0.569\\
+\bottomrule
+\end{tabular}\end{center}
+Keeping simulated entrants as names changes nothing (no entrant reaches a top set within the window). Neither model forecasts the fall of the head share, nor the data's persistence (models $-0.08$ to $+0.03$ against $+0.45$ on adjacent blocks), nor the excess kurtosis of 26-week changes (2.9--5.1 against 22.1 on submissions).
 
 \section{Persistence}
 \subsection{The averaging null}
@@ -143,11 +169,32 @@ comments top 3,125 & $-0.023 = -0.067 + 0.044$ & $-0.010 = -0.059 + 0.049$ & $-0
 \end{tabular}\end{center}
 Gomez's formula for the displacement term, $\tfrac12(\zeta-1)\nu^2$ with $\zeta$ the local arithmetic tail index and $\nu^2$ the lasting variance at the threshold, gives $-0.14$ to $+0.04$, negative wherever the local slope exceeds one, against a measured $+0.04$ to $+0.08$ everywhere. Measured displacement on block levels includes passing swings, which inflate it (Gomez's measurement-error bias, here first-order rather than negligible as for wealth). The main text's test therefore uses the mean-log form, permanent-rank cohorts and spacing differences.
 
+\section{Null worlds}\label{sec:null}
+Every headline statistic computed by the same code in four simulated worlds (24,000 names, $K$ = 5,000, 212 weeks): (i) size-blind random growth (lasting $\sigma$ = 0.10 a week, no drift); (ii) firm-like growth ($\sigma \propto e^{-0.2(L-L_K)}$, common drift $-0.005$, reflecting floor); (iii) neutral copying (1.5 million items a week drawn from last week's distribution, innovation 0.003); (iv) the generative model calibrated to Reddit submissions. Worlds (i)--(ii) start from a Zipf ladder with noise and carry the data-like passing swings.
+%% §2z-dh R3-A
+\begin{center}\small\begin{tabular}{lccccc}
+\toprule
+ & (i) size-blind & (ii) firm-like & (iii) neutral & (iv) model & data\\
+\midrule
+turnover a year, top 10 / $K/2$ & 0.33 / 0.22 & 0.17 / 0.24 & 0.03 / 0.30 & 0.30 / 0.14 & 0.27--0.33 / 0.16--0.18\\
+Eq.~1 within $[0.8,1.25]$ & 100\% & 92\% & 100\% & 100\% & 100\%\\
+$\beta$ (estimated) & $-0.005$ & 0.114 & 0.357 & 0.070 & 0.01--0.08\\
+gapped persistence, 13 / 26 wk & $-0.03$ / $-0.03$ & $-0.07$ / $-0.06$ & $-0.11$ / $-0.10$ & $-0.10$ / $-0.10$ & $+0.15$--$0.17$ / $+0.14$\\
+pooled boundary ratio & 1.06 & 1.07 & 0.58 & 1.08 & 0.94\\
+crossing gain / slide, a week & 0.0053 / 0.0044 & 0.0027 / 0.0048 & 0.0044 / 0.0048 & 0.0030 / 0.0037 & 0.0040 / 0.0055\\
+weekly change at rank 1 / 10 & 0.13 / 0.94 & 0.09 / 0.92 & 0 / 0.36 & 0.03 / 0.73 & 0.03--0.52 / 0.79--0.94\\
+\bottomrule
+\end{tabular}\end{center}
+Automatic in any random-growth ladder: Eq.~1, a positive slide, a stable occupant at rank one, and a boundary ratio near one for any diffusion of levels (it excludes neutral copying). Not automatic: size-blindness and its consequence, the top set turning over fastest; persistence; and a balance in which crossings fall short of the slide. With planted $\beta = 0.2$ the estimator returns 0.11 under these passing swings, so raw $\beta$ understates the lasting exponent somewhat.
+
+\section{Rank change and set replacement}
+Iñiguez et al.'s rank change $C(R)$ is the probability that the element at rank $R$ differs between consecutive observations. Weekly $C(R)$ on the data: Reddit submissions 0.07, 0.36, 0.79, 0.99 at $R$ = 1, 3, 10, 100; comments 0.03, 0.46, 0.87, 0.99; Facebook 0.52, 0.74, 0.94, 1.00. The top is stable in rank order on every ladder while the top set's membership turns over fastest; both follow from a ladder whose neighbour gaps are about $S/R$ and whose slope $S$ is smallest at the head.
+
 \section{Registration, post hoc analyses and test counts}\label{sec:registered}
-\todo{List of registered expectations with outcomes (PLAN.md / RESULTS.md), post hoc analyses, gate-ledger counts per panel, and the bridge protocol v3.1 primaries P1--P7.}
+Expected outcomes were committed to the repository before each analysis (\texttt{runs/2026-10-18\_pnas\_push/PLAN.md}), and each is scored in \texttt{RESULTS.md}, failures included. Of the expectations for this paper's analyses, those that failed or held only partly include: the linear-density turnover formula (A1-1); the size of the two-year counterfactual changes (A3-2, A3-3); item-count scaling on Facebook (A7-4); the first frozen model's long-panel gate (A5-1, A5-2) and its corrected form's 13-week median (A5b-2); the 2$\times$2 spread on comments (A5c, by 0.0005); out-of-period retention against carrying forward on submissions (A6-2); the joint interval's widening on submissions (A9-2); and the same-side conditional means on submissions (D-2). Post hoc analyses: the exact turnover formula; the averaging-aware persistence statistic; the corrected variance bookkeeping; the general Gomez formula after the misapplied Pareto form. The gate ledger lists 83 evaluations of the movement test across panels and specifications since 2026-10-11. Tests on sealed 2023--2024 Reddit data are written into a protocol (primaries: the boundary ratio in period and out of time, the blackout of June 2023, retention against a logistic baseline, persistence, the size exponent and the model's held-out movement) that is to be adopted before those data are opened; it was not adopted at writing.
 
 \section{Use of AI}
-\todo{Statement.}
+The analyses, code, figures and drafts were produced with AI coding agents (Anthropic Claude in Claude Code; OpenAI Codex) working in a public repository under the authors' direction, with rules that fix expected outcomes before each run, log every contact with the data and every evaluation of the movement test, and keep sealed data unopened. Three further models reviewed the work as referees in three rounds; their reports and the responses are in the repository. Every number in the paper was checked against saved outputs.
 
 \bibliographystyle{unsrt}
 \bibliography{references}
