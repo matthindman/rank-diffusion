@@ -216,6 +216,10 @@ def fig3():
 
 def fig4():
     CF = {pn: load(HERE / f"churn_counterfactual__{pn}.json") for pn in ("reddit_comments_ext", "reddit_submissions_long")}
+    for pn in CF:                                   # the flat start at 20 seeds with bands (R3-C), where available
+        f20 = HERE / f"churn_counterfactual__{pn}__flat20.json"
+        if f20.exists():
+            CF[pn]["flat_start"] = load(f20)["flat_start"]
     gates = {}
     for pn in ("reddit_submissions_long", "reddit_comments_ext"):
         for arm in ("home", "movinghome", "movinghome_vp", "movinghome_nodrift", "homedrift", "movinghome_vp_nodrift"):
@@ -228,6 +232,9 @@ def fig4():
     for pn, d in CF.items():
         traj = np.array(d["flat_start"]["shape_by_year"])
         a.plot(np.arange(traj.shape[0]), traj[:, 0], "-", color=COL[pn], lw=1.2, label=LAB[pn])
+        if "shape_q" in d["flat_start"]:
+            lo, hi = np.array(d["flat_start"]["shape_q"][0]), np.array(d["flat_start"]["shape_q"][1])
+            a.fill_between(np.arange(traj.shape[0]), lo[:, 0], hi[:, 0], color=COL[pn], alpha=0.2, lw=0)
     a.set_xlabel("years from complete equality")
     a.set_ylabel("shape at K/64 (log units)")
     a.set_title("Churn builds a hierarchy from equality")
@@ -236,6 +243,10 @@ def fig4():
     a = ax[1]
     for pn, d in CF.items():
         f = d["flat_start"]
+        if "S_end_q" in f:
+            se = np.array(f["S_end"])
+            a.errorbar(f["S_star_sim"], se, yerr=[se - np.array(f["S_end_q"][0]), np.array(f["S_end_q"][1]) - se], fmt="none",
+                       ecolor=COL[pn], lw=0.8, capsize=1.5)
         a.scatter(f["S_star_sim"], f["S_end"], s=14, marker=MK[pn], color=COL[pn], label=f"{LAB[pn]}: model")
         a.scatter(f["S_star_sim"], f["S_observed"], s=14, marker=MK[pn], facecolor="white", edgecolor=COL[pn], label="observed ladder")
     lim = [0, 2.4]
@@ -257,7 +268,7 @@ def fig4():
     a.set_xticks(range(3))
     a.set_xticklabels([lab for _, lab in worlds])
     a.set_ylabel("change of shape at K/64 a year")
-    a.set_title("Two years without churn, or without slide")
+    a.set_title("Without churn, or without slide (2-year runs)")
     a.legend(loc="lower left", frameon=False)
     tag(a, "C")
     a = ax[3]
@@ -292,17 +303,20 @@ def fig5():
         gs = sorted(d, key=lambda x: int(x))
         a.plot([int(g) for g in gs], [d[g]["mean"] for g in gs], "-", marker=MK[pn], color=COL[pn], ms=3.5, lw=1,
                label=LAB[pn] + (" (26-wk changes)" if pn == "facebook_a" else ""))
+    for w, lab, col, ls in WORLDS:
+        nw = load(HERE / f"null_world__{w}.json")["gapped"]
+        a.plot([13, 26], [nw["13"], nw["26"]], "x", color=col, ms=4, mew=1, label=f"{lab} (simulated)")
     syn = gm["synthetic"]
     a.plot([0, 13, 26], [syn["i"]["gapped"][g] for g in ("0", "13", "26")], "--", color=GREY, lw=1, label="random walk + noise (simulated)")
     a.axhline(0, color=GREY, lw=0.4)
     a.set_xlabel("gap between the two changes (weeks)")
     a.set_ylabel("rank correlation of changes")
     a.set_title("Changes persist on Reddit")
-    a.legend(loc="center right", frameon=False, fontsize=5.5, bbox_to_anchor=(1.0, 0.42))
+    a.legend(loc="center right", frameon=False, fontsize=4.8, bbox_to_anchor=(1.02, 0.45))
     a.set_ylim(-0.15, 0.3)
     tag(a, "A")
     a = ax[1]
-    cats = ("activity", "posts", "per post", "activity,\nlater origins", "net of\nplatform trend")
+    cats = ("activity", "posts", "per\npost", "later\norigins", "net of\ntrend")
     w = 0.38
     for j, pn in enumerate(("reddit_submissions_long", "reddit_comments_ext")):
         f = HERE / f"momentum_decomposition__{pn}.json"

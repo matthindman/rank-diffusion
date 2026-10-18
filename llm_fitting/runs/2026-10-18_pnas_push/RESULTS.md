@@ -509,3 +509,14 @@ within a factor of 1.5.
 - head share in 2022: RDM′ 0.597 against 0.505 observed;
 - **C-1 PASS** on comments (within 0.003 of frozen). On submissions it is
   0.012, with RDM′ better.
+
+**R3-C, the flat start at 20 seeds** (`churn_counterfactual.py … flat20`):
+
+| ladder | slopes after 30 years, K/64 … K/2 | 90% band | observed |
+|---|---|---|---|
+| comments | 0.55, 0.65, 0.83, 1.13, 1.53, 1.97 | 0.50–0.65, 0.60–0.72, 0.78–0.88, 1.08–1.17, 1.49–1.57, 1.91–2.01 | 0.99, 1.21, 1.32, 1.38, 1.74, 2.13 |
+| submissions | 0.55, 0.67, 0.80, 0.96, 1.14, 1.37 | 0.35–0.86, 0.56–0.76, 0.72–0.95, 0.88–1.01, 1.08–1.22, 1.31–1.43 | 0.85, 0.93, 1.02, 1.26, 1.32, 1.55 |
+
+- **C-2 PASS:** within 4% of the 10-seed values.
+- The observed slope lies outside the band at every cut-off except the
+  submissions head (0.85 against an upper band of 0.86).
