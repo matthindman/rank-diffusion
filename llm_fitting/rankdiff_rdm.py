@@ -443,17 +443,24 @@ class _State:
         prank = np.empty(N, np.int64)
         prank[order] = np.arange(1, N + 1)
         zp = np.log(np.clip((prank - 0.5) / N, Z_CLIP, 1.0))
-        if self.lasting == "home":                     # model A's dynamics: OU toward a fixed home
+        if self.lasting in ("home", "homedrift"):      # model A's dynamics: OU toward a fixed home
+            if self.lasting == "homedrift":            # ablation (b), 2z-dg: the home slides by its rank, no random walk
+                horder = np.argsort(-self.home)
+                hrank = np.empty(N, np.int64)
+                hrank[horder] = np.arange(1, N + 1)
+                zh = np.log(np.clip((hrank - 0.5) / N, Z_CLIP, 1.0))
+                self.home = self.home + np.interp(zh, p.drift_z, p.drift_g)
             kz = np.interp(zp, b.z_knots, b.kappa_z) if b.kappa_z is not None else b.kappa
             sp = np.interp(zp, b.z_knots, b.sigma_perm)
             self.L = self.L - kz * (self.L - self.home) + sp * self.sqw * rng.standard_normal(N)
-        elif self.lasting == "movinghome":             # A's OU toward a home that itself moves (2z-dd)
+        elif self.lasting in ("movinghome", "movinghome_nodrift"):   # A's OU toward a home that itself moves (2z-dd)
             horder = np.argsort(-self.home)
             hrank = np.empty(N, np.int64)
             hrank[horder] = np.arange(1, N + 1)
             zh = np.log(np.clip((hrank - 0.5) / N, Z_CLIP, 1.0))
             sLh = _sigma_L(p, self.home)
-            self.home = self.home + np.interp(zh, p.drift_z, p.drift_g) + sLh * math.sqrt(1.0 - p.pi) * rng.standard_normal(N)
+            gh = np.interp(zh, p.drift_z, p.drift_g) if self.lasting == "movinghome" else 0.0   # ablation (a): no drift
+            self.home = self.home + gh + sLh * math.sqrt(1.0 - p.pi) * rng.standard_normal(N)
             if self.vel is not None:                      # drift by name: a persistent velocity of the home
                 self.home = self.home + self.vel
                 self.vel = p.vel_rho * self.vel + math.sqrt(p.vel_var * (1 - p.vel_rho ** 2)) * rng.standard_normal(N)
@@ -559,7 +566,7 @@ def sim_cohort_conditional_rdm(p, df_tr, T_sim, seed=0, cohort_k=200, lasting="r
     filtered end-of-train state), same step-0 timing (recording from step 1), same cohort and collision
     bookkeeping."""
     rng = np.random.default_rng(seed)
-    if lasting in ("home", "movinghome"):
+    if lasting in ("home", "movinghome", "homedrift", "movinghome_nodrift"):
         levels = rk._filtered_levels(df_tr, p.base)
         st = _State(p, levels.to_numpy(), rng, lasting=lasting)
     else:
@@ -648,6 +655,9 @@ FROZEN_MOVEMENT = {   # the frozen movement stacks' estimator flags (frozen-spec
     "facebook_a": dict(temper=True, min_knot_n=8, md_lags=6, t_tails=True, spec_b=True),
     "reddit_comments": dict(temper=True, min_knot_n=8, md_lags=6, t_tails=True, mix_hetero=True),
     "reddit": dict(temper=True, min_knot_n=8, md_lags=6, t_tails=True),
+    # the long panels (2z-dg): A's reference flags there (GATE_LEDGER V1/V3 rows; comments as reddit_comments)
+    "reddit_submissions_long": dict(temper=True, min_knot_n=8, md_lags=6, t_tails=True),
+    "reddit_comments_ext": dict(temper=True, min_knot_n=8, md_lags=6, t_tails=True, mix_hetero=True),
 }
 
 

@@ -46,3 +46,35 @@ def test_drift_from_a_constant_slide_is_uniform_and_not_centred():
     k = np.geomspace(1, 1000, 40)
     z, g = rdm.drift_from_slides(k, np.full(k.size, 0.004), 1000)
     assert np.allclose(g, -0.004, atol=1e-12)
+
+
+def _toy_params(drift):
+    from types import SimpleNamespace
+    zk = np.array([-8.0, -4.0, 0.0])
+    base = SimpleNamespace(z_knots=zk, kappa_z=np.full(3, 0.2), kappa=0.2, sigma_perm=np.full(3, 0.1),
+                           phi=np.full(3, 0.5), sigma_trans=np.full(3, 0.05), sigma_obs=np.full(3, 0.05),
+                           exit_rate=np.zeros(3), bottom_mu=np.array([0.0]), temper_s=0.0, mix_b=0.0, t_df=float("inf"))
+    return SimpleNamespace(base=base, drift_z=zk, drift_g=np.full(3, drift), band_level=np.array([0.0, 10.0]),
+                           sigma0=0.05, beta=0.0, L_ref=5.0, pi=0.0, lam=0.0, vel_var=0.0, vel_rho=0.0,
+                           amp_lasting=False, kappa_m=0.1, V_m=np.full(3, 0.01), band_z=zk)
+
+
+def test_ablation_arms_reduce_to_their_parents_without_drift():
+    """2z-dg ablations: with zero drift, 'homedrift' is exactly A's 'home' and 'movinghome_nodrift' is exactly
+    'movinghome' (same seed, same draws)."""
+    L0 = np.linspace(10.0, 1.0, 50)
+    p0 = _toy_params(0.0)
+    for arm, parent in (("homedrift", "home"), ("movinghome_nodrift", "movinghome")):
+        a = rdm.simulate_panel(p0, L0, 20, seed=3, lasting=arm)[0]
+        b = rdm.simulate_panel(p0, L0, 20, seed=3, lasting=parent)[0]
+        assert np.array_equal(a, b)
+
+
+def test_homedrift_moves_the_home_by_rank():
+    """With a constant negative drift and no noise in the home, 'homedrift' lowers every home by the drift each week."""
+    L0 = np.linspace(10.0, 1.0, 50)
+    p = _toy_params(-0.01)
+    st = rdm._State(p, L0, np.random.default_rng(0), lasting="homedrift")
+    for _ in range(10):
+        st.step()
+    assert np.allclose(st.home, L0 - 0.1)

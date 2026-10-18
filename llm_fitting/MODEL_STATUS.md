@@ -4106,6 +4106,39 @@ the conversation, in reply to the decisions listed after §2z-da: "decisions:
    tests.** The redesign is `BRIDGE_PROTOCOL_V3_DRAFT_2026-10-18.md`.
    Adopting it and opening the bridge remain the owner's decisions.
 
+_Addendum 2026-10-18, later (OWNER DECISIONS after the round-2 referees;
+record §2z-dg):_ The owner wrote, in the conversation:
+
+> "title should be be biggest, most important/foundational issue we can
+> address -- something about the contradiction, how churn creates and
+> maintains (~stable-ish) structure.
+>
+> core of the model should stay in the main text: the main parts readers need
+> to understand the principles.
+>
+> Yes, add them.
+>
+> Continue. Do everything you have to -- even things I don't ask, unless they
+> contradict my explicit instructions -- to make this a great, publishable,
+> PNAS piece."
+
+In order:
+1. **The title states the foundational issue:** the contradiction between
+   fast turnover and a slowly changing structure, and how churn creates and
+   maintains that structure. Candidate wordings are in §2z-dg and in frame d;
+   the owner may pick among them.
+2. **The core of the generative model stays in the main text:** the parts
+   readers need to understand the principles. Detail goes to the SI.
+3. **"Yes, add them":** momentum, the size–variance exponent and the
+   moving-home model's gate are added to bridge protocol v3 as pre-registered
+   primaries. Adoption of v3 and first contact with the bridge are NOT
+   decided by this; they still need the owner's explicit word, naming the
+   dataset (owner rule 2026-10-11).
+4. **Broad mandate** to do whatever the paper needs, within the owner's
+   explicit instructions. It does not authorize opening sealed data (that
+   needs the dataset named) or pushing (that needs a request), under
+   AGENTS.md.
+
 ## 2z-ae. 2026-07-16/17 — THE SUBMISSIONS BACKTEST EXECUTED (PREREG_2026-07-16, one pass, outcome-unseen cross-metric replication per §2z-w — NOT confirmation; Wikipedia remains the primary target): MIXED, but the headline hardened finding TRANSPORTS — the §2z-ac established-departure deficit REPLICATES on a second, outcome-unseen metric (P7 sim/emp ratio 2.74 at K/2, squarely in the pre-registered 2–3× point range) and amplitude collapse (b≈1) + era-dominance carry over; the monotone s-trend (P4a) and the functional VR share (P9b) do NOT replicate; IG P10/P11 are NOT ADJUDICATED (build fail-closed on the wrong observational unit + an infeasible registered reconciliation target)
 
 Panel: `reddit_submissions_long` (2018-12..2022-12, 142,438,022 daily /
