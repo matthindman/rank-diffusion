@@ -1,0 +1,10 @@
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/momentum_decomposition.py:64: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+D6 x        : gapped momentum by gap g0 -0.114, g4 -0.067, g8 -0.031
+D6 act      : gapped momentum by gap g0 -0.110, g4 -0.069, g8 -0.031
+D6 items    : gapped momentum by gap g0 -0.103, g4 -0.038, g8 -0.001
+D6 per_item : gapped momentum by gap g0 -0.114, g4 -0.078, g8 -0.036
+D7 raw                      (origins >= 26): g0 -0.083, g4 +nan, g8 +nan
+D7 minus_aggregate_loading  (origins >= 26): g0 -0.071, g4 +nan, g8 +nan
+D7 minus_cluster_mean       (origins >= 26): g0 -0.083, g4 +nan, g8 +nan
+D8 (gap 4): Spearman within risers -0.070, fallers -0.016; mean rank of change 2: top change-1 quintile 0.466, bottom 0.517

@@ -1,0 +1,12 @@
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/momentum_decomposition.py:64: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+D6 x        : gapped momentum by gap g0 +0.201, g13 +0.174, g26 +0.140
+D6 act      : gapped momentum by gap g0 +0.198, g13 +0.173, g26 +0.141
+D6 items    : gapped momentum by gap g0 +0.188, g13 +0.186, g26 +0.173
+D6 per_item : gapped momentum by gap g0 +0.015, g13 +0.018, g26 +0.035
+D7 raw                      (origins >= 52): g0 +0.188, g13 +0.149, g26 +0.112
+D7 minus_aggregate_loading  (origins >= 52): g0 +0.149, g13 +0.054, g26 +0.006
+D7 minus_cluster_mean       (origins >= 52): g0 +0.187, g13 +0.147, g26 +0.108
+D8 (gap 13): Spearman within risers +0.016, fallers +0.204; mean rank of change 2: top change-1 quintile 0.547, bottom 0.399
+D9 lag profile (origin week 26): g0 +0.194, g26 +0.150, g52 +0.046
+D10 Reddit at Facebook's settings from 2020-12-28: g0 +0.019, g4 +0.054, g8 +0.080

@@ -1,0 +1,26 @@
+
+========================================================================
+REDDIT_SUBMISSIONS_LONG — Gate v1, RDM (hold, lasting=movinghome)
+========================================================================
+  T=212  test_len=53  origins=[53, 80, 106, 132, 159]  universe=top-5000
+    T0=53: kappa_m 0.500, sigma0 0.1271, beta +0.024, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0042, -0.0041, -0.0067, -0.005]
+    T0=80: kappa_m 0.200, sigma0 0.1156, beta +0.009, lam 0.0000, pi 0.00, scale 0.50; drift at ranks 1/20/100/1000 [-0.009, -0.009, -0.0071, -0.0042]
+    T0=106: kappa_m 0.200, sigma0 0.1089, beta +0.011, lam 0.0000, pi 0.00, scale 0.00; drift at ranks 1/20/100/1000 [-0.0075, -0.0078, -0.0017, -0.0062]
+    T0=132: kappa_m 0.500, sigma0 0.1095, beta +0.031, lam 0.0000, pi 0.00, scale 0.15; drift at ranks 1/20/100/1000 [-0.0065, -0.0068, -0.0088, -0.0049]
+    T0=159: kappa_m 0.140, sigma0 0.1070, beta +0.046, lam 0.0000, pi 0.00, scale 0.70; drift at ranks 1/20/100/1000 [-0.0059, -0.006, -0.0071, -0.0033]
+    T0= 53  model relErr 0.121 | persistence 0.131 | dR1 in CI: True
+    T0= 80  model relErr 0.183 | persistence 0.180 | dR1 in CI: False
+    T0=106  model relErr 0.272 | persistence 0.086 | dR1 in CI: True
+    T0=132  model relErr 0.360 | persistence 0.200 | dR1 in CI: False
+    T0=159  model relErr 0.297 | persistence 0.216 | dR1 in CI: False
+  MODEL rel err = 0.246 ± 0.085   |   persistence = 0.163 ± 0.048
+  coverage 40%;  per-moment model rel err: dRank1 0.267, dRank4 0.290, dRank13 0.370, RACF1 0.218, coll1 0.738, coll5 0.107, coll20 0.063
+ARM DONE movinghome exit 0
+
+========================================================================
+REDDIT_SUBMISSIONS_LONG — Gate v1, RDM (hold, lasting=home)
+========================================================================
+  T=212  test_len=53  origins=[53, 80, 106, 132, 159]  universe=top-5000
+    T0=53: kappa_m 0.500, sigma0 0.1271, beta +0.024, lam 0.0000, pi 0.00, scale 0.70; drift at ranks 1/20/100/1000 [-0.0042, -0.0041, -0.0067, -0.005]
+    T0=80: kappa_m 0.200, sigma0 0.1156, beta +0.009, lam 0.0000, pi 0.00, scale 0.35; drift at ranks 1/20/100/1000 [-0.009, -0.009, -0.0071, -0.0042]
+    T0=106: kappa_m 0.200, sigma0 0.1089, beta +0.011, lam 0.0000, pi 0.00, scale 0.00; drift at ranks 1/20/100/1000 [-0.0075, -0.0078, -0.0017, -0.0062]

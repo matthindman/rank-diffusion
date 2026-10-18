@@ -100,3 +100,112 @@ k = K/64 … K/2, the mean of 20 seeds over 104 weeks.
   (0.004–0.011 a week). In the model, drift by rank applies to whoever holds
   a rank, and the head's slide against U_K is a few ten-thousandths a week.
   The expectations confused the cohort quantity with the occupant quantity.
+
+**Submissions** (σ_0 0.100, β 0.045; drift −0.0103 a week at the head and
+−0.0036 at K):
+
+| world | shape change a year at K/64 … K/2 | c − slide × 52 |
+|---|---|---|
+| (i) churn + slide | −0.160, −0.113, −0.069, −0.042, −0.010, +0.006 | −0.186, −0.103, −0.049, −0.043, −0.002, +0.019 |
+| (ii) slide only | −0.259, −0.166, −0.110, −0.085, −0.047, −0.017 | −0.258, −0.165, −0.110, −0.084, −0.045, −0.012 |
+| (iii) churn only | +0.073, +0.059, +0.052, +0.046, +0.042, +0.028 | +0.080, +0.068, +0.074, +0.045, +0.050, +0.042 |
+| (iv) flat start, 30 years: slope | 0.53, 0.66, 0.82, 0.95, 1.13, 1.37 | σ²/(2·slide) 0.50, 0.65, 0.81, 0.93, 1.09, 1.37; observed 0.85, 0.93, 1.02, 1.26, 1.32, 1.55 |
+
+**A3 scored on both ladders:**
+- **A3-1, PARTLY.** Submissions within 25% at K/64, K/32 and K/8, 40% at
+  K/16. Comments within 30% at the head. Deeper, the omitted exit term
+  dominates.
+- **A3-2, MIXED.** Submissions −0.26 a year passes; comments −0.04 fails.
+- **A3-3, FAIL on both.** Comments +0.03 and submissions +0.07. The sign is
+  right.
+- **A3-4, PASS on both.** Within 4% (submissions) and 10% (comments) of
+  σ²/(2·slide) at every rank.
+
+The hierarchy forms from equality in about a decade on both ladders. The
+shape at K/64 reaches 2.9 (submissions) and 3.4 (comments) by year 10. The
+sustained head is flatter than the observed one on both ladders.
+
+## A8. Gomez's decomposition of the arithmetic shares (`gomez_decomposition.py`)
+
+Annual relative change of the top-k arithmetic share = within + between
+(exact):
+
+| ladder, k | 2019→20 | 2020→21 | 2021→22 |
+|---|---|---|---|
+| submissions 78 | −0.009 = −0.061 + 0.052 | −0.161 = −0.237 + 0.076 | −0.186 = −0.259 + 0.073 |
+| submissions 312 | −0.022 = −0.080 + 0.059 | −0.099 = −0.162 + 0.064 | −0.109 = −0.165 + 0.056 |
+| submissions 1,250 | −0.022 = −0.064 + 0.042 | −0.042 = −0.100 + 0.058 | −0.047 = −0.097 + 0.049 |
+| comments 195 | −0.072 = −0.125 + 0.053 | −0.072 = −0.150 + 0.078 | −0.054 = −0.123 + 0.069 |
+| comments 781 | −0.052 = −0.104 + 0.052 | −0.036 = −0.097 + 0.061 | −0.023 = −0.076 + 0.054 |
+| comments 3,125 | −0.023 = −0.067 + 0.044 | −0.010 = −0.059 + 0.049 | −0.006 = −0.043 + 0.037 |
+
+**Scored:**
+- **A8-1** (the fall is dominated by the within term, |within| > 2·|between|):
+  - **PASS for the submissions head:** over three years, within −0.56
+    against between +0.20, a factor of 2.8;
+  - **borderline for the comments head:** −0.40 against +0.20, 2.0, not
+    above;
+  - by cell, 5 of 18.
+- **A8-2** (measured between within ×2 of ½(ζ − 1)ν²): **FAIL.** The
+  implied term is −0.14 to +0.04 (negative where ζ < 1, that is S > 1),
+  while the measured term is +0.04 to +0.08 everywhere.
+
+**Reading.**
+- Displacement is steady, +0.04 to +0.08 of the share a year, at every
+  cut-off and year: the same steadiness as the reordering gain of §2z-cr.
+- What moves concentration is the members' own drift relative to the total.
+  The submissions head's members lost about a quarter of their relative
+  activity a year in 2020–22.
+- Gomez's arithmetic formula, applied to block-level attention data,
+  under-predicts measured displacement everywhere. Passing swings inflate
+  measured displacement, which is Gomez's measurement-error bias, here
+  first-order. That is why the paper's test uses permanent-rank cohorts, the
+  mean-log form and spacing differences, under which measured over predicted
+  is 0.96.
+
+## A4. What carries the momentum (`momentum_decomposition.py`)
+
+The gapped statistic of §2z-df, with the gaps as stated:
+
+| | submissions | comments | Facebook |
+|---|---|---|---|
+| D6 activity, g 0/13/26 | +0.201 / +0.174 / +0.140 | +0.163 / +0.154 / +0.141 | −0.114 / −0.067 / −0.031 (gaps 0/4/8) |
+| D6 items (posts or comments) | **+0.188 / +0.186 / +0.173** | **+0.138 / +0.136 / +0.125** | −0.103 / −0.038 / −0.001 |
+| D6 activity per item | +0.015 / +0.018 / +0.035 | +0.045 / +0.058 / +0.071 | −0.114 / −0.078 / −0.036 |
+| D7 raw (origins ≥ 52) | +0.188 / +0.149 / +0.112 | +0.175 / +0.158 / +0.126 | −0.083 (g0) |
+| D7 net of each community's loading on the platform aggregate (loadings from weeks 0–51) | **+0.149 / +0.054 / +0.006** | +0.168 / +0.161 / +0.130 | −0.071 |
+| D7 net of the co-movement cluster mean (k = 20) | +0.187 / +0.147 / +0.108 | +0.174 / +0.158 / +0.127 | −0.083 |
+| D8 Spearman within change-1 risers / fallers (gap 13; FB gap 4) | **+0.016 / +0.204** | **−0.016 / +0.189** | −0.070 / −0.016 |
+| D8 mean rank of change 2: top / bottom change-1 quintile | 0.547 / 0.399 | 0.532 / 0.403 | 0.466 / 0.517 |
+| D9 lag profile, gaps 0 / 26 / 52 (origin week 26) | +0.194 / +0.150 / **+0.046** | +0.135 / +0.136 / **+0.108** | — |
+| D10 at Facebook's settings from 2020-12-28, gaps 0 / 4 / 8 | +0.019 / +0.054 / +0.080 | −0.037 / +0.024 / +0.077 | (−0.114 / −0.067 / −0.031) |
+
+**The PLAN readings, scored:**
+
+| reading | prior | submissions | comments |
+|---|---|---|---|
+| items carry it (≥ +0.10, per item < +0.05) | 55% | **YES** | items yes (+0.136), per item just above the line (+0.058): **MOSTLY** |
+| shared trends explain at least half (residual < half) | 40% | **YES**, for the aggregate loading: 0.149 → 0.054 at g13, 0.112 → 0.006 at g26; clusters remove nothing | **NO:** survives fully (≥ 75%) |
+| asymmetry favouring risers (risers > fallers by 0.05) | 35% | **NO, the reverse:** fallers persist, risers do not | **NO, the reverse** |
+| decays by 52 weeks (< +0.05) | 50% | **YES** (+0.046) | **NO:** flat (+0.108) |
+| Reddit > +0.05 at Facebook's settings | 65% | **PARTLY:** 2 of 3 gaps | **PARTLY:** 1 of 3 |
+
+**Reading.**
+- On both Reddit ladders the persistence is persistent **decline in
+  participation**. It is carried by the number of posts or comments, not by
+  the engagement each earns. Communities that lost participants kept losing
+  them; communities that gained did not keep gaining. This is the opposite
+  of amplification of risers.
+- **The two ladders differ in origin.**
+  - On submissions, persistence is heterogeneous exposure to a platform-wide
+    trend. Each community's loading on the aggregate, estimated from weekly
+    co-movement in 2019, removes it, and it fades within a year. This is
+    Gomez's aggregate-risk term (his Prop. 4): differences in exposure to
+    common shocks.
+  - On comments, it is specific to each community, not removed by the
+    aggregate or by co-movement clusters, and still +0.11 at a year's gap.
+- **Facebook** shows short-memory reversion throughout, with no asymmetry.
+- At Facebook's short horizon and dates (26-week changes from December
+  2020), Reddit's persistence is weak (−0.04 to +0.08). The platform contrast
+  is clearest at the annual horizon, where Facebook has no data. This
+  qualification goes into the paper.

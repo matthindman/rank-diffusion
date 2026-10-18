@@ -214,8 +214,143 @@ def fig3():
     save(fig, "fig3_balance")
 
 
+def fig4():
+    CF = {pn: load(HERE / f"churn_counterfactual__{pn}.json") for pn in ("reddit_comments_ext", "reddit_submissions_long")}
+    gates = {}
+    for pn in ("reddit_submissions_long", "reddit_comments_ext"):
+        for arm in ("home", "movinghome", "movinghome_vp", "movinghome_nodrift", "homedrift"):
+            f = HERE / f"gate_{arm}__{pn}.json"
+            if f.exists():
+                gates[(pn, arm)] = load(f)
+    fig, axs = plt.subplots(2, 2, figsize=(W2 * 0.82, 4.6))
+    ax = axs.ravel()
+    a = ax[0]
+    for pn, d in CF.items():
+        traj = np.array(d["flat_start"]["shape_by_year"])
+        a.plot(np.arange(traj.shape[0]), traj[:, 0], "-", color=COL[pn], lw=1.2, label=LAB[pn])
+    a.set_xlabel("years from complete equality")
+    a.set_ylabel("shape at K/64 (log units)")
+    a.set_title("Churn builds a hierarchy from equality")
+    a.legend(loc="lower right", frameon=False)
+    tag(a, "A")
+    a = ax[1]
+    for pn, d in CF.items():
+        f = d["flat_start"]
+        a.scatter(f["S_star_sim"], f["S_end"], s=14, marker=MK[pn], color=COL[pn], label=f"{LAB[pn]}: model")
+        a.scatter(f["S_star_sim"], f["S_observed"], s=14, marker=MK[pn], facecolor="white", edgecolor=COL[pn], label="observed ladder")
+    lim = [0, 2.4]
+    a.plot(lim, lim, color=GREY, lw=0.8)
+    a.set_xlim(lim)
+    a.set_ylim(lim)
+    a.set_xlabel("churn over slide, σ²/(2 s̄)")
+    a.set_ylabel("local slope S")
+    a.set_title("Its steepness is churn over slide")
+    a.legend(loc="upper left", frameon=False, fontsize=5.5)
+    tag(a, "B")
+    a = ax[2]
+    worlds = (("churn_slide", "churn + slide"), ("slide_only", "slide only"), ("churn_only", "churn only"))
+    w = 0.38
+    for j, pn in enumerate(CF):
+        vals = [CF[pn][wk]["rate_per_year"][0] for wk, _ in worlds]
+        a.bar(np.arange(3) + (j - 0.5) * w, vals, w, color=COL[pn], label=LAB[pn])
+    a.axhline(0, color=GREY, lw=0.6)
+    a.set_xticks(range(3))
+    a.set_xticklabels([lab for _, lab in worlds])
+    a.set_ylabel("change of shape at K/64 a year")
+    a.set_title("Two years without churn, or without slide")
+    a.legend(loc="lower left", frameon=False)
+    tag(a, "C")
+    a = ax[3]
+    arms = (("home", "fixed home (A)"), ("movinghome", "moving home"), ("movinghome_vp", "moving home, corrected"))
+    for j, pn in enumerate(("reddit_submissions_long", "reddit_comments_ext")):
+        for i, (arm, lab) in enumerate(arms):
+            g = gates.get((pn, arm))
+            if g is None:
+                continue
+            a.errorbar(i + (j - 0.5) * 0.25, g["model_rel"], yerr=g["model_rel_sd"], fmt=MK[pn], color=COL[pn], ms=4, capsize=2,
+                       label=LAB[pn] if i == 0 else None)
+        b = next((gates[(pn, arm)] for arm, _ in arms if (pn, arm) in gates), None)
+        if b is not None:
+            a.axhline(b["base_rel"], color=COL[pn], lw=0.8, ls=":")
+    a.set_xticks(range(3))
+    a.set_xticklabels([lab.replace(", ", ",\n") for _, lab in arms])
+    a.set_ylabel("held-out movement error")
+    a.set_title("Held-out movement, long panels")
+    a.legend(loc="upper left", frameon=False)
+    tag(a, "D")
+    fig.tight_layout(w_pad=1.5, h_pad=1.6)
+    save(fig, "fig4_model")
+
+
+def fig5():
+    gm = load(R / "2026-10-18_momentum" / "gapped_momentum.json")
+    fig, ax = plt.subplots(1, 3, figsize=(W2, 2.3))
+    a = ax[0]
+    for pn in COL:
+        d = gm[pn]["gapped"]
+        gs = sorted(d, key=lambda x: int(x))
+        a.plot([int(g) for g in gs], [d[g]["mean"] for g in gs], "-", marker=MK[pn], color=COL[pn], ms=3.5, lw=1,
+               label=LAB[pn] + (" (26-wk changes)" if pn == "facebook_a" else ""))
+    syn = gm["synthetic"]
+    a.plot([0, 13, 26], [syn["i"]["gapped"][g] for g in ("0", "13", "26")], "--", color=GREY, lw=1, label="random walk + noise (simulated)")
+    a.axhline(0, color=GREY, lw=0.4)
+    a.set_xlabel("gap between the two changes (weeks)")
+    a.set_ylabel("rank correlation of changes")
+    a.set_title("Changes persist on Reddit")
+    a.legend(loc="center right", frameon=False, fontsize=5.5, bbox_to_anchor=(1.0, 0.42))
+    a.set_ylim(-0.15, 0.3)
+    tag(a, "A")
+    a = ax[1]
+    cats = (("x", "activity"), ("items", "posts"), ("per_item", "per post"), ("agg", "net of\nplatform trend"))
+    w = 0.38
+    for j, pn in enumerate(("reddit_submissions_long", "reddit_comments_ext")):
+        f = HERE / f"momentum_decomposition__{pn}.json"
+        if not f.exists():
+            continue
+        d = load(f)
+        g = "13"
+        vals = [d["D6"]["x"][g], d["D6"]["items"][g], d["D6"]["per_item"][g], d["D7"]["minus_aggregate_loading"][g]]
+        a.bar(np.arange(4) + (j - 0.5) * w, vals, w, color=COL[pn], label=LAB[pn])
+    a.axhline(0, color=GREY, lw=0.6)
+    a.set_xticks(range(4))
+    a.set_xticklabels([lab for _, lab in cats], fontsize=6)
+    a.set_ylabel("gapped momentum (13-wk gap)")
+    a.set_title("Carried by participation")
+    a.legend(loc="upper right", frameon=False)
+    tag(a, "B")
+    a = ax[2]
+    gd = load(HERE / "gomez_decomposition.json")
+    labs = []
+    x = 0
+    for pn, k in (("reddit_submissions_long", 78), ("reddit_comments_ext", 195)):
+        rows = [r for r in gd[pn] if r["k"] == k]
+        for r in rows:
+            a.bar(x, r["within"], 0.7, color=COL[pn], alpha=0.55)
+            a.bar(x, r["between"], 0.7, color=COL[pn])
+            a.plot(x, r["share_change"], "k_", ms=9, mew=1.5)
+            labs.append(f"{2019 + r['pair'][0]}–{(19 + r['pair'][1]) % 100:02d}")
+            x += 1
+        x += 0.6
+    a.axhline(0, color=GREY, lw=0.6)
+    a.set_xticks([0, 1, 2, 3.6, 4.6, 5.6])
+    a.set_xticklabels(labs, fontsize=5.5, rotation=30)
+    from matplotlib.patches import Patch
+    from matplotlib.lines import Line2D
+    hand = [Patch(color="#999999", alpha=0.55, label="within (members)"), Patch(color="#555555", label="displacement"),
+            Line2D([], [], color="k", marker="_", ls="", ms=9, mew=1.5, label="share change")]
+    a.text(1, 0.105, "submissions top 78", ha="center", fontsize=6, color=COL["reddit_submissions_long"])
+    a.text(4.6, 0.105, "comments top 195", ha="center", fontsize=6, color=COL["reddit_comments_ext"])
+    a.set_ylim(-0.30, 0.13)
+    a.set_ylabel("relative change of the share a year")
+    a.set_title("Displacement steady; members fall")
+    a.legend(handles=hand, loc="lower right", frameon=False, fontsize=5.5)
+    tag(a, "C")
+    fig.tight_layout(w_pad=1.0)
+    save(fig, "fig5_tipping")
+
+
 if __name__ == "__main__":
-    which = sys.argv[1:] or ["fig1", "fig2", "fig3"]
+    which = sys.argv[1:] or ["fig1", "fig2", "fig3", "fig4", "fig5"]
     for f in which:
         globals()[f]()
         print("drew", f)

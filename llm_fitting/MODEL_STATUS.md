@@ -12324,3 +12324,116 @@ The reviewers' ranked steps (SYNTHESIS_R2 §4):
 - **The coll1 attribution of §2z-dd is moot.** Both models fit coll1
   poorly on comments (A 0.710, RDM 0.818), and in the same harness the RDM
   has no gap to A.
+
+## 2z-dg. 2026-10-18 — OWNER DECISIONS (title, model core in the main text, protocol additions, broad mandate) and EXPLORATORY MEASUREMENT for the paper "churn creates and maintains the hierarchy" (expectations committed at 3f336f6, b45a714 and fc28c25 before the runs). Turnover at every scale follows from churn and slope (exact form post hoc; all 48 cells within 0.82–1.18). The exponent is robust except submissions. The model's lasting core builds the hierarchy from equality with steepness σ²/(2s̄) within 10%. "Momentum" is persistent DECLINE in participation, a shared trend on submissions and community-specific on comments. Displacement is steady and the members' decline moves concentration. The frozen moving home FAILS the long submissions gate; its V4 variance error is corrected in an opt-in variant (gates running). Protocol v3.1 drafted. Nothing adopted
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-18; started
+from 44be04f. The owner's decisions are verbatim in the §6 addendum ("title
+should be … how churn creates and maintains (~stable-ish) structure"; "core
+of the model should stay in the main text"; "Yes, add them"; "Do everything
+you have to …"). Run folder: `runs/2026-10-18_pnas_push/`:
+- `PLAN.md`, with expectations;
+- `RESULTS.md`, scored item by item; numbers below are quoted from it._
+
+### 1. Owner decisions executed
+
+- **Title.** Working title: "The churn that unseats online leaders creates
+  the hierarchy they lead". Alternatives: "Turnover creates and sustains the
+  hierarchy of online attention"; "Online attention keeps its hierarchy by
+  replacing its leaders". The owner chooses.
+- **The model's core is in the main text** of `paper/pnas_draft.tex`, the
+  first full draft, which supersedes the outlines as the working text.
+- **Bridge protocol v3.1:** P5 momentum (gapped, change 1 in development,
+  change 2 in the bridge), P6 size–variance exponent, P7 moving-home gate
+  with rolling origins inside the bridge. NOT adopted; first contact needs
+  the owner's word naming the dataset.
+
+### 2. Results (development data; RESULTS.md has every cell)
+
+- **A1. Turnover from churn and slope.**
+  - The registered formula (linear density) FAILS A1-1. It over-predicts by
+    a median of 1.27–1.45; within band in 11%, 39% and 25% of cells.
+  - The exact form for a log-linear ladder, f_k = v_k + (1 − v_k)·
+    E[1 − exp(−D⁺/S_k)], was derived after the failure (POST HOC, no
+    parameter). It holds in all 48 cells: ratios 0.82–1.18, median 0.98 on
+    each ladder, rmse 0.009–0.024.
+  - The mean downward move at the boundary is flat across scale (0.25–0.40),
+    while S rises down the ladder (0.8–1.0 at the head, 1.5–2.1 deep).
+    Turnover is highest at the top: top-10 replacement 27–33% a year on
+    Reddit.
+- **A7. Exponent robustness, 5 of 6 PASS:**
+  - comments leave-one-out 0.049–0.081;
+  - to rank 4K with absences < 0.11 on all ladders;
+  - Facebook lasting β 0.019;
+  - top-10/25 retention 0.6–0.84;
+  - fold change comments 1.58, Facebook 1.03.
+  - **FAIL:** item-count β on Facebook is 0.187 (Reddit 0.065–0.078).
+  - Submissions stays unstable: 0.00–0.19, and 0.058–0.14 in year 2.
+- **A3. The lasting core (σ_L estimated; drift from B's measured slides):**
+  - A3-4 (flat start, 30 years) PASSES on both ladders. The hierarchy forms
+    within about a decade, with slope at every rank equal to σ²/(2·slide)
+    within 4% (submissions) and 10% (comments). The sustained body matches
+    the observed within 20%; the sustained head is flatter than observed.
+  - A3-1 PARTLY: the head matches c − slide, while deeper the omitted exit
+    term dominates.
+  - A3-2 is mixed: slide only gives −0.26 a year on submissions (pass) and
+    −0.04 on comments (fail).
+  - A3-3 FAILS on both: churn only gives +0.03 and +0.07 a year. The sign
+    is right.
+  - The hierarchy is slow. Two years without churn or without slide move
+    the head by 0.03–0.26 log units against a span of 3–4: the "stable-ish".
+  - The expectations confused the cohort slide with the occupant drift by
+    rank (RESULTS.md).
+- **A4. What persists** (the gapped statistic):
+  - **Participation carries it.** Items +0.14 to +0.19; activity per item
+    +0.02 to +0.07.
+  - **It is decline.** Within change-1 fallers +0.19 to +0.20, within risers
+    −0.02 to +0.02. That is the reverse of amplification of risers.
+  - **Submissions:** removed by each community's 2019 loading on the
+    platform aggregate (+0.112 → +0.006 at a half-year gap), and it decays
+    by a year (+0.046). A shared trend: Gomez's aggregate-risk term.
+  - **Comments:** survives the aggregate and the clusters (+0.130), and is
+    flat to a year (+0.108). Community-specific attrition.
+  - **At Facebook's settings** (26-week changes from December 2020) Reddit
+    is weak (−0.04 to +0.08). The contrast rests on the annual horizon.
+- **A8. Gomez's decomposition of the arithmetic shares:**
+  - Displacement is a steady +0.04 to +0.08 of the share a year at every
+    cut-off.
+  - The submissions head's fall is the members' own decline: within −0.24
+    and −0.26 a year in 2020–22 (A8-1 PASS there, a factor of 2.8;
+    borderline on the comments head, 2.0).
+  - Gomez's arithmetic formula ½(ζ − 1)ν² misses the measured displacement
+    everywhere (A8-2 FAIL). Passing swings inflate measured displacement,
+    which is the bias the paper's cohort estimators remove.
+- **A5. Long-panel gates (running):**
+  - The frozen moving home on `reddit_submissions_long` scores
+    **0.246 ± 0.085**, against persistence 0.163 and frozen A 0.194 (V3).
+    That is a non-inferiority FAIL against frozen A: +0.052 against a margin
+    of 0.05. Model A in the same harness is pending.
+  - Diagnosis: simulated rank changes are too small at every horizon (median
+    13-week move 4–6 against 7–8). This is the V4 variance error.
+
+### 3. A5b, the V4 correction (designed before its run, post hoc to the failure; fc28c25)
+
+- In the frozen form the level's one-step variance is model A's minus σ_L².
+- Preserving A's requires subtracting κσ_L²/2, not σ_L²:
+  Var ΔL = [2q + κσ_L²]/(2 − κ).
+- Opt-in variant `movinghome_vp`, with a known-answer test (A and the
+  variant within 5% of 2σ_p²/(2 − κ); the frozen form short by more than
+  0.8σ_L²). Its long-panel gates are queued.
+- The frozen form is unchanged and its failure stands in the record.
+
+### 4. Paper
+
+- `paper/pnas_draft.tex` compiles with `paper/references.bib`.
+- Figures 1–5 come from `make_pnas_figures.py` (saved outputs only).
+- Open items are marked \todo: the long-panel gates, the out-of-period
+  structure test (A6), data availability, and authorship.
+
+### 5. Not yet run or pending
+
+- A5 arms on comments and the ablations.
+- A5b.
+- A6 (running).
+- Joint block bootstrap (A9).
+- A round-3 referee review.
