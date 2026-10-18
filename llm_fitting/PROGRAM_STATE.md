@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-18** (the paragraphs on §2z-da … §2z-di were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-18** (the paragraphs on §2z-da … §2z-dj were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -280,6 +280,15 @@ spine, "size does not protect", and the model and momentum. The outline
     named, and the data are not redistributed (owner, §2z-dh §10).
   - The owner said "the protocol looks fine". The bridge stays sealed
     until the owner explicitly names it for opening.
+- **Round 4 (§2z-dj, 2026-10-19):** three referee models; all say send
+  out, without enthusiasm.
+  - Withdrawn as discoveries: flattening (c/s̄ = S*/S); "size-blindness
+    exposes the top" (it is the head's flat slope; 20-seed calibrated
+    worlds); the raw size exponent as a comparison with firms.
+  - Standing: persistence; the balance as where the hierarchy comes
+    from (30-year counterfactuals); the head's fall in participation.
+  - Manuscript v3 (7 pages). Title "How constant turnover holds up a
+    durable hierarchy of online attention", owner to confirm.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it

@@ -1,0 +1,12 @@
+reddit_submissions_long k    78 1->2: share change -0.161; current within -0.237 between +0.076; prior-year cohort within -0.253 between +0.139
+reddit_submissions_long k    78 2->3: share change -0.186; current within -0.259 between +0.073; prior-year cohort within -0.307 between +0.202
+reddit_submissions_long k   312 1->2: share change -0.099; current within -0.162 between +0.064; prior-year cohort within -0.188 between +0.147
+reddit_submissions_long k   312 2->3: share change -0.109; current within -0.165 between +0.056; prior-year cohort within -0.205 between +0.164
+reddit_submissions_long k  1250 1->2: share change -0.042; current within -0.100 between +0.058; prior-year cohort within -0.134 between +0.135
+reddit_submissions_long k  1250 2->3: share change -0.047; current within -0.097 between +0.049; prior-year cohort within -0.124 between +0.139
+reddit_comments_ext k   195 1->2: share change -0.072; current within -0.150 between +0.078; prior-year cohort within -0.151 between +0.135
+reddit_comments_ext k   195 2->3: share change -0.054; current within -0.123 between +0.069; prior-year cohort within -0.140 between +0.174
+reddit_comments_ext k   781 1->2: share change -0.036; current within -0.097 between +0.061; prior-year cohort within -0.114 between +0.134
+reddit_comments_ext k   781 2->3: share change -0.023; current within -0.076 between +0.054; prior-year cohort within -0.091 between +0.134
+reddit_comments_ext k  3125 1->2: share change -0.010; current within -0.059 between +0.049; prior-year cohort within -0.082 between +0.119
+reddit_comments_ext k  3125 2->3: share change -0.006; current within -0.043 between +0.037; prior-year cohort within -0.053 between +0.100

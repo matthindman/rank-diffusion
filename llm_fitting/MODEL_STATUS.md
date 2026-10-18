@@ -12816,3 +12816,144 @@ Facebook pages stay unnamed in the paper. Sources:
 - Cross-model recovery.
 - The by-cut-off bias of the boundary estimator.
 - The round-4 referee reviews are next (`runs/2026-10-18_external_critiques_round4/`).
+
+## 2z-dj. 2026-10-19 — REVIEW (three referee models, round 4, on manuscript v2) and EXPLORATORY MEASUREMENT (post hoc; expectations in PLAN.md addenda R5–R8, written before each run). Three of the round-3 "discoveries" do not survive: flattening (c < s̄) is the ladder's position against its balance (c/s̄ = S*/S); the top turns over fastest because the head is flattest, not because of size-blindness (20-seed calibrated worlds); the raw size exponent cannot place Reddit against firms. What stands: persistence (every world −0.02 to −0.10; robust to the 2020 surge and the 2021 capture change taken one at a time); the balance as the answer to where the hierarchy comes from (30-year counterfactuals: collapse without volatility, unlimited steepening without the slide); the head's fall in participation, not engagement per post. Manuscript v3; title "How constant turnover holds up a durable hierarchy of online attention" (owner to confirm). Nothing adopted; no gate evaluation; bridge sealed
+
+_Claude Opus 5.5 (Anthropic), Claude Code.
+- **Reviews:** `runs/2026-10-18_external_critiques_round4/`, with
+  `SYNTHESIS_R4.md` (F1–F24, each rechecked).
+- **Runs:** `runs/2026-10-18_pnas_push/` R5–R8.
+- **Owner instructions:** §2z-dh §§9–10._
+
+### 1. Verdicts
+
+All three reviewers say send out without enthusiasm. They agree on four
+points:
+- "holds up" is the weakest word;
+- flattening is not a discovery;
+- the null worlds are single seeds from a Zipf start;
+- the abstract's causal clause is unsupported.
+
+The verified findings are in SYNTHESIS_R4 §2. Three expectations from round
+3 were scored PASS but fail as written (NW-2 row 2, NW-4, NW-5). They are
+corrected in RESULTS.
+
+### 2. New measurements (all post hoc, development data; scored in RESULTS)
+
+- **R5, named heads.**
+  - r/memes held rank 1 in 92% of weeks while its share fell from 7.0% to
+    1.8%; r/AskReddit held it in 98% while its share fell from 11.3% to
+    4.9%.
+  - The 2019 submissions head fell from 50.2% to 25.0%. Newcomers restored
+    36% of the loss (comments: 46%).
+  - Three quarters of the head members lost share. The ten largest losers
+    carry 66% of the loss, so R5-3 FAILS.
+- **R6, 30 years from the observed ladder** (20 seeds).
+  - Slide only: the head shape falls by 90% (submissions) and 61%
+    (comments). CF-1 passes.
+  - Volatility only: it rises by 67% and 28%. CF-2 fails on comments.
+  - Both: the slopes end within 5–16% of the run from equality. CF-3 fails
+    on submissions at K/2.
+  - Two-year non-additivity is explained: the slide measured against the
+    re-selected U_K contains c_K, so churn's net effect on the shape is
+    c_k − c_K.
+- **R7, null worlds at 20 seeds.**
+  - The size-blind constant-slope world has top-10 turnover 0.24
+    [0.13, 0.37] against 0.23 at K/2, so R7-1 fails for it.
+  - In the calibrated worlds from the data's ladder, top-10 turnover is
+    0.21 (size-blind) against 0.19 (firm-like), against 0.14 at K/2.
+    R7-2 and R7-3 fail.
+  - R7-2b passes: the size-blind calibrated world matches the submissions
+    profile from K/64 to K/2 within 0.05.
+  - The raw β of a planted 0 is 0.062, and of a planted 0.2 is 0.094, so
+    R7-4 fails.
+  - c < s̄ in 100% of seeds in every non-Gibrat world (R7-5 passes).
+  - The Gomez noise baseline is −0.053, matching 2019–20's −0.06
+    (R7-6 passes). The prior-year cohort's within term is −0.25 and −0.31
+    (R7-6b passes).
+- **R8, head share split exactly.** The submissions head's share of posts
+  fell from 22% to 9%, while its relative karma per post rose from 2.25 to
+  3.92. Comments: share of comments 41% to 31%, karma per comment 1.48 to
+  1.61. R8-1 and R8-2 fail; R8-3 passes.
+
+### 3. What changed in the paper (v3)
+
+- **The answer leads.** The balance (S* = σ²/2(s̄ − e)) is shown by the flat
+  start and by the 30-year counterfactuals. Durability is a separation of
+  time scales: crossings in about a year; relaxation over 2–22 years.
+- **Flattening** is stated as c/s̄ = S*/S, a state, not a mechanism.
+- **Results 2** is retitled "The top turns over fastest because the
+  hierarchy is flattest there".
+  - Size gives less protection than for firms. Lasting β is 0.05
+    (submissions) and 0.06–0.13 (comments); Facebook's two-step estimate is
+    0.02.
+  - The raw estimator is shown to be uninformative.
+  - Facebook's rank-1 occupant changes in 52% of weeks.
+- **Boundary ratio:** an instrument, not a test. It robustly excludes only
+  jumps; neutral copying's 0.69 is an edge effect.
+- **Persistence:**
+  - confounders excluded one at a time, never both;
+  - items +0.13 to +0.19;
+  - linked to heterogeneous growth types (GLLM; Guvenen) and to the
+    composition term.
+- **The head's fall** comes through participation, with no causal claim
+  that persistence drove it.
+- **Named Reddit communities**, per the owner (§2z-dh §10).
+- **Data statement revised:** no data transfer to reviewers; results are
+  regenerated on request; Reddit acquisition is a TODO.
+- **Citations added:** Riccaboni 2008, Huberman & Adamic 1999, Ratkiewicz
+  2010, Sangiorgio 2024, TeBlunthuis & Hill 2022, Fernholz 2017; Baker &
+  Smyth's names verified.
+- **Figures:** 2B/2C use the 20-seed worlds with bands; 3B uses the
+  half-year cells and the worlds' ranges; 4C shows the 30-year
+  counterfactuals with bands; 5A/5B labels fixed; the generator's default
+  is the current figures.
+- **SI:**
+  - persistence table rows corrected (platform-total and cohort-mean
+    factors; true-sign split);
+  - the stationary form with e_k;
+  - the Gomez general term, noise baseline, prior-year cohorts and items
+    split;
+  - the long-run table;
+  - null worlds at 20 seeds, with recovery evidence;
+  - the full list of failed expectations;
+  - AI models named.
+- **Length:** 7 pages; abstract 250 words; significance 120.
+
+### 4. Process notes
+
+- **Memory pressure.** Five concurrent model-estimation jobs drove the
+  machine into swap (27.7 of 28.7 GB). Three of my jobs were stopped and
+  rerun one at a time. A `pgrep -f` pattern also stopped their parent shells
+  (exit 144); the size-blind world finished unharmed. No result from a
+  stopped job is used.
+- **A figure-script edit damaged the file.** A pattern matched the old
+  `fig3` instead of `fig3v2`. The file was restored from HEAD and the
+  session's edits reapplied, scoped by function.
+- **Round-3 exposure rows** were added late (§2z-di). Rows for R5–R8 were
+  added with the runs.
+
+### 5. For the owner
+
+- **The title.** "How constant turnover holds up a durable hierarchy of
+  online attention". The alternatives are in the source comments.
+- **Page IDs.** Confirm publishing them. Also needed: the CrowdTangle List
+  IDs and year of access, the Reddit acquisition source and date, a DOI,
+  authorship and acknowledgements.
+- **Public repository audit.** Check for per-Page values: for example,
+  `runs/2026-10-15_puzzle/puzzle__facebook_a.json` holds 150 unnamed
+  per-Page log-rank paths.
+- **Protocol v3.1.** Opus R4 notes that P5's change 2 (2024 Q1 − 2023 Q1) may
+  span the archive's 2023 source switch and the June 2023 blackout; P5 would
+  then not exclude both confounders cleanly. P6's thresholds should be read
+  against the raw estimator's calibration (R7). Adoption and the opening of
+  the bridge remain the owner's.
+
+### 6. Not run
+
+- β = 0.05 and 0.10 calibration worlds: running at writing.
+- Fitted two-type (GLLM) and Yule–Simon rivals.
+- Cross-model recovery of the gate.
+- A heterogeneous-drift world.
+- The capture-delay audit, which needs the WD drive.
+- Round-5 reviews.

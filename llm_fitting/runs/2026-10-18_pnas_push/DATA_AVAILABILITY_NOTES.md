@@ -46,10 +46,17 @@ from file names and sizes alone, to contain raw exports. They are not models.
   listed, unordered and with no values. The terms permit this. **It is
   awaiting the owner's confirmation**, because it ends the practice of never
   identifying Pages.
-- **Verification:** the CrowdTangle exports and the Reddit panels are
-  available to editors and reviewers on request, for verification only.
-  PNAS policy requires this, and Broniatowski et al. report CrowdTangle
-  allowing it. That permission was not found on CrowdTangle's own pages.
+- **Verification (revised 2026-10-19 after the round-4 referees):** the
+  data are not transferred to editors or reviewers. The documented
+  CrowdTangle terms do not allow sharing outside the research team, and
+  Broniatowski et al.'s reported journal-verification permission was not
+  found on CrowdTangle's own pages. Instead, any deposited result is
+  regenerated on request from the authors' copies of the data. Meta's
+  written consent would be needed for any transfer.
+- **Before submission:** audit the public repository for any per-Page
+  values. For example, `runs/2026-10-15_puzzle/puzzle__facebook_a.json`
+  holds 150 unnamed per-Page log-rank paths (Fable round 4); gate and
+  card logs should be checked too. Archive a frozen snapshot with a DOI.
 - **Citation:** the CrowdTangle citation needs the List IDs and the year of
   access, from the owner.
 

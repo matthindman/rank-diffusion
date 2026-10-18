@@ -481,3 +481,153 @@ set of triples, never both by the same set. Post hoc; development data only.
 **Expectations:**
 - **R4-4 (prior 65%):** positive and ≥ +0.05 on both ladders at gaps 4 and 8.
 - **R4-5 (prior 80%):** both worlds ≤ +0.02.
+
+## Addendum R5 (2026-10-18, before the run): who the head is, and who fell (named; descriptive)
+
+**Why.** The owner allows Reddit communities to be named (MODEL_STATUS
+§2z-dh §10). A reader of a paper about the top of a hierarchy should know who
+is at the top and who left it. The falling head of submissions (share of the
+top 78 from 50.2% in 2019 to 34.0% in 2022) can be broad, with many members
+declining, or concentrated, with a few giants collapsing. The persistence
+result says broad.
+
+**What is computed.** Development data, both Reddit ladders. Blocks are the
+paper's: 52 weeks, aligned to the panel's end, labelled 2019–2022.
+- the weekly rank-1 occupant: its identity and the share of weeks it holds
+  rank 1;
+- the top K/64 by 2019 total: each member's share of the top-K total in 2019
+  and 2022, the share of members whose share fell, and the ten largest losers
+  and gainers;
+- the communities that entered the 2022 top K/64, and the communities that
+  left it.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R5-1 | the rank-1 occupant of comments is one community in ≥ 95% of weeks | 80% |
+| R5-1b | the same for submissions, ≥ 90% | 60% |
+| R5-2 | more than half of the 2019 submissions head (top 78) hold a lower share of top-K activity in 2022 than in 2019 | 75% |
+| R5-3 | the decline is broad: the ten largest losers account for less than 60% of the 2019 head's summed share loss (its members' losses only) | 50% |
+
+## Addendum R6 (2026-10-18, after the gpt-6-astra round-4 report; before the run): the long-run counterfactuals
+
+**Why.** The round-4 reviewer showed that the two-year counterfactuals do
+not support "without churn it collapses" on comments. With churn and slide
+the head changes by −0.080 a year; with the slide only, by −0.038. Removing
+churn slows the flattening there.
+
+**Diagnosis from the saved JSONs (before this run).** The slide is measured
+against the re-selected top-K mean U_K. In the simulation, the weekly slide
+of the top k is the drift difference (ḡ_K − ḡ_k) plus the crossing gain at K,
+c_K, because U_K rises as the universe re-selects. Check on comments at the
+head:
+- slide-only slide 0.0006 + c_K ≈ 0.0025 gives about 0.0031;
+- the churn-and-slide slide is 0.0029.
+
+So churn's net effect on the shape U_k − U_K is c_k − c_K. That is negative
+at the comments head, where the model's crossing gain rises down the ladder,
+and positive at the submissions head. The two-year runs mix this with drift.
+
+The question the title asks, where the hierarchy comes from, is a long-run
+one. In Gabaix and Atlas theory, diffusion spreads levels and the upper
+ranks' drift deficit against the floor compresses them, and the steepness
+S = σ²/(2s̄) is their balance.
+
+**Run** (`churn_counterfactual.py <panel> long30`):
+- the model's lasting core as in A3;
+- three worlds, each from the observed end-2019 ladder, for 30 years, 20
+  seeds: churn + slide, slide only (σ0 = 0), churn only (drift 0);
+- the shape at K/64 … K/2 and the local slopes recorded yearly.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| CF-1 | slide only: after 30 years the head shape (U_{K/64} − U_K) has lost at least half of its starting value on both ladders | 65% |
+| CF-2 | churn only: the head shape grows by more than 50% in 30 years on both ladders, and is still growing in the last decade (last-decade rise ≥ half the first decade's) | 65% |
+| CF-3 | churn + slide: the 30-year local slopes at K/64 … K/2 are within 15% of the flat start's (R3-C), so the long-run hierarchy does not depend on where it starts | 70% |
+
+**What follows.**
+- If CF-1 to CF-3 hold, the paper's counterfactual statement becomes:
+  - churn alone steepens without limit;
+  - slide alone flattens it toward collapse;
+  - together they hold a hierarchy whose steepness their balance sets,
+    whatever the start.
+- The two-year non-additivity on comments goes to the SI with the diagnosis
+  above.
+
+## Addendum R7 (2026-10-18, after two round-4 reports; before the runs): null worlds with bands, calibrated worlds, β calibration, a Gomez noise baseline
+
+**Why.** Both round-4 reports (gpt-6-astra; Fable 5.1) make four points:
+- The R3 null worlds are single seeds. The top-10 turnover rests on 1–10
+  of 30 name-years.
+- The size-blind world starts from a Zipf ladder with S = 1, so it cannot
+  show the data's curvature.
+- The β comparison with firms uses an estimator that attenuates a planted
+  0.2 to 0.11.
+- "Crossings fall short of the slide" is not a discovery: three of the four
+  null worlds show it.
+
+**Runs** (`null_worlds_r7.py`):
+1. **The four R3 worlds** (gibrat, atlas, neutral, rdm), seeds 0–19, the
+   same statistics.
+2. **Calibrated worlds from the model estimated on Reddit submissions.** They
+   use the data's starting ladder (filtered levels before week 30), its
+   passing parts and its exits.
+   - Size-blind: planted β = 0, no drift by rank. 20 seeds.
+   - Firm-like: planted β = 0.2, no drift. 20 seeds.
+   - Calibration: planted β = 0.05 and 0.10, no drift. 5 seeds each.
+3. **Every world gets the Gomez decomposition of the arithmetic shares** of
+   the top K/64 and K/16 by block total, with two cohorts: the current
+   year's top k, and the top k of the previous year.
+4. **Data:** the same prior-year cohort in `gomez_r3.py`'s decomposition
+   (`gomez_r7_prior.py`).
+
+**Disclosure.** Within each seed the boundary and rate-law bootstraps are cut
+to 5 replications, because the bands come from the seeds.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R7-1 | R3 worlds at 20 seeds. Size-blind: the 90% band of top-10 turnover lies above the K/2 mean. Firm-like and neutral: the top-10 mean lies below K/2's | 70% / 85% |
+| R7-2 | calibrated size-blind world: top-10 turnover above K/2's (bands apart) | 75% |
+| R7-2b | the same world's turnover at K/64, K/16, K/4 and K/2 within ±0.05 of the submissions data at each cut-off | 40% |
+| R7-3 | calibrated firm-like world: top-10 turnover at least 0.05 below the calibrated size-blind world's | 70% |
+| R7-4 | β estimator: estimated β rises with planted β; planted 0.2 is estimated at 0.10–0.16; the data's raw 0.045–0.082 (submissions) maps to planted β below 0.12 | 60% |
+| R7-5 | c < s̄ (mean over cells) in at least two of the three non-Gibrat R3 worlds in at least 80% of seeds: flattening is not a discovery | 80% |
+| R7-6 | calibrated size-blind world, current-year cohort: the head's within term is negative, −0.03 to −0.10 a year (the noise baseline) | 60% |
+| R7-6b | data, prior-year cohort: the submissions head's within term is below −0.15 in 2020→21 and 2021→22 | 70% |
+
+## Addendum R8 (2026-10-19, after the round-4 Opus report; before the run): what fell at the head, posting or engagement per post
+
+**Why.** The Opus round-4 report sets two records against the abstract's
+"persistence … cut the share of Reddit submissions' head":
+- the June 2021 step at the submissions head is in votes per post, not in
+  posting (§2z-ca);
+- persistence is carried by item counts (§2z-dg A4).
+
+So the karma share of the head is split exactly into the share of items and
+karma per item relative to the top K:
+
+share_karma = share_items × (karma per item of the head / karma per item of
+the top K).
+
+The split is computed for the 2019 head with fixed names, and for each
+year's head re-selected. Blocks, universe and arithmetic are those of R5
+(`head_named.py`). Development data; names allowed (§2z-dh §10).
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R8-1 | the 2019 submissions head (fixed names), 2019 → 2022: the change in log relative karma per item is larger in magnitude than the change in log item share | 55% |
+| R8-2 | the re-selected submissions head: item share changes by less than 20% (relative) from 2019 to 2022, while its karma share falls by 32% | 45% |
+| R8-3 | comments, re-selected head: the karma-share fall is mostly in item share (the larger part of the log change) | 50% |
+
+**What follows.** If R8-1 and R8-2 hold, the abstract and Results drop the
+causal clause linking persistence to the head's fall. The head's fall is then
+stated as a fall in engagement per post, dated with §2z-ca. If they fail,
+the text says the head lost posting, which is the component that persists.
+Either way the causal link is not claimed without a test.

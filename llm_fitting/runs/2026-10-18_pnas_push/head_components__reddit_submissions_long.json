@@ -1,0 +1,75 @@
+{
+ "panel": "reddit_submissions_long",
+ "K": 5000,
+ "k": 78,
+ "years": [
+  2019,
+  2020,
+  2021,
+  2022
+ ],
+ "rows": [
+  {
+   "year": 2019,
+   "reselected": {
+    "share_karma": 0.5023582028590187,
+    "share_items": 0.2236111513641418,
+    "rel_karma_per_item": 2.2465704406706823
+   },
+   "fixed2019": {
+    "share_karma": 0.5023582028590187,
+    "share_items": 0.2236111513641418,
+    "rel_karma_per_item": 2.2465704406706823
+   }
+  },
+  {
+   "year": 2020,
+   "reselected": {
+    "share_karma": 0.497886150899084,
+    "share_items": 0.1909329316442088,
+    "rel_karma_per_item": 2.607649432769737
+   },
+   "fixed2019": {
+    "share_karma": 0.4717905121126098,
+    "share_items": 0.17548522031057115,
+    "rel_karma_per_item": 2.688491436929229
+   }
+  },
+  {
+   "year": 2021,
+   "reselected": {
+    "share_karma": 0.4178696555223875,
+    "share_items": 0.13402030323584016,
+    "rel_karma_per_item": 3.1179578424550183
+   },
+   "fixed2019": {
+    "share_karma": 0.35240567426370095,
+    "share_items": 0.10297055659201368,
+    "rel_karma_per_item": 3.422392632682276
+   }
+  },
+  {
+   "year": 2022,
+   "reselected": {
+    "share_karma": 0.34028732841734843,
+    "share_items": 0.0868907576798197,
+    "rel_karma_per_item": 3.9162660966918907
+   },
+   "fixed2019": {
+    "share_karma": 0.25019468762213887,
+    "share_items": 0.07279866635733778,
+    "rel_karma_per_item": 3.4368031743059584
+   }
+  }
+ ],
+ "dlog_reselected": {
+  "karma": -0.3895230724383127,
+  "items": -0.9452569411682226,
+  "per_item": 0.5557338687299098
+ },
+ "dlog_fixed2019": {
+  "karma": -0.6970740514649033,
+  "items": -1.122210976202534,
+  "per_item": 0.42513692473763054
+ }
+}

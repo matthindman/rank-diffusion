@@ -1,0 +1,16 @@
+beta05: estimated lasting beta (structure function) on the data; world beta +0.050, sigma0 0.1002
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+beta05 seed 0: turnover [(10, 0.133), (25, 0.213), (78, 0.226), (312, 0.188), (1250, 0.173), (2500, 0.139)]; beta 0.079; gapped {13: -0.08075051867395308, 26: -0.07744340308684766}; boundary 1.1160420465120344; law c/s 0.9308845252302106
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+beta05 seed 1: turnover [(10, 0.233), (25, 0.253), (78, 0.209), (312, 0.183), (1250, 0.164), (2500, 0.141)]; beta 0.082; gapped {13: -0.0931759445540386, 26: -0.08353718818911382}; boundary 1.136125429478601; law c/s 0.8107170579564655
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+beta05 seed 2: turnover [(10, 0.167), (25, 0.227), (78, 0.205), (312, 0.178), (1250, 0.162), (2500, 0.134)]; beta 0.079; gapped {13: -0.07011521550027955, 26: -0.07289336722268443}; boundary 1.0485636891638768; law c/s 0.931171795067609
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+beta05 seed 3: turnover [(10, 0.133), (25, 0.187), (78, 0.226), (312, 0.197), (1250, 0.161), (2500, 0.141)]; beta 0.070; gapped {13: -0.07900141789233248, 26: -0.06957796558759104}; boundary 1.0734875815157139; law c/s 0.9103869587923417
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+beta05 seed 4: turnover [(10, 0.167), (25, 0.24), (78, 0.188), (312, 0.193), (1250, 0.16), (2500, 0.136)]; beta 0.051; gapped {13: -0.0770305914605757, 26: -0.06761480577745528}; boundary 1.102918264587894; law c/s 0.9103343943055476

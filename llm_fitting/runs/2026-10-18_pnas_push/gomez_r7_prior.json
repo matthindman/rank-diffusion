@@ -1,0 +1,174 @@
+{
+ "reddit_submissions_long": [
+  {
+   "k": 78,
+   "pair": [
+    1,
+    2
+   ],
+   "share_change": -0.16071243442341698,
+   "current_within": -0.23681361246610955,
+   "current_between": 0.07610117804269262,
+   "current_share_a": 0.497886150899084,
+   "prior_within": -0.2530462880957923,
+   "prior_between": 0.13875645986509616,
+   "prior_share_a": 0.4717905121126098
+  },
+  {
+   "k": 78,
+   "pair": [
+    2,
+    3
+   ],
+   "share_change": -0.18566154799647216,
+   "current_within": -0.2590696138823817,
+   "current_between": 0.0734080658859094,
+   "current_share_a": 0.4178696555223875,
+   "prior_within": -0.3069234365604808,
+   "prior_between": 0.20246369789289834,
+   "prior_share_a": 0.37997993290782534
+  },
+  {
+   "k": 312,
+   "pair": [
+    1,
+    2
+   ],
+   "share_change": -0.09863344092780124,
+   "current_within": -0.16215445768064712,
+   "current_between": 0.06352101675284583,
+   "current_share_a": 0.6884819942617497,
+   "prior_within": -0.18839792665152288,
+   "prior_between": 0.14731517076652853,
+   "prior_share_a": 0.6471618379577825
+  },
+  {
+   "k": 312,
+   "pair": [
+    2,
+    3
+   ],
+   "share_change": -0.10924086950927381,
+   "current_within": -0.16535316007698614,
+   "current_between": 0.05611229056771241,
+   "current_share_a": 0.6205746461508787,
+   "prior_within": -0.20530805429749566,
+   "prior_between": 0.1635998298793682,
+   "prior_share_a": 0.5768415698593453
+  },
+  {
+   "k": 1250,
+   "pair": [
+    1,
+    2
+   ],
+   "share_change": -0.04158753424065653,
+   "current_within": -0.09990715912642847,
+   "current_between": 0.05831962488577212,
+   "current_share_a": 0.8667751994555059,
+   "prior_within": -0.1336123447527316,
+   "prior_between": 0.13471985895488425,
+   "prior_share_a": 0.8298091307717925
+  },
+  {
+   "k": 1250,
+   "pair": [
+    2,
+    3
+   ],
+   "share_change": -0.04708677565133912,
+   "current_within": -0.09651238103530932,
+   "current_between": 0.0494256053839702,
+   "current_share_a": 0.8307281561691982,
+   "prior_within": -0.123942257568207,
+   "prior_between": 0.13859749259519896,
+   "prior_share_a": 0.7801781516766627
+  }
+ ],
+ "reddit_comments_ext": [
+  {
+   "k": 195,
+   "pair": [
+    1,
+    2
+   ],
+   "share_change": -0.07188423558362056,
+   "current_within": -0.15037945557906715,
+   "current_between": 0.0784952199954466,
+   "current_share_a": 0.5664467492678391,
+   "prior_within": -0.15120910897830772,
+   "prior_between": 0.13542894648502496,
+   "prior_share_a": 0.5341572458341205
+  },
+  {
+   "k": 195,
+   "pair": [
+    2,
+    3
+   ],
+   "share_change": -0.05378984317365576,
+   "current_within": -0.12281358648247523,
+   "current_between": 0.06902374330881948,
+   "current_share_a": 0.5257281576978937,
+   "prior_within": -0.14038923014840124,
+   "prior_between": 0.1740183823247595,
+   "prior_share_a": 0.4812647954984091
+  },
+  {
+   "k": 781,
+   "pair": [
+    1,
+    2
+   ],
+   "share_change": -0.03610450470159732,
+   "current_within": -0.09678135132586083,
+   "current_between": 0.06067684662426347,
+   "current_share_a": 0.7667151185556861,
+   "prior_within": -0.1141917541070376,
+   "prior_between": 0.13394056155752632,
+   "prior_share_a": 0.7247208759191301
+  },
+  {
+   "k": 781,
+   "pair": [
+    2,
+    3
+   ],
+   "share_change": -0.022552533716349243,
+   "current_within": -0.07643941677513602,
+   "current_between": 0.05388688305878669,
+   "current_share_a": 0.7390332489530066,
+   "prior_within": -0.09084350375031568,
+   "prior_between": 0.1339543950330279,
+   "prior_share_a": 0.6925113932998993
+  },
+  {
+   "k": 3125,
+   "pair": [
+    1,
+    2
+   ],
+   "share_change": -0.010070159104222709,
+   "current_within": -0.059073747291186515,
+   "current_between": 0.04900358818696377,
+   "current_share_a": 0.9249697544281292,
+   "prior_within": -0.08229881332475318,
+   "prior_between": 0.11923197948251593,
+   "prior_share_a": 0.8830416382834967
+  },
+  {
+   "k": 3125,
+   "pair": [
+    2,
+    3
+   ],
+   "share_change": -0.005634525286787095,
+   "current_within": -0.04270660688125218,
+   "current_between": 0.03707208159446509,
+   "current_share_a": 0.9156551618344442,
+   "prior_within": -0.05337610985536625,
+   "prior_between": 0.09952829589680555,
+   "prior_share_a": 0.8703283249030511
+  }
+ ]
+}

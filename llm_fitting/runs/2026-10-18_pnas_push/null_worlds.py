@@ -207,26 +207,27 @@ def stats(df, label):
     return res
 
 
-which = sys.argv[1]
-HERE = Path(__file__).resolve().parent
-if which == "data":
-    out = {}
-    for panel in ("reddit_submissions_long", "reddit_comments_ext", "facebook_a"):
-        Kp = m1.PANELS[panel]["K"]
-        df = mrd.load_panel(mrd.PLATFORMS[m1.PANELS[panel]["platform"]])
-        Tp = int(df["period"].max()) + 1
-        ranks = [r for r in RANKS_C if r <= Kp]
-        piv = df[df["rank"].isin(ranks)].pivot(index="period", columns="rank", values="entity_id").reindex(range(Tp))
-        out[panel] = {int(r): float(np.mean(piv[r].values[1:] != piv[r].values[:-1])) for r in piv.columns}
-        print(f"{panel}: C(R) weekly " + ", ".join(f"R={r} {v:.2f}" for r, v in out[panel].items()), flush=True)
-    (HERE / "rank_change_data.json").write_text(json.dumps(out, indent=1))
-else:
-    if which == "neutral":
-        _, rows = world_neutral()
-        df = frame_from_rows(rows)
+if __name__ == "__main__":                                      # (R7: importable; behaviour unchanged)
+    which = sys.argv[1]
+    HERE = Path(__file__).resolve().parent
+    if which == "data":
+        out = {}
+        for panel in ("reddit_submissions_long", "reddit_comments_ext", "facebook_a"):
+            Kp = m1.PANELS[panel]["K"]
+            df = mrd.load_panel(mrd.PLATFORMS[m1.PANELS[panel]["platform"]])
+            Tp = int(df["period"].max()) + 1
+            ranks = [r for r in RANKS_C if r <= Kp]
+            piv = df[df["rank"].isin(ranks)].pivot(index="period", columns="rank", values="entity_id").reindex(range(Tp))
+            out[panel] = {int(r): float(np.mean(piv[r].values[1:] != piv[r].values[:-1])) for r in piv.columns}
+            print(f"{panel}: C(R) weekly " + ", ".join(f"R={r} {v:.2f}" for r, v in out[panel].items()), flush=True)
+        (HERE / "rank_change_data.json").write_text(json.dumps(out, indent=1))
     else:
-        X, ids = {"gibrat": world_gibrat, "atlas": world_atlas, "rdm": world_rdm}[which]()
-        df = frame_from_matrix(X, ids)
-    res = stats(df, which)
-    print(json.dumps({k: v for k, v in res.items() if k not in ("boundary_by_k",)}, default=float), flush=True)
-    (HERE / f"null_world__{which}.json").write_text(json.dumps(res, indent=1, default=float))
+        if which == "neutral":
+            _, rows = world_neutral()
+            df = frame_from_rows(rows)
+        else:
+            X, ids = {"gibrat": world_gibrat, "atlas": world_atlas, "rdm": world_rdm}[which]()
+            df = frame_from_matrix(X, ids)
+        res = stats(df, which)
+        print(json.dumps({k: v for k, v in res.items() if k not in ("boundary_by_k",)}, default=float), flush=True)
+        (HERE / f"null_world__{which}.json").write_text(json.dumps(res, indent=1, default=float))

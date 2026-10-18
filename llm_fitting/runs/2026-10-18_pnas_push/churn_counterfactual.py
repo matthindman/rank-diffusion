@@ -8,7 +8,9 @@ shape_k = U_k - U_K (U_k the mean of the top k, K the panel's universe size); th
 against U_K is measured inside the simulation, c_k = sigma_k^2 / (2 S_k) from the simulation's own sigma_L at the
 rank-k level and the local slope.
 
-    python llm_fitting/runs/2026-10-18_pnas_push/churn_counterfactual.py <panel>
+    python llm_fitting/runs/2026-10-18_pnas_push/churn_counterfactual.py <panel> [flat20|long30]
+
+long30 (R6): the three worlds from the observed end-2019 ladder for 30 years, 20 seeds each, shape and slopes yearly.
 """
 import json
 import sys
@@ -26,6 +28,7 @@ import rankdiff_rdm as rdm  # noqa: E402
 
 panel = sys.argv[1]
 FLAT_ONLY = len(sys.argv) > 2 and sys.argv[2] == "flat20"           # R3-C: the flat start alone, 20 seeds, with bands
+LONG30 = len(sys.argv) > 2 and sys.argv[2] == "long30"              # R6: the three worlds from the observed ladder, 30 years
 K = m1.PANELS[panel]["K"]
 EST = dict(obs_frac=0.5, temper=True, min_knot_n=8, md_lags=6, t_tails=True, md_vr_long=True,
            mix_hetero=panel != "reddit_submissions_long")
@@ -87,7 +90,7 @@ def run(q, Lstart, weeks, seed, record_every=4):
     return np.array(path), slide / max(n_sl, 1), S_end, sig2
 
 
-worlds = {} if FLAT_ONLY else {
+worlds = {} if (FLAT_ONLY or LONG30) else {
     "churn_slide": p,
     "slide_only": replace(p, sigma0=0.0),
     "churn_only": replace(p, drift_g=np.zeros_like(p.drift_g)),
@@ -106,6 +109,20 @@ for name, q in worlds.items():
                      slide_week=sl.tolist(), c_week=c.tolist(), pred_rate_per_year=((c - sl) * 52).tolist(), S_start=S0.tolist(), S_end=S_end.tolist())
     print(f"  {name}: shape change per year at k={KS}: {np.round(rate.mean(0), 3).tolist()}; predicted (c - slide) x 52: "
           f"{np.round((c - sl) * 52, 3).tolist()}; slope start {np.round(S0, 2).tolist()} end {np.round(S_end, 2).tolist()}", flush=True)
+if LONG30:                                                          # R6
+    S0 = np.array([slope_at(np.sort(L0)[::-1], k) for k in KS])
+    out["start"] = dict(shape=shape(L0)[0].tolist(), S=S0.tolist())
+    for name, q in {"churn_slide": p, "slide_only": replace(p, sigma0=0.0),
+                    "churn_only": replace(p, drift_g=np.zeros_like(p.drift_g))}.items():
+        runs = [run(q, L0, 30 * 52, s, record_every=52) for s in range(20)]
+        paths = np.array([r[0] for r in runs])                     # seeds x 31 x len(KS)
+        S_end = np.array([r[2] for r in runs])
+        out[name] = dict(shape_by_year=paths.mean(0).tolist(), shape_q=[np.quantile(paths, q, 0).tolist() for q in (0.05, 0.95)],
+                         S_end=S_end.mean(0).tolist(), S_end_q=[np.quantile(S_end, q, 0).tolist() for q in (0.05, 0.95)])
+        print(f"  {name}, 30 years from the observed ladder: head shape by decade {np.round(paths.mean(0)[::10, 0], 3).tolist()}; "
+              f"slopes at 30 years {np.round(S_end.mean(0), 2).tolist()} (start {np.round(S0, 2).tolist()})", flush=True)
+    Path(__file__).with_name(f"churn_counterfactual__{panel}__long30.json").write_text(json.dumps(out, indent=1, default=float))
+    sys.exit(0)
 # (iv) flat start, 30 years
 flat = np.full(N, float(np.median(L0)))
 runs = [run(p, flat, 30 * 52, s, record_every=52) for s in range(20 if FLAT_ONLY else 10)]

@@ -372,16 +372,19 @@ ordering is disclosed. The same estimators are used throughout.
 **Scored:**
 - **NW-1 PASS:** Eq. 1 holds in every world. It is kinematics, not
   evidence.
+- _[CORRECTED 2026-10-19 by MODEL_STATUS §2z-dj (round-4 referee gpt-6-astra, verified): NW-2 had two rows. Row 1 (worlds i, ii, iv inside [0.85, 1.18]) PASSES; row 2 (the same in world iii) FAILS (0.578). The neutral world's ratio by cut-off is 0.76, 0.44, 0.54, 0.82, 1.04, 1.17, 0.12, so its pooled exclusion rests on the k = K cell.]_
 - **NW-2 PASS:** the boundary ratio is about 1 for the level diffusions
   (1.06, 1.07); neutral copying gives 0.58, outside the band. The ratio
   discriminates against copying, not among level diffusions.
 - **NW-3 PASS:** the slide is positive in every world, driftless Gibrat
   included. "Every community loses ground" is largely definitional.
+- _[CORRECTED 2026-10-19 by §2z-dj: NW-4 required world ii in 0.12–0.28; 0.114 is outside it, so NW-4 FAILS as written.]_
 - **NW-4 PASS:** Gibrat 0, firm-like 0.11, neutral 0.36, the
   data-calibrated model 0.070 (within ±0.05 of the data). The data's
   0.01–0.08 sits with Gibrat and the model. With planted β = 0.2 the estimator
   returns 0.11 under this passing noise, so the data's raw β also
   understates the lasting β somewhat.
+- _[CORRECTED 2026-10-19 by §2z-dj: NW-5 required every world within ±0.05. Worlds ii, iii and iv give −0.07, −0.11 and −0.10, so NW-5 FAILS as written. The contrast with the data (+0.14 to +0.20) is unaffected.]_
 - **NW-5 PASS:** no null world persists (−0.03 to −0.11); the data's
   +0.14 to +0.20 discriminates.
 - **NW-6 PASS:** C(R) rises with R in every world and on every ladder, a
@@ -602,3 +605,203 @@ membership uses the whole panel. Neither enters the cohort, which uses weeks
 - No simulated world gives a positive value.
 - Neither confounder alone accounts for it. No development triple excludes
   both; the sealed 2023–2024 data do (P5).
+
+## R5. Who the head is, and who fell (`head_named.py`; named, descriptive; owner permission §2z-dh §10)
+
+Blocks are 52 weeks, labelled 2019–2022. Shares are of the year's top-K
+total.
+
+| | submissions (head = top 78) | comments (head = top 195) |
+|---|---|---|
+| rank-1 occupant | r/memes 196 of 212 weeks (r/dankmemes 10, r/funny 2, r/place 2); 14 changes | r/AskReddit 209 of 213 weeks (r/politics 2, r/wallstreetbets 2); 6 changes |
+| head share by year (that year's head) | 0.502, 0.498, 0.418, 0.340 | 0.610, 0.566, 0.526, 0.497 |
+| the 2019 head's share in 2022 (same names) | 0.250 | 0.402 |
+| share of the incumbents' loss replaced by the 2022 head's newcomers | 0.36 (31 entrants) | 0.46 (81 entrants) |
+| share of 2019 head members whose share fell | 0.74 | 0.77 |
+| the ten largest losers' part of the incumbents' summed loss | 0.66 | 0.44 |
+| largest losers (2019 → 2022 share) | memes 0.070 → 0.018; dankmemes 0.056 → 0.008; PewdiepieSubmissions 0.027 → 0.000; aww 0.021 → 0.007; funny 0.020 → 0.007 | AskReddit 0.113 → 0.049; politics 0.019 → 0.008; dankmemes 0.010 → 0.002; The_Donald 0.007 → 0 |
+| largest gainers | MadeMeSmile 0.003 → 0.012; nextfuckinglevel; Unexpected; Damnthatsinteresting | AmItheAsshole 0.017 → 0.033; facepalm; mildlyinfuriating; interestingasfuck |
+| 2019 head members no longer in the top K by 2022 | The_Donald, ChapoTrapHouse (both banned by Reddit in June 2020), Cringetopia | The_Donald, ChapoTrapHouse, IncelTears, MGTOW |
+| entrants to the 2022 head, examples (2019 rank; −1 = outside the 2019 top K) | shitposting (4,787), 196 (−1), Superstonk (−1), antiwork (1,326), ukraine (−1), Eldenring (3,020) | antiwork (1,079), Superstonk (−1), Eldenring (2,542), ukraine (6,631) |
+
+**Scored:**
+
+| | expectation | result |
+|---|---|---|
+| R5-1 | comments' rank-1 occupant is one community in ≥ 95% of weeks | **PASS** (98.1%) |
+| R5-1b | the same for submissions, ≥ 90% | **PASS** (92.5%) |
+| R5-2 | more than half of the 2019 submissions head lose share by 2022 | **PASS** (74%) |
+| R5-3 | broad decline: the ten largest losers carry less than 60% of the submissions head's loss | **FAIL** (66%). The decline is broad in incidence: three quarters of members fell. In size it is concentrated at the very top: r/memes and r/dankmemes alone account for half. Comments, not registered: 44% |
+
+**Reading.**
+- **The thesis in names.** The 2019 leaders of submissions lost half their
+  share (50.2% → 25.0%). Newcomers restored about a third of the loss, so
+  the 2022 head holds 34.0%. On comments the 2019 leaders fell from 61.0% to
+  40.2%, and newcomers restored about half (head 49.7%).
+- **The leaders are the least secure in share, not in rank.** r/memes held
+  rank 1 in 92% of weeks while its share fell by three quarters. r/AskReddit
+  held it in 98% while its share fell by more than half.
+- **Some departures are administrative.** Two 2019 head members on both
+  ladders were banned by Reddit in June 2020.
+- **Some entry is tied to events.** Examples are Superstonk (2021), ukraine
+  (2022) and Eldenring (a 2022 game release).
+
+## R6. Long-run counterfactuals from the observed ladder (`churn_counterfactual.py <panel> long30`; expectations in PLAN.md addendum R6)
+
+The model's lasting core as in A3, from the observed end-2019 ladder. 30
+years, 20 seeds. Head shape = U_{K/64} − U_K in log units. Bands are 5–95%
+across seeds.
+
+| | world | head shape at 0 / 10 / 20 / 30 years | change in 30 years | local slopes at 30 years, K/64 … K/2 |
+|---|---|---|---|---|
+| submissions | churn + slide | 4.51 / 3.93 / 3.98 / 3.70 (3.57–3.82) | −18% | 0.58, 0.74, 0.92, 1.07, 1.30, 1.58 |
+| | slide only (σ0 = 0) | 4.51 / 2.38 / 0.92 / 0.47 (0.45–0.48) | −90% | 0.06, 0.07, 0.10, 0.15, 0.19, 0.28 |
+| | churn only (no drift) | 4.51 / 5.41 / 6.49 / 7.51 (7.26–7.67) | +67% | 1.30, 1.50, 1.65, 1.87, 2.52, 3.60 |
+| comments | churn + slide | 5.36 / 4.77 / 4.38 / 4.15 (4.08–4.24) | −23% | 0.59, 0.68, 0.88, 1.25, 1.65, 2.12 |
+| | slide only | 5.36 / 5.12 / 3.77 / 2.08 (2.08–2.09) | −61% | 0, 0, 0, 2.15, 1.06, 0.09 (the head collapses into a flat top above a cliff) |
+| | churn only | 5.36 / 5.87 / 6.34 / 6.86 (6.77–6.93) | +28% | 0.98, 1.06, 1.36, 1.85, 2.70, 3.85 |
+
+The observed starting slopes are 0.85 … 1.55 (submissions) and 0.99 … 2.13
+(comments).
+
+**Scored:**
+
+| | expectation | result |
+|---|---|---|
+| CF-1 | slide only: the head shape loses at least half in 30 years, both ladders | **PASS** (−90%, −61%) |
+| CF-2 | churn only: the head shape grows by more than 50% and is still growing in the last decade, both ladders | **FAIL on comments** (+28%; still growing, +0.52 in the last decade against +0.51 in the first). **PASS on submissions** (+67%; +1.02 against +0.90) |
+| CF-3 | churn + slide: the 30-year slopes are within 15% of the flat start's | **PASS on comments** (ratios 1.05–1.11). **FAIL on submissions at K/2** (1.157; 1.05–1.15 elsewhere) |
+
+**Reading.**
+- With the measured ingredients, volatility alone steepens the hierarchy
+  without limit, the slide alone collapses it over decades, and together
+  they hold it.
+- From equality the hierarchy rises to its balance. From the observed
+  ladder, which is steeper, it falls toward it. After 30 years the two runs
+  bracket the stationary slope within 5–16%.
+- The two-year counterfactuals (A3) could not show this. On comments the
+  slide-only head barely moves in the first decade (−0.23 in log units) and
+  falls by −1.68 in the third.
+- The answer to "where does the hierarchy come from" is therefore a balance
+  that operates over decades. Membership turns over in years.
+
+## R7. Null worlds at 20 seeds, calibrated worlds, β calibration, Gomez noise baseline (`null_worlds_r7.py`, `summarize_r7.py` → `null_worlds_r7_summary.json`; expectations in PLAN.md addendum R7)
+
+Means over 20 runs, with 5–95% in brackets.
+- **Constant-slope worlds** start from a Zipf ladder.
+- **Calibrated worlds** use the model estimated on Reddit submissions,
+  started from the data's filtered ladder with its passing parts and exits,
+  with a planted β and no drift by rank.
+- **Disclosure:** within-seed bootstraps are cut to 5 replications.
+- **Not yet run when this section was written:** the model world (rdm, 20
+  seeds) and the β = 0.05 and 0.10 calibration worlds. They had been queued
+  under a memory constraint (the machine was swapping) and are reported
+  below when done.
+
+| world | top-10 turnover | K/64 | K/16 | K/4 | K/2 | raw β | gapped persistence (13 wk) | pooled boundary ratio | c/s̄ (share of seeds with c < s̄) | C(1), C(10) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| size-blind, constant slope | 0.243 [0.133, 0.367] | 0.249 | 0.244 | 0.241 | 0.232 | −0.002 [−0.018, 0.021] | −0.021 | 1.09 [1.03, 1.15] | 1.11 [0.87, 1.35] (35%) | 0.27, 0.91 |
+| firm-like (β 0.2), constant slope | 0.127 [0.065, 0.167] | 0.145 | 0.184 | 0.232 | 0.246 | 0.129 [0.112, 0.151] | −0.069 | 1.12 [1.05, 1.19] | 0.51 [0.43, 0.56] (100%) | 0.27, 0.91 |
+| neutral copying | 0.043 [0.000, 0.100] | 0.157 | 0.287 | 0.307 | 0.299 | 0.358 | −0.104 | 0.69 [0.58, 0.79] | 0.82 [0.75, 0.91] (100%) | 0.00, 0.15 |
+| size-blind, data's ladder (planted β 0) | 0.205 [0.100, 0.333] | 0.211 | 0.192 | 0.165 | 0.137 | 0.062 [0.043, 0.084] | −0.071 | 1.10 | 1.21 (5%) | 0.09 |
+| firm-like, data's ladder (planted β 0.2) | 0.192 [0.130, 0.268] | 0.195 | 0.181 | 0.164 | 0.138 | 0.094 [0.077, 0.107] | −0.103 | 1.04 [0.97, 1.16] | 0.62 [0.52, 0.74] (100%) | 0.12 |
+| data, Reddit submissions | 0.33 | 0.209 | 0.204 | 0.181 | 0.178 | 0.045, 0.082 | +0.174 | 0.80 | 0.72 (pooled cells) | 0.07, 0.79 |
+
+Neutral copying's boundary ratio by cut-off (K/64 … K) is 0.74, 0.64, 0.68,
+0.85, 1.08, 1.24, 0.22. Its pooled exclusion comes from the edge at K.
+
+**Gomez noise baseline (head, k = K/64, all year pairs).**
+- Size-blind world on the data's ladder:
+  - within term with the current-year cohort −0.053 (−0.042 in pairs
+    where the share changes by less than 5%);
+  - with the prior-year cohort −0.023.
+- Constant-slope size-blind world: −0.018.
+- **Data (`gomez_r7_prior.py`), submissions head:**
+  - current-year cohort −0.061 (2019–20), −0.237 and −0.259 (2020–22);
+  - prior-year cohort −0.253 and −0.307 (2020–22).
+- **Data, comments head:**
+  - current-year cohort −0.150 and −0.123;
+  - prior-year cohort −0.151 and −0.140.
+
+**Scored:**
+
+| | expectation | result |
+|---|---|---|
+| R7-1 | constant-slope size-blind: the top-10 band lies above the K/2 mean. Firm-like and neutral: top-10 below K/2 | **FAIL** for size-blind: the band [0.13, 0.37] contains 0.23, and the means are 0.24 against 0.23. The single seed's 0.33 (R3) was luck. **PASS** for firm-like (0.13 < 0.25) and neutral (0.04 < 0.30) |
+| R7-2 | calibrated size-blind: top-10 above K/2, bands apart | **FAIL** (means 0.21 against 0.14; the top-10 band reaches down to 0.10) |
+| R7-2b | calibrated size-blind turnover within ±0.05 of submissions at K/64 … K/2 | **PASS** (0.211/0.209, 0.192/0.204, 0.165/0.181, 0.137/0.178). It under-predicts the top ten (0.21 against 0.33, the band's upper end) |
+| R7-3 | calibrated firm-like top-10 at least 0.05 below calibrated size-blind | **FAIL** (0.192 against 0.205) |
+| R7-4 | β estimator: estimated rises with planted; planted 0.2 → 0.10–0.16; the data's raw maps below 0.12 | **FAIL as written.** Planted 0 → 0.062 and planted 0.2 → 0.094: the calibration line is nearly flat, and the data's raw 0.045–0.082 cannot be placed on it. Monotonicity awaits β 0.05/0.10 |
+| R7-5 | c < s̄ in ≥ 2 of 3 non-Gibrat R3 worlds in ≥ 80% of seeds | **PASS** (firm-like and neutral 100%; the model world pending) |
+| R7-6 | calibrated size-blind current-cohort head within term in −0.03 … −0.10 | **PASS** (−0.053) |
+| R7-6b | data prior-year cohort: submissions head within term below −0.15 in 2020→21 and 2021→22 | **PASS** (−0.253, −0.307) |
+
+**Reading.**
+- **The top turns over fastest because the head is flattest** (Eq. 1). On the
+  data's ladder, size-blind and firm-like volatility give the same profile
+  within noise. "Size-blindness exposes the top" is withdrawn.
+- **The raw size exponent is dominated by passing parts that differ by
+  rank,** so it cannot place Reddit against firms. The lasting exponent from
+  the structure function, which recovers a planted β within ±0.03 at
+  T ≥ 160 (`runs/2026-10-18_rdm/recovery_output.txt`), is the comparison:
+  - submissions 0.045;
+  - comments 0.126 on the whole panel and 0.056–0.092 on gate windows;
+  - Facebook 0.11, biased up by about 0.045 at 86 weeks; a two-step lasting
+    estimate gives 0.02.
+
+  This is weaker than firms' 0.15–0.2, but not size-blind.
+- **Flattening (c < s̄) is not a discovery.** It appears in every world that
+  starts steeper than its balance.
+- **Persistence is discovered against every world** (−0.02 to −0.10, tight
+  bands).
+- **The head's within term in 2019–20 (−0.06) is the size expected from
+  selection on noise,** which the size-blind calibrated world puts at −0.05.
+  The 2020–22 decline (−0.24 to −0.31, also with prior-year cohorts) is five
+  times that.
+
+## R8. What fell at the head: posting or engagement per post (`head_components.py`; expectations in PLAN.md addendum R8)
+
+The head's karma share is split exactly: share_karma = share_items × relative
+karma per item. Shares are of the year's top-K by karma; blocks and universe
+are those of R5.
+
+| | 2019 | 2020 | 2021 | 2022 | Δlog 2019 → 2022: karma = items + per item |
+|---|---|---|---|---|---|
+| submissions head (re-selected each year): karma share | 0.502 | 0.498 | 0.418 | 0.340 | |
+| … its share of submissions (items) | 0.224 | 0.191 | 0.134 | 0.087 | |
+| … relative karma per submission | 2.25 | 2.61 | 3.12 | 3.92 | −0.390 = −0.945 + 0.556 |
+| submissions, the 2019 head (fixed names): karma, items, per item | 0.502, 0.224, 2.25 | 0.472, 0.176, 2.69 | 0.352, 0.103, 3.42 | 0.250, 0.073, 3.44 | −0.697 = −1.122 + 0.425 |
+| comments head (re-selected): karma, items, per item | 0.610, 0.413, 1.48 | 0.566, 0.360, 1.57 | 0.526, 0.338, 1.56 | 0.497, 0.309, 1.61 | −0.205 = −0.292 + 0.087 |
+| comments, the 2019 head (fixed names) | 0.610, 0.413, 1.48 | 0.534, 0.338, 1.58 | 0.453, 0.274, 1.65 | 0.402, 0.239, 1.68 | −0.419 = −0.547 + 0.128 |
+
+**Scored:**
+
+| | expectation | result |
+|---|---|---|
+| R8-1 | 2019 submissions head: the per-item change is larger in magnitude than the item-share change | **FAIL.** Items −1.12, per item +0.43, in the opposite direction |
+| R8-2 | re-selected submissions head: item share changes by less than 20% | **FAIL** (−61%: 22.4% to 8.7%) |
+| R8-3 | comments: the karma-share fall is mostly in item share | **PASS** (−0.29 of −0.21; per item +0.09) |
+
+**Reading.**
+- **The head lost participation, not engagement per item.** Its share of
+  posts and comments fell steeply, and karma per item relative to the top K
+  rose. On submissions the head's share of posts fell from 22% to 9%.
+- **The June 2021 step in votes per post** (§2z-ca) is a short-run movement
+  inside a three-year rise of relative karma per post.
+- **The abstract's causal clause is replaced by a descriptive one.** The
+  head's fall came through participation, the component that carries
+  persistence (§2z-dg A4). The analysis does not show that the communities
+  whose declines persist are the head's decliners. Opus R4's reading (votes
+  per post) is corrected by this split.
+
+### R7, model world at 20 seeds (completed after the section above)
+
+| world | top-10 | K/64 | K/16 | K/4 | K/2 | raw β | gapped (13 wk) | boundary | c/s̄ (c < s̄) | C(1) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| the model (hold closure; its own β 0.045) | 0.228 [0.132, 0.302] | 0.200 | 0.204 | 0.166 | 0.140 | 0.067 [0.044, 0.087] | −0.098 | 1.11 [1.01, 1.17] | 0.75 [0.65, 0.88] (100%) | 0.10 |
+
+- **R7-5: PASS in full.** c < s̄ in 100% of seeds in all three non-Gibrat
+  R3 worlds.
+- The R3 single run's top-10 turnover of 0.30 was at the band's upper end.
+- The β = 0.05 and 0.10 calibration worlds are still running. They are
+  reported when done.
