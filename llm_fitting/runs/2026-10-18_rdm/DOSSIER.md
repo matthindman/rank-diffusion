@@ -128,3 +128,57 @@ departure rate.
 owner only if G1 holds on every panel, the targets above hold where they
 apply, and no parameter lacks an identifying moment. Ties go to the simpler
 model. Adoption or re-freeze is the owner's.
+
+## Addendum, before the Reddit gates: how the specification changed during development on Facebook
+
+_Written after eight Gate v1 evaluations on `facebook_a` at 3 reps, used as a
+development tool, and before any gate run on `reddit_comments` or `reddit`.
+All runs are logged in `GATE_LEDGER.md`. **The Facebook gate is therefore
+contaminated as a test of the RDM. The two Reddit gates are the clean test of
+G1.**_
+
+1. **Harness check.** Model A's dynamics run through this harness give
+   0.115 ± 0.041 on Facebook pages (3 reps), against A's recorded 0.123 ±
+   0.033. The harness is sound. A bug that calibrated the σ_obs scale with
+   RDM dynamics for every model was found and fixed.
+2. **Size law.** Extrapolated below the observed levels, it exploded the
+   simulation. It is now applied over the range of band levels it was
+   estimated on.
+3. **Amplitude.** Scaling the medium and lasting parts by the entity
+   amplitude (b = 1) over-dispersed the head, as A's own record warns. The
+   amplitude now scales the fast parts only, as in A's frozen movement
+   stacks.
+4. **Jumps are REJECTED by a consistency check.**
+   - Estimated from kurtosis, jumps came out rare and huge: λ ≈ 0.002–0.0075
+     a week, carrying 70–98% of lasting variance, with an sd of about 2 log
+     units.
+   - Holding the ladder against them needs a head drift of −0.06 to −0.07 a
+     week. The data's measured head slides are about 0.004–0.01 a week
+     (§2z-cd).
+   - Without jumps, the hold drift at the head is −0.005 to −0.014 a week,
+     which agrees with the measured slides.
+   - The kurtosis is more likely heterogeneity the model does not carry.
+     Jumps stay in the code as an option, off by default.
+5. **Hold drift.**
+   - The closed form S κ(1/S) breaks for large moves. It is replaced by a
+     fixed point on simulations of the lasting process, with the single
+     extreme order statistics above rank 20 excluded from steering.
+   - The drift is not centred: the exit-and-rebirth floor at the bottom is
+     the reflecting floor of the Atlas and Gabaix balance.
+6. **A separate medium swing at a single pooled rate (κ_m 0.2–0.5) failed.**
+   On train windows of 21–65 weeks the fit counts slow reverting swings as
+   lasting, so dispersion at 4–13 weeks is too high (0.18–0.20 against A's
+   0.115).
+   - The RDM's own two-state conditional filter did not help.
+   - **Frozen form: the moving home.** It keeps A's OU (κ_z, σ_perm) toward a
+     home that itself random-walks with the size-law lasting volatility and
+     the hold drift by rank. σ_perm² is reduced by the lasting variance, so
+     short-lag increments are unchanged. On Facebook, 0.160 ± 0.019 at 3
+     reps (contaminated).
+
+**The predictions of §5 stand as written,** with "RDM" now meaning the
+frozen moving-home form.
+- S5 (jumps) becomes a test of the no-jump model against the data's
+  two-year retention.
+- S7 (kurtosis) is expected to fail without jumps. Both are scored as
+  written.
