@@ -39,6 +39,13 @@ import rankdiff_kalman as rk
 
 Z_CLIP = rk.Z_CLIP
 KAPPA_GRID = np.array([0.01, 0.015, 0.02, 0.03, 0.04, 0.05, 0.07, 0.1, 0.14, 0.2, 0.3, 0.5])
+VEL_HALF_LIVES = np.array([26.0, 52.0, 104.0, 208.0, 416.0])     # weeks (drift-by-name extension, DOSSIER addendum 2)
+
+
+def _vel_shape(h, rho):
+    """Var(sum of h consecutive AR(1) velocities) / Var(v): h(1+rho)/(1-rho) - 2 rho (1-rho^h)/(1-rho)^2."""
+    h = np.asarray(h, float)
+    return h * (1 + rho) / (1 - rho) - 2 * rho * (1 - rho ** h) / (1 - rho) ** 2
 LAM_GRID = np.array([0.002, 0.003, 0.005, 0.0075, 0.01, 0.015, 0.02, 0.03, 0.05, 0.075, 0.1, 0.15, 0.2])
 PI_GRID = np.linspace(0.0, 0.98, 50)
 BETA_CLIP = 8.0          # cap on |beta (L - L_ref)| in the size law (keeps the far tail finite)
@@ -64,6 +71,8 @@ class RDMParams:
     drift_g: np.ndarray             # drift per week at drift_z (relative; mean over the universe ~ 0)
     variant: str = "hold"
     diag: dict | None = None        # estimation diagnostics (moments, fit errors)
+    vel_var: float = 0.0            # stationary variance of the home's weekly velocity (drift by name; 0 = off)
+    vel_rho: float = 0.0            # weekly persistence of the velocity
     amp_lasting: bool = False       # does the entity amplitude also scale the medium and lasting parts (b = 1)?
     #                                 False = as model A's frozen movement stacks (amplitude on the fast parts
     #                                 only); True scaled sigma_perm explodes held-out displacement (A's note in
@@ -116,25 +125,31 @@ def _passing_parts(base, z, h):
     return 2 * so ** 2 + 2 * st ** 2 * (1 - ph ** h) / (1 - ph ** 2)
 
 
-def fit_medium_lasting(D, base, band_z, H):
-    """NNLS fit r_b(h) = V_b (1 - e^{-kappa h}) + s_b h for each kappa on the grid; pooled kappa chosen by
-    the sum over bands of relative squared error."""
+def fit_medium_lasting(D, base, band_z, H, velocity=False):
+    """NNLS fit r_b(h) = V_b (1 - e^{-kappa h}) + s_b h [+ W_b f(h; rho)] for each kappa (and velocity
+    persistence rho) on the grids; pooled kappa (and rho) chosen by the sum over bands of relative squared
+    error.  Returns kappa, V, S, sse, and (rho, W) when velocity is on."""
     hs = np.arange(1, H + 1, dtype=float)
     best = None
+    rhos = [None] if not velocity else list(0.5 ** (1.0 / VEL_HALF_LIVES))
     for kap in KAPPA_GRID:
-        A = np.column_stack([1 - np.exp(-kap * hs), hs])
-        sse, V, S = 0.0, [], []
-        for b in range(D.shape[0]):
-            r = D[b] - _passing_parts(base, band_z[b], hs)
-            ok = np.isfinite(r)
-            if ok.sum() < 4:
-                V.append(np.nan); S.append(np.nan)
-                continue
-            coef, res = nnls(A[ok], r[ok])
-            V.append(coef[0]); S.append(coef[1])
-            sse += res ** 2 / max(np.sum(r[ok] ** 2), 1e-12)
-        if best is None or sse < best[0]:
-            best = (sse, kap, np.array(V), np.array(S))
+        for rho in rhos:
+            cols = [1 - np.exp(-kap * hs), hs] + ([_vel_shape(hs, rho)] if rho is not None else [])
+            A = np.column_stack(cols)
+            sse, V, S, W = 0.0, [], [], []
+            for b in range(D.shape[0]):
+                r = D[b] - _passing_parts(base, band_z[b], hs)
+                ok = np.isfinite(r)
+                if ok.sum() < len(cols) + 2:
+                    V.append(np.nan); S.append(np.nan); W.append(np.nan)
+                    continue
+                coef, res = nnls(A[ok], r[ok])
+                V.append(coef[0]); S.append(coef[1]); W.append(coef[2] if rho is not None else 0.0)
+                sse += res ** 2 / max(np.sum(r[ok] ** 2), 1e-12)
+            if best is None or sse < best[0]:
+                best = (sse, kap, np.array(V), np.array(S), rho, np.array(W))
+    if velocity:
+        return best[1], best[2], best[3], best[0], (best[4], best[5])
     return best[1], best[2], best[3], best[0]
 
 
@@ -302,7 +317,7 @@ def drift_hold_numeric(p, L0, iters=8, weeks=52, seeds=(101, 102, 103), damp=0.8
 
 
 def estimate_rdm(df, K, base=None, variant="hold", H=None, hJ=None, base_kwargs=None, slides=None, amp_lasting=False,
-                 jumps=True):
+                 jumps=True, velocity=False):
     """Estimate the RDM on a universe-restricted long frame (train window in the gate)."""
     if base is None:
         base = mrd.estimate(df, **(base_kwargs or {}))
@@ -318,7 +333,13 @@ def estimate_rdm(df, K, base=None, variant="hold", H=None, hJ=None, base_kwargs=
     band_n = np.array([int(np.sum(band_of == b)) for b in range(nb)], float)
     H = H or int(min(52, max(4, T // 2)))
     D, C = structure_function(X, band_of, nb, H)
-    kap, V, S, sse = fit_medium_lasting(D, base, band_z, H)
+    vel_var, vel_rho = 0.0, 0.0
+    if velocity:
+        kap, V, S, sse, (vel_rho, W) = fit_medium_lasting(D, base, band_z, H, velocity=True)
+        inK = (np.arange(nb) < nb - 1) & np.isfinite(W)
+        vel_var = float(np.sum(W[inK] * band_n[inK]) / max(np.sum(band_n[inK]), 1.0))
+    else:
+        kap, V, S, sse = fit_medium_lasting(D, base, band_z, H)
     lad = np.sort(X[-1][np.isfinite(X[-1])])[::-1]
     L_ref = float(lad[min(K, lad.size) - 1])
     use = np.arange(nb) < nb - 1                           # bands inside the scored universe
@@ -345,7 +366,7 @@ def estimate_rdm(df, K, base=None, variant="hold", H=None, hJ=None, base_kwargs=
     p_out = RDMParams(base=base, K=int(K), band_ranks=edges, band_z=band_z, band_level=band_level, band_n=band_n,
                       kappa_m=float(kap), V_m=np.nan_to_num(V), s_band=np.nan_to_num(S), sigma0=sigma0, beta=beta,
                       L_ref=L_ref, lam=lam, pi=pi, drift_z=dz, drift_g=dg, variant=variant, diag=diag,
-                      amp_lasting=amp_lasting)
+                      amp_lasting=amp_lasting, vel_var=vel_var, vel_rho=float(vel_rho))
     if variant == "hold":
         dz, dg, hist = drift_hold_numeric(p_out, ladder)
         diag["hold_rms_rate"] = hist
@@ -383,6 +404,7 @@ class _State:
         ts = getattr(b, "temper_s", 0.0)
         self.ts = ts
         self.sqv = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, self.N)) if ts > 0 else np.ones(self.N)
+        self.vel = (math.sqrt(p.vel_var) * rng.standard_normal(self.N)) if p.vel_var > 0 else None
         mix_b = getattr(b, "mix_b", 0.0)                # model A's --mix-hetero: sigma_perm scaled by v^(b/2)
         self.mix_b = mix_b
         self.sqw = mrd._sqw(self.sqv, mix_b, ts) if (ts > 0 and mix_b > 0) else 1.0
@@ -398,6 +420,9 @@ class _State:
         sL = _sigma_L(p, self.L)
         ampL = self.sqv if p.amp_lasting else 1.0
         self.L = self.L + np.interp(zp, p.drift_z, p.drift_g) + sL * ampL * math.sqrt(1.0 - p.pi) * rng.standard_normal(N)
+        if self.vel is not None:
+            self.L = self.L + self.vel
+            self.vel = p.vel_rho * self.vel + math.sqrt(p.vel_var * (1 - p.vel_rho ** 2)) * rng.standard_normal(N)
         if p.pi > 0 and p.lam > 0:
             jmp = rng.random(N) < p.lam
             nj = int(jmp.sum())
@@ -409,6 +434,8 @@ class _State:
             self.L[ex] = b.bottom_mu[rng.integers(0, b.bottom_mu.size, ne)]
             if self.ts > 0:
                 self.sqv[ex] = np.sqrt(rng.lognormal(-0.5 * self.ts ** 2, self.ts, ne))
+            if self.vel is not None:
+                self.vel[ex] = math.sqrt(p.vel_var) * rng.standard_normal(ne)
 
     def step(self):
         p, b, rng, N = self.p, self.p.base, self.rng, self.N
@@ -427,6 +454,9 @@ class _State:
             zh = np.log(np.clip((hrank - 0.5) / N, Z_CLIP, 1.0))
             sLh = _sigma_L(p, self.home)
             self.home = self.home + np.interp(zh, p.drift_z, p.drift_g) + sLh * math.sqrt(1.0 - p.pi) * rng.standard_normal(N)
+            if self.vel is not None:                      # drift by name: a persistent velocity of the home
+                self.home = self.home + self.vel
+                self.vel = p.vel_rho * self.vel + math.sqrt(p.vel_var * (1 - p.vel_rho ** 2)) * rng.standard_normal(N)
             if p.pi > 0 and p.lam > 0:
                 jmp = rng.random(N) < p.lam
                 nj = int(jmp.sum())
@@ -463,6 +493,8 @@ class _State:
             self.xi[ex] = 0.0
             self.ids[ex] = np.arange(self.next_id, self.next_id + ne)
             self.next_id += ne
+            if self.vel is not None:
+                self.vel[ex] = math.sqrt(p.vel_var) * rng.standard_normal(ne)
             if self.ts > 0:
                 self.sqv[ex] = np.sqrt(rng.lognormal(-0.5 * self.ts ** 2, self.ts, ne))
                 if self.mix_b > 0:
@@ -710,4 +742,6 @@ def panel_long_frame(Xs, ids, n_rank=None):
     df = pd.DataFrame(dict(entity_id=ids.ravel().astype(str), period=np.repeat(np.arange(T), N),
                            X=Xs.ravel(), rank=rank.ravel()))
     df["N"] = N
+    df["metric"] = np.expm1(np.clip(df["X"].to_numpy(), None, 50))
+    df["z"] = np.log(np.clip((df["rank"].to_numpy() - 0.5) / N, Z_CLIP, 1.0))
     return df
