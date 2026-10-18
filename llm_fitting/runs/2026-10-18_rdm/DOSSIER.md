@@ -182,3 +182,42 @@ frozen moving-home form.
   two-year retention.
 - S7 (kurtosis) is expected to fail without jumps. Both are scored as
   written.
+
+## Addendum 2, before its runs: drift by name (a persistent velocity of the home)
+
+**What the structure suite found** (in-sample, submissions long panel, 20
+seeds):
+
+| measure | data | moving home (no velocity) | A |
+|---|---|---|---|
+| slope of the next block's change on the last | +0.257 (momentum) | 0.027 | −0.027 |
+| one-year retention, top 78 … 5,000 | 0.83–0.87 | 0.88–0.92 (too sticky) | 0.82–0.89 |
+| arithmetic share of the top 78 at the end | 0.36 | 0.52 | 0.50 |
+| excess kurtosis of 26-week changes | 29 | 3.6 | 1.3 |
+
+Persistent name-specific trends are the hybrid-Atlas mechanism (drift by
+name, beside drift by rank) that produces momentum and lowers retention.
+
+**Extension** (opt-in, `velocity=True`). The home carries a velocity v_i:
+- home_{t+1} = home_t + g(rank) + v_i,t + σ_L η;
+- v_{i,t+1} = ρ v_i,t + √(V_v (1 − ρ²)) ε;
+- the velocity is reset to a stationary draw at rebirth.
+
+**Identification.**
+- The structure function's long-lag shape: NNLS on
+  [1 − e^{−κh}, h, f(h; ρ)], where f(h; ρ) = Var(Σ_{s<h} v_s)/V_v.
+- κ and ρ are profiled (velocity half-life 26, 52, 104, 208 or 416 weeks).
+- V_v is the n-weighted mean over bands within K.
+- **Declared:** the momentum slope of the validation is closely related to the
+  curvature that identifies V_v, so S1 is not an independent test for this
+  extension. Retention, concentration and the head share are.
+
+**Starting state.** The conditional start draws v from its stationary law,
+not from a filter. That is declared; a three-state filter is not built.
+
+| | prediction |
+|---|---|
+| V1 | submissions: the momentum slope moves at least halfway from 0.027 to 0.257 (≥ 0.14) |
+| V2 | submissions: the mean absolute error of one-year retention over the four cut-offs falls below the no-velocity model's |
+| V3 | Facebook pages (data slope −0.08): small V_v, and no momentum created (slope ≤ 0) |
+| V4 | must not worsen: β within ±0.05 of the data where it was; the head share no further from the data |
