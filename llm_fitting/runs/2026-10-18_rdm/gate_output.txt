@@ -1,0 +1,53 @@
+
+========================================================================
+REDDIT — Gate v1, RDM (hold, lasting=movinghome)
+========================================================================
+  T=30  test_len=13  origins=[12, 13, 14, 16, 17]  universe=top-5000
+    T0=12: kappa_m 0.140, sigma0 0.1767, beta +0.261, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0008, -0.0008, -0.0053, -0.0084]
+    T0=13: kappa_m 0.100, sigma0 0.2185, beta +0.222, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [0.0008, 0.0011, -0.0046, -0.0132]
+    T0=14: kappa_m 0.140, sigma0 0.2216, beta +0.265, lam 0.0000, pi 0.00, scale 0.35; drift at ranks 1/20/100/1000 [-0.0016, -0.0014, -0.0068, -0.0111]
+    T0=16: kappa_m 0.200, sigma0 0.1990, beta +0.175, lam 0.0000, pi 0.00, scale 0.35; drift at ranks 1/20/100/1000 [-0.0037, -0.0038, -0.009, -0.0116]
+    T0=17: kappa_m 0.500, sigma0 0.1946, beta +0.105, lam 0.0000, pi 0.00, scale 0.10; drift at ranks 1/20/100/1000 [-0.0072, -0.0073, -0.0114, -0.0132]
+    T0= 12  model relErr 0.153 | persistence 0.172 | dR1 in CI: True
+    T0= 13  model relErr 0.071 | persistence 0.171 | dR1 in CI: True
+    T0= 14  model relErr 0.084 | persistence 0.162 | dR1 in CI: True
+    T0= 16  model relErr 0.065 | persistence 0.167 | dR1 in CI: True
+    T0= 17  model relErr 0.110 | persistence 0.168 | dR1 in CI: False
+  MODEL rel err = 0.097 ± 0.032   |   persistence = 0.168 ± 0.004
+  coverage 80%;  per-moment model rel err: dRank1 0.100, dRank4 0.111, RACF1 0.024, coll1 0.159, coll5 0.089, coll20 0.098
+
+========================================================================
+REDDIT_COMMENTS — Gate v1, RDM (hold, lasting=movinghome)
+========================================================================
+  T=136  test_len=34  origins=[34, 51, 68, 85, 102]  universe=top-12500
+    T0=34: kappa_m 0.500, sigma0 0.1818, beta +0.079, lam 0.0000, pi 0.00, scale 0.10; drift at ranks 1/20/100/1000 [-0.0057, -0.0044, -0.0081, -0.007]
+    T0=51: kappa_m 0.300, sigma0 0.1542, beta +0.058, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0071, -0.0076, -0.0057, -0.0051]
+    T0=68: kappa_m 0.100, sigma0 0.1249, beta +0.066, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0052, -0.0036, -0.0026, -0.0023]
+    T0=85: kappa_m 0.070, sigma0 0.1099, beta +0.062, lam 0.0000, pi 0.00, scale 0.00; drift at ranks 1/20/100/1000 [-0.0019, -0.0027, -0.0027, -0.0019]
+    T0=102: kappa_m 0.100, sigma0 0.1239, beta +0.070, lam 0.0000, pi 0.00, scale 0.70; drift at ranks 1/20/100/1000 [-0.0057, -0.0031, -0.0022, -0.0021]
+    T0= 34  model relErr 0.103 | persistence 0.100 | dR1 in CI: False
+    T0= 51  model relErr 0.185 | persistence 0.083 | dR1 in CI: True
+    T0= 68  model relErr 0.172 | persistence 0.185 | dR1 in CI: True
+    T0= 85  model relErr 0.163 | persistence 0.218 | dR1 in CI: True
+    T0=102  model relErr 0.138 | persistence 0.237 | dR1 in CI: True
+  MODEL rel err = 0.152 ± 0.029   |   persistence = 0.165 ± 0.062
+  coverage 80%;  per-moment model rel err: dRank1 0.075, dRank4 0.050, dRank13 0.088, RACF1 0.166, coll1 0.818, coll5 0.092, coll20 0.047
+
+========================================================================
+FACEBOOK_A — Gate v1, RDM (hold, lasting=movinghome)
+========================================================================
+  T=86  test_len=21  origins=[21, 32, 43, 54, 65]  universe=top-3500
+  day guard: 59 flagged days -> dropped 33 of 176 member-weeks from daily estimation
+    T0=21: kappa_m 0.200, sigma0 0.1723, beta +0.414, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0006, -0.0008, -0.0004, -0.0048]
+    T0=32: kappa_m 0.500, sigma0 0.1827, beta +0.079, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0104, -0.0111, -0.014, -0.0094]
+    T0=43: kappa_m 0.300, sigma0 0.1624, beta +0.097, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0119, -0.0131, -0.0113, -0.0062]
+    T0=54: kappa_m 0.300, sigma0 0.1620, beta +0.124, lam 0.0000, pi 0.00, scale 1.00; drift at ranks 1/20/100/1000 [-0.0072, -0.0075, -0.006, -0.0074]
+    T0=65: kappa_m 0.200, sigma0 0.1449, beta +0.137, lam 0.0000, pi 0.00, scale 0.70; drift at ranks 1/20/100/1000 [-0.0054, -0.0053, -0.0047, -0.0067]
+    T0= 21  model relErr 0.084 | persistence 0.136 | dR1 in CI: False
+    T0= 32  model relErr 0.163 | persistence 0.183 | dR1 in CI: False
+    T0= 43  model relErr 0.130 | persistence 0.093 | dR1 in CI: True
+    T0= 54  model relErr 0.125 | persistence 0.145 | dR1 in CI: True
+    T0= 65  model relErr 0.112 | persistence 0.169 | dR1 in CI: False
+  MODEL rel err = 0.123 ± 0.026   |   persistence = 0.145 ± 0.031
+  coverage 40%;  per-moment model rel err: dRank1 0.114, dRank4 0.094, dRank13 0.134, RACF1 0.169, coll1 0.271, coll5 0.064, coll20 0.013
+exit done

@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-18** (the paragraphs on §2z-da, §2z-db and §2z-dc were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-18** (the paragraphs on §2z-da … §2z-dd were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -230,6 +230,26 @@ New measurements:
 
 The working draft frame is `PAPER_FRAME_DRAFT_2026-10-18.md` (not adopted).
 
+**The moving-home model (§2z-dd, 2026-10-18; development data; nothing
+adopted).** A new opt-in module, `rankdiff_rdm.py`. A's personal home
+becomes a lasting level that random-walks and holds the ladder by drift by
+rank. The frozen code is untouched.
+- **What A's home actually is.** On Facebook its σ_perm² is 0.02–0.12 a week
+  with κ 0.1–0.2, so A's "home" is a medium swing.
+- **Gate v1, both clean Reddit gates pass non-inferiority:** submissions
+  0.097 (A 0.129, persistence 0.168); comments 0.152 (A 0.137). Facebook
+  gives 0.123, but it was contaminated by development.
+- **Reversion.** The model removes A's false reversion, reproducing the
+  no-return slope on Facebook.
+- **Recovery** passes on panels of 160 weeks or more.
+- **What it misses on Reddit:** its turnover, concentration and kurtosis
+  targets. The root is broad MOMENTUM (Spearman +0.32 to +0.37 between
+  consecutive annual changes; none on Facebook), which no tested model
+  makes. Drift by name calibrated on submissions reaches +0.18 and FAILS
+  transport to comments.
+- **Verdict:** a movement-stack candidate, not the structure model. The
+  owner decides whether it goes forward.
+
 **The altitude prompt (§2z-dc, 2026-10-18).** A self-written prompt (owner's
 request) chose a new headline: *size does not protect the leaders of online
 attention*.
@@ -408,6 +428,12 @@ is in the newest data-operation entries of MODEL_STATUS.
   - the "Eulerian stability" title retired;
   - Gomez read: claim (a) withdrawn, remaining novelty in theory note §9;
   - the bridge protocol redesigned (`BRIDGE_PROTOCOL_V3_DRAFT_2026-10-18.md`).
+- **From §2z-dd:**
+  - whether the moving-home model goes forward as a movement-stack candidate
+    (a re-freeze decision);
+  - whether Reddit's momentum is pursued, starting with the raw-archive
+    capture-delay audit (WD drive), which could show it to be partly an
+    artefact.
 - **Still open from these:**
   - approving the wording of the proposed B-spine binding paragraph (§2z-db
     §4);

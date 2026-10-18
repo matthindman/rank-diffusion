@@ -16,7 +16,7 @@ import numpy as np  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 L = lambda f: json.loads((HERE / f).read_text()) if (HERE / f).exists() else None  # noqa: E731
-A_REF = {"facebook_a": (0.123, 0.033), "reddit_comments": (0.137, 0.056), "reddit": (0.129, 0.028)}   # GATE_LEDGER, 20 reps
+A_REF = {"facebook_a": (0.103, 0.044), "reddit_comments": (0.137, 0.056), "reddit": (0.129, 0.028)}   # GATE_LEDGER, Codex V3 reproductions at 20 reps, 2,000 draws
 LAB = {"facebook_a": "Facebook pages*", "reddit_comments": "Reddit comments", "reddit": "Reddit submissions (short)"}
 fig, ax = plt.subplots(1, 4, figsize=(18, 4.3))
 a = ax[0]

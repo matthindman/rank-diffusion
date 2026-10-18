@@ -11680,3 +11680,340 @@ items would give 0.5.
 - An in-period reference for O3.
 
 **Ledgers.** Three exposure rows; no gate evaluation.
+
+## 2z-dd. 2026-10-18 — MODEL BUILD and VALIDATION (development data; nothing adopted; no default or frozen stack changed): the moving-home (rank-drift) model, in which model A's fixed personal home becomes a lasting level that random-walks and holds the ladder by drift by rank. It passes Gate v1 non-inferiority on both clean Reddit gates (submissions 0.097 against A's 0.129 and persistence's 0.168; comments 0.152 against 0.137) and removes A's false reversion (Facebook no-return slope reproduced). It is recovered on panels of 160 weeks or more. But it does not reproduce Reddit's broad MOMENTUM (Spearman +0.32 to +0.37 between consecutive annual changes), which also drives its too-sticky retention and too-concentrated head there. Drift by name calibrated on submissions reaches +0.18 and FAILS transport to comments. Not recommended as the structure model; a credible movement-stack candidate
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-18; started
+from 7ec39cd.
+- Dossier and predictions committed at 8e6a2ac before any code; the frozen
+  specification at 96be22f before any Reddit gate.
+- New opt-in module `llm_fitting/rankdiff_rdm.py`. It imports the frozen
+  estimator and the gate's scoring code; `minimal_rankdiff.py` and
+  `rankdiff_kalman.py` are unchanged.
+- Run archive `runs/2026-10-18_rdm/`. Gate runs in `GATE_LEDGER.md`; data
+  contact in `EXPOSURE_LEDGER.md`, rows dated 2026-10-18.
+- Owner's request: "build and validate that model. be ambitious … No new data
+  yet: just the current data."_
+
+### 1. Why: the residuals the model addresses (measured; DOSSIER §1)
+
+1. **Model A's "permanent" component does not last.** On Facebook pages,
+   σ_perm² is 0.02–0.12 a week with home pull κ ≈ 0.1–0.2 a week. B's
+   lasting variance at the same ranks is 0.011–0.018. A's home holds a medium
+   swing and the ladder at once (§2z-ay).
+2. **No return to an endpoint's own level at a year** in the data (§2z-bu).
+3. **A's head is too concentrated** (§2z-d).
+4. **Lasting volatility barely depends on size** (§2z-dc), yet A spends about
+   55 knots on σ_perm.
+
+### 2. The model (frozen form)
+
+| part | specification |
+|---|---|
+| short-run block | A's, unchanged: noise σ_obs(z), the fast AR(1) swing with t-tails, the amplitude on the fast parts, exit and rebirth |
+| the home | random-walks: home_{t+1} = home_t + g(rank of home) + σ_L(home)·η, size law σ_L = σ_0 exp(−β (home − L_ref)) |
+| the drift | the hold drift: the fixed point that keeps the current lasting ladder stationary in this model, steered by ranks ≥ 20 |
+| the level | A's OU toward the moving home, with σ_perm² reduced by σ_L² so that short-lag increments are unchanged |
+| entry from below | supplied by the exit-and-rebirth floor |
+
+At short horizons the model is A. At long horizons the home wanders, so
+there is no return to one's own level, and the ladder is held by drift by
+rank, not by reversion.
+
+**Parameters, against A's movement block:**
+- **Lasting part:** σ_0 and β, from the structure-function slope by band,
+  regressed on band level.
+- **Drift:** none free in the hold form; it comes from the ladder.
+- **Shared block:** A's knot profiles are retained.
+
+The size law replaces nothing in A. It adds two parameters, each with an
+identifying moment.
+
+### 3. The development path (DOSSIER addendum; Facebook gate contaminated)
+
+**Nine Gate v1 evaluations on `facebook_a` at 3 reps were used as a
+development tool,** all in `GATE_LEDGER.md`. The Facebook gate is therefore
+contaminated as a test of the RDM; the two Reddit gates are clean. In order:
+1. **The harness reproduces A.** A's dynamics in this harness give 0.115 ±
+   0.041, against the recorded 0.123 ± 0.033. A calibration bug was fixed.
+2. **The size law** is applied over the levels it was estimated on, not
+   extrapolated.
+3. **The amplitude** scales the fast parts only, as A's frozen stacks do.
+   Scaling every part over-dispersed the head.
+4. **Jumps REJECTED by a consistency check.**
+   - Estimated from the kurtosis of long changes, jumps came out rare and huge
+     (λ ≈ 0.002–0.0075 a week, 70–98% of lasting variance, sd about 2 log
+     units).
+   - Holding the ladder against them needs a head drift of −0.06 to −0.07 a
+     week; the data's measured head slides are 0.004–0.01.
+   - Without jumps the hold drift at the head is −0.005 to −0.014 a week,
+     consistent with the measured slides.
+5. **Hold drift.**
+   - The closed form S κ(1/S) (Gomez's Prop. 5 for the mean-log index) breaks
+     for large moves. It is replaced by a fixed point on simulations of the
+     lasting process, steered by ranks ≥ 20.
+   - The drift is not centred: the exit-and-rebirth floor is the Atlas and
+     Gabaix reflecting floor.
+6. **The separate medium swing failed.** At a pooled rate (κ_m 0.2–0.5),
+   short train windows count slow reverting swings as lasting, giving
+   0.18–0.20. The moving home (A's OU toward a home that random-walks) gave
+   0.160 ± 0.019 on Facebook, contaminated.
+
+### 4. Gate v1 (20 reps, 2,000 bootstrap draws; RDM frozen form)
+
+**Set-up.** Five splits, 20 reps, 2,000 draws; the frozen moving-home form
+(96be22f), the same windows, train-only universe, σ_obs calibration and
+moments as the frozen gate.
+
+**Reference.** Model A's frozen stacks reproduced at the same reps and draws
+by Codex's V3 (GATE_LEDGER, 291c41f).
+
+| panel | RDM | model A (20 reps) | persistence | RDM coverage | status |
+|---|---|---|---|---|---|
+| `reddit` (submissions, short; clean) | **0.097 ± 0.032** | 0.129 ± 0.028 | 0.168 ± 0.004 | 80% | clean: never used in development |
+| `reddit_comments` (clean) | **0.152 ± 0.029** | 0.137 ± 0.056 | 0.165 ± 0.062 | 80% | clean |
+| `facebook_a` | 0.123 ± 0.026 | 0.103 ± 0.044 | 0.145 ± 0.031 | 40% | contaminated: used in development |
+
+**Per-moment errors of the RDM.**
+- **Submissions:** dRank1 0.100, dRank4 0.111, RACF1 0.024, coll1 0.159,
+  coll5 0.089, coll20 0.098. There is no h = 13 moment: the test window is 13
+  weeks.
+- **Comments:** dRank1 0.075, dRank4 0.050, dRank13 0.088, RACF1 0.166,
+  **coll1 0.818**, coll5 0.092, coll20 0.047. The comments gap to A comes
+  from coll1, the weekly change of the rank-1 occupant, a single noisy
+  statistic. Every displacement moment is under 0.09.
+
+**Scoring.**
+- **G1** (RDM ≤ A + 0.05):
+  - **PASS on submissions:** 0.097 against 0.129, better than A by 0.032.
+  - **PASS on comments:** 0.152 against 0.137.
+  - Facebook: 0.123 against 0.103, within the margin but contaminated.
+- **G2** (dRank13 error below A's on ≥ 2 of 3 panels): **NOT ADJUDICATED.**
+  A's per-moment errors at 20 reps are not recorded. Rerunning A in this
+  harness at 20 reps (about two hours) was not done.
+
+### 5. Structure (in-sample; same estimators on data and simulations)
+
+**Set-up.** In-sample: parameters estimated on the whole panel with A's
+structure-stack estimator, without two-scale and stat-factor, which the
+simulator does not carry. Both models start from the same communities'
+filtered state at the end of the first block and simulate the rest of the
+panel. Identical estimators on data and simulations; 20 seeds (comments 10);
+90% bands across seeds.
+
+| measure | panel | data | moving-home RDM | model A dynamics |
+|---|---|---|---|---|
+| no-return slope (S1) | Facebook pages (26-week blocks) | −0.076 | **−0.089 (−0.115 to −0.060)** | −0.157 (−0.177 to −0.134) |
+| | submissions (52-week) | +0.257 (Spearman +0.373, Theil–Sen +0.365) | 0.027 (0.009–0.045) | −0.027 (−0.053 to −0.012) |
+| one-block retention, top K/64 / K/16 / K/8 / K (S2) | Facebook (26 weeks) | 0.722 / 0.734 / 0.776 / 0.825 | 0.810 / 0.790 / 0.814 / 0.832 | 0.816 / 0.786 / 0.820 / 0.842 |
+| | submissions (one year) | 0.833 / 0.830 / 0.832 / 0.868 | 0.876 / 0.895 / 0.916 / 0.899 | 0.817 / 0.841 / 0.852 / 0.885 |
+| two-year retention, top K/16 (S5) | submissions | 0.724 | 0.824 | 0.784 |
+| raw size–variance β (S3) | Facebook | 0.002 | 0.078 | 0.070 |
+| | submissions | 0.074 | 0.109 | 0.062 |
+| arithmetic share of the top K/64, last block (S4) | Facebook | 0.251 | 0.282 | 0.284 |
+| | submissions | 0.359 | 0.515 | 0.497 |
+| excess kurtosis of 26-week changes (S7) | Facebook | 4.96 | 2.71 | 3.63 |
+| | submissions | 28.95 | 3.56 | 1.34 |
+| boundary ratio of simulations, pooled K/8 … K (S6) | submissions | (data 0.80, §2z-da) | 0.970 (0.924–1.006) | 1.022 (0.972–1.052) |
+
+**Comments** (`reddit_comments_ext`, 52-week blocks, 10 seeds):
+
+| measure | data | moving-home RDM | model A dynamics |
+|---|---|---|---|
+| no-return slope, OLS / Spearman | +0.253 / +0.320 | −0.035 / −0.012 | −0.152 / −0.174 |
+| one-year retention, top 195 / 781 / 1,562 / 12,500 | 0.795 / 0.808 / 0.816 / 0.831 | 0.823 / 0.853 / 0.859 / 0.895 | 0.795 / 0.862 / 0.881 / 0.894 |
+| two-year retention, same top sets | 0.646 / 0.698 / 0.714 / 0.754 | 0.720 / 0.778 / 0.788 / 0.824 | 0.736 / 0.830 / 0.849 / 0.846 |
+| raw size–variance β | 0.072 | 0.055 | 0.062 |
+| arithmetic share of the top K/64, last block | 0.520 | 0.608 | 0.576 |
+| excess kurtosis of 26-week changes | 7.81 | 1.85 | 2.06 |
+
+**Scoring of S1–S7.**
+
+| | prediction | result |
+|---|---|---|
+| S1 | no return within the data's band for the RDM, outside it for A | **PASS on Facebook** (RDM −0.089 against data −0.076; A −0.157). **FAIL on both Reddit ladders**, where the data show broad *momentum* (Spearman +0.32 and +0.37). The RDM is neutral there; A reverts, the wrong way |
+| S2 | one-year retention within ±0.05 | RDM 3 of 4 cut-offs on comments, 2 of 4 on submissions, 2 of 4 on Facebook. **PARTIAL.** A is closer on submissions, the RDM on comments' two-year retention |
+| S3 | raw β within ±0.05 | **PASS** on comments and submissions. **FAIL** on Facebook (0.078 against 0.002; recovery shows β biased up by 0.045 at 86 weeks) |
+| S4 | head share within ±5 points | **PASS** on Facebook. **FAIL** on comments (+8.8) and submissions (+15.6) |
+| S5 | two-year retention of the top K/16 within ±0.05 | **FAIL** on submissions (0.824 against 0.724) and comments (0.778 against 0.698). Too sticky, as the no-jump model was expected to be |
+| S6 | boundary ratio of simulations in [0.85, 1.18] | **PASS** (submissions 0.970). It does not discriminate: A gives 1.022 |
+| S7 | kurtosis within ±50% | **PASS** on Facebook (2.71 against 4.96, at the edge). **FAIL** on comments and submissions |
+
+**Drift by name, calibrated on submissions momentum** (DOSSIER addendum 3,
+designed at 0d720b0 before the runs; `velocity_transport.py`; 5 seeds per
+grid point).
+
+| q (annual velocity sd / annual lasting sd) | half-life 52 | 104 | 208 weeks |
+|---|---|---|---|
+| 0.25 | +0.047 | +0.064 | +0.057 |
+| 0.50 | +0.071 | +0.068 | +0.072 |
+| 0.75 | +0.096 | +0.098 | +0.090 |
+| 1.00 | +0.111 | +0.115 | +0.118 |
+| 1.50 | +0.153 | +0.163 | **+0.179** |
+
+_Simulated momentum, Spearman of consecutive annual changes. The data's value
+is +0.373._
+
+- **Chosen: q 1.5, H 208.** M1 **FAILS**: the closest grid point gives
+  +0.179, not within ±0.05 of +0.373.
+- **Momentum grows only about linearly in q, and barely with persistence.**
+  Reaching +0.37 would need q ≈ 3, a velocity three times the lasting
+  spread, which would wreck turnover.
+- **At the chosen point:**
+  - one-year retention is 0.797 / 0.833 / 0.869 / 0.859 against 0.833 /
+    0.830 / 0.832 / 0.868, a mean absolute error of 0.021 (0.056 without
+    velocity);
+  - the head share is 0.572 (0.515 without velocity, data 0.359).
+- **Reading:** a stationary, name-specific velocity consistent with observed
+  turnover cannot make momentum as strong as Reddit's.
+
+**Transport to comments, with no refit** (the registered test: q 1.5, H 208,
+with σ_v scaled by comments' own σ_0; 10 seeds).
+
+| | data | transported velocity | expectation |
+|---|---|---|---|
+| momentum Spearman | +0.320 | +0.199 (0.183–0.218) | **M2 FAIL** (outside ±0.08) |
+| one-year retention, top 195 / 781 / 1,562 / 12,500 | 0.795 / 0.808 / 0.816 / 0.831 | 0.654 / 0.715 / 0.734 / 0.862 | — |
+| two-year retention, same top sets | 0.646 / 0.698 / 0.714 / 0.754 | 0.330 / 0.474 / 0.520 / 0.772 | **M3 FAIL** (mean absolute error 0.19, against 0.075 without velocity) |
+| head share, last block | 0.520 | 0.730 | **M4 FAIL** (further than 0.608) |
+
+- **Why.** The velocity was defined relative to the lasting sd at L_ref (rank
+  K) and applied at the same size to every endpoint. On comments the head's
+  lasting volatility is far below that at rank K, so the velocity dominates
+  there: head turnover explodes and the trending leaders concentrate the head.
+  Submissions showed the same symptom, milder: the share rose with q.
+- **Lesson, for any next attempt:** drift by name must scale with size like
+  the lasting volatility, or it is not a name-level velocity at all.
+
+**Post hoc diagnostics on submissions,** labelled post hoc:
+- *Drift by name (velocity, DOSSIER addendum 2).*
+  - V_v corresponds to an sd of 0.16 a year, with a half-life of 26 weeks,
+    the lower edge of its grid.
+  - Momentum 0.040: **V1 FAILS** (needs ≥ 0.14).
+  - Retention error falls from 0.056 to 0.043: **V2 PASSES**.
+  - β 0.068 is closer to the data: **V4 PASSES**.
+  - The head share is unchanged at 0.514.
+- *Measured slides (drift by rank from §2z-cd's in-sample slides).*
+  - The end share falls to 0.436, halfway to the data's 0.359 (in-sample by
+    construction).
+  - Momentum stays at 0.040, and retention stays too sticky.
+- *The data's momentum is broad, not a tail effect:* Spearman +0.373,
+  Theil–Sen +0.365, OLS without the 1% extremes +0.314. Facebook shows none
+  (Spearman −0.035).
+
+### 6. Recovery (ADEMP)
+
+`recovery.py`: the truth is the Facebook fit. Each panel goes through the
+full pipeline, 6 replications per row.
+
+| truth | T | σ_0 median relative error | β median error (sd) |
+|---|---|---|---|
+| fitted β = 0.113 | 86 | +0.089 | +0.050 (0.044) |
+| fitted β = 0.113 | 160 | +0.072 | **+0.006** (0.029) |
+| null β = 0 | 86 | +0.045 | +0.045 (0.041) |
+| null β = 0 | 160 | −0.032 | **+0.015** (0.029) |
+
+- **R1 passes at panel lengths of 160 weeks or more** (Reddit's 212–213),
+  with β within ±0.03 and σ_0 within ±15%.
+- **It fails for β at 86 weeks** (Facebook's length), where β is biased up by
+  about +0.045 even when the truth is 0. Facebook's estimated β (about 0.10)
+  is therefore about 0.05 once that bias is removed, which fits the near-zero
+  raw β of §2z-dc.
+
+### 7. Verdict, by the dossier's rule
+
+**By the dossier's rule, the moving-home model is NOT recommended as a
+replacement for model A as the structure model.** Its Reddit structure targets
+fail: S1 momentum, S4 concentration, S5 two-year retention and S7 kurtosis.
+**It is a credible candidate for the movement stack:**
+- **Gate.** It passes G1 on both clean Reddit gates. On short Reddit
+  submissions it beats A (0.097 against 0.129) and persistence (0.168) by
+  wide margins. On comments it is within +0.015 of A, with its error
+  concentrated in one statistic (coll1).
+- **Mechanism.** It removes A's personal home and its reversion, which the
+  data contradict. On Facebook it reproduces the data's no-return slope where
+  A does not (S1).
+- **Recovery.** Its lasting part is recovered on panels of 160 weeks or more
+  (R1).
+
+**The headline the build delivers:**
+1. **A's "home" is a medium-term swing, not a lasting level.**
+2. **Making the home move preserves held-out movement accuracy and removes
+   the false reversion.** At the same time the ladder is held by a measured
+   drift by rank, which agrees with B's measured head slides once jumps are
+   left out.
+3. **What no tested model reproduces is Reddit's momentum.** Consecutive
+   annual changes correlate at Spearman +0.32–0.37 across the top 5,000 and
+   12,500 communities, robustly; Facebook shows none. A stationary velocity
+   consistent with Reddit's turnover reaches at most +0.18. Transported
+   naively, it breaks the head.
+   - Either Reddit has a non-stationary regime in growth (2020's surge and
+     its continuation, the June 2021 change), or the momentum is partly an
+     archive artefact.
+   - This is now the sharpest open question for the paper's model.
+
+**Scored predictions:**
+
+| prediction | result |
+|---|---|
+| G1 | PASS on both clean Reddit gates (Facebook in the table, contaminated) |
+| G2 | NOT ADJUDICATED |
+| S1 | PASS on Facebook; FAIL on Reddit (momentum) |
+| S2 | PARTIAL |
+| S3 | PASS on Reddit; FAIL on Facebook (short-panel bias) |
+| S4 | PASS on Facebook; FAIL on Reddit |
+| S5 | FAIL |
+| S6 | PASS (non-discriminating) |
+| S7 | PASS on Facebook (at the edge); FAIL on Reddit |
+| R1 | PASS at ≥ 160 weeks; FAIL for β at 86 |
+| V1 / V2 / V4 | FAIL / PASS / PASS |
+| V3 | not run |
+| M1 / M2 / M3 / M4 | FAIL / FAIL / FAIL / FAIL |
+
+**Parameters.**
+- **Lasting part:** σ_0 and β, from structure-function slopes.
+- **Drift:** none free in the hold form.
+- **Shared with A:** the short-run block and its knot profiles.
+- **Removed:** A's fixed home seeded from the ladder (the "one input taken as
+  given").
+
+**Owner decisions:**
+- whether the moving home goes forward as a movement-stack candidate, which
+  would need a re-freeze decision;
+- whether the momentum question is pursued through the raw-archive audit.
+
+### 8. Not done
+
+- **The A emulation in the structure suite** omits A's two-scale component
+  and the stationary common factor. A's structure-stack comparisons are
+  therefore against A's dynamics as this simulator carries them.
+- **G2** (above).
+- **A properly identified drift by name with a regime component.** Reddit's
+  momentum is stronger than a stationary velocity can produce at the observed
+  turnover. Candidates:
+  - a regime shift in drift by rank;
+  - heavy-tailed persistent trends in a minority of names;
+  - a capture-delay artefact: removals growing with the archive's capture
+    delay after July 2021, which only the raw-archive audit can test (WD
+    drive).
+- **Jumps.** Re-identifying them from changes standardised within each
+  entity (removing amplitude heterogeneity non-parametrically) was not done.
+- **An out-of-period structure test** (estimate on 2019–20, predict 2021–22)
+  was not done.
+- **Instagram** was not run.
+- **The model is not adopted.** Adoption, a re-freeze, or a change of the
+  movement stack is the owner's.
+
+### 9. Commands
+
+```
+python llm_fitting/runs/2026-10-18_rdm/gate_runs.py reddit 5000
+python llm_fitting/runs/2026-10-18_rdm/gate_runs.py reddit_comments 12500
+python llm_fitting/runs/2026-10-18_rdm/gate_runs.py facebook_a 3500
+python llm_fitting/runs/2026-10-18_rdm/structure_suite.py <panel> 20
+python llm_fitting/runs/2026-10-18_rdm/boundary_sim.py <panel> 5
+python llm_fitting/runs/2026-10-18_rdm/recovery.py
+python llm_fitting/runs/2026-10-18_rdm/velocity_transport.py calibrate
+python llm_fitting/runs/2026-10-18_rdm/velocity_transport.py transport 1.5 208
+python llm_fitting/runs/2026-10-18_rdm/fig_rdm.py   # fig_rdm.png; in panel C circles = comments, squares = submissions, triangles = Facebook
+```
