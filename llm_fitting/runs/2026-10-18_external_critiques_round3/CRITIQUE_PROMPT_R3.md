@@ -70,9 +70,13 @@ As before:
 1. **Editor's decision now.** Desk reject, send out, or send out with
    enthusiasm? In five sentences, why? What single change would most raise
    the odds?
-2. **The title and the central claim.** Is "the churn that unseats online
-   leaders creates the hierarchy they lead" earned by the evidence? Which
-   word is weakest? Give a better title if you have one.
+2. **The title and the central claim.** Is "Continual turnover sustains a
+   slowly changing hierarchy of online attention" earned by the evidence?
+   It was picked from a study of the 50 most-cited PNAS research titles of
+   2020–2024 (`runs/2026-10-18_pnas_push/TITLE_GENRE_STUDY.md`). The owner
+   asked for a title about the contradiction, and about how churn creates
+   and maintains a stable-ish structure. Which word is weakest? Give a
+   better title if you have one.
 3. **Each Results section.** Is the evidence sufficient for the sentence
    the section leads with? Name the claim a referee would attack first in
    each:
