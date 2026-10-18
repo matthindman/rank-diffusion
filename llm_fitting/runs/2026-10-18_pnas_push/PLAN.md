@@ -420,3 +420,64 @@ Prior 75%, 70%.
   at most a factor of 2.5.
 
 Prior 50%.
+
+## Addendum R4 (2026-10-18, after round 3; before any run): persistence after the 2020 surge
+
+**Why.** Round-3 open item V13 (Fable): every annual triple behind the gapped
+persistence statistic has its first change spanning the first half of 2020,
+the surge in Reddit activity. The panels start in the week of 26 November 2018
+(comments) and 3 December 2018 (submissions) and end in the week of
+19 December 2022 (213 and 212 weeks). With 13-week windows a triple spans
+143 weeks or more, so no annual triple with 13-week windows avoids 2020 H1.
+With 4-week windows a triple spans 112 + gap weeks, so triples can start in
+the week of 6 July 2020 (index 84 on comments, 83 on submissions) or later.
+This is post hoc and is labelled so. Development data only (Reddit ladders
+already exposed). The cohort is the top K by mean level over weeks 0–25, as in
+R3-D.
+
+**Configurations:**
+- W = 13 at all origins (from week 26, every 13 weeks), gaps 0/13/26: the
+  paper's statistic, recomputed.
+- W = 4, H = 52, gaps 4/8/13, at all origins (from week 26, every 4 weeks)
+  and at post-surge origins (first window starts on or after 6 July 2020,
+  every 4 weeks).
+- Universes with full-panel and prefix-only (member_window = 26) membership.
+- The same statistics in two simulated worlds (driftless Gibrat with the
+  passing parts of R3-A; the data-calibrated model world of R3-A).
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R4-1 | W = 4, all origins, gap 13: positive on both ladders and at least half the W = 13 value at the same gap | 70% |
+| R4-2 | W = 4, post-surge origins: positive at gaps 8 and 13 on both ladders | 55% |
+| R4-2b | the same, at least +0.05 on both ladders | 40% |
+| R4-3 | both simulated worlds give at most +0.02 at gaps 8 and 13 with W = 4 | 80% |
+
+**What follows.**
+- If R4-2 and R4-3 hold, the paper says persistence is present in triples that
+  begin after the surge.
+- Otherwise it says that, in the development data, annual persistence cannot
+  be separated from the 2020 surge, and that the sealed 2023–2024 test (P5 of
+  the draft protocol) decides.
+- Either way the half-year result from December 2020 stays in the text.
+
+### R4b (2026-10-18, after R4 and before this run): gapped persistence in triples that end before the July 2021 capture change
+
+**Why.** R4's post-surge triples straddle the July 2021 change in archive
+capture. The earlier evidence that persistence predates that change is
+§2z-de D1. D1 uses adjacent half-year blocks, which the averaging null
+inflates. A gapped version is possible only in a few triples:
+- 4-week windows and annual changes;
+- gaps 4 and 8;
+- a cohort taken from weeks 0–12;
+- origins from week 13, every 4 weeks;
+- the whole triple ending before 1 July 2021 (index 136 on comments, 135 on
+  submissions; 135 in the worlds).
+
+These triples contain 2020 H1, so with R4 each confounder is excluded by one
+set of triples, never both by the same set. Post hoc; development data only.
+
+**Expectations:**
+- **R4-4 (prior 65%):** positive and ≥ +0.05 on both ladders at gaps 4 and 8.
+- **R4-5 (prior 80%):** both worlds ≤ +0.02.

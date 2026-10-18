@@ -1,0 +1,19 @@
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/persistence_post2020.py:33: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+gibrat world {"W13_all": {"0": [-0.044, 5], "13": [-0.007, 4], "26": [-0.003, 3]}, "W4_all": {"4": [-0.055, 18], "8": [-0.034, 17], "13": [-0.017, 16]}, "W4_post": {"4": [-0.047, 4], "8": [-0.031, 3], "13": [-0.024, 2]}}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/persistence_post2020.py:33: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/persistence_post2020.py:33: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long full_membership {"W13_all": {"0": [0.201, 5], "13": [0.174, 4], "26": [0.14, 3]}, "W4_all": {"4": [0.187, 18], "8": [0.183, 17], "13": [0.17, 16]}, "W4_post": {"4": [0.15, 4], "8": [0.157, 3], "13": [0.153, 2]}}
+reddit_submissions_long prefix_membership {"W13_all": {"0": [0.207, 5], "13": [0.183, 4], "26": [0.148, 3]}, "W4_all": {"4": [0.189, 18], "8": [0.186, 17], "13": [0.173, 16]}, "W4_post": {"4": [0.145, 4], "8": [0.156, 3], "13": [0.148, 2]}}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/persistence_post2020.py:33: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/persistence_post2020.py:33: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_comments_ext full_membership {"W13_all": {"0": [0.163, 5], "13": [0.154, 4], "26": [0.141, 3]}, "W4_all": {"4": [0.137, 18], "8": [0.139, 17], "13": [0.134, 16]}, "W4_post": {"4": [0.133, 4], "8": [0.137, 3], "13": [0.136, 2]}}
+reddit_comments_ext prefix_membership {"W13_all": {"0": [0.163, 5], "13": [0.154, 4], "26": [0.142, 3]}, "W4_all": {"4": [0.139, 18], "8": [0.14, 17], "13": [0.134, 16]}, "W4_post": {"4": [0.134, 4], "8": [0.137, 3], "13": [0.134, 2]}}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/persistence_post2020.py:33: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+rdm world {"W13_all": {"0": [-0.106, 5], "13": [-0.098, 4], "26": [-0.099, 3]}, "W4_all": {"4": [-0.096, 18], "8": [-0.092, 17], "13": [-0.089, 16]}, "W4_post": {"4": [-0.081, 4], "8": [-0.079, 3], "13": [-0.07, 2]}}
+DONE

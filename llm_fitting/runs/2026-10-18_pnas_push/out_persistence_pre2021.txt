@@ -1,0 +1,7 @@
+gibrat world {"W4_pre": {"4": [-0.057, 2], "8": [-0.051, 1]}}
+reddit_submissions_long full_membership {"W4_pre": {"4": [0.104, 2], "8": [0.114, 1]}}
+reddit_submissions_long prefix_membership {"W4_pre": {"4": [0.129, 2], "8": [0.137, 1]}}
+reddit_comments_ext full_membership {"W4_pre": {"4": [0.074, 2], "8": [0.108, 1]}}
+reddit_comments_ext prefix_membership {"W4_pre": {"4": [0.075, 2], "8": [0.11, 1]}}
+rdm world {"W4_pre": {"4": [-0.163, 2], "8": [-0.147, 1]}}
+DONE

@@ -520,3 +520,85 @@ within a factor of 1.5.
 - **C-2 PASS:** within 4% of the 10-seed values.
 - The observed slope lies outside the band at every cut-off except the
   submissions head (0.85 against an upper band of 0.86).
+
+## R4. Persistence after the 2020 surge (`persistence_post2020.py`; post hoc; expectations in PLAN.md addendum R4)
+
+Gapped Spearman, mean over origins (number of origins in brackets). The
+cohort is the top K by mean level over weeks 0–25. Post-surge origins start in
+the week of 6 July 2020 (index 84 on comments, 83 on submissions).
+
+| | W = 13, gaps 0 / 13 / 26 (all origins) | W = 4, gaps 4 / 8 / 13 (all origins) | W = 4, gaps 4 / 8 / 13 (post-surge) |
+|---|---|---|---|
+| submissions, full membership | +0.201 / +0.174 / +0.140 (5, 4, 3) | +0.187 / +0.183 / +0.170 (18, 17, 16) | +0.150 / +0.157 / +0.153 (4, 3, 2) |
+| submissions, prefix membership | +0.207 / +0.183 / +0.148 | +0.189 / +0.186 / +0.173 | +0.145 / +0.156 / +0.148 |
+| comments, full membership | +0.163 / +0.154 / +0.141 | +0.137 / +0.139 / +0.134 | +0.133 / +0.137 / +0.136 |
+| comments, prefix membership | +0.163 / +0.154 / +0.142 | +0.139 / +0.140 / +0.134 | +0.134 / +0.137 / +0.134 |
+| world: size-blind Gibrat | −0.044 / −0.007 / −0.003 | −0.055 / −0.034 / −0.017 | −0.047 / −0.031 / −0.024 |
+| world: data-calibrated model | −0.106 / −0.098 / −0.099 | −0.096 / −0.092 / −0.089 | −0.081 / −0.079 / −0.070 |
+
+The post-surge triples are consistent at every origin:
+- **submissions (prefix):** gap 8, +0.153, +0.157, +0.159; gap 13, +0.138,
+  +0.157;
+- **comments:** gap 8, +0.132, +0.142, +0.136; gap 13, +0.127, +0.141.
+
+About 4,600 and 11,200 communities enter each correlation.
+
+**Scored:**
+
+| | expectation | result |
+|---|---|---|
+| R4-1 | W = 4, all origins, gap 13: positive and ≥ half the W = 13 value | **PASS** (submissions 0.170 against 0.174; comments 0.134 against 0.154) |
+| R4-2 | W = 4, post-surge: positive at gaps 8 and 13 on both ladders | **PASS** (+0.153 to +0.157; +0.136 to +0.137) |
+| R4-2b | the same, ≥ +0.05 | **PASS** |
+| R4-3 | both worlds ≤ +0.02 at gaps 8 and 13 with W = 4 | **PASS** (−0.017 to −0.092) |
+
+**Reading.**
+- Annual persistence is present in triples that begin after the 2020 surge.
+  It is about 0.02 lower on submissions and unchanged on comments, so it is
+  not an artefact of the surge.
+- The weak half-year result from December 2020 (−0.04 to +0.08) is therefore
+  a matter of horizon, not of period.
+- **Caveat:** the post-surge triples straddle the July 2021 change in archive
+  capture: change 1 ends in July 2021, and change 2 lies after it. This check
+  does not separate persistence from that change. The earlier evidence that
+  persistence predates the change (§2z-de D1) uses adjacent blocks, which
+  averaging inflates. A gapped check on triples that end before July 2021 is
+  R4b.
+- The sealed 2023–2024 test (P5 of the draft protocol) is unchanged and
+  remains the out-of-sample test.
+
+### R4b. Triples that end before the July 2021 capture change (`persistence_post2020.py … pre`; post hoc)
+
+Setup:
+- 4-week windows and annual changes.
+- The cohort is the top K over weeks 0–12; origins are weeks 13 and 17.
+- Every week used is before 1 July 2021 (index 136 on comments, 135 on
+  submissions).
+
+| | gap 4 (origins 13, 17) | gap 8 (origin 13) |
+|---|---|---|
+| submissions, full membership | +0.104, +0.103 | +0.114 |
+| submissions, prefix membership | +0.130, +0.129 | +0.137 |
+| comments, full membership | +0.109, +0.038 | +0.108 |
+| comments, prefix membership | +0.110, +0.040 | +0.110 |
+| world: size-blind Gibrat | mean −0.057 | −0.051 |
+| world: data-calibrated model | mean −0.163 | −0.147 |
+
+About 4,800–5,000 and 11,700–12,200 communities enter each correlation.
+Prefix membership here uses weeks 0–25, which overlap the first window. Full
+membership uses the whole panel. Neither enters the cohort, which uses weeks
+0–12.
+
+**Scored:**
+- **R4-4: PASS.** Both ladders are positive and at least +0.05 at both gaps,
+  as means. One comments origin at gap 4 gives +0.04.
+- **R4-5: PASS** (−0.05 to −0.16).
+
+**Reading (R4 and R4b together).**
+- Gapped annual persistence appears in triples that end before the capture
+  change: +0.07 to +0.14. These contain the 2020 surge.
+- It also appears in triples that begin after the surge: +0.13 to +0.16.
+  These contain the capture change.
+- No simulated world gives a positive value.
+- Neither confounder alone accounts for it. No development triple excludes
+  both; the sealed 2023–2024 data do (P5).

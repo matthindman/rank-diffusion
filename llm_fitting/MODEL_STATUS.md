@@ -12680,3 +12680,139 @@ attention".
 
 **PDF layout** fixed (5072178): first-page sidebar, figure placement and
 label overlaps.
+
+### 9. Owner instructions, same day (verbatim)
+
+> "crowdtangle data cannot be redistributed and are highly restricted --
+> though I want to be as permissive as allowed under these limits. research
+> the limits and distribution other scholars have achieved with the standard
+> crowdtangle agreement, and use examples of other scholars who seem to be
+> careful and scrupulous in followin the agreeement with meta as a model.
+>
+> Do not open the bridge data yet -- we are not ready, and you need me
+> explicit instructions to do so. The protocol looks fine.
+>
+> if there are obvious things to do still to improve the paper without new
+> data, do them. If not, go back to the reviewer models."
+
+**Recorded meaning:**
+- The bridge stays sealed until the owner gives an explicit instruction
+  naming it.
+- "The protocol looks fine": v3.1 stands as drafted, without the two
+  suggested additions. It is not recorded as adopted; adoption and first
+  contact remain explicit owner acts.
+- The CrowdTangle data-availability statement is to be modelled on careful
+  precedents.
+
+### 10. Owner decision on naming and sharing Reddit communities (verbatim)
+
+> "We can share the reddit data analysis including community unredacted
+> names, but we will not redistribute the data. It is problematic under
+> research ethics to blind literally the most important subreddits, leading
+> to a risk of misunderstanding; there is no countervailing risk of harm to
+> users given the types of data and analyses we are going to include (only
+> subreddit-level relative traffic in a few cases.)
+>
+> Once you have the new reviews in hand, continue to improve the paper as
+> much as you can, focused on the goal of a publishable PNAS paper that will
+> be enthusiastically received by editors and reviewers. Do everything you
+> can to achieve this goal, even beyond what I've instructed you to so, so
+> long as it does not ignore andy of my explicit instructions or
+> prohibitions."
+
+**Recorded meaning:**
+- **Reddit.** Analyses may name subreddits, unredacted, in the paper, the SI
+  and the repository's outputs. This replaces the working convention of
+  unnamed descriptive outputs (§2z-cu onward) for Reddit.
+- **What is not shared.** The Reddit data themselves, and the community-level
+  weekly panels built from them, are not redistributed.
+- **The owner's reasons.** Blinding the largest subreddits risks
+  misunderstanding. The analyses concern only subreddit-level relative
+  activity, so there is no risk of harm to users.
+- **Facebook pages.** The decision does not cover them; CrowdTangle's terms
+  govern (§2z-di).
+- **Sealed data.** The bridge stays sealed (§9).
+
+## 2z-di. 2026-10-18 — EXPLORATORY MEASUREMENT (post hoc; expectations in PLAN.md addenda R4 and R4b, written before each run) and MANUSCRIPT: persistence holds in comparisons that exclude the 2020 surge and in comparisons that exclude the July 2021 capture change; data-availability statement built on CrowdTangle's terms and careful precedents; Reddit communities may be named (owner, §2z-dh §10). Nothing adopted; no gate evaluation; bridge sealed
+
+_Claude Opus 5.5 (Anthropic), Claude Code. Owner instructions: §2z-dh §§9–10. Files: `runs/2026-10-18_pnas_push/` (`persistence_post2020.py`, JSONs and `out_*` files, RESULTS R4/R4b, `DATA_AVAILABILITY_NOTES.md`)._
+
+### 1. Persistence and the two confounders (round-3 open item V13)
+
+**The problem.** With 13-week windows, every annual triple has its first
+change across 2020 H1, the surge in Reddit activity. Four-week windows allow
+triples that avoid it.
+
+| | begin after 6 July 2020 (gaps 4 / 8 / 13) | end before 1 July 2021 (gaps 4 / 8) |
+|---|---|---|
+| submissions | +0.150 / +0.157 / +0.153 | +0.104 / +0.114 (prefix membership +0.130 / +0.137) |
+| comments | +0.133 / +0.137 / +0.136 | +0.074 / +0.108 |
+| size-blind world | −0.047 / −0.031 / −0.024 | −0.057 / −0.051 |
+| model world | −0.081 / −0.079 / −0.070 | −0.163 / −0.147 |
+
+- **Scored:** all six expectations passed (R4-1, R4-2, R4-2b, R4-3, R4-4,
+  R4-5).
+- **Sample sizes:** 2–4 origins after the surge and 1–2 before the capture
+  change, each over 4,600–12,200 communities.
+- **What it rules out:** neither the surge nor the capture change alone
+  accounts for persistence.
+- **What it cannot rule out:** no development triple excludes both. The
+  sealed 2023–24 test (P5) does.
+- **Text:** the paper's limits sentence is corrected. It had said that
+  persistence "predates" the capture change, on the evidence of ungapped
+  §2z-de D1. A new SI subsection was added.
+
+### 2. Data availability
+
+**CrowdTangle research** (sub-agent; Wayback captures of the help pages;
+full texts of papers):
+- Raw exports may not be shared publicly.
+- Insights may be.
+- Page or Group IDs may be posted so that others can rebuild the list.
+- The required citation form names the List IDs.
+- After the 14 August 2024 shutdown, Meta Content Library uses its own IDs,
+  so a rebuilt panel can only approximate ours.
+
+**Careful precedents:**
+- Grunwald et al., PNAS 2022, withheld even per-post interaction counts.
+- Broniatowski et al., Sci. Adv. 2023, released List IDs and group-level
+  series.
+- Sangiorgio et al., PNAS Nexus 2024, released Page names and URLs, with no
+  per-Page series.
+
+No careful study released per-Page series together with Page identifiers.
+
+**The statement (Methods; SI §1):**
+- **Deposited:** code, every analysis output, and the analysis record.
+- **Reddit:** named-community results are deposited. The Pushshift archive
+  and the community-level panels are not redistributed.
+- **CrowdTangle:** no exports and no per-Page series.
+- **Page IDs:** to be listed, pending the owner's confirmation (TODO in the
+  text).
+- **Verification:** the exports and panels are available to editors and
+  reviewers.
+
+**Still needed from the owner:**
+- the CrowdTangle List IDs and the year of access;
+- confirmation that Page IDs may be published;
+- the repository DOI.
+
+Facebook pages stay unnamed in the paper. Sources:
+`DATA_AVAILABILITY_NOTES.md`.
+
+### 3. Other manuscript changes
+
+- The SI flat-start table now uses the 20-seed values, with bands. It still
+  showed the 10-seed values while the main text said 20.
+- The model's parameter structure is stated (round-3 V8).
+- Cunha et al. 2019 is cited (round-3 literature item).
+- The SI's wide tables and long paths now fit the page.
+- **Exposure ledger:** the rows for round 3's data contact had been omitted.
+  They are added, marked as logged late.
+
+### 4. Not run
+
+- Fitted level-process rivals (two-type GLLM, Yule–Simon).
+- Cross-model recovery.
+- The by-cut-off bias of the boundary estimator.
+- The round-4 referee reviews are next (`runs/2026-10-18_external_critiques_round4/`).

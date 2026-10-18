@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-18** (the paragraphs on §2z-da … §2z-dh were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-18** (the paragraphs on §2z-da … §2z-di were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -270,6 +270,16 @@ spine, "size does not protect", and the model and momentum. The outline
     holds up the durable hierarchy of online attention".
 - **Bridge protocol v3.1** adds P5–P7 (owner: "Yes, add them"). NOT
   adopted.
+- **After round 3 (§2z-di):**
+  - Persistence holds in comparisons that exclude the 2020 surge (+0.13
+    to +0.16) and in comparisons that exclude the July 2021 capture
+    change (+0.07 to +0.14). None excludes both; that is P5 on the
+    bridge.
+  - Data-availability statement drafted. CrowdTangle: aggregates and
+    Page IDs only (the IDs await the owner). Reddit: communities may be
+    named, and the data are not redistributed (owner, §2z-dh §10).
+  - The owner said "the protocol looks fine". The bridge stays sealed
+    until the owner explicitly names it for opening.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it
