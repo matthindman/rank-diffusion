@@ -12,10 +12,20 @@ sections, and what is still open._
 
 ## Title (the owner's direction: the contradiction, and how churn creates and maintains the structure)
 
-1. **The churn that unseats online leaders creates the hierarchy they lead**
-   (used in the draft)
-2. Turnover creates and sustains the hierarchy of online attention
-3. Online attention keeps its hierarchy by replacing its leaders
+Picked at the owner's request ("pick a headline that follows the norms and
+revealed prefs of successful PNAS articles") from a study of the 50 most-cited
+PNAS research titles of 2020–2024 (`runs/2026-10-18_pnas_push/TITLE_GENRE_STUDY.md`).
+
+1. **Continual turnover sustains a slowly changing hierarchy of online
+   attention** (used in the draft). A present-tense declarative whose verb
+   is the measured result, with the contradiction stated literally;
+   10 words, 75 characters.
+2. Turnover sustains the hierarchy of online attention and can build it from
+   equality. This carries the owner's "creates", hedged with "can", because
+   creation rests on theory and the model.
+3. Earlier: "The churn that unseats online leaders creates the hierarchy they
+   lead". The unhedged "creates" is model-only, and "online leaders" reads as
+   people.
 
 ## The argument in five claims (each with its record section)
 
