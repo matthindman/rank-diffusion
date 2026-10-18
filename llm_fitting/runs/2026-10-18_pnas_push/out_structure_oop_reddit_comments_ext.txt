@@ -1,0 +1,9 @@
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/structure_oop.py:51: RuntimeWarning: Mean of empty slice
+  out.append(np.where(ok, np.nanmean(seg, 0), np.nan))
+reddit_comments_ext: data retention 2021->2022 {195: 0.7846153846153846, 781: 0.8066581306017926, 1562: 0.825224071702945, 12500: 0.85808}; carried forward (2019->2020) {195: 0.7948717948717948, 781: 0.8258642765685019, 1562: 0.822663252240717, 12500: 0.83976}; arithmetic share K/64 2020 0.569 -> 2022 0.505; momentum +0.431
+  fit on weeks < 109: sigma0 0.1251, beta +0.074; 50000 names at the origin
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/structure_oop.py:51: RuntimeWarning: Mean of empty slice
+  out.append(np.where(ok, np.nanmean(seg, 0), np.nan))
+  home: retention {195: 0.866923076923077, 781: 0.8355953905249679, 1562: 0.8427016645326505, 12500: 0.8940239999999997} (MAE 0.041); share 2022 0.559 (0.541-0.583); momentum -0.259; kurtosis 2.50; retention with entrants dropped {195: 0.866923076923077, 781: 0.8355953905249679, 1562: 0.8427016645326505, 12500: 0.894048}
+  movinghome: retention {195: 0.8325641025641026, 781: 0.8118437900128039, 1562: 0.8166453265044815, 12500: 0.8739040000000001} (MAE 0.019); share 2022 0.598 (0.541-0.692); momentum +0.026; kurtosis 2.42; retention with entrants dropped {195: 0.8325641025641026, 781: 0.8118437900128039, 1562: 0.8166453265044815, 12500: 0.874216}
+  baselines: retention carried forward MAE 0.013; share carried forward 0.569 (observed 0.505); data kurtosis of 26-week changes (start names) 3.21

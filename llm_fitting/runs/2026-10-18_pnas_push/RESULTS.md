@@ -282,3 +282,35 @@ no-drift arm reproduces 0.175 to every digit, and the comments run started
 - The (a′) numbers stand as their own result. A random-walk home with the
   variance correction and NO drift by rank is the best arm on comments at
   1–13 weeks (0.100 against A 0.123), and at par on submissions.
+
+## A6. Out-of-period structure (`structure_oop.py`; fit on 2019–20, forecast 2021–22; frozen moving home, drift applied)
+
+| | submissions data | A | moving home | baseline | comments data | A | moving home | baseline |
+|---|---|---|---|---|---|---|---|---|
+| one-year retention 2021→22 at K/64, K/16, K/8, K | 0.833, 0.830, 0.818, 0.878 | 0.873, 0.796, 0.808, 0.890 | 0.847, 0.896, 0.894, 0.873 | carried forward 0.795, 0.772, 0.806, 0.838 | 0.785, 0.807, 0.825, 0.858 | 0.867, 0.836, 0.843, 0.894 | 0.833, 0.812, 0.817, 0.874 | 0.795, 0.826, 0.823, 0.840 |
+| retention MAE | — | **0.024** | 0.040 | 0.037 | — | 0.041 | 0.019 | **0.013** |
+| arithmetic share of top K/64, 2022 (2020 → 2022 observed) | 0.508 → 0.356 | 0.528 (0.45–0.69) | 0.495 (0.47–0.52) | 0.508 | 0.569 → 0.505 | 0.559 | 0.598 | 0.569 |
+| momentum (adjacent blocks; data include about +0.24 from averaging) | +0.449 | −0.079 | +0.102 | | +0.431 | −0.259 | +0.026 | |
+| excess kurtosis of 26-week changes | 22.1 | 3.2 | 5.1 | | 3.2 | 2.5 | 2.4 | |
+
+**Scored:**
+
+| | expectation | submissions | comments |
+|---|---|---|---|
+| A6-1 | RDM MAE ≤ A's | **FAIL** (0.040 against 0.024) | **PASS** (0.019 against 0.041) |
+| A6-2 | neither arm beats carrying retention forward | **FAIL:** A beats it (0.024 against 0.037) | **PASS** |
+| A6-3 | both forecast less than half the observed change of the head share | **PASS:** observed −0.152; A +0.020, RDM −0.013 | **PASS:** observed −0.064; A −0.010, RDM +0.029 |
+| A6-4 | both arms' momentum within ±0.05 | **FAIL:** A −0.08, RDM +0.10 | RDM pass (+0.03), A fail (−0.26) |
+| A6-5 | entrants kept against dropped change retention < 0.02 | **PASS:** identical | **PASS:** identical |
+
+**Reading.**
+- Out of period, the models forecast one-year retention to within 0.02–0.04
+  at four cut-offs.
+- The moving home is better than A on comments and worse on submissions.
+  Carrying the last year's retention forward is as good or better on
+  comments.
+- Neither stationary model forecasts the fall of concentration at the head.
+  That fall is the persistent decline of §A4/§A8, which neither model
+  contains.
+- The round-2 V3 concern (entrants dropped from simulations) does not matter
+  here: no entrant reaches a top set within the window.
