@@ -12017,3 +12017,61 @@ python llm_fitting/runs/2026-10-18_rdm/velocity_transport.py calibrate
 python llm_fitting/runs/2026-10-18_rdm/velocity_transport.py transport 1.5 208
 python llm_fitting/runs/2026-10-18_rdm/fig_rdm.py   # fig_rdm.png; in panel C circles = comments, squares = submissions, triangles = Facebook
 ```
+
+## 2z-de. 2026-10-18 — EXPLORATORY MEASUREMENT (design committed at 6ccef16 before the run) and PLANNING: Reddit's momentum is a robust regularity, not an artefact of the July 2021 capture change and not a young-community lifecycle; drafts revised to frame c; a self-assessment before the second round of referee models. Four of five expectations held (D2 failed); nothing adopted, no gate evaluation
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code; 2026-10-18; started
+from ee0f0f3. The owner's request: "revise the draft / plan to be consistent
+with the new analysis. Then do a self-assessment … Do the obvious things next
+if so — otherwise go back to the original three models and get their revised
+feedback."_
+
+### 1. Drafts revised to the new analysis
+
+- **`PAPER_FRAME_DRAFT_2026-10-18c.md`,** the consolidated working draft. It
+  carries the B spine, "size does not protect" as the headline, the
+  moving-home model as Results 4, and Reddit momentum as Results 5.
+  Significance is 118 words and the abstract 233.
+- **`paper/pnas_outline_v2.tex`:** six Results sections. It now compiles with
+  the recommended title and the real significance and abstract. A
+  float-placement quirk of `pnas-new.cls` broke compilation with a short
+  significance placeholder; it is resolved by putting the text in.
+- **Evidence packet:** claims C15–C19 added.
+- **`PROGRAM_STATE.md`** points to frame c.
+
+### 2. Self-assessment
+
+Before more referee feedback, the obvious gap was momentum. It is the moving-home model's
+main failure (§2z-dd) and the draft's newest fact, and a referee would ask
+first whether it is real. That is cheap to test with data on hand.
+
+### 3. Momentum diagnostics (`runs/2026-10-18_momentum/`)
+
+| | diagnostic | result | expectation |
+|---|---|---|---|
+| D1 | Spearman of consecutive half-year changes (26-week block means), by triple | **submissions:** +0.199 (2019 H1 → 2020 H1), +0.341, +0.320, all three triples ending before July 2021, then +0.307, +0.251, +0.111; mean before July 2021 **+0.287**, after +0.223. **Comments:** +0.126, +0.258, +0.231 before; +0.214, +0.191, +0.162 after; mean before **+0.205** | **PASS:** present before the archive's capture-regime change |
+| D2 | annual 2020 → 2021 → 2022, by first appearance | submissions: young (first seen after week 26, n 96) +0.353, old (n 4,633) +0.452. Comments: young (n 475) +0.409, old (n 10,978) +0.433. All: +0.449, +0.431 | **FAIL:** young are not higher, so it is not a lifecycle of young communities |
+| D3 | annual 2019 → 2020 → 2021 by block-0 stratum | submissions: top K/16 +0.235, K/16–K/4 +0.397, K/4–K +0.366. Comments: +0.291, +0.272, +0.351 | **PASS:** positive at every size, weaker at the very top of submissions |
+| D4 | absent blocks kept at the floor | submissions: +0.373 → +0.371. Comments: +0.320 → +0.264 | **PASS:** above +0.25 |
+| D5 | Facebook pages, 13-week blocks | −0.065, −0.088, −0.077, −0.015 (Era A, 2020-12 … 2022-06) | **PASS:** none |
+
+**Reading.**
+- Momentum is a robust regularity of Reddit, and only of Reddit. It is
+  present from 2019, at every size, and robust to survivorship.
+- It is not a young-community lifecycle.
+- It is stronger at the annual horizon in 2020 → 2022 (+0.43 to +0.45) than in
+  2019 → 2021.
+- It predates the capture change of July 2021. That change is therefore not
+  its cause; other capture effects are not excluded.
+- **Remaining candidates:**
+  - persistent growth trends of established communities;
+  - trends shared by groups of communities, such as topics. That would need
+    names (owner-gated) or co-movement clusters.
+
+### 4. Decision
+
+Ready for the second round of referee models. The remaining large items are
+either substantial builds (a momentum mechanism) or owner-gated (raw-archive
+audit, names, sealed data), and the referees' view of priorities is wanted
+first. Frame c §5 and the evidence packet C19 are updated with these
+results.

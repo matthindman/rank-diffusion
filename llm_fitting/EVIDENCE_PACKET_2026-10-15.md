@@ -8,6 +8,8 @@ owner's; nothing here changes the binding claim set (§6 addendum,
 2026-07-12). Companion documents: `PAPER_FRAME_DRAFT_2026-10-15.md`,
 `REVIEWER_QUESTIONS_2026-10-15.md`, `BALANCE_LAW_THEORY_NOTE_2026-10-14.md`._
 
+_**Updated 2026-10-18 (later):** claims C15–C19 added from §2z-dc and §2z-dd; the working frame is `PAPER_FRAME_DRAFT_2026-10-18c.md`._
+
 _**Corrected 2026-10-18** after three external reviews
 (`runs/2026-10-18_external_critiques/`, MODEL_STATUS §2z-da). Corrected
 statements are marked [c]; the earlier wording is in git history. The newer
@@ -53,6 +55,11 @@ frame is `PAPER_FRAME_DRAFT_2026-10-18.md`._
 | C12 | **Instagram's censoring** modelled, validated and bounded | planted ratio 1.015 censored against 1.014 truth; default rules cannot read it; matching-post count ≤ 23–41% of movement | §2z-c, §2z-cx | `fig_instagram_censoring.png` | `ig_censoring_sim.py`; `runs/2026-10-15_instagram/` | registered (I1 pass, I2 fail, I3 pass) |
 | C13 | **Forecasting structure is no better than trend** | submissions: law ≈ repeating the last change; comments: no change best; after June 2021 a quarter's movement did not beat trend | §2z-ce, §2z-co, §2z-cs | — | `mts_forward.py`, `mts_seasonal.py`, `mts_intervention.py` | registered failures, reported as a limit |
 | C14 | **Entry and maturity** | entry net of exit 29–41% of the slide on comments, 8–19% on submissions; removing it would steepen comments' sustained slope 18–51% | §2z-cc, §2z-ck | — | `mts_replenish.py` | in sample |
+| C15 | **Size does not protect** [added 2026-10-18] | raw size–variance β 0.075/0.059 (comments), 0.045/0.082 (submissions), 0.008 (Facebook), against 0.15–0.2 for firms; lasting β 0.047, 0.070 | §2z-dc | `fig_contestable.png` A | `runs/2026-10-18_altitude/size_variance.py` | post hoc design, committed before the run |
+| C16 | **Attention moves as a unit, not as a portfolio** [added] | engagement per item γ 0.042 (comments), 0.120 (submissions), 0.072 (Facebook), against 0.5 for independent items | §2z-dc | — | `portfolio.py` | post hoc design; heavy-tailed items argued, not measured |
+| C17 | **A generative model: the moving home** [added] | Gate v1 at 20 reps: submissions 0.097 (A 0.129, persistence 0.168), comments 0.152 (A 0.137), Facebook 0.123 (A 0.103, contaminated); no-return on Facebook −0.089 against −0.076 (A −0.157); recovery at ≥ 160 weeks | §2z-dd | `runs/2026-10-18_rdm/fig_rdm.png` | `rankdiff_rdm.py`; `tests/test_rankdiff_rdm.py` | dossier before code; clean gates on Reddit; not adopted |
+| C18 | **Model A's "home" is a medium swing** [added] | σ_perm² 0.02–0.12 a week with κ 0.1–0.2, against lasting variance 0.011–0.018 | §2z-dd | — | `rankdiff_rdm.py` | measurement |
+| C19 | **Reddit momentum** [added] | Spearman of consecutive annual changes +0.373 (submissions), +0.320 (comments); Facebook −0.035; no tested model reproduces it; drift by name reaches +0.18 and fails transport; present before July 2021, at every size, robust to survivorship, not a young-community lifecycle | §2z-dd, §2z-de | `fig_rdm.png` B | `structure_suite.py`, `velocity_transport.py` | a new regularity; mechanism open |
 
 ## Scoreboard of registered predictions since §2z-cm
 

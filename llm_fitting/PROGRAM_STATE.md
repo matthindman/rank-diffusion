@@ -230,6 +230,11 @@ New measurements:
 
 The working draft frame is `PAPER_FRAME_DRAFT_2026-10-18.md` (not adopted).
 
+**Working frame** (2026-10-18, after the model build):
+`PAPER_FRAME_DRAFT_2026-10-18c.md`. It consolidates three things: the B
+spine, "size does not protect", and the model and momentum. The outline
+`paper/pnas_outline_v2.tex` is revised to six Results sections and compiles.
+
 **The moving-home model (§2z-dd, 2026-10-18; development data; nothing
 adopted).** A new opt-in module, `rankdiff_rdm.py`. A's personal home
 becomes a lasting level that random-walks and holds the ladder by drift by
