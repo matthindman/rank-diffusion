@@ -1,6 +1,10 @@
 """R7 of PLAN.md: null worlds at 20 seeds, calibrated worlds from the model, beta calibration, Gomez noise baseline.
 
-    python llm_fitting/runs/2026-10-18_pnas_push/null_worlds_r7.py <gibrat|atlas|neutral|rdm|sb_data|firm_data|beta05|beta10> <seed_from> <seed_to>
+    python llm_fitting/runs/2026-10-18_pnas_push/null_worlds_r7.py <gibrat|atlas|neutral|rdm|sb_data|firm_data|beta05|beta10|sb_flat|firm_flat> <seed_from> <seed_to>
+
+sb_flat / firm_flat (R9): as sb_data / firm_data, but the top K of the starting ladder is replaced by a ladder of constant
+slope in log rank with the same levels at rank 1 and rank K (below K the data's ladder is kept), so that only the
+geometry differs.
 
 sb_data / firm_data / beta05 / beta10: the moving-home model (movinghome_vp) estimated on reddit_submissions_long, with
 planted beta (0, 0.2, 0.05, 0.10) and no drift by rank, started from the data's filtered ladder (weeks < 30), with the
@@ -52,7 +56,7 @@ def gomez(df):
 
 
 which, s0, s1 = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
-if which in ("rdm", "sb_data", "firm_data", "beta05", "beta10"):
+if which in ("rdm", "sb_data", "firm_data", "beta05", "beta10", "sb_flat", "firm_flat"):
     import rankdiff_kalman as rk
     import rankdiff_rdm as rdm
     EST = dict(obs_frac=0.5, temper=True, min_knot_n=8, md_lags=6, t_tails=True, md_vr_long=True, mix_hetero=False)
@@ -61,10 +65,17 @@ if which in ("rdm", "sb_data", "firm_data", "beta05", "beta10"):
     p = rdm.estimate_rdm(df0, K, base=base, jumps=False, variant="hold")
     L0 = rk._filtered_levels(df0[df0["period"] < 30].copy(), base).to_numpy()
     del df0
-    planted = dict(sb_data=0.0, firm_data=0.2, beta05=0.05, beta10=0.10)
+    planted = dict(sb_data=0.0, firm_data=0.2, beta05=0.05, beta10=0.10, sb_flat=0.0, firm_flat=0.2)
     if which != "rdm":
         p = replace(p, beta=planted[which], drift_g=np.zeros_like(p.drift_g))
     print(f"{which}: estimated lasting beta (structure function) on the data; world beta {p.beta:+.3f}, sigma0 {p.sigma0:.4f}", flush=True)
+    if which in ("sb_flat", "firm_flat"):                       # R9: constant-slope top K, same levels at ranks 1 and K
+        o = np.argsort(-L0, kind="stable")
+        top, LK = L0[o[0]], L0[o[K - 1]]
+        lr = np.log(np.arange(1, K + 1))
+        L0 = L0.copy()
+        L0[o[:K]] = top - (top - LK) * lr / lr[-1]
+        print(f"{which}: top K reset to constant slope {(top - LK) / lr[-1]:.3f} (levels {top:.2f} .. {LK:.2f})", flush=True)
 for seed in range(s0, s1 + 1):
     if which == "neutral":
         _, rows = nw.world_neutral(seed)
@@ -78,7 +89,7 @@ for seed in range(s0, s1 + 1):
     res = nw.stats(df, which)
     res["seed"] = seed
     res["gomez"] = gomez(df)
-    if which in ("rdm", "sb_data", "firm_data", "beta05", "beta10"):
+    if which in ("rdm", "sb_data", "firm_data", "beta05", "beta10", "sb_flat", "firm_flat"):
         res["world_beta"] = float(p.beta)
     (HERE / f"null_world_r7__{which}__s{seed}.json").write_text(json.dumps(res, indent=1, default=float))
     print(f"{which} seed {seed}: turnover {[(k, round(v, 3)) for k, v in res['turnover'].items()]}; beta {res['beta']:.3f}; "

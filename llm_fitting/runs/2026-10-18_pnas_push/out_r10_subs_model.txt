@@ -1,0 +1,9 @@
+reddit_submissions_long model: world beta +0.045, N 19786, T 212
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/slide_by_persistence.py:31: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+  seed 0: {"n_cells": 9, "mean_contrast": -0.0018744993990318416, "frac_pos": 0.0, "mean_slide": 0.003558628124136129, "mean_Q1": 0.0020636730287764762, "mean_Q5": 0.005722238948859721, "mean_rest": 0.003938172427808318}
+  seed 1: {"n_cells": 9, "mean_contrast": -0.0036397110760537665, "frac_pos": 0.0, "mean_slide": 0.003605698958040705, "mean_Q1": 0.0007050864700114944, "mean_Q5": 0.006334051554744273, "mean_rest": 0.004344797546065261}
+  seed 2: {"n_cells": 9, "mean_contrast": -0.0024992432228760305, "frac_pos": 0.0, "mean_slide": 0.003813416383367324, "mean_Q1": 0.001821438178676187, "mean_Q5": 0.005093803574447306, "mean_rest": 0.004320681401552218}
+  seed 3: {"n_cells": 9, "mean_contrast": -0.0033745551882854046, "frac_pos": 0.0, "mean_slide": 0.002844490673268549, "mean_Q1": 0.00015406342731135754, "mean_Q5": 0.004609306408649367, "mean_rest": 0.0035286186155967622}
+  seed 4: {"n_cells": 9, "mean_contrast": -0.0038358967634442406, "frac_pos": 0.0, "mean_slide": 0.003110866208324167, "mean_Q1": 5.203014684567533e-05, "mean_Q5": 0.004263169692678092, "mean_rest": 0.0038879269102899167}
+reddit_submissions_long model {"n_cells": 45, "mean_contrast": -0.003044781129938257, "frac_pos": 0.0, "mean_slide": 0.0033866200694273756, "mean_Q1": 0.0009592582503242381, "mean_Q5": 0.005204514035875752, "mean_rest": 0.004004039380262495}

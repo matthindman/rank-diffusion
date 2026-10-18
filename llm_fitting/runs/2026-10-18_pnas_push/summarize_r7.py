@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-WORLDS = ("gibrat", "atlas", "neutral", "rdm", "sb_data", "firm_data", "beta05", "beta10")
+WORLDS = ("gibrat", "atlas", "neutral", "rdm", "sb_data", "firm_data", "beta05", "beta10", "sb_flat", "firm_flat")
 
 
 def stat(vals):

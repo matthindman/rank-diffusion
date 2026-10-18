@@ -328,6 +328,7 @@ no-drift arm reproduces 0.175 to every digit, and the comments run started
 | (frozen variance, for the record) `movinghome` / `movinghome_nodrift` | | | 0.246 / 0.267 | 0.145 / 0.150 |
 
 **Scored:**
+- _[CORRECTED 2026-10-18 by §2z-dh W6, restated 2026-10-19 after the round-5 referees: the comments spread is 0.13048 − 0.09994 = 0.0305 > 0.03, so A5c FAILS by 0.0005. The SI and the record score it so.]_
 - **A5c PASS:** the spread across the four arms is 0.017 on submissions and
   0.030 on comments, the latter exactly at the margin.
 - **A5b-1 restated for RDM′, PASS on both panels:** 0.183 ≤ 0.238 and
@@ -805,3 +806,131 @@ are those of R5.
 - The R3 single run's top-10 turnover of 0.30 was at the band's upper end.
 - The β = 0.05 and 0.10 calibration worlds are still running. They are
   reported when done.
+
+### R7, β calibration complete (worlds β 0.05 and 0.10, 5 seeds each)
+
+| planted lasting β (data-calibrated world, no drift) | 0 (20 seeds) | 0.05 (5) | 0.10 (5) | 0.20 (20) |
+|---|---|---|---|---|
+| raw β, the paper's estimator | 0.062 [0.043, 0.084] | 0.072 [0.055, 0.082] | 0.078 [0.060, 0.097] | 0.094 [0.077, 0.107] |
+| top-10 / K/2 turnover | 0.205 / 0.137 | 0.167 / 0.138 | 0.207 / 0.137 | 0.192 / 0.138 |
+
+- **R7-4, monotonicity:** PASS. The raw estimate rises with the planted
+  value, at a slope of about 0.16. The rest of R7-4 fails as scored above.
+- On this line the data's raw submissions values (0.045, 0.082) map to a
+  planted β from below 0 to about 0.13. The raw estimator cannot separate
+  Reddit from firms.
+- The turnover profile does not depend on planted β within the seed bands.
+
+## R9. Geometry isolated (`null_worlds_r7.py sb_flat|firm_flat`; expectations in PLAN.md addendum R9)
+
+The calibrated dynamics (submissions model, no drift, the same passing
+parts, exits and seeds) are held fixed. Only the starting ladder changes: the
+data's, or a constant-slope top K (slope 1.07, the same levels at ranks 1 and
+K). 20 seeds each.
+
+| world | top 10 | top 25 | K/64 | K/16 | K/4 | K/2 | raw β |
+|---|---|---|---|---|---|---|---|
+| size-blind, data's ladder | 0.205 | 0.243 | 0.211 | 0.192 | 0.165 | 0.137 | 0.062 |
+| size-blind, constant slope | 0.158 | 0.208 | 0.190 | 0.207 | 0.213 | 0.177 | 0.068 |
+| firm-like, data's ladder | 0.192 | 0.196 | 0.195 | 0.181 | 0.164 | 0.138 | 0.094 |
+| firm-like, constant slope | 0.127 | 0.169 | 0.170 | 0.199 | 0.218 | 0.183 | 0.103 |
+
+**Paired over seeds, data's ladder minus constant slope:**
+- (top 10 − K/2): size-blind +0.087 [−0.072, 0.203]; firm-like +0.110
+  [0.008, 0.249];
+- (K/64 − K/2): size-blind **+0.061 [0.031, 0.091]**; firm-like **+0.070
+  [0.022, 0.115]**.
+
+**Scored:**
+- **R9-1: PASS.** Constant slope, size-blind: top 10 − K/2 = −0.019.
+- **R9-2: PASS** as a mean (+0.087), with a wide band. The K/64 contrast is
+  robust (band excludes 0).
+- **R9-3: PASS**, at the margin: firm-like 0.127 against size-blind 0.158
+  on a constant slope, a difference of 0.031.
+
+**Reading.**
+- With identical dynamics, the data's ladder makes the head turn over faster
+  than the body (K/64 against K/2: +0.06 to +0.07). A constant-slope ladder
+  does not.
+- Size dependence lowers top-10 turnover by about 0.03 on a constant slope
+  and by about 0.01 on the data's ladder.
+- The top-10 point estimates are noisy (30 name-years): the top ten turn
+  over no faster than the top 25 in any calibrated world.
+- The data's top ten (0.33) are at or above every calibrated world's 95th
+  percentile. The data's K/2 (0.178) is above the data-ladder worlds' bands
+  (about 0.13–0.14). The worlds therefore over-predict the fall of turnover
+  from K/64 to K/2 and under-predict the very top.
+
+### Correction (2026-10-19, round-5 referees)
+- R5's reading said that r/memes and r/dankmemes "alone account for half"
+  of the loss. Their combined loss, 0.100, is 34% of the gross incumbent
+  loss (0.299) and 40% of the net loss (0.252), not half.
+- R7's prior-year Gomez terms in the simulated worlds are unreliable. A
+  prior-year cohort can contain names that exited or were reborn, with
+  near-zero base activity (the model world gives +231,412). Only the
+  current-year baseline (−0.053, size-blind world) is used in the paper.
+- The prior-year decomposition in the data is not exact: within plus
+  between is −0.114 against a share change of −0.161, because the base is
+  the prior cohort's activity. This is now stated.
+
+## R10. The slide by persistence class (`slide_by_persistence.py`; post hoc; expectations in PLAN.md addendum R10)
+
+**Design.** Cells are start week × cut-off (K/64, K/16, K/4): 9 cells per
+ladder in the data, and 45 in the worlds (5 seeds). Slides are per week.
+- **Q1:** the bottom fifth of the prior change, measured in 13-week windows
+  a year apart that end 13 weeks before the slide's start.
+- **Q5:** the top fifth.
+- **rest:** everything but Q1.
+
+| | slide | Q1 | Q5 | rest | contrast Q1 − rest (share of cells > 0) |
+|---|---|---|---|---|---|
+| submissions, data | 0.0056 | 0.0077 | 0.0068 | 0.0050 | +0.0027 (56%) |
+| submissions, driftless calibrated world | 0.0019 | 0.0004 | 0.0038 | 0.0023 | −0.0019 (18%) |
+| submissions, model world (drift by rank, hold) | 0.0034 | 0.0010 | 0.0052 | 0.0040 | −0.0030 (0%) |
+| comments, data | 0.0036 | 0.0048 | 0.0042 | 0.0025 | +0.0023 (100%) |
+| comments, driftless calibrated world | 0.0011 | −0.0010 | 0.0049 | 0.0016 | −0.0026 (11%) |
+
+**By cut-off (data):**
+
+| ladder | k | slide | Q1 | rest |
+|---|---|---|---|---|
+| submissions | 78 | 0.0082 | 0.0116 | 0.0074 |
+| submissions | 312 | 0.0053 | 0.0063 | 0.0048 |
+| submissions | 1,250 | 0.0034 | 0.0052 | 0.0028 |
+| comments | 195 | 0.0045 | 0.0053 | 0.0039 |
+| comments | 781 | 0.0033 | 0.0044 | 0.0020 |
+| comments | 3,125 | 0.0029 | 0.0047 | 0.0017 |
+
+**Scored:**
+
+| | expectation | result |
+|---|---|---|
+| R10-1 | data contrast > 0 in ≥ 80% of cells on both ladders | **FAIL on submissions** (5 of 9). **PASS on comments** (9 of 9) |
+| R10-2 | driftless worlds: mean contrast ≤ 0.0005 | **PASS** (−0.0019, −0.0026; the model world −0.0030) |
+| R10-3 | 0.2 × (s̄_Q1 − s̄_rest) in the data ≥ a quarter of the excess over the driftless world | **FAIL** (0.15 submissions, 0.19 comments; 0.24 against the model world) |
+| R10-4 | the data's slide exceeds the driftless world's on both ladders | **PASS** (0.0056 against 0.0019; 0.0036 against 0.0011) |
+
+**Reading.**
+- **Prior decliners rebound in every world without persistence.** Passing
+  losses reverse, so their slide is the lowest of any class. In the data
+  they keep falling, so their slide is the highest.
+- **Post hoc accounting** of the excess by class, comparing each class
+  with the same class in the world (0.2 × (Q1_data − Q1_world) as a share of
+  the cohort's excess):
+  - against the driftless world: 39% on submissions, 47% on comments;
+  - against the model with drift by rank: 60% on submissions.
+
+  The bottom fifth of prior change carries 40–60% of the slide's excess
+  over random growth from the same ladder.
+- **R10-3 as registered** measures the contrast within the data and so
+  understates this. The rest of the cohort also slides faster in the data
+  than in the worlds.
+- **What it means.** The hierarchy's measured decline beyond random growth
+  is carried disproportionately by the communities whose decline persists.
+  This unifies the mechanism and the discovery: random growth sets the shape,
+  and persistent decline moves it faster.
+- **Limits.**
+  - Few cells: 3 starts per cut-off.
+  - The submissions contrast is positive in only 5 of 9 cells.
+  - The model world is calibrated to submissions only.
+  - Post hoc.

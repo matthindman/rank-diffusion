@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-18** (the paragraphs on §2z-da … §2z-dj were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-18** (the paragraphs on §2z-da … §2z-dk were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -289,6 +289,15 @@ spine, "size does not protect", and the model and momentum. The outline
     from (30-year counterfactuals); the head's fall in participation.
   - Manuscript v3 (7 pages). Title "How constant turnover holds up a
     durable hierarchy of online attention", owner to confirm.
+- **Round 5 (§2z-dk, 2026-10-19):** all three referees say send out,
+  without enthusiasm.
+  - Net of the universe's replenishment, turnover holds up comments but
+    pulled the submissions head down.
+  - R9: geometry isolated, +0.06 head turnover from the ladder.
+  - R10: persistent decliners carry 40–60% of the slide's excess over
+    random growth, which unifies mechanism and discovery.
+  - Manuscript v4; title "How a hierarchy of online attention outlasts
+    its members" (owner to confirm).
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it

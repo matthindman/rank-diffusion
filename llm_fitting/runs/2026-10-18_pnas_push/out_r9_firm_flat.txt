@@ -1,0 +1,62 @@
+firm_flat: estimated lasting beta (structure function) on the data; world beta +0.200, sigma0 0.1002
+firm_flat: top K reset to constant slope 1.072 (levels 17.07 .. 7.94)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 0: turnover [(10, 0.167), (25, 0.24), (78, 0.184), (312, 0.197), (1250, 0.223), (2500, 0.184)]; beta 0.100; gapped {13: -0.0796620938928783, 26: -0.06771954670896023}; boundary 1.063963483603452; law c/s 0.6847197850687099
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 1: turnover [(10, 0.1), (25, 0.16), (78, 0.145), (312, 0.177), (1250, 0.213), (2500, 0.183)]; beta 0.096; gapped {13: -0.09629517756612738, 26: -0.09401338297724444}; boundary 0.9441613132107728; law c/s 0.8413982976632279
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 2: turnover [(10, 0.1), (25, 0.173), (78, 0.197), (312, 0.2), (1250, 0.223), (2500, 0.183)]; beta 0.107; gapped {13: -0.09486633782754841, 26: -0.09185147773414765}; boundary 1.0459909136801724; law c/s 0.8097642250275063
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 3: turnover [(10, 0.1), (25, 0.213), (78, 0.167), (312, 0.207), (1250, 0.22), (2500, 0.185)]; beta 0.114; gapped {13: -0.08685448222490696, 26: -0.07924926259675162}; boundary 1.0597634092265429; law c/s 0.7937560178270116
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 4: turnover [(10, 0.1), (25, 0.173), (78, 0.137), (312, 0.21), (1250, 0.218), (2500, 0.18)]; beta 0.129; gapped {13: -0.09607546522811702, 26: -0.09304532517584768}; boundary 1.0425182767131458; law c/s 0.6590360814327917
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 5: turnover [(10, 0.133), (25, 0.16), (78, 0.197), (312, 0.199), (1250, 0.217), (2500, 0.178)]; beta 0.106; gapped {13: -0.09320957017395984, 26: -0.08378309481919581}; boundary 1.1143037520014458; law c/s 0.7410963952427935
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 6: turnover [(10, 0.1), (25, 0.2), (78, 0.141), (312, 0.205), (1250, 0.211), (2500, 0.18)]; beta 0.116; gapped {13: -0.08600642459725846, 26: -0.08180259675403163}; boundary 1.1717202701354887; law c/s 0.7461648702015535
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 7: turnover [(10, 0.1), (25, 0.133), (78, 0.162), (312, 0.188), (1250, 0.22), (2500, 0.187)]; beta 0.094; gapped {13: -0.08237541322954296, 26: -0.07613730774463216}; boundary 1.0960633183160624; law c/s 0.6926162613269717
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 8: turnover [(10, 0.2), (25, 0.173), (78, 0.154), (312, 0.196), (1250, 0.222), (2500, 0.184)]; beta 0.109; gapped {13: -0.08129564382402092, 26: -0.08040602104882862}; boundary 1.0227727041941628; law c/s 0.7203072852930975
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 9: turnover [(10, 0.167), (25, 0.173), (78, 0.145), (312, 0.196), (1250, 0.221), (2500, 0.186)]; beta 0.135; gapped {13: -0.08165987551364415, 26: -0.07617732551499985}; boundary 1.0962875060867387; law c/s 0.7193069495884038
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 10: turnover [(10, 0.167), (25, 0.173), (78, 0.15), (312, 0.182), (1250, 0.224), (2500, 0.176)]; beta 0.089; gapped {13: -0.09841855079464398, 26: -0.08888476109783293}; boundary 1.1340826497798626; law c/s 0.7093096063335876
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 11: turnover [(10, 0.133), (25, 0.16), (78, 0.158), (312, 0.201), (1250, 0.203), (2500, 0.183)]; beta 0.097; gapped {13: -0.07367843567436744, 26: -0.06882081652117698}; boundary 1.1567687951258505; law c/s 0.7466079752908418
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 12: turnover [(10, 0.133), (25, 0.16), (78, 0.188), (312, 0.216), (1250, 0.221), (2500, 0.187)]; beta 0.091; gapped {13: -0.08295812328979765, 26: -0.07660855112323668}; boundary 1.0269675630461228; law c/s 0.6449824068570393
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 13: turnover [(10, 0.167), (25, 0.133), (78, 0.188), (312, 0.193), (1250, 0.22), (2500, 0.188)]; beta 0.117; gapped {13: -0.08790288738770666, 26: -0.08868515021965669}; boundary 0.9584361872491807; law c/s 0.6867526613630717
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 14: turnover [(10, 0.2), (25, 0.147), (78, 0.15), (312, 0.201), (1250, 0.216), (2500, 0.179)]; beta 0.101; gapped {13: -0.08236513708473725, 26: -0.06942288224477162}; boundary 0.9563911000915754; law c/s 0.8184770177850582
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 15: turnover [(10, 0.2), (25, 0.133), (78, 0.205), (312, 0.186), (1250, 0.218), (2500, 0.18)]; beta 0.086; gapped {13: -0.09239865911745641, 26: -0.09093966673877542}; boundary 1.0436212804175093; law c/s 0.6748459755586137
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 16: turnover [(10, 0.1), (25, 0.147), (78, 0.175), (312, 0.192), (1250, 0.208), (2500, 0.185)]; beta 0.096; gapped {13: -0.08029873308832132, 26: -0.08536056225192072}; boundary 1.0146305223761882; law c/s 0.788277093825368
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 17: turnover [(10, 0.0), (25, 0.187), (78, 0.179), (312, 0.209), (1250, 0.214), (2500, 0.185)]; beta 0.077; gapped {13: -0.1010500100413342, 26: -0.09897249686960878}; boundary 1.0361823618577861; law c/s 0.6825256346489881
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 18: turnover [(10, 0.033), (25, 0.187), (78, 0.222), (312, 0.205), (1250, 0.223), (2500, 0.183)]; beta 0.082; gapped {13: -0.07732123418642445, 26: -0.07437056122566893}; boundary 1.1104106850857953; law c/s 0.6932020089811527
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+firm_flat seed 19: turnover [(10, 0.133), (25, 0.16), (78, 0.15), (312, 0.213), (1250, 0.221), (2500, 0.182)]; beta 0.113; gapped {13: -0.08231938889473336, 26: -0.0844038296076312}; boundary 1.003812857417757; law c/s 0.6730124563421642

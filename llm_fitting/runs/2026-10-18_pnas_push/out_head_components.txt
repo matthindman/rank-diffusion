@@ -2,8 +2,15 @@ reddit_submissions_long reselected head (top 78): 2019: karma 0.502 items 0.2236
    dlog 2019->2022: karma -0.390 = items -0.945 + per item +0.556
 reddit_submissions_long fixed2019 head (top 78): 2019: karma 0.502 items 0.2236 rel. karma/item 2.25; 2020: karma 0.472 items 0.1755 rel. karma/item 2.69; 2021: karma 0.352 items 0.1030 rel. karma/item 3.42; 2022: karma 0.250 items 0.0728 rel. karma/item 3.44
    dlog 2019->2022: karma -0.697 = items -1.122 + per item +0.425
+   2019: head items 33238244, top-K items 148643052; head karma 9.42e+09, top-K karma 1.88e+10
+   2020: head items 35571811, top-K items 186305268; head karma 1.28e+10, top-K karma 2.58e+10
+   2021: head items 25992455, top-K items 193944159; head karma 9.62e+09, top-K karma 2.3e+10
+   2022: head items 17113231, top-K items 196951108; head karma 6.56e+09, top-K karma 1.93e+10
 reddit_comments_ext reselected head (top 195): 2019: karma 0.610 items 0.4134 rel. karma/item 1.48; 2020: karma 0.566 items 0.3602 rel. karma/item 1.57; 2021: karma 0.526 items 0.3380 rel. karma/item 1.56; 2022: karma 0.497 items 0.3089 rel. karma/item 1.61
    dlog 2019->2022: karma -0.205 = items -0.292 + per item +0.087
 reddit_comments_ext fixed2019 head (top 195): 2019: karma 0.610 items 0.4134 rel. karma/item 1.48; 2020: karma 0.534 items 0.3377 rel. karma/item 1.58; 2021: karma 0.453 items 0.2742 rel. karma/item 1.65; 2022: karma 0.402 items 0.2393 rel. karma/item 1.68
    dlog 2019->2022: karma -0.419 = items -0.547 + per item +0.128
-DONE
+   2019: head items 660758715, top-K items 1598240780; head karma 8.1e+09, top-K karma 1.33e+10
+   2020: head items 726835954, top-K items 2018123661; head karma 8.78e+09, top-K karma 1.55e+10
+   2021: head items 796856166, top-K items 2357412723; head karma 9.45e+09, top-K karma 1.8e+10
+   2022: head items 797225609, top-K items 2581102372; head karma 1.05e+10, top-K karma 2.11e+10

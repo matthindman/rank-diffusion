@@ -12957,3 +12957,140 @@ corrected in RESULTS.
 - A heterogeneous-drift world.
 - The capture-delay audit, which needs the WD drive.
 - Round-5 reviews.
+
+## 2z-dk. 2026-10-19 — REVIEW (three referee models, round 5, on manuscript v3) and EXPLORATORY MEASUREMENT (post hoc; expectations in PLAN.md addenda R9–R10, written before each run). The balance is corrected for entry and exit (c/(s̄ − e) = 0.64) and net of the universe's own crossing gain: turnover holds up the comments hierarchy but added to the submissions head's decline. Geometry isolated under identical dynamics: the data's ladder raises head turnover against the body by 0.06 (0.03–0.09). The slide's excess over random growth from the same ladder is carried disproportionately by persistent decliners (40–60%, against a fifth of members), which unifies the mechanism and the discovery. Manuscript v4; title "How a hierarchy of online attention outlasts its members" (owner to confirm). Nothing adopted; no gate evaluation; bridge sealed
+
+_Claude Opus 5.5 (Anthropic), Claude Code.
+- **Reviews:** `runs/2026-10-19_external_critiques_round5/`, with
+  `SYNTHESIS_R5.md` (G1–G26, each rechecked).
+- **Runs:** `runs/2026-10-18_pnas_push/` R9, R10._
+
+### 1. Verdicts
+
+All three reviewers say send out without enthusiasm. Opus adds a risk of
+desk rejection with a social-science editor. They agree on:
+- **The weakest phrase is still "holds up".** Two of three propose
+  "outlasts its members".
+- **The answer is largely automatic** in random-growth theory.
+- **Persistence is the discovery**, but it was tested only against
+  homogeneous worlds.
+- **New errors in the v3 rewrite:**
+  - S*/S needs e_k;
+  - the relaxation times were mislabelled;
+  - Fig. 5A was single-seed;
+  - the SI title was stale;
+  - post hoc labels.
+
+### 2. New measurements
+
+**R9, geometry isolated.** The calibrated dynamics are held fixed; only the
+starting top 5,000 changes, to a constant slope.
+- The turnover profile is flat: K/64 0.19 against K/2 0.18, size-blind.
+- From the data's ladder, K/64 − K/2 rises by 0.061 (0.031–0.091) paired;
+  firm-like 0.070.
+- Size-dependence lowers top-10 turnover by 0.01–0.03.
+- All three expectations passed.
+
+**R10, the slide by prior-change class.**
+- **The data's slide** is 0.0056 a week on submissions and 0.0036 on
+  comments. The driftless calibrated worlds give 0.0019 and 0.0011; the
+  submissions model world, with drift by rank, gives 0.0034.
+- **Prior decliners** (the bottom fifth of the change in the year before):
+  in the data they slide fastest (0.0077, 0.0048). In every world without
+  persistence they slide slowest (0.0004–0.0010; −0.0010), as passing
+  losses reverse.
+- **Share of the excess** carried by the prior decliners (post hoc
+  accounting): 39% (submissions against driftless), 47% (comments) and 60%
+  (submissions against the model world).
+- **Scored:**
+  - R10-1 fails on submissions (5 of 9 cells positive) and passes on
+    comments (9 of 9);
+  - R10-2 and R10-4 pass;
+  - R10-3, as registered (the within-data contrast), fails: 0.15–0.24
+    against 0.25.
+
+**Balance, recomputed (G1, G5).**
+- Including entry and exit, crossings over net decline is c/(s̄ − e) = 0.64.
+- Net of c_K, the crossing gradient c_k − c_K is:
+  - comments: +0.0014 against a member decline of 0.0020;
+  - submissions: −0.0004;
+  - submissions head: −0.0009 to −0.0019.
+
+**Head split with absolute counts (G10).**
+- Submissions head posts: 33M (2019) to 17M (2022). The top 5,000's posts
+  rose from 149M to 197M.
+- Comments head comments: +21%, against +61% for the top 12,500.
+
+### 3. The paper (v4)
+
+- **Title:** "How a hierarchy of online attention outlasts its members".
+- **Abstract and significance** rest on four points:
+  - the balance builds a hierarchy and holds it;
+  - durability is a separation of time scales on comments;
+  - the top turns over fastest because of geometry;
+  - persistence carries 40–60% of the decline beyond random growth; the
+    submissions head halved its posting.
+- **Balance paragraph:**
+  - S*/S = c/(s̄ − e) = 0.64;
+  - the net-of-c_K accounting, which holds up comments and pulls down the
+    submissions head;
+  - relaxation times corrected: 3–4 years at the submissions head and 9 at
+    the comments head, linearized; the model takes decades;
+  - "outlasts its members" holds on comments, not at the submissions head.
+- **Results 2:**
+  - the controlled geometry comparison (R9);
+  - the worlds miss the very top and the body;
+  - all β estimators reported, with the calibration and recovery limits;
+  - below firms on submissions and Facebook, possibly overlapping on
+    comments.
+- **Persistence:**
+  - "homogeneous" worlds;
+  - heterogeneous growth reproduces the statistic;
+  - comments is the clearest departure;
+  - pre-capture ranges by membership rule;
+  - a new R10 paragraph;
+  - the head paragraph with absolute counts and the non-exact prior-cohort
+    note.
+- **Discussion:** the unified finding, the GLLM fast-transition point,
+  and rank as a poor measure of entrenchment.
+- **Figures:**
+  - 2B: the controlled comparison and the data's year-pair ranges;
+  - 2A labelled raw;
+  - 5A: all eight worlds at 20 seeds;
+  - 5D: the participation split;
+  - "churn" replaced by "volatility";
+  - captions corrected.
+- **SI:**
+  - title;
+  - post hoc labels;
+  - the calibration and recovery paragraph;
+  - the geometry paragraph;
+  - the slide-only description;
+  - 82 evaluations;
+  - "proposed" for the bridge tests;
+  - P5's 2023 exposure stated;
+  - the A5c failure annotated in RESULTS.
+- **Citations:** Pal & Pitman 2008; Gaffney & Matias 2018.
+- **Length:** 8 pages. PNAS prefers 6 and allows up to 12. Abstract 240
+  words; significance 120.
+
+### 4. For the owner
+
+- **The title.**
+- **The bridge protocol.** Before adoption:
+  - P6 cannot fail under firm-like volatility (raw 0.094 ≤ 0.12);
+  - P5 spans the 2023 source switch and the blackout;
+  - an R10-type test (persistent decliners carry the excess slide) could be
+    registered as a primary.
+- **Earlier items:** Page IDs, CrowdTangle List IDs and year, Reddit
+  acquisition, DOI, authorship, the public-repository audit, length.
+
+### 5. Not run
+
+- 30-year runs with drift from other periods (G6).
+- A check whether e_k is counted twice (G7).
+- Structure-function recovery under heterogeneous drift (G15).
+- A heterogeneous-drift or common-factor world.
+- A comments-calibrated model world with drift for R10.
+- Fitted GLLM and Yule–Simon rivals.
+- The capture-delay audit.

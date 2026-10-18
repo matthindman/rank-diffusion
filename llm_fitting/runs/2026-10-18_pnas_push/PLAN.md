@@ -631,3 +631,69 @@ causal clause linking persistence to the head's fall. The head's fall is then
 stated as a fall in engagement per post, dated with §2z-ca. If they fail,
 the text says the head lost posting, which is the component that persists.
 Either way the causal link is not claimed without a test.
+
+## Addendum R9 (2026-10-19, after the gpt-6-astra round-5 report; before the run): geometry isolated
+
+**Why.** R7's comparison of calibrated and constant-slope worlds changes more
+than the ladder: the dynamics, passing parts and exits differ too (gpt R5).
+Here the calibrated dynamics are held fixed: the model estimated on Reddit
+submissions, with no drift by rank, the same passing parts, exits and random
+seeds. Only the starting ladder changes. The top K of the data's filtered
+ladder is replaced by a ladder of constant slope with the same level at rank
+1 and at rank K; below K the data's ladder is kept. Two worlds, 20 seeds
+each:
+- `sb_flat` (planted β = 0);
+- `firm_flat` (planted β = 0.2).
+
+They are compared with `sb_data` and `firm_data` (R7) at the same seeds.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R9-1 | `sb_flat`: top-10 turnover within ±0.04 of its K/2 turnover (no order without the flat head) | 55% |
+| R9-2 | the paired difference (top-10 − K/2) is at least 0.04 larger in `sb_data` than in `sb_flat`, averaged over seeds | 60% |
+| R9-3 | `firm_flat`: top-10 turnover below `sb_flat`'s by at least 0.03 (size-dependence protects the top only where the ladder does not) | 50% |
+
+## Addendum R10 (2026-10-19, after the round-5 reports; before the run): is the excess slide carried by persistent decliners?
+
+**Why.** Opus R5's single most valuable change. The measured slide is partly
+mechanical: a driftless world started from the same ladder produces one. The
+question is whether the excess is carried by the communities whose decline
+persists. If it is, the paper's discovery (persistence) and the hierarchy's
+dynamics are one finding: random growth sets the shape, and persistent
+decline moves it faster than homogeneous random growth can (the
+fast-transition problem of GLLM 2016).
+
+**Design** (`slide_by_persistence.py`; post hoc; development data).
+- **Prior change:** for each start week s (every 26 weeks, from week 78 to
+  T − 78), the change of mean log level between two 13-week windows a year
+  apart, ending 13 weeks before s: mean[s−26, s−13) − mean[s−78, s−65).
+- **Slide over the following year:** blocks A = [s, s+26) and
+  B = [s+52, s+78). The slide of member i is
+  −[(x_i(B) − x_i(A)) − (U_K(B) − U_K(A))], with U_K the mean of the top K by
+  block level.
+- **Cohorts:** the top k by block-A level, for k = K/64, K/16 and K/4.
+- **Classes:**
+  - Q1 = the bottom fifth of prior change among cohort members with a valid
+    prior change;
+  - Q5 = the top fifth;
+  - the rest.
+- **Statistics:** the slide of each class and of the cohort, the contrast
+  s̄_Q1 − s̄_rest, and the slide's excess over a driftless world.
+- **Universe:** full membership (restrict_universe, buffer 4); presence
+  ≥ 90% per window.
+- **Worlds** (5 seeds each, the same code):
+  - submissions-calibrated driftless world (β = 0, no drift);
+  - the submissions model world (hold drift);
+  - a comments-calibrated driftless world (the model estimated on
+    `reddit_comments_ext`, its own β, no drift).
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R10-1 | data: s̄_Q1 − s̄_rest > 0 in ≥ 80% of cells (cut-off × start) on both ladders | 80% |
+| R10-2 | driftless worlds: the mean contrast across cells is ≤ 0.0005 a week (no persistence; passing parts make prior decliners regress upward) | 75% |
+| R10-3 | data: the Q1 contrast, weighted by Q1's share (0.2 × (s̄_Q1 − s̄_rest)), is at least a quarter of the excess of the data's cohort slide over the driftless world's, pooled over cells, on both ladders | 40% |
+| R10-4 | the data's cohort slide exceeds the driftless calibrated world's on both ladders (an excess exists) | 85% |

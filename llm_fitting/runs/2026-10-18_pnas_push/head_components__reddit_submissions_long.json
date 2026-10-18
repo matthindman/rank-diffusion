@@ -14,12 +14,20 @@
    "reselected": {
     "share_karma": 0.5023582028590187,
     "share_items": 0.2236111513641418,
-    "rel_karma_per_item": 2.2465704406706823
+    "rel_karma_per_item": 2.2465704406706823,
+    "items_head": 33238244.0,
+    "items_topK": 148643052.0,
+    "karma_head": 9421659155.0,
+    "karma_topK": 18754862768.0
    },
    "fixed2019": {
     "share_karma": 0.5023582028590187,
     "share_items": 0.2236111513641418,
-    "rel_karma_per_item": 2.2465704406706823
+    "rel_karma_per_item": 2.2465704406706823,
+    "items_head": 33238244.0,
+    "items_topK": 148643052.0,
+    "karma_head": 9421659155.0,
+    "karma_topK": 18754862768.0
    }
   },
   {
@@ -27,12 +35,20 @@
    "reselected": {
     "share_karma": 0.497886150899084,
     "share_items": 0.1909329316442088,
-    "rel_karma_per_item": 2.607649432769737
+    "rel_karma_per_item": 2.607649432769737,
+    "items_head": 35571811.0,
+    "items_topK": 186305268.0,
+    "karma_head": 12820696317.0,
+    "karma_topK": 25750256949.0
    },
    "fixed2019": {
     "share_karma": 0.4717905121126098,
     "share_items": 0.17548522031057115,
-    "rel_karma_per_item": 2.688491436929229
+    "rel_karma_per_item": 2.688491436929229,
+    "items_head": 32693821.0,
+    "items_topK": 186305268.0,
+    "karma_head": 12148726913.0,
+    "karma_topK": 25750256949.0
    }
   },
   {
@@ -40,12 +56,20 @@
    "reselected": {
     "share_karma": 0.4178696555223875,
     "share_items": 0.13402030323584016,
-    "rel_karma_per_item": 3.1179578424550183
+    "rel_karma_per_item": 3.1179578424550183,
+    "items_head": 25992455.0,
+    "items_topK": 193944159.0,
+    "karma_head": 9615549124.0,
+    "karma_topK": 23010881496.0
    },
    "fixed2019": {
     "share_karma": 0.35240567426370095,
     "share_items": 0.10297055659201368,
-    "rel_karma_per_item": 3.422392632682276
+    "rel_karma_per_item": 3.422392632682276,
+    "items_head": 19970538.0,
+    "items_topK": 193944159.0,
+    "karma_head": 8109165209.0,
+    "karma_topK": 23010881496.0
    }
   },
   {
@@ -53,12 +77,20 @@
    "reselected": {
     "share_karma": 0.34028732841734843,
     "share_items": 0.0868907576798197,
-    "rel_karma_per_item": 3.9162660966918907
+    "rel_karma_per_item": 3.9162660966918907,
+    "items_head": 17113231.0,
+    "items_topK": 196951108.0,
+    "karma_head": 6562153093.0,
+    "karma_topK": 19284153552.0
    },
    "fixed2019": {
     "share_karma": 0.25019468762213887,
     "share_items": 0.07279866635733778,
-    "rel_karma_per_item": 3.4368031743059584
+    "rel_karma_per_item": 3.4368031743059584,
+    "items_head": 14337778.0,
+    "items_topK": 196951108.0,
+    "karma_head": 4824792774.0,
+    "karma_topK": 19284153552.0
    }
   }
  ],

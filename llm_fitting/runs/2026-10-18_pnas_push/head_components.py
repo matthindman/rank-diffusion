@@ -56,7 +56,9 @@ for b in range(nb):
     for name, H in (("reselected", head), ("fixed2019", head19)):
         sk = A.loc[H, b].sum() / A.loc[topK, b].sum()
         si = C.loc[H, b].sum() / C.loc[topK, b].sum()
-        r[name] = dict(share_karma=float(sk), share_items=float(si), rel_karma_per_item=float(sk / si))
+        r[name] = dict(share_karma=float(sk), share_items=float(si), rel_karma_per_item=float(sk / si),
+                       items_head=float(C.loc[H, b].sum()), items_topK=float(C.loc[topK, b].sum()),
+                       karma_head=float(A.loc[H, b].sum()), karma_topK=float(A.loc[topK, b].sum()))
     rows.append(r)
 out["rows"] = rows
 for name in ("reselected", "fixed2019"):
@@ -65,4 +67,7 @@ for name in ("reselected", "fixed2019"):
     out[f"dlog_{name}"] = dict(karma=float(dk), items=float(di), per_item=float(dr))
     print(f"{pn} {name} head (top {k}): " + "; ".join(f"{r['year']}: karma {r[name]['share_karma']:.3f} items {r[name]['share_items']:.4f} "
           f"rel. karma/item {r[name]['rel_karma_per_item']:.2f}" for r in rows) + f"\n   dlog 2019->2022: karma {dk:+.3f} = items {di:+.3f} + per item {dr:+.3f}", flush=True)
+for r in rows:
+    q = r["reselected"]
+    print(f"   {r['year']}: head items {q['items_head']:.0f}, top-K items {q['items_topK']:.0f}; head karma {q['karma_head']:.3g}, top-K karma {q['karma_topK']:.3g}", flush=True)
 Path(__file__).with_name(f"head_components__{pn}.json").write_text(json.dumps(out, indent=1))

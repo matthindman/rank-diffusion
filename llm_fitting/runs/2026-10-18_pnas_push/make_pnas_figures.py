@@ -237,7 +237,7 @@ def fig4():
             a.fill_between(np.arange(traj.shape[0]), lo[:, 0], hi[:, 0], color=COL[pn], alpha=0.2, lw=0)
     a.set_xlabel("years from complete equality")
     a.set_ylabel("shape at K/64 (log units)")
-    a.set_title("Churn builds a hierarchy from equality")
+    a.set_title("Volatility and slide build a hierarchy")
     a.legend(loc="lower right", frameon=False)
     tag(a, "A")
     a = ax[1]
@@ -253,13 +253,13 @@ def fig4():
     a.plot(lim, lim, color=GREY, lw=0.8)
     a.set_xlim(lim)
     a.set_ylim(lim)
-    a.set_xlabel("churn over slide, σ²/(2 s̄)")
+    a.set_xlabel("volatility over slide in the model, σ²/(2 s̄)")
     a.set_ylabel("local slope S")
-    a.set_title("Its steepness is churn over slide")
+    a.set_title("It reaches its own balance")
     a.legend(loc="upper left", frameon=False, fontsize=5.5)
     tag(a, "B")
     a = ax[2]                                       # R6: 30 years from the observed ladder, 20 seeds, 90% bands
-    LS = {"churn_slide": ("-", "churn + slide"), "slide_only": ("--", "slide only (no churn)"), "churn_only": (":", "churn only (no slide)")}
+    LS = {"churn_slide": ("-", "volatility + slide"), "slide_only": ("--", "slide only"), "churn_only": (":", "volatility only")}
     for pn in CF:
         f = HERE / f"churn_counterfactual__{pn}__long30.json"
         if not f.exists():
@@ -273,7 +273,7 @@ def fig4():
             a.fill_between(yrs, lo, hi, color=COL[pn], alpha=0.15, lw=0)
     a.set_xlabel("years from the observed 2019 ladder")
     a.set_ylabel("shape at K/64 (log units)")
-    a.set_title("Thirty years without churn, or without slide")
+    a.set_title("Thirty years without volatility, or without slide")
     a.legend(loc="upper left", frameon=False, fontsize=5.5)
     tag(a, "C")
     a = ax[3]
@@ -301,28 +301,33 @@ def fig4():
 
 def fig5():
     gm = load(R / "2026-10-18_momentum" / "gapped_momentum.json")
-    fig, ax = plt.subplots(1, 3, figsize=(W2, 2.3))
+    fig, ax = plt.subplots(1, 4, figsize=(W2, 2.5), gridspec_kw=dict(width_ratios=[1.15, 0.95, 1.1, 0.9]))
     a = ax[0]
     for pn in COL:
         d = gm[pn]["gapped"]
         gs = sorted(d, key=lambda x: int(x))
         a.plot([int(g) for g in gs], [d[g]["mean"] for g in gs], "-", marker=MK[pn], color=COL[pn], ms=3.5, lw=1,
                label={"reddit_comments_ext": "Reddit comments", "reddit_submissions_long": "Reddit submissions", "facebook_a": "Facebook (4-week windows)"}[pn])
-    for n, (w, lab, col, ls) in enumerate(WORLDS):
-        nw = load(HERE / f"null_world__{w}.json")["gapped"]
-        a.plot([13, 26], [nw["13"], nw["26"]], "x", color="#666666", ms=4, mew=1, label="simulated worlds" if n == 0 else None)
+    S7 = r7()                                       # R7: every simulated world, 20 runs each (mean and 90% range)
+    for n, w in enumerate(("sb_data", "firm_data", "sb_flat", "firm_flat", "gibrat", "atlas", "neutral", "rdm")):
+        if w not in S7:
+            continue
+        g7 = S7[w]["gapped"]
+        for gap in ("13", "26"):
+            a.errorbar([int(gap) + (n - 3.5) * 0.35], [g7[gap]["mean"]], yerr=[[g7[gap]["mean"] - g7[gap]["q05"]], [g7[gap]["q95"] - g7[gap]["mean"]]],
+                       fmt="x", color="#666666", ms=3, mew=0.8, elinewidth=0.5, label="simulated worlds" if (n == 0 and gap == "13") else None)
     syn = gm["synthetic"]
     a.plot([0, 13, 26], [syn["i"]["gapped"][g] for g in ("0", "13", "26")], "--", color=GREY, lw=1, label="random walk + noise")
     a.axhline(0, color=GREY, lw=0.4)
     a.set_xlabel("gap between the two changes (weeks)")
     a.set_ylabel("rank correlation of changes")
-    a.set_title("Changes persist on Reddit")
+    a.set_title("Changes persist on Reddit", fontsize=6.5)
     a.legend(loc="upper center", frameon=False, fontsize=4.6, ncol=2, columnspacing=0.5, handlelength=1.3, handletextpad=0.3)
     a.set_ylim(-0.15, 0.39)
     a.set_yticks([-0.1, 0, 0.1, 0.2])
     tag(a, "A")
     a = ax[1]
-    cats = ("activity", "items", "per\nitem", "later\norigins", "net of\ntrend")
+    cats = ("all", "items", "per\nitem", "later", "net of\ntrend")
     w = 0.38
     for j, pn in enumerate(("reddit_submissions_long", "reddit_comments_ext")):
         f = HERE / f"momentum_decomposition__{pn}.json"
@@ -336,11 +341,11 @@ def fig5():
     a.axvline(2.5, color=GREY, lw=0.5, ls=":")
     a.axhline(0, color=GREY, lw=0.6)
     a.set_xticks(range(5))
-    a.set_xticklabels(cats, fontsize=5.5)
+    a.set_xticklabels(cats, fontsize=5)
     a.set_ylabel("gapped momentum (13-wk gap)")
-    a.set_title("Carried by participation")
+    a.set_title("In items, not per item", fontsize=6.5)
     a.set_ylim(0, 0.235)
-    a.legend(loc="upper center", frameon=False, ncol=2, fontsize=5.5)
+    a.legend(loc="upper right", frameon=False, ncol=1, fontsize=4.6)
     tag(a, "B")
     a = ax[2]
     gd = load(HERE / "gomez_decomposition.json")
@@ -357,19 +362,39 @@ def fig5():
         x += 0.6
     a.axhline(0, color=GREY, lw=0.6)
     a.set_xticks([0, 1, 2, 3.6, 4.6, 5.6])
-    a.set_xticklabels(labs, fontsize=5.5, rotation=30)
+    a.set_xticklabels(["19–20", "20–21", "21–22"] * 2, fontsize=5, rotation=45)
     from matplotlib.patches import Patch
     from matplotlib.lines import Line2D
     hand = [Patch(color="#999999", alpha=0.55, label="within (members)"), Patch(color="#555555", label="displacement"),
             Line2D([], [], color="k", marker="_", ls="", ms=9, mew=1.5, label="share change")]
-    a.text(1, 0.095, "submissions\ntop 78", ha="center", fontsize=5.5, color=COL["reddit_submissions_long"])
-    a.text(4.6, 0.095, "comments\ntop 195", ha="center", fontsize=5.5, color=COL["reddit_comments_ext"])
+    a.text(1, 0.095, "submissions\ntop 78", ha="center", fontsize=5, color=COL["reddit_submissions_long"])
+    a.text(4.6, 0.095, "comments\ntop 195", ha="center", fontsize=5, color=COL["reddit_comments_ext"])
     a.set_ylim(-0.30, 0.145)
     a.set_ylabel("relative change of the share a year")
-    a.set_title("Displacement steady; members fall")
-    a.legend(handles=hand, loc="lower right", frameon=False, fontsize=5.5)
+    a.set_title("Members fall", fontsize=6.5)
+    a.legend(handles=hand, loc="lower right", frameon=False, fontsize=4.6)
     tag(a, "C")
-    fig.tight_layout(w_pad=1.0)
+    a = ax[3]                                       # R8: the head's share split into share of items and karma per item
+    for pn in ("reddit_submissions_long", "reddit_comments_ext"):
+        hc = load(HERE / f"head_components__{pn}.json")
+        yrs = [r["year"] for r in hc["rows"]]
+        base = hc["rows"][0]["reselected"]
+        for key, ls, lab in (("share_karma", "-", "share of activity"), ("share_items", "--", "share of items"),
+                             ("rel_karma_per_item", ":", "activity per item")):
+            y = [r["reselected"][key] / base[key] for r in hc["rows"]]
+            a.plot(yrs, y, ls, marker=MK[pn], color=COL[pn], ms=2.5, lw=1, label=lab if pn == "reddit_submissions_long" else None)
+    a.axhline(1, color=GREY, lw=0.4)
+    a.set_yscale("log")
+    a.set_yticks([0.4, 0.6, 1, 1.5])
+    a.set_yticklabels(["0.4", "0.6", "1", "1.5"])
+    a.minorticks_off()
+    a.set_xticks(yrs)
+    a.set_xticklabels([str(y) for y in yrs], rotation=30, fontsize=5.5)
+    a.set_ylabel("relative to 2019")
+    a.set_title("Head lost participation", fontsize=6.5, loc="right")
+    a.legend(loc="lower left", frameon=False, fontsize=5)
+    tag(a, "D")
+    fig.tight_layout(w_pad=0.8)
     save(fig, "fig5_tipping")
 
 
@@ -377,7 +402,7 @@ WORLDS = (("gibrat", "size-blind random growth", "#444444", "--"), ("atlas", "fi
           ("neutral", "neutral copying", "#b5651d", "-."), ("rdm", "the model", "#999999", "-"))
 # R7 (20 runs each): worlds started from the data's ladder (calibrated) and from a constant-slope Zipf ladder
 WORLDS7 = (("sb_data", "size-blind, data's ladder", "#444444", "--"), ("firm_data", "firm-like (β 0.2), data's ladder", "#8e44ad", "--"),
-           ("gibrat", "size-blind, constant slope", "#444444", ":"), ("atlas", "firm-like, constant slope", "#8e44ad", ":"),
+           ("sb_flat", "size-blind, constant slope", "#444444", ":"), ("firm_flat", "firm-like, constant slope", "#8e44ad", ":"),
            ("neutral", "neutral copying", "#b5651d", "-."))
 
 
@@ -397,7 +422,7 @@ def fig2v2():
     for pn in COL:
         key = "1->2" if pn != "facebook_a" else "1->5"
         d = rob[pn]["loo"][key]
-        a.plot(d["size"], d["sd"], "-", marker=MK[pn], color=COL[pn], ms=3.5, lw=1, label=f"{LAB[pn]}: β = {d['full']:.2f}")
+        a.plot(d["size"], d["sd"], "-", marker=MK[pn], color=COL[pn], ms=3.5, lw=1, label=f"{LAB[pn]}: raw β = {d['full']:.3f}")
     xs = np.linspace(6.5, 14.5, 10)
     a.plot(xs, 0.67 * np.exp(-0.2 * (xs - 6.5)), "--", color=GREY, lw=1, label="firms, β = 0.2")
     a.set_yscale("log")
@@ -407,7 +432,7 @@ def fig2v2():
     a.minorticks_off()
     a.set_xlabel("size (mean log activity of the stratum)")
     a.set_ylabel("sd of one-year change (log)")
-    a.set_title("Size gives limited protection")
+    a.set_title("Raw size dependence")
     a.legend(loc="lower left", frameon=False, fontsize=5.5)
     tag(a, "A")
     a = ax[1]
@@ -418,6 +443,9 @@ def fig2v2():
         xk = [10, 25] + ks
         yk = [1 - np.mean(rob[pn]["retention"]["10"]), 1 - np.mean(rob[pn]["retention"]["25"])] + ys
         a.plot(xk, yk, "-", marker=MK[pn], color=COL[pn], ms=3.5, lw=1.2, label=LAB[pn] + " (data)")
+        for kk_, key in ((10, "10"), (25, "25")):                       # range over year pairs at the very top
+            v = 1 - np.array(rob[pn]["retention"][key], float)
+            a.plot([kk_ * (1.04 if pn == "reddit_comments_ext" else 0.96)] * 2, [v.min(), v.max()], "-", color=COL[pn], lw=0.8)
     S7 = r7()
     for w, lab, col, ls in WORLDS7:
         if w not in S7:
@@ -487,9 +515,9 @@ def fig3v2():
            f"jumps to random ranks 1.56\nneutral copying {_b('neutral')} (universe edge)", ha="left", va="top", fontsize=5.2, color="#333333")
     a.set_xlim(0, 14)
     a.set_ylim(0, 14)
-    a.set_xlabel("predicted from churn: σ²/2S (per 1,000 wk)")
+    a.set_xlabel("predicted, σ²/2S (per 1,000 wk)")
     a.set_ylabel("measured crossing gain")
-    a.set_title("Crossings match churn")
+    a.set_title("Crossings match volatility over slope")
     a.legend(loc="lower right", frameon=False)
     tag(a, "A")
     a = ax[1]
@@ -530,7 +558,7 @@ def fig3v2():
         S = [np.mean([r["S"] for r in rows if r["k"] == k]) for k in ks]
         a.plot(ks, e, "-", marker=MK[pn], color=COL[pn], ms=3, lw=1)
         a.plot(ks, S, ":", marker=MK[pn], color=COL[pn], ms=3, lw=1, mfc="white")
-    a.plot([], [], "-", color="k", label="churn: mean downward move at the boundary")
+    a.plot([], [], "-", color="k", label="mean downward move at the boundary")
     a.plot([], [], ":", color="k", mfc="white", marker="o", ms=3, label="local slope of the ladder")
     a.set_xscale("log")
     a.set_ylim(0, 2.6)
