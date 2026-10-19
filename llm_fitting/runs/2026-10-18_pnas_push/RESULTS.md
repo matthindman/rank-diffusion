@@ -934,3 +934,55 @@ ladder in the data, and 45 in the worlds (5 seeds). Slides are per week.
   - The submissions contrast is positive in only 5 of 9 cells.
   - The model world is calibrated to submissions only.
   - Post hoc.
+
+## R11. Entry and exit counted once in the model's drift (`churn_counterfactual.py <panel> flat20|long30 noentry`; expectations in PLAN.md addendum R11, committed 50e36aa before the outputs were read)
+
+**Run.** The same runs as before, 20 seeds each, 30 years:
+- the flat start;
+- the three worlds from the observed 2019 ladder.
+
+The only change is the drift by rank. It is now built from the persisters' slide s̄ alone, not s̄ − e, because the simulator produces its own entry and exit.
+
+**Slope at 30 years from the flat start.** Each cell gives s̄ − e → s̄, then the observed slope. Cut-offs: K/64, K/32, K/16, K/8, K/4, K/2.
+
+| | K/64 | K/32 | K/16 | K/8 | K/4 | K/2 |
+|---|---|---|---|---|---|---|
+| comments | 0.553 → 0.605 (obs 0.991) | 0.647 → 0.708 (1.207) | 0.826 → 0.949 (1.321) | 1.126 → 1.340 (1.377) | 1.531 → 1.783 (1.744) | 1.966 → 2.176 (2.128) |
+| submissions | 0.547 → 0.542 (0.854) | 0.667 → 0.719 (0.932) | 0.804 → 0.863 (1.024) | 0.958 → 0.968 (1.257) | 1.137 → 1.205 (1.320) | 1.366 → 1.406 (1.550) |
+
+**Shortfall against the observed slope, 1 − S/S_obs, after the correction:**
+- **Comments:** 0.39, 0.41, 0.28, 0.03, −0.02, −0.02. Before: 0.44, 0.46, 0.38, 0.18, 0.12, 0.08. The observed slope lies inside the 90% band of 20 runs at K/8, K/4 and K/2.
+- **Submissions:** 0.37, 0.23, 0.16, 0.23, 0.09, 0.09. Before: 0.36, 0.28, 0.22, 0.24, 0.14, 0.12. The observed slope is outside the band at every cut-off.
+
+**Thirty years from the observed ladder.** Change in head shape (K/64) over 30 years, before → after:
+
+| | volatility and slide | slide only (exits and entry kept) | volatility only |
+|---|---|---|---|
+| comments | −22% → −9% | −61% → −31% | +28% → +28% (no drift involved) |
+| submissions | −18% → −17% | −90% → −90% | +67% → +67% |
+
+- **Comments, slide only:** the head still collapses to zero slope above rank 1,560, in two tiers. The shape measured at K/64 falls less because the cliff below the head holds it up. In the first two years without volatility, the comments head rises (+0.034 a year).
+- **The two starts:** the slopes after 30 years from the observed ladder agree with the flat start's within 2–16% at every cut-off.
+
+**Scores.**
+
+| | expectation | result |
+|---|---|---|
+| R11-1 | flat start: K/64 slope ≥ 15% steeper on comments, ≥ 5% on submissions | **FAIL** (+9% on comments, −1% on submissions; deeper on comments +15% to +19%) |
+| R11-2 | the K/64 shortfall shrinks on both ladders | **FAIL as written** (comments 0.44 → 0.39; submissions 0.36 → 0.37, unchanged within the band) |
+| R11-3 | collapse without volatility, steepening without the slide, starts within 20% | **PASS** (the comments collapse in 30 years is −31%, not −61%) |
+
+**Reading.**
+- **The double count was real.** The simulator's own exits make an entry effect, so building the drift from s̄ − e counted it twice.
+- **On comments it was the whole of the body's shortfall.** Below K/16 the corrected model matches the observed ladder.
+- **It explains little of the head's shortfall:**
+  - about a tenth on comments (0.44 → 0.39);
+  - none on submissions.
+- **The model is flatter than the data at the head of both ladders, by 37–41% at K/64.** That remains a fact about the head, not a bookkeeping artifact.
+- **The qualitative counterfactuals survive.** The comments hierarchy, run from the observed ladder with both ingredients, is more durable than before: −9% in 30 years.
+- **For the manuscript:**
+  - the corrected drift should replace s̄ − e in Results 4, Fig. 4 and the SI;
+  - "flatter at every rank, by 8–46%" becomes: flatter at the head of both ladders (37–41% at K/64) and through the submissions ladder (9–37%), while matching the comments body;
+  - the comments collapse becomes −31%.
+
+  This change is to be made after the round-6 reviews finish, since they read v4.

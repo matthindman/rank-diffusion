@@ -13094,3 +13094,134 @@ starting top 5,000 changes, to a constant slope.
 - A comments-calibrated model world with drift for R10.
 - Fitted GLLM and Yule–Simon rivals.
 - The capture-delay audit.
+
+## 2z-dl. 2026-10-19 — REVIEW (eight literature and design reports: four tasks, each by GPT-6 Astra and Claude Opus 5.5; PLANNING ONLY, nothing adopted) and EXPLORATORY MEASUREMENT R11 (post hoc; expectations in PLAN.md addendum R11, committed at 50e36aa before the outputs were read): entry and exit were counted twice in the model's drift; correcting it removes the comments body's shortfall but little of the head's. The paper's question and qualitative answer precede it in the lead author's own book (*The Internet Trap*, ch. 5); the separation of time scales is what homogeneous random growth predicts, and the submissions head's fast fall is the departure. No gate evaluation; bridge sealed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-19. Work started from 42955ac (manuscript v4); R11 expectations committed at 50e36aa, review briefs at 94695b0, both before the outputs or reports they cover. Governing skills at 94695b0._
+
+### Owner instruction (2026-10-19, verbatim in part)
+
+The owner asked for a series of AI literature reviews. Each was to be given "to both 1.) an Opus 5.5 subagent and to 2.) GPT-6 Astra through Codex", with "a best-practices prompt, the current article draft, and any other context". The tasks:
+1. a substantive review of platform research;
+2. a methodological review of stochastic models across disciplines;
+3. a study of the archive of PNAS model papers in local storage, the folder that is "(mostly) PNAS articles";
+4. a meta-question on one "hero model" against "all of the models".
+
+The owner then gave three further instructions:
+- "Record all eight of these reports."
+- "Record your own judgments about what is useful and important here."
+- Use the owner-supplied GPT-6 Pro report on AI review as "guidelines and best practices, not gospel".
+
+### What was done
+
+- **Practices.** `runs/2026-10-19_literature_and_design_reviews/00_PRACTICES_ADOPTED.md` records what this round adopted from the GPT-6 Pro report and what it did not. The report itself is the owner's document and is not committed.
+- **Briefs** (`COMMON_BRIEF.md`, `T1`–`T4`; 94695b0). The common brief carries:
+  - a neutral scientific brief: question, data, results with their status, limits and four rival readings;
+  - standards of evidence: an access check, access labels, exact located quotations labelled verified or unverified, no quotas, and checked work kept separate from proposals;
+  - binding rules: read-only, no raw or sealed data.
+- **Exemplar packet** (outside the repository). The 31 PNAS papers of `~/model papers/` were converted to page-marked text in the session scratchpad: 29 PDFs plus 2 EPUBs. The folder's personal and unrelated files were excluded. Tools: `pdf_pages.py`, `quote_audit.py`.
+- **Reports.**
+
+  | | GPT-6 Astra | Opus 5.5 |
+  |---|---|---|
+  | how it ran | Codex CLI 0.163.0 with `--search`, read-only sandbox | Claude Code sub-agent with WebSearch and WebFetch |
+  | reasoning effort | `high` for T1 and T3, `xhigh` for T2 and T4 | default |
+  | how it was saved | `REPORT_*.md`, verbatim | returned as text, because sub-agents may not write report files, and saved verbatim from the transcripts |
+
+  Each report has a provenance header.
+
+### Verification
+
+- **GPT-6 Astra quotations and references.** An independent Claude sub-agent checked them (`VERIFICATION_GPT_QUOTES_AND_REFS.md`):
+  - 20 of 20 quotations match at the stated location;
+  - 14 of 14 key new references exist with correct details;
+  - none of 13 attributed claims is contradicted.
+- **Exemplar quotations.** All found in the reading-order PDF text by `quote_audit.py`: T3 GPT 4 of 4, T3 Opus 5 of 5.
+- **The Opus reports** quote little (one short passage per source) under their copyright rule, and use located paraphrases instead.
+- **Two errors in my brief, not in the manuscript:**
+  - the comments panel is about 213 weeks, not 136;
+  - the code key `atlas` is the firm-like world, not a Banner–Fernholz–Karatzas Atlas comparator.
+
+### Findings judged most important (detail and the full decision ledger in `SYNTHESIS.md`)
+
+1. **Precedent in the lead author's own book.** Hindman 2018, *The Internet Trap*, ch. 5 (with Bruce Rogers), poses the question and proposes that churn produces and maintains the power law of web traffic. It models with finance-derived stochastic models citing Fernholz, and simulates from a flat start. By T1 Opus's checks of Google Books snippets, it also found two things that differ from Reddit:
+   - strong size dependence of volatility;
+   - a stable top ten.
+
+   The draft does not cite it. **Owner item.**
+2. **The separation of time scales is generic.** The check is `gllm_relaxation_check.py`, a calculation on the saved balance-law cells, not a test. GLLM's reflecting-barrier relaxation time 8S²/σ², at the measured lasting σ_k² and S_k, is:
+   - 18–24 years at K/64–K/8 on comments;
+   - 13–31 years at K/64–K/8 on submissions.
+
+   Lasting moves span one slope unit in 2–4 years. So homogeneous random growth predicts that the hierarchy outlasts its members on both ladders. Comments follow it (linearized relaxation of about 9 years, §2z-cp). The submissions head relaxes in 3–4 years and lost a third of its share in three, which is GLLM's fast-transition problem; the candidate channel is persistent decline (R10, §2z-dk). Three reports converge on this reframing. **Owner decision** on the title and framing.
+3. **Persistence needs calibrated rivals.** The rivals are fixed heterogeneity (HIP; second-order rank models), environmentally varying growth, and common-factor exposure, distinguishable by the lag profile. Variance-based estimates may be biased under heterogeneous growth (G15). **Proposed as R12:** estimate the spread of mean growth by minimum distance on the autocovariance; run a calibrated heterogeneous-growth world; check recovery. Expectations come before any run. All four T2 and T4 reports converge on this.
+4. **Density, not length.** T3 Opus counted all 31 exemplars:
+
+   | measure | draft | exemplars (median) |
+   |---|---|---|
+   | words per sentence | 36.5 | 27 |
+   | "we" per 1,000 words | 3.1 | 14 |
+   | modal hedges per 1,000 words | 0.5 | 3.6 |
+
+   The median exemplar runs 9 pages with 4 figures. No "How…" title and no "What/Where" headings appear in the 31. The target is 7 pages and 4 figures.
+5. **One model or many.** Both T4 reports recommend a limited form:
+   - an SI model atlas, with a stated selection rule and unrun cells shown;
+   - one new heterogeneous-growth column;
+   - forecasts from every eligible model for the sealed test (owner protocol decision);
+   - the ablation ladder kept out of the main text;
+   - no ensemble.
+6. **Corrections:**
+   - "through that channel" claims a causal link the Results disclaim (three reports);
+   - l. 93 mixes stabilizing mechanisms;
+   - "rank is a poor measure of entrenchment" and the platform-design sentence need to be conditional;
+   - activity must be distinguished from attention;
+   - Figs. 3–5 have clipped titles, and Fig. 5B uses "gapped momentum", a term the text never uses;
+   - the AI statement must be precise about figures.
+
+### R11 (scored; RESULTS R11)
+
+**Question.** Is entry and exit counted twice in the model's drift (Fable R5, G7)?
+
+**Run.** The same 20-seed, 30-year runs, with the drift built from s̄ alone:
+- `churn_counterfactual.py <panel> flat20 noentry`;
+- `churn_counterfactual.py <panel> long30 noentry`.
+
+**Scores:**
+
+| | expectation | result |
+|---|---|---|
+| R11-1 | K/64 slope steeper by ≥15% on comments and ≥5% on submissions | **FAIL**: +9% on comments, −1% on submissions |
+| R11-2 | the K/64 shortfall shrinks on both ladders | **FAIL as written**: comments 0.44 → 0.39; submissions 0.36 → 0.37 |
+| R11-3 | the qualitative results survive | **PASS**: the comments collapse without volatility is −31% in 30 years, not −61% |
+
+**Reading.**
+- The double count was real.
+- It accounted for the whole of the comments body's shortfall: K/8 to K/2 now match the observed ladder inside the 90% band.
+- It accounted for little at the head. The model is still 37–41% flatter at K/64 on both ladders.
+
+**For the manuscript.** Fig. 4's script now reads the corrected runs (`CF_SUFFIX = "__noentry"` in `make_pnas_figures.py`). The text change is deferred to v5, because the reviews read v4.
+
+### Ledgers and state
+
+- **EXPOSURE_LEDGER:** one row for R11, which re-estimated the model on both ladders with the registered loader. The relaxation check and the reviews read no data.
+- **GATE_LEDGER:** unchanged; no gate evaluation.
+- **Bridge:** sealed.
+- **Not run:**
+  - R12 (the heterogeneous-growth world);
+  - 30-year runs with drift from other periods (G6);
+  - the turnover-profile exponent;
+  - the ban share of the head's vanishing term.
+
+### Owner decisions pending (SYNTHESIS §4)
+
+0. *The Internet Trap* citation and contrast; Bruce Rogers's role.
+1. Title. Options:
+   - "When the hierarchy of online attention outlasts its members" (preferred);
+   - "Random growth and persistent decline…";
+   - "Turnover and persistence…";
+   - keep v4's title, scoped.
+2. The GLLM arc as the organizing story, which is claim language.
+3. About 12 new main-text references.
+4. The protocol amendment: forecasts from every model; P5 and P6 as before.
+5. Classification and suggested editors.
+6. Before any push: the reports contain short attributed quotations of published work, in a public repository.

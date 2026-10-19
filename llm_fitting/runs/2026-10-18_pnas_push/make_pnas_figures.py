@@ -214,10 +214,13 @@ def fig3():
     save(fig, "fig3_balance")
 
 
+CF_SUFFIX = "__noentry"   # R11: drift from the persisters' slide alone; the simulator makes its own entry and exit
+
+
 def fig4():
     CF = {pn: load(HERE / f"churn_counterfactual__{pn}.json") for pn in ("reddit_comments_ext", "reddit_submissions_long")}
     for pn in CF:                                   # the flat start at 20 seeds with bands (R3-C), where available
-        f20 = HERE / f"churn_counterfactual__{pn}__flat20.json"
+        f20 = HERE / f"churn_counterfactual__{pn}__flat20{CF_SUFFIX}.json"
         if f20.exists():
             CF[pn]["flat_start"] = load(f20)["flat_start"]
     gates = {}
@@ -261,7 +264,7 @@ def fig4():
     a = ax[2]                                       # R6: 30 years from the observed ladder, 20 seeds, 90% bands
     LS = {"churn_slide": ("-", "volatility + slide"), "slide_only": ("--", "slide only"), "churn_only": (":", "volatility only")}
     for pn in CF:
-        f = HERE / f"churn_counterfactual__{pn}__long30.json"
+        f = HERE / f"churn_counterfactual__{pn}__long30{CF_SUFFIX}.json"
         if not f.exists():
             continue
         L30 = load(f)

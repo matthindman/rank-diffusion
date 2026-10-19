@@ -1,0 +1,16 @@
+reddit_comments_ext primary pairs [(1, 2), (2, 3)]
+  k=  195  S=0.90  S*=0.63  sigma2/week=0.0068  1/lambda= 18.2 yr  S^2/sigma2= 2.3 yr
+  k=  391  S=1.09  S*=0.82  sigma2/week=0.0087  1/lambda= 20.9 yr  S^2/sigma2= 2.6 yr
+  k=  781  S=1.15  S*=1.15  sigma2/week=0.0103  1/lambda= 19.7 yr  S^2/sigma2= 2.5 yr
+  k= 1562  S=1.32  S*=1.53  sigma2/week=0.0112  1/lambda= 23.9 yr  S^2/sigma2= 3.0 yr
+  k= 3125  S=1.66  S*=1.88  sigma2/week=0.0126  1/lambda= 33.6 yr  S^2/sigma2= 4.2 yr
+  k= 6250  S=2.01  S*=1.89  sigma2/week=0.0131  1/lambda= 47.3 yr  S^2/sigma2= 5.9 yr
+  k=12500  S=2.59  S*=2.02  sigma2/week=0.0129  1/lambda= 80.0 yr  S^2/sigma2=10.0 yr
+reddit_submissions_long primary pairs [(1, 2), (2, 3)]
+  k=   78  S=0.88  S*=0.44  sigma2/week=0.0089  1/lambda= 13.2 yr  S^2/sigma2= 1.7 yr
+  k=  156  S=0.92  S*=0.27  sigma2/week=0.0042  1/lambda= 31.2 yr  S^2/sigma2= 3.9 yr
+  k=  312  S=1.02  S*=0.38  sigma2/week=0.0051  1/lambda= 31.3 yr  S^2/sigma2= 3.9 yr
+  k=  625  S=1.06  S*=0.58  sigma2/week=0.0072  1/lambda= 24.2 yr  S^2/sigma2= 3.0 yr
+  k= 1250  S=1.18  S*=0.97  sigma2/week=0.0103  1/lambda= 20.9 yr  S^2/sigma2= 2.6 yr
+  k= 2500  S=1.37  S*=1.22  sigma2/week=0.0114  1/lambda= 25.3 yr  S^2/sigma2= 3.2 yr
+  k= 5000  S=1.67  S*=1.63  sigma2/week=0.0133  1/lambda= 32.4 yr  S^2/sigma2= 4.0 yr

@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-18** (the paragraphs on §2z-da … §2z-dk were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-19** (the paragraphs on §2z-da … §2z-dl were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -298,6 +298,23 @@ spine, "size does not protect", and the model and momentum. The outline
     random growth, which unifies mechanism and discovery.
   - Manuscript v4; title "How a hierarchy of online attention outlasts
     its members" (owner to confirm).
+- **Literature and design reviews (§2z-dl, 2026-10-19; planning only):**
+  eight reports, four tasks × {GPT-6 Astra, Opus 5.5}, with a verified
+  synthesis (`runs/2026-10-19_literature_and_design_reviews/SYNTHESIS.md`).
+  - The question and its qualitative answer precede the paper in the lead
+    author's *The Internet Trap*, ch. 5. It must be cited and contrasted:
+    there, size dependence was steep and the top ten was stable.
+  - At the measured σ and S, homogeneous random growth predicts a shape
+    that outlasts lasting membership by about eight times on both ladders
+    (relaxation 13–31 years). Comments follow it; the submissions head's
+    fast fall is the departure (GLLM's problem), and persistence is the
+    candidate channel.
+  - Next analysis (R12, not run): spread of mean growth from
+    autocovariances, a calibrated heterogeneous-growth world, and
+    recovery under it.
+  - R11: entry and exit were counted twice in the model's drift. The
+    corrected model matches the comments body; the head is still 37–41%
+    flatter.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it
