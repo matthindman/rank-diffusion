@@ -8,7 +8,10 @@ shape_k = U_k - U_K (U_k the mean of the top k, K the panel's universe size); th
 against U_K is measured inside the simulation, c_k = sigma_k^2 / (2 S_k) from the simulation's own sigma_L at the
 rank-k level and the local slope.
 
-    python llm_fitting/runs/2026-10-18_pnas_push/churn_counterfactual.py <panel> [flat20|long30]
+    python llm_fitting/runs/2026-10-18_pnas_push/churn_counterfactual.py <panel> [flat20|long30] [noentry]
+
+noentry (R11): drift by rank from the persisters' slide alone, without the data's entry-and-exit term, since the
+simulator has its own exits and rebirth.
 
 long30 (R6): the three worlds from the observed end-2019 ladder for 30 years, 20 seeds each, shape and slopes yearly.
 """
@@ -29,6 +32,8 @@ import rankdiff_rdm as rdm  # noqa: E402
 panel = sys.argv[1]
 FLAT_ONLY = len(sys.argv) > 2 and sys.argv[2] == "flat20"           # R3-C: the flat start alone, 20 seeds, with bands
 LONG30 = len(sys.argv) > 2 and sys.argv[2] == "long30"              # R6: the three worlds from the observed ladder, 30 years
+NOENTRY = len(sys.argv) > 3 and sys.argv[3] == "noentry"            # R11: drift from the persisters' slide alone (s, not s - e)
+SUFFIX = "__noentry" if NOENTRY else ""
 K = m1.PANELS[panel]["K"]
 EST = dict(obs_frac=0.5, temper=True, min_knot_n=8, md_lags=6, t_tails=True, md_vr_long=True,
            mix_hetero=panel != "reddit_submissions_long")
@@ -40,7 +45,7 @@ base = mrd.estimate(df, **EST)
 law = json.loads((ROOT / "llm_fitting/runs/2026-10-14_balance_law/cells" / f"law__{panel}.json").read_text())
 prs = [q for q in law["pairs"] if q["primary"]]
 kk = np.array(sorted(r["k"] for r in prs[0]["rows"]), float)
-net = np.mean([[r["sbar"] - r["entry"] for r in sorted(q["rows"], key=lambda r: r["k"])] for q in prs], axis=0)
+net = np.mean([[r["sbar"] - (0.0 if NOENTRY else r["entry"]) for r in sorted(q["rows"], key=lambda r: r["k"])] for q in prs], axis=0)
 kk = np.concatenate([[1.0], kk, [4.0 * K]])
 net = np.concatenate([[net[0]], net, [net[-1]]])
 p = rdm.estimate_rdm(df, K, base=base, jumps=False, variant="move", slides=(kk, net))
@@ -121,7 +126,7 @@ if LONG30:                                                          # R6
                          S_end=S_end.mean(0).tolist(), S_end_q=[np.quantile(S_end, q, 0).tolist() for q in (0.05, 0.95)])
         print(f"  {name}, 30 years from the observed ladder: head shape by decade {np.round(paths.mean(0)[::10, 0], 3).tolist()}; "
               f"slopes at 30 years {np.round(S_end.mean(0), 2).tolist()} (start {np.round(S0, 2).tolist()})", flush=True)
-    Path(__file__).with_name(f"churn_counterfactual__{panel}__long30.json").write_text(json.dumps(out, indent=1, default=float))
+    Path(__file__).with_name(f"churn_counterfactual__{panel}__long30{SUFFIX}.json").write_text(json.dumps(out, indent=1, default=float))
     sys.exit(0)
 # (iv) flat start, 30 years
 flat = np.full(N, float(np.median(L0)))
@@ -139,4 +144,4 @@ out["flat_start"] = dict(S_end=S_end.tolist(), S_star_sim=S_star.tolist(), S_obs
 print(f"  flat start, 30 years: slope at k={KS}: {np.round(S_end, 2).tolist()}; sigma^2/(2 slide) in the simulation "
       f"{np.round(S_star, 2).tolist()}; observed ladder {np.round(S_obs, 2).tolist()}", flush=True)
 print(f"  flat start: shape at K/64 by year {np.round(traj[:, 0], 2).tolist()}", flush=True)
-Path(__file__).with_name(f"churn_counterfactual__{panel}{'__flat20' if FLAT_ONLY else ''}.json").write_text(json.dumps(out, indent=1, default=float))
+Path(__file__).with_name(f"churn_counterfactual__{panel}{'__flat20' if FLAT_ONLY else ''}{SUFFIX}.json").write_text(json.dumps(out, indent=1, default=float))

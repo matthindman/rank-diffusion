@@ -697,3 +697,29 @@ fast-transition problem of GLLM 2016).
 | R10-2 | driftless worlds: the mean contrast across cells is ≤ 0.0005 a week (no persistence; passing parts make prior decliners regress upward) | 75% |
 | R10-3 | data: the Q1 contrast, weighted by Q1's share (0.2 × (s̄_Q1 − s̄_rest)), is at least a quarter of the excess of the data's cohort slide over the driftless world's, pooled over cells, on both ladders | 40% |
 | R10-4 | the data's cohort slide exceeds the driftless calibrated world's on both ladders (an excess exists) | 85% |
+
+## Addendum R11 (2026-10-19, after the round-5 reports; before the run): is entry and exit counted twice in the model's drift?
+
+**Why.** Fable R5 (G7). `churn_counterfactual.py` builds the drift by rank
+from the net slide s̄ − e, which includes the data's entry-and-exit effect e
+(negative). The simulator then runs its own exits and rebirth, which produce
+their own entry effect. Entry and exit may therefore be counted twice, so
+the drift deficit is overstated:
+- by about 13% on average (e −0.0007 against s̄ 0.0055);
+- by about half at the comments head (e −0.0018 against s̄ 0.0036).
+
+A drift that is too large gives a balance S* = σ²/(2 · drift) that is too
+flat. That may be part of why the model's balance is 35–46% flatter than the
+observed ladder at the head.
+
+**Run.** The same flat start (20 seeds, 30 years) and the same three 30-year
+worlds from the observed ladder, with the drift built from s̄ alone
+(`churn_counterfactual.py <panel> flat20 noentry` and `… long30 noentry`).
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R11-1 | flat start, drift from s̄ alone: the 30-year slope at K/64 is at least 15% steeper than with s̄ − e on comments, and at least 5% steeper on submissions | 60% |
+| R11-2 | the shortfall of the model's K/64 slope against the observed one shrinks on both ladders | 75% |
+| R11-3 | the qualitative long-run results survive: collapse without volatility, steepening without the slide, and agreement of the two starts within 20% | 85% |
