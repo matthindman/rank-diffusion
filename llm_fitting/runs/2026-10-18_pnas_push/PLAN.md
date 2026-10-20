@@ -916,3 +916,50 @@ The registered design calls for "the matched homogeneous world… the same code�
 - the lasting-variance moments alone choose s 0.
 
 At s 0.5 the heterogeneity term alone adds about 3(0.5/52)²·26 ≈ 0.007 a week to any two-spacing estimate: more than the data's head value under the code's statistic (0.004–0.005) and about the size of the head's whole lasting variance under the model's σ0 and β. The deviation therefore does not decide the optimum. It is reported as is.
+
+## Addendum R15 (2026-10-20, after referee round 7; written before the runs): four diagnostics the round asked for
+
+**Why.** Referee round 7 (`runs/2026-10-20_external_critiques_round7/SYNTHESIS_R7.md`; §2z-do) found:
+- the observed shape moved more than the paper says (G1);
+- the R12 worlds carry less heterogeneity than planted (G23);
+- the loading adjustment of persistence may be an artefact of noisy loadings (G27);
+- the durability factor depends on an estimator choice (G28).
+
+The owner asked for these cheap measurements on development data (2026-10-20: "Do 1 and 2"). Every job reads the lean universe cache and runs alone under the swap watchdog.
+
+**Already seen while checking the reviews.** These values are not predicted below:
+- the saved block ladders' head shape by year (`runs/2026-10-15_puzzle/`);
+- one half-year rate-law cell: comments, start 1 (2019H2→2020H2), k = 195: observed −0.0077 a week, c − s̄ = −0.0054, entry −0.0018;
+- the persistence adjustment values in `out_persistence_r3_*.txt`.
+
+**D1, the shape path (descriptive, no expectations).**
+- The exact U_k − U_K by year at K/64, K/32, K/16 and K/8, both ladders, from the cache.
+- The half-year rate-law cells at non-overlapping starts (1, 3, 5) and overlapping ones (2, 4): observed against c − s̄ + e.
+- The stable-parameter model from the 2019 ladder (R11 noentry runs) over years 1–5.
+
+**D2, planted against recovered (R12 fixed form, submissions, s 0.5, m 1.0, 3 seeds).** Four settings × {planted, s 0}:
+- drift re-solved numerically, or the closed-form drift;
+- exits and rebirth on, or off (with the drift re-solved under the same setting).
+
+Statistics: the R12 auxiliary covariances by stratum (gap 0 and 13), the two-spacing lasting variance, and the cross-sectional SD of per-community growth slopes among communities present at least 104 weeks, each as planted minus s 0.
+
+**D3, the loading adjustment (both ladders, full membership as `persistence_r3.py`).**
+- the platform-total adjustment reproduced from `persistence_r3.py`'s method;
+- the split-half reliability of the 2019 loadings (weeks 0–25 against 26–51);
+- a placebo: the same adjustment with the loadings permuted across the cohort, 50 draws;
+- the adjustment with empirical-Bayes-shrunk loadings.
+
+**D4, the durability factor from measured crossings (saved half-year cells, no data).**
+- F = 2 ln(K/k) (c/(s̄ − e))² by cell and k;
+- gross, and with the composition term removed (C = 0.25 and 0.35 of c, the SI's range).
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R15-1 | D2: with the closed-form drift, the bottom-stratum covariance increment of planted over s 0 is at least half the planted (52σ_b)² = 0.25 | 55% |
+| R15-2 | D2: switching exits off raises that increment by less than switching the drift re-solve off does | 60% |
+| R15-3 | D3: the split-half reliability (Pearson, across cohort communities) of the 2019 platform-total loadings is below 0.3 on both ladders | 70% |
+| R15-4 | D3: on submissions, the permuted-loading placebo lowers persistence at a 13-week gap by at least half as much as the real loadings do (median over draws) | 60% |
+| R15-5 | D4: the gross durability factor at K/64 on comments (median over cells) is at least 3 | 55% |
+| R15-6 | D4: with a composition term of 0.30 removed, it is below 3 | 65% |
