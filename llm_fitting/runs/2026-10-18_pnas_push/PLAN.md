@@ -890,3 +890,29 @@ The factor path then failed (below) before simulating anything.
 4. **`run_r12_r13.sh`** resumes at a given step (`FROM=2`). Each later step refuses to run without the calibration files it reads; before, the script would have gone on with empty parameters.
 
 **Disclosed, not changed.** With the loadings shrunk to stratum means, variant (c) is in effect exposure to the platform path by 2019 stratum of rank. It is reported as such. No grid, threshold or expectation changes. The one-seed values above are not used in any calibration or score.
+
+### Post hoc extension of the fixed-heterogeneity grid (2026-10-20, after the registered fixed grids; NOT registered)
+
+The registered grid for (a) puts the submissions optimum at its edge (s 0.5, m 1.0; objective 351 over 9 moments). The objective is still falling. Beyond the registered grid, `r12_hetgrowth.py gridx <panel> fixed` evaluates s ∈ {0.6, 0.7, 0.8, 1.0} × m ∈ {0.8, 0.9, 1.0, 1.1} (3 seeds a point; output `r12_gridx__<panel>__fixed.json`), queued after the registered steps. It is descriptive only: it shows where the objective bottoms out. The registered pipeline (worlds, out-of-period run, scores) uses the registered grid's optimum and is not rerun on the extension.
+
+### Amendment R12-A4 (2026-10-20, after the registered grids and before any world, out-of-period or recovery output): a matched control
+
+**Found in review.** `het_params` re-solves the hold drift numerically (`drift_hold_numeric`) for every variant with a term. The control, and the recovery run with nothing planted, kept the closed-form drift of `estimate_rdm(variant="hold")`. A6 (`structure_oop.py`) and R7 (`null_worlds_r7.py`) used that closed form too. Variant against control therefore confounded the term with the drift method.
+
+The registered design calls for "the matched homogeneous world… the same code… the same seeds". The only hint of size is the smoke test's one out-of-period seed: control 0.709, factor 0.486, fixed at s 0.3 0.470. By the loadings, the factor's own effect there should be small.
+
+**Changes:**
+1. **A matched control, `control_num`:** the same model with no term and the drift re-solved numerically, exactly as for the variants. It runs for the worlds (20 seeds) and the out-of-period head share (20 seeds), queued after the registered steps.
+2. **The closed-form `control`** still runs, as registered, and links R12 to A6 (0.537) and R7.
+3. **Recovery** with nothing planted now uses the numeric drift, so all four planted spreads share one drift method.
+4. **Scoring:**
+   - R12-3 is scored as registered, against 0.537, and also against the matched control's out-of-period share on the same seeds.
+   - R12-4 and R12-6 compare each variant with `control_num`, and report the closed-form control beside it.
+   - The difference between the two controls measures the drift method alone.
+5. **The grids** are not rerun. Only their (s 0, m 1) points used the closed form, and no optimum is at that point.
+
+**A disclosed deviation in the calibration statistic.** A2 names `rdm.structure_function` for the lasting variance. The code uses the two-spacing slope [V(52) − V(26)]/26 by stratum. It is the same family, but it also takes up medium-term variance. In the registered grids it puts even the homogeneous control 1.2–2.1 times above the data. Re-profiled from the saved grid output:
+- the covariance moments alone choose s 0.5 (the edge) on both ladders;
+- the lasting-variance moments alone choose s 0.
+
+At s 0.5 the heterogeneity term alone adds about 3(0.5/52)²·26 ≈ 0.007 a week to any two-spacing estimate: more than the data's head value under the code's statistic (0.004–0.005) and about the size of the head's whole lasting variance under the model's σ0 and β. The deviation therefore does not decide the optimum. It is reported as is.

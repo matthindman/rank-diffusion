@@ -39,8 +39,10 @@ def main():
     for pn, lab in PANELS:
         dm = jl(f"r12_moments__{pn}.json")
         gf, gd = jl(f"r12_grid__{pn}__fixed.json"), jl(f"r12_grid__{pn}__decay.json")
-        W = {v: jl(f"r12_worlds__{pn}__{v}.json") for v in ("control", "fixed", "decay", "factor")}
-        O = {v: jl(f"r12_oop__{pn}__{v}.json") for v in ("control", "fixed", "decay", "factor")}
+        W = {v: jl(f"r12_worlds__{pn}__{v}.json") for v in ("control", "control_num", "fixed", "decay", "factor")}
+        O = {v: jl(f"r12_oop__{pn}__{v}.json") for v in ("control", "control_num", "fixed", "decay", "factor")}
+        C = W["control_num"] or W["control"]             # A4: the matched control when it exists
+        cname = "control_num" if W["control_num"] else "control (closed-form drift; matched control not yet run)"
         res[f"{lab} calibration"] = dict(fixed_best=gf and gf["best"], fixed_profile=gf and profile(gf),
                                          decay_best=gd and gd["best"], decay_profile=gd and profile(gd))
         # R12-1 / 1b: sigma_b > 0 at the optimum of (a), annual spread 0.1-0.5
@@ -74,6 +76,12 @@ def main():
                 score("R12-3", lab, of["share_3"] <= HOMOG_SHARE - 0.05, f"{of['share_3']:.3f} (homogeneous {HOMOG_SHARE})", "45%")
                 lo, hi = of["share_3_q"]
                 score("R12-3b", lab, lo <= OBS_SHARE <= hi, f"[{lo:.3f}, {hi:.3f}] vs observed {OBS_SHARE}", "20%")
+                for cv in ("control", "control_num"):
+                    if O[cv]:
+                        d = np.array(of["shares"]) - np.array(O[cv]["shares"])
+                        res[f"R12-3 matched {cv}"] = dict(control_share=O[cv]["share_3"], paired_diff=float(d.mean()),
+                                                          paired_q=[float(np.quantile(d, 0.05)), float(np.quantile(d, 0.95))])
+                        table.append(("R12-3 vs", cv, "info", f"factor - {cv} = {d.mean():+.3f} [{np.quantile(d, 0.05):+.3f}, {np.quantile(d, 0.95):+.3f}] (control {O[cv]['share_3']:.3f})", "A4"))
             else:
                 score("R12-3", lab, None, "-", "")
                 score("R12-3b", lab, None, "-", "")
@@ -82,12 +90,13 @@ def main():
             if W["fixed"] and W["decay"]:
                 cf, cd = W["fixed"]["r10_contrast"]["mean"], W["decay"]["r10_contrast"]["mean"]
                 cc = W["control"]["r10_contrast"]["mean"] if W["control"] else np.nan
-                score("R12-4", lab, cf > 0 and cd > 0, f"fixed {cf:+.4f}, decay {cd:+.4f} (control {cc:+.4f}; data +0.0023)", "60%")
+                cn = W["control_num"]["r10_contrast"]["mean"] if W["control_num"] else np.nan
+                score("R12-4", lab, cf > 0 and cd > 0, f"fixed {cf:+.4f}, decay {cd:+.4f} (control_num {cn:+.4f}, control {cc:+.4f}; data +0.0023)", "60%")
             else:
                 score("R12-4", lab, None, "-", "")
         # R12-6: must not worsen against the control
-        if W["control"]:
-            tc = W["control"]["turnover"]
+        if C:
+            tc = C["turnover"]
             ks = sorted(int(k) for k in tc)
             K = max(ks) * 2
             k64, k2 = str(K // 64), str(K // 2)
@@ -99,7 +108,7 @@ def main():
                 d64, d2 = tv[k64]["mean"] - tc[k64]["mean"], tv[k2]["mean"] - tc[k2]["mean"]
                 b = W[v]["boundary"]["mean"]
                 ok = abs(d64) <= 0.03 and abs(d2) <= 0.03 and 0.90 <= b <= 1.15
-                score("R12-6", f"{lab} {v}", ok, f"turnover K/64 {d64:+.3f}, K/2 {d2:+.3f}; boundary {b:.3f}", "70%")
+                score("R12-6", f"{lab} {v}", ok, f"vs {cname}: turnover K/64 {d64:+.3f}, K/2 {d2:+.3f}; boundary {b:.3f}", "70%")
         # R12-7 (A1): calibrated (a) and (b) give a faller-riser asymmetry below half the data's
         if dm:
             da = dm["aux"]["asym"]["diff"]
@@ -149,7 +158,8 @@ def main():
         "R12-5 uses the planted spread nearest the calibrated one (grid 0, 0.15, 0.30, 0.45).",
         "R12-2(a) uses the pooled Spearman lag profile of r12_hetgrowth (gaps 0-52); R12-2(c) the null_worlds.stats gapped "
         "persistence at 13 weeks, as registered.",
-        "R12-6 compares each variant with the matched control on the same seeds; the boundary ratio range is absolute.",
+        "R12-6 compares each variant with the matched control (control_num, A4) on the same seeds; the boundary ratio range is absolute.",
+        "R12-3 is scored as registered against 0.537 (A6, closed-form drift); the paired difference from each control on the same seeds is shown beside it (A4).",
     ]
     res["notes"] = notes
     (HERE / "r12_score.json").write_text(json.dumps(res, indent=1, default=float))

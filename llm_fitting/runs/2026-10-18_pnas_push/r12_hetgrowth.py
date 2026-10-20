@@ -6,7 +6,8 @@ Three standard forms of a community-specific growth term a_it added to the lasti
   decay   a_it = u_it, AR(1) with weekly persistence rho and stationary sd sigma_u (vel_rho < 1)
   factor  a_it = (lambda_i - lambar_K) f_t, f_t the equal-weighted mean weekly change of the tracked universe
           (leave-one-out for estimation), loadings from 2019 co-movement, spread corrected for estimation noise
-  control the same model without the term (the matched homogeneous world)
+  control the same model without the term, closed-form hold drift (as A6 and R7)
+  control_num the same model without the term, hold drift re-solved numerically like every variant (A4: the matched control)
 Annual spreads s are 52 * sigma.  Calibration of fixed and decay by indirect inference on (i) the Pearson covariance
 of year-apart changes of 13-week window means at the declared gaps, within three strata of permanent rank, and
 (ii) the structure-function lasting variance by band, with a multiplier m on sigma_0 (the G15 correction).  The hold
@@ -14,9 +15,10 @@ drift is re-solved with the heterogeneity present.  Every statistic is computed 
 
     python r12_hetgrowth.py moments <panel>                       data auxiliary statistics + bootstrap sd; data tests
     python r12_hetgrowth.py grid <panel> <fixed|decay> [m]        3 seeds per grid point (decay at the given m)
-    python r12_hetgrowth.py worlds <panel> <fixed|decay|factor|control> <s0> <s1> [s] [half_life] [m]
+    python r12_hetgrowth.py gridx <panel> fixed                   post hoc: spreads 0.6-1.0 beyond the registered grid
+    python r12_hetgrowth.py worlds <panel> <fixed|decay|factor|control|control_num> <s0> <s1> [s] [half_life] [m]
     python r12_hetgrowth.py summarize <panel> <variant>
-    python r12_hetgrowth.py oop <panel> <fixed|decay|factor|control> [s] [half_life] [m]
+    python r12_hetgrowth.py oop <panel> <fixed|decay|factor|control|control_num> [s] [half_life] [m]
     python r12_hetgrowth.py recovery <panel> <planted_s> <s0> <s1>
 
 Outputs: r12_moments__<panel>.json, r12_grid__<panel>__<variant>.json, r12_world__<panel>__<variant>__s<seed>.json,
@@ -177,7 +179,9 @@ def het_params(p, ladder, variant, s=0.0, half_life=None, m=1.0, fac=None):
         q = replace(q, vel_var=(s / 52.0) ** 2, vel_rho=rho)
     elif variant == "factor":
         q = replace(q, fac_path=fac["path"], fac_load=fac["load"], fac_pool=fac["pool"])
-    if variant != "control" and (s > 0 or variant == "factor" or m != 1.0):
+    if variant == "control_num" or (variant != "control" and (s > 0 or variant == "factor" or m != 1.0)):
+        # A4: control_num is the matched homogeneous world (the drift re-solved numerically, no term); control keeps the
+        # closed-form drift of A6 and R7 for continuity with their numbers
         qd = _factor_for_drift(q, ladder, fac) if variant == "factor" else q
         dz, dg, _ = rdm.drift_hold_numeric(qd, ladder)
         q = replace(q, drift_z=dz, drift_g=dg)
@@ -355,7 +359,8 @@ def main():
     df, K = load(pn)
     T = int(df["period"].max()) + 1
     import rankdiff_kalman as rk
-    if mode == "grid":
+    if mode in ("grid", "gridx"):
+        mode_x = mode == "gridx"
         variant = sys.argv[3]
         m_fixed = float(sys.argv[4]) if len(sys.argv) > 4 else None
         p, base, ladder = fit_model(df, K, pn)
@@ -365,7 +370,9 @@ def main():
         sd_all = np.array(dm["boot_sd"])
         idx = [GAPS_DECAY.index(g) * 3 + j for g in gaps for j in range(3)] + [len(GAPS_DECAY) * 3 + j for j in range(3)]
         target, sd = aux_vector(dm["aux"], gaps), sd_all[idx]
-        if variant == "fixed":
+        if variant == "fixed" and mode_x:          # post hoc extension beyond the registered grid (PLAN.md, after A3)
+            pts = [(s_, None, m_) for s_ in (0.6, 0.7, 0.8, 1.0) for m_ in (0.8, 0.9, 1.0, 1.1)]
+        elif variant == "fixed":
             pts = [(s_, None, m_) for s_ in (0.0, 0.1, 0.2, 0.3, 0.4, 0.5) for m_ in (0.7, 0.8, 0.9, 1.0)]
         else:
             pts = [(s_, h, m_fixed or 1.0) for h in (26, 52, 104) for s_ in (0.2, 0.3, 0.4, 0.5)]
@@ -383,7 +390,7 @@ def main():
             print(f"{pn} {variant} s {s_} hl {h} m {m_}: objective {obj:.2f}", flush=True)
         best = min(rows, key=lambda r: r["obj"])
         out = dict(panel=pn, variant=variant, target=target.tolist(), sd=sd.tolist(), rows=rows, best=best)
-        (HERE / f"r12_grid__{pn}__{variant}.json").write_text(json.dumps(out, indent=1, default=float))
+        (HERE / f"r12_grid{'x' if mode_x else ''}__{pn}__{variant}.json").write_text(json.dumps(out, indent=1, default=float))
         print("best", best, flush=True)
         return
     if mode in ("worlds", "oop"):
@@ -457,7 +464,7 @@ def main():
         import rankdiff_rdm as rdm
         p, base, ladder = fit_model(df, K, pn)
         L0 = rk._filtered_levels(df[df["period"] < 30].copy(), base).to_numpy()
-        q = het_params(p, ladder, "fixed", s=planted, m=1.0)
+        q = het_params(p, ladder, "fixed" if planted > 0 else "control_num", s=planted, m=1.0)   # A4: one drift method
         rows = []
         for seed in range(s0, s1 + 1):
             fr, _, _ = sim_frame(q, L0, T, seed, K)

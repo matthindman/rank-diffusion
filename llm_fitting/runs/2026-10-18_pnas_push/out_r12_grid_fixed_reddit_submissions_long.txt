@@ -1,0 +1,172 @@
+waiting for a heavy-job slot; held by:
+  pid 36504 since 2026-10-20 11:54:34 in /Users/hindman/Documents/GitHub/rank-diffusion :: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u /private/tmp/claude-501/-Users-hindman-Documents-GitHub-rank-diffusion/a6cd00c7-4734-43aa-9ddc-bbbdd4d7c13b/scratchpad/r12_smoke.py reddit_submissions_long skipgrid
+  unknown
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.0 hl None m 0.7: objective 1589.44
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.0 hl None m 0.8: objective 1453.25
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.0 hl None m 0.9: objective 1279.08
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.0 hl None m 1.0: objective 1215.32
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.1 hl None m 0.7: objective 1508.08
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.1 hl None m 0.8: objective 1339.24
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.1 hl None m 0.9: objective 1218.52
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.1 hl None m 1.0: objective 1079.86
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.2 hl None m 0.7: objective 1274.30
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.2 hl None m 0.8: objective 1128.35
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.2 hl None m 0.9: objective 1036.18
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.2 hl None m 1.0: objective 912.29
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.3 hl None m 0.7: objective 913.48
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.3 hl None m 0.8: objective 795.24
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.3 hl None m 0.9: objective 718.58
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.3 hl None m 1.0: objective 700.20
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.4 hl None m 0.7: objective 644.04
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.4 hl None m 0.8: objective 590.50
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.4 hl None m 0.9: objective 535.76
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.4 hl None m 1.0: objective 593.96
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.5 hl None m 0.7: objective 400.80
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.5 hl None m 0.8: objective 391.98
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.5 hl None m 0.9: objective 384.65
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:52: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long fixed s 0.5 hl None m 1.0: objective 350.63
+best {'s': 0.5, 'half_life': None, 'm': 1.0, 'obj': 350.63158459753663, 'aux': [0.013355592504998778, 0.0009409366841467582, 0.016529114019296357, 0.012001613502793338, 0.00635122623995905, 0.02448854058426676, 0.00797173990364181, 0.009515779161835929, 0.015031204263056172]}
