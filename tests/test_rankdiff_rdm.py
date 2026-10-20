@@ -127,3 +127,31 @@ def test_corrected_moving_home_applies_drift_by_rank():
         for _ in range(10):
             st.step()
         assert np.allclose(st.home - L0, expect), arm
+
+
+def test_factor_exposure_off_is_bit_identical():
+    """R12 (c) is opt-in: with no factor path (attribute absent or None) the simulation is unchanged."""
+    p0 = _toy_params(0.0)
+    p1 = _toy_params(0.0)
+    p1.fac_path, p1.fac_load, p1.fac_pool = None, None, None
+    L0 = np.linspace(10.0, 0.0, 50)
+    X0, _ = rdm.simulate_panel(p0, L0, 30, seed=7, lasting="movinghome_vp")
+    X1, _ = rdm.simulate_panel(p1, L0, 30, seed=7, lasting="movinghome_vp")
+    assert np.array_equal(X0, X1)
+
+
+def test_factor_exposure_moves_homes_by_loading():
+    """R12 (c): with a constant factor f and loading deviations +1 / -1, the two homes part by 2 f per week."""
+    p = _toy_params(0.0)
+    p.sigma0 = 1e-12                                   # no lasting noise: the factor is the only home movement
+    p.fac_path = np.full(40, 0.01)
+    load = np.zeros(20)
+    load[3], load[4] = 1.0, -1.0
+    p.fac_load, p.fac_pool = load, np.zeros(5)
+    st = rdm._State(p, np.linspace(10.0, 0.0, 20), np.random.default_rng(1), lasting="movinghome_vp")
+    h0 = st.home.copy()
+    for _ in range(25):
+        st.step()
+    moved = st.home - h0
+    assert abs(moved[3] - 0.25) < 1e-6 and abs(moved[4] + 0.25) < 1e-6, moved[[3, 4]]
+    assert np.allclose(np.delete(moved, [3, 4]), 0.0, atol=1e-6)

@@ -441,3 +441,33 @@ Put them in the fragmentation-versus-concentration debate in one sentence. I agr
 5. **The SI atlas and parameter-provenance table** (C6).
 
 **Needs the owner:** title and framing (decision 1–2), *The Internet Trap* sentence (3), and the protocol amendments (4).
+
+---
+
+## Correction (2026-10-20, appended; the text above is unchanged)
+
+**What was wrong.** C2 and the bottom line say the submissions head fell "an order of magnitude faster than homogeneous random growth allows". That is imprecise, and as stated it is wrong.
+
+**The check.** The balance-law cells for 2020→21 and 2021→22 (`law__reddit_submissions_long.json`) give, at K/64:
+
+| | per week | per year |
+|---|---|---|
+| rate law, c − s̄ + e | 0.0053 − 0.0093 − 0.0004 = −0.0044 | −0.23 |
+| observed change of the head's shape | | −0.27 (2020→21), −0.21 (2021→22) |
+
+So the rate law with the measured slide accounts for the fall.
+
+**Why the two time scales differ.** The linearized relaxation of 3–4 years (§2z-cp) is short because the measured slide is large: the head's balance slope S* is 0.41–0.46, against an actual slope of 0.84–0.92. Both time scales have the same form, τ ≈ 8S²/σ² (at k = K/64, ln 64 ≈ 4.2 gives τ = 2S*² ln(K/k)/σ² ≈ 8.3 S*²/σ²). One uses the balance slope S* (relaxation toward the balance); the other uses the current slope S (the GLLM rate at the current slope).
+
+**What holds instead:**
+1. **Durability is set by the ladder's distance from balance.** In random growth the shape approaches its balance on a time of about 8 S*²/σ², while lasting membership turns over on about S²/σ². The ratio is about 8 (S*/S)².
+   - On comments, S*/S is about 0.7: shape relaxation of about 9 years at the head against membership of 2–3 years.
+   - At the submissions head, S*/S is about 0.5: 3–4 years against about 2. There is no separation of time scales there.
+2. **The submissions head fell fast because its members' slide was large, and the slide had grown.**
+   - Gomez's members' term was −0.06 in 2019–20 and −0.24 and −0.26 a year in 2020–22.
+   - A homogeneous model with its 2019–20 parameters forecasts no fall: 0.53–0.54, against 0.36 observed (A6).
+3. **GLLM's lesson applies in this narrower form.** Homogeneous random growth with stable parameters moves concentration slowly. A fast change needs the growth process to change in a way that is not homogeneous across communities.
+   - On submissions the leading candidate is heterogeneous exposure to a platform-wide decline. Submissions fell below trend after 2020 (Veselovsky & Anderson 2023), and removing each community's 2019 loading on the platform total removes the persistence.
+   - This makes R12's common-factor variant, with loadings from 2019 and the observed platform path, the key test. It is not calibrated to the statistic it is tested on.
+
+Recorded in MODEL_STATUS §2z-dm.

@@ -742,3 +742,97 @@ worlds from the observed ladder, with the drift built from s̄ alone
 | R13-1 | at K/64 the share of a top set replaced in two years is 1.2–1.8 times the one-year share on both ladders (passing swings reverse, so it does not double) | 65% |
 | R13-2 | from the top stratum (top K/64) to the bottom stratum (K/2–K), the 90th percentile of the one-year |Δ| rises by less than a factor of 1.5 on both ladders, while the stratum maximum rises by at least 1.3 times as much as the 90th percentile does | 60% |
 | R13-3 | the profile exponent b differs between the calibrated size-blind world on the data's ladder and the same dynamics on a constant-slope ladder (sb_data against sb_flat) by at least 0.05 | 70% |
+
+## Addendum R12 (2026-10-20, owner-approved analysis; written before any run): calibrated heterogeneous-growth worlds
+
+**Why.** The owner's directions of 2026-10-20 (MODEL_STATUS §2z-dm) ask for "a new analysis with a calibrated heterogeneous growth world", with methodological choices "as standard as possible in the literature".
+- Every simulated world so far has homogeneous mean growth. Persistence (+0.13 to +0.20) is the statistic they all miss.
+- The correction appended to the round-6 synthesis makes the common-factor variant the decisive test for the submissions head. The rate law with the measured 2020–22 slide accounts for the head's fall. The members' decline quadrupled after 2020, and homogeneous growth with stable parameters does not change its slide.
+
+**Methods.** These follow `runs/2026-10-20_v5_revision/MEMO_HETGROWTH_gpt-6-astra.md`. If the parallel Opus memo changes any choice, an amendment will be added here before any run. The lasting level of the calibrated model (movinghome_vp; frozen estimator settings as in R7 and A6) gains one term, a_it:
+
+ΔH_it = g(r_it) + a_it + σ0 e^{−β(H_it − H0)} η_it
+
+| variant | a_it | precedents |
+|---|---|---|
+| **(a) fixed heterogeneity** | b_i ~ N(0, σ_b²), drawn once per identity; a reborn identity gets a new draw | HIP: Guvenen 2009; Guvenen et al. 2021. Name drift: Fernholz, Ichiba & Karatzas 2013 |
+| **(b) decaying heterogeneity** | u_{t+1} = ρu_t + σ_u √(1 − ρ²) ξ_t, stationary initialization | OU growth rates (Mallmin, Traulsen & De Monte 2026); AR growth components (Sterk, Sedláček & Pugsley 2021); type switching (GLLM 2016) |
+| **(c) common-factor exposure** | (λ_i − λ̄_K) f_t | Carhart 1997; the common drift of hybrid Atlas models (Ichiba et al. 2011) |
+
+Variants (a) and (b) use the existing persistent velocity of the home (`vel_var`, `vel_rho`; ρ = 1 for (a)). Variant (c) is a new opt-in term (`fac_path`, `fac_load`) with defaults off.
+
+In variant (c):
+- **f_t** is the observed weekly change in log total activity of the panel's tracked universe.
+- **λ_i** is each community's OLS loading of its weekly ΔX on f_t, estimated on the training weeks only. Loadings are shrunk toward their permanent-rank stratum mean by empirical Bayes: (1 − se²/var) per stratum.
+- **Assignment.** Each simulated community that starts as a data community carries its own shrunk loading. Reborn identities draw from the bottom stratum's loadings.
+- **λ̄_K** is the mean loading in the top K, so that the factor moves relative positions, not the universe's mean.
+- **Status.** A world driven by the observed platform path is a conditional historical world, not a forecast of platform activity.
+
+**Drift.** The hold drift is solved numerically with the heterogeneity present (`drift_hold_numeric` on the parameters including a_it). The drift then absorbs the composition and does not count it twice (memo, "Revisit the inherited variance and drift estimates").
+
+**Calibration of (a) and (b).** Equally weighted minimum distance (Altonji & Segal 1996; Abowd & Card 1989; Hryshko 2012) on a frozen moment vector:
+- weekly growth autocovariances of ΔX at lags 1–8, 13, 26, 39 and 52, with the variances of 4-, 8- and 26-week changes;
+- within three strata of permanent rank: K/64–K/16, K/16–K/4 and K/4–K;
+- each moment scaled by its data standard deviation, from a bootstrap over communities;
+- simulated moments computed through the same universe, selection and windowing as the data.
+
+The grids, each with 3 seeds per point and the argmin and profile curve reported:
+- **(a):** σ_b ∈ {0, 0.002, 0.004, 0.006, 0.008, 0.010} a week, crossed with a lasting-variance multiplier m ∈ {0.8, 0.9, 1.0} (joint with the nuisance parameter).
+- **(b):** half-life ∈ {13, 26, 52, 104} weeks, crossed with σ_u ∈ {0.004, 0.008, 0.012, 0.016}, at the m chosen in (a).
+
+Variant (c) has no free parameter to calibrate.
+
+**Not used in any calibration:**
+- the annual 13-week-window gapped Spearman correlations;
+- the prior-decliner contrast (R10);
+- head shares and their changes;
+- turnover and retention;
+- the boundary ratio.
+
+These are the assessment statistics. Because development results already informed the mechanisms, a reproduction is an untargeted development check, not confirmation.
+
+**Assessment.** 20 seeds at the calibrated parameters, both ladders, all three variants plus the matched homogeneous control. The control has the same code, the corrected R11 accounting where drift by slides is used, and the same seeds. The statistics, computed as before:
+- the gapped persistence at gaps of 13 and 26 weeks (`null_worlds.stats`), and its lag profile;
+- R10's slide by prior-change class (`slide_by_persistence.py`, world mode);
+- turnover and one- and two-year retention (`lockin_funnel.measures`);
+- the boundary ratio;
+- the 5-year shape;
+- **the out-of-period head share.** Fit on weeks before 2021, as in A6 (`structure_oop.py`), with each variant's term; the forecast arithmetic share of the top K/64 in 2022 against the observed 0.356 and the homogeneous 0.537 (5–95% 0.476–0.718).
+
+**Recovery (G15).** The structure-function estimates of σ0 and β, and the two-spacing lasting variance at each stratum, are computed on 20 panels of each calibrated heterogeneous world with known truth, and compared with the truth.
+- This deviates from the memo's suggestion of about 200 replications, for compute reasons; the Monte Carlo standard error will be reported.
+- The memo's identity [V(2h) − V(h)]/h = q + 3Bh predicts upward bias in the lasting variance and attenuation of β.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R12-1 | the EWMD optimum of (a) has σ_b > 0 on comments, with 52σ_b between 0.1 and 0.5 a year | 60% |
+| R12-1b | the same on submissions | 50% |
+| R12-2 | calibrated (a) or (b) gives gapped persistence ≥ +0.08 at a 13-week gap on comments (untargeted) | 65% |
+| R12-2b | the same on submissions | 50% |
+| R12-3 | (c) on submissions, with 2019–20 loadings and the observed 2021–22 platform path, forecasts a 2022 head share at least 0.05 below the homogeneous 0.537 | 45% |
+| R12-3b | its 5–95% band contains the observed 0.356 | 20% |
+| R12-4 | in calibrated (a) and (b) on comments, prior decliners slide faster than the rest: the R10 contrast is > 0, where every homogeneous world gives < 0 | 60% |
+| R12-5 | recovery under calibrated (a): the two-spacing lasting variance at the head is inflated by more than 10%, and the |bias| of the structure-function β exceeds 0.02 | 50% |
+| R12-6 | must not worsen against the homogeneous control: turnover at K/64 and K/2 within 0.03; boundary ratio within 0.90–1.15 | 70% |
+
+**Status at writing.** BLOCKED. The T9 SSD with the registered panels is not mounted (2026-10-20). Code and synthetic tests can proceed; no run on data until it is.
+
+### Amendment R12-A1 (2026-10-20, before any run; no R12 output exists)
+
+The parallel Opus methods memo (`runs/2026-10-20_v5_revision/MEMO_HETGROWTH_opus-5.5.md`) changes five choices. The GPT memo is consistent with all five.
+
+1. **The factor is leave-one-out.** For (c), f_t is the equal-weighted cross-sectional mean of weekly ΔX over the tracked universe, with community i excluded when its own loading is estimated. It is not the karma-weighted platform total. The submissions head holds up to half the activity, so a total-based loading would partly measure the head itself.
+   - The loading spread is corrected for estimation noise: σ²_λ = Var(λ̂) − mean(se²), within stratum.
+2. **No curvature moments.** The calibration vector drops the variances of 4-, 8- and 26-week changes. Rank-dependent volatility and passing variance can mimic h² terms (Hoffmann 2019). The vector keeps weekly growth autocovariances at lags 1–8 (for the passing nuisance) and 13, 26, 39 and 52 (non-overlapping, beyond the passing memory).
+3. **(a) is bounded and run short.** b_i is truncated at ±2.5σ_b. Variant (a) runs over the panel's length and at most 5 years, never 30: fixed Gaussian drift at the measured spread can violate the second-order stability condition (Fernholz, Ichiba & Karatzas 2013).
+4. **An added untargeted test: the riser/faller asymmetry** of the gapped correlation. In the data it is +0.16 to +0.19 among first-year decliners and 0.00 to +0.03 among risers. Gaussian heterogeneity predicts symmetry. Expectation R12-7 (prior 70%): calibrated (a) and (b) give an asymmetry (fallers minus risers) below half of the data's.
+5. **The recovery plan is extended:**
+   - planted annual spreads s ∈ {0, 0.15, 0.30, 0.45};
+   - a misspecification run (fit (a) to a (b)-world);
+   - a false-positive run (homogeneous world with a 26-week medium swing).
+
+   Each is replicated 20 times, as already stated.
+
+The SI cites the variance identity V(h) = qh + Bh² + C to Guvenen 2009 and Hryshko 2012 (standard HIP algebra), not to Gomez.

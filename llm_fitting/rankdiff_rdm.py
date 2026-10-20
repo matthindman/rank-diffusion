@@ -77,6 +77,9 @@ class RDMParams:
     #                                 False = as model A's frozen movement stacks (amplitude on the fast parts
     #                                 only); True scaled sigma_perm explodes held-out displacement (A's note in
     #                                 minimal_rankdiff.simulate; reproduced here, 2z-dd)
+    fac_path: np.ndarray | None = None   # R12 (c), opt-in: weekly common factor f_t added to the home as (lambda_i - lambar) f_t
+    fac_load: np.ndarray | None = None   # R12 (c): loading deviation of each starting slot (same order as L0)
+    fac_pool: np.ndarray | None = None   # R12 (c): loading deviations drawn for reborn identities
 
 
 # --------------------------------------------------------------------------- #
@@ -408,6 +411,21 @@ class _State:
         mix_b = getattr(b, "mix_b", 0.0)                # model A's --mix-hetero: sigma_perm scaled by v^(b/2)
         self.mix_b = mix_b
         self.sqw = mrd._sqw(self.sqv, mix_b, ts) if (ts > 0 and mix_b > 0) else 1.0
+        self.fac = None                                  # R12 (c): common-factor exposure, opt-in (no draws when off)
+        if getattr(p, "fac_path", None) is not None:
+            self.fac = np.asarray(p.fac_load, float).copy()
+            self.t = 0
+
+    def _fac_step(self):
+        """R12 (c): the common factor's increment for this week, (lambda_i - lambar) f_t; zero when off."""
+        if self.fac is None:
+            return 0.0
+        f = self.p.fac_path[min(self.t, len(self.p.fac_path) - 1)]
+        return self.fac * f
+
+    def _fac_reborn(self, ex, ne):
+        if self.fac is not None and ne:
+            self.fac[ex] = self.p.fac_pool[self.rng.integers(0, len(self.p.fac_pool), ne)]
 
     def step_lasting(self):
         """The lasting level alone (drift, size-law diffusion with amplitude, jumps, exit and rebirth).  For the
@@ -420,6 +438,7 @@ class _State:
         sL = _sigma_L(p, self.L)
         ampL = self.sqv if p.amp_lasting else 1.0
         self.L = self.L + np.interp(zp, p.drift_z, p.drift_g) + sL * ampL * math.sqrt(1.0 - p.pi) * rng.standard_normal(N)
+        self.L = self.L + self._fac_step()
         if self.vel is not None:
             self.L = self.L + self.vel
             self.vel = p.vel_rho * self.vel + math.sqrt(p.vel_var * (1 - p.vel_rho ** 2)) * rng.standard_normal(N)
@@ -438,6 +457,9 @@ class _State:
                 self.sqv[ex] = np.sqrt(rng.lognormal(-0.5 * self.ts ** 2, self.ts, ne))
             if self.vel is not None:
                 self.vel[ex] = math.sqrt(p.vel_var) * rng.standard_normal(ne)
+            self._fac_reborn(ex, ne)
+        if self.fac is not None:
+            self.t += 1
 
     def step(self):
         p, b, rng, N = self.p, self.p.base, self.rng, self.N
@@ -463,6 +485,7 @@ class _State:
             sLh = _sigma_L(p, self.home)
             gh = np.interp(zh, p.drift_z, p.drift_g) if self.lasting in ("movinghome", "movinghome_vp") else 0.0   # ablation (a): no drift
             self.home = self.home + gh + sLh * math.sqrt(1.0 - p.pi) * rng.standard_normal(N)
+            self.home = self.home + self._fac_step()
             if self.vel is not None:                      # drift by name: a persistent velocity of the home
                 self.home = self.home + self.vel
                 self.vel = p.vel_rho * self.vel + math.sqrt(p.vel_var * (1 - p.vel_rho ** 2)) * rng.standard_normal(N)
@@ -511,6 +534,9 @@ class _State:
                 self.sqv[ex] = np.sqrt(rng.lognormal(-0.5 * self.ts ** 2, self.ts, ne))
                 if self.mix_b > 0:
                     self.sqw[ex] = mrd._sqw(self.sqv[ex], self.mix_b, self.ts)
+            self._fac_reborn(ex, ne)
+        if self.fac is not None:
+            self.t += 1
         return self.L + self.m + self.xi + so * self.sqv * rng.standard_normal(N)
 
 

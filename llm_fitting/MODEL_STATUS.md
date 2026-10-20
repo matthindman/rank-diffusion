@@ -13225,3 +13225,74 @@ The owner then gave three further instructions:
 4. The protocol amendment: forecasts from every model; P5 and P6 as before.
 5. Classification and suggested editors.
 6. Before any push: the reports contain short attributed quotations of published work, in a public repository.
+
+## 2z-dm. 2026-10-20 — OWNER DECISIONS and MANUSCRIPT v5 (IN PROGRESS; closed by a dated addendum below). The GLLM frame adopted for the paper by the owner; durability presented as a property of homogeneous random growth; horizons of 1–2 years (communities) and 5 years (system); a calibrated heterogeneous-growth analysis (R12) registered and amended before any run, BLOCKED because the T9 drive is not mounted; R13 partly run (saved outputs only); correction of §2z-dl C2. Nothing adopted in the model; no gate evaluation; bridge sealed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-20. Work started from a87f3aa. Skills at aeda027._
+
+### Owner decisions and directions (2026-10-20, in the owner's words where quoted)
+
+**The 2018 chapter.** "This article is a direct continuation of a research question and methodology that was a chapter in my last book. This clearly should be referenced in the final version. However, this is an unusual enough piece of literature that it needs to be handled delicately in the initial submission for peer review draft because it may be personally identifying … it absolutely should be the case that the final version needs to draw a through line from this previous work to this one."
+
+**The owner's correction of the chapter.** "If I had to redo the analysis today, I would make a number of different changes … The discussion in the book talks about the funnel of churn: the apparently significantly higher variance of lower-ranked websites compared to top ones. But … there is so much more mass at every point further down the tail that much of this is an illusion. Plotting the 50th, 90th, and 95th percentiles on the log-log chart produces only a modest increase."
+
+**Goals.**
+- Understand where online concentration comes from: "the processes that generate this concentration".
+- Understand its durability, "both at the structural level and at the individual channel/subreddit/page/etc. level".
+- Understand lock-in, "both in aggregate and at the individual level".
+- Understand the medium-term structure implied by current growth rates, variance and drift.
+
+**Horizons.** "Be careful throughout about talking about 20-year or 30-year horizons … our actual time frame is over 1 or 2 years at most, and 5 years in terms of system-level understanding, policy recommendations, etc. There's simply too much noise in these systems … we need to make clear that we're not overclaiming."
+
+**Durability as a contribution.** "If it really is the case that the durability is a natural result of the homogeneous random growth model, that's an important finding in and of itself. It's not widely known among most of the digital platform researchers at all … We shouldn't overclaim novelty, but understanding this as a key contribution of this paper and making it clear is an important task."
+
+**Approved:**
+- **The fast-transition frame:** "Reframing the paper around GLLMs' fast transition problem is intriguing and sounds promising to me."
+- **A heterogeneous-growth analysis:** "Definitely do a new analysis with a calibrated heterogeneous growth world … Research carefully to make sure that the methodological choices here are as standard as possible in the literature, with multiple references."
+- **Less dense writing:** "The paper does need to be written less densely. Pay attention not just to the average words per sentence, but to the distribution of sentence length across the exemplars … I do care an awful lot about the structure of the paper in terms of the section, subsection, paragraph, etc."
+- **More models in the SI:** "The move to presenting a greater number of models in the SI seems to be a good middle ground … We do want to have a number of plausible, eligible models that are tuned to the existing data."
+- **References and corrections:** "Make the new main text references. Make all of the corrections."
+
+**Asked for:**
+- How other scholars use these models, "and, just as importantly, how we generally avoid using them".
+- Clear applications for platform studies, included in the draft.
+- "Do a full revision of the paper based on this feedback."
+
+### What was done (so far)
+
+- **Research memos.** Each was saved verbatim with provenance in `runs/2026-10-20_v5_revision/`:
+  - heterogeneous-growth methods, by GPT-6 Astra (xhigh) and by Opus 5.5;
+  - PNAS policy, Opus. PNAS review is single-anonymous only, so the chapter is cited openly in the submission. `\iffinal` adds the first-person through line.
+  - uses and applications: pending.
+- **Outline v5.** Draft 1 was critiqued independently by GPT-6 Astra and Opus 5.5, and draft 2 incorporates both (`OUTLINE_v5.md`; critiques saved).
+- **Correction of §2z-dl C2,** appended to SYNTHESIS.md.
+  - "An order of magnitude faster than homogeneous random growth allows" was wrong as stated. At K/64 on submissions, the rate law with the measured 2020–22 slide gives −0.23 a year, against −0.27 and −0.21 observed.
+  - What changed after 2020 was the slide itself: the members' Gomez term went from −0.06 to −0.24 and −0.26 a year.
+  - Durability scales as about 8(S*/S)²: several times on comments, about 2 at the submissions head.
+  - Out of period, the calibrated homogeneous model forecasts the 2022 head share at 0.537 (5–95% 0.476–0.718) on submissions, against 0.356 observed. On comments it is 0.597 (0.547–0.670), against 0.505. Both observed values are below the bands.
+- **R13 (PLAN.md addendum, committed aeda027 before any run):**
+  - **R13a** (5-year values from the corrected R11 runs) and **R13e** (turnover-profile exponent) were run on saved outputs (`r13_saved_outputs.py`).
+    - **R13-3 PASS:** b is 0.88 on the data's ladder against 0.99 on a constant-slope ladder (size-blind), and 0.91 against 1.04 (firm-like). The data give 0.95 on submissions and 0.92 on comments.
+    - Five years from 2019: the comments head changes by −0.0%, the submissions head by −12.5%. Removing one ingredient moves the comments head by +5.1% (no volatility) or +4.3% (no slide), and the submissions head by −26.5% or +9.0%.
+  - **R13c and R13d** (retention over one and two years; the funnel quantiles): **BLOCKED.** `/Volumes/T9` is not mounted (`data/ssd` points to `/Volumes/T9/rank-diffusion-data`). The failed logs were deleted; nothing was read.
+- **R12 (PLAN.md addendum and amendment A1, before any run):**
+  - Three standard forms: fixed Gaussian, AR(1)/OU, and leave-one-out factor exposure.
+  - Calibration by EWMD on growth autocovariances.
+  - Seven expectations.
+  - The opt-in factor term is in `rankdiff_rdm.py` (`fac_path`, `fac_load`, `fac_pool`; off by default; flag-off bit-identity and known-answer tests added to `tests/test_rankdiff_rdm.py`).
+  - **BLOCKED** on the drive.
+- **Manuscript v5** (`paper/pnas_draft.tex`; 7 pages, 4 figures and a models × facts table; `make_v5_figures.py`):
+  - The GLLM frame; durability first in Results 2; claim headings.
+  - Sentence-length distribution: median 20, 90th percentile 43, 11% over 40 words. That is against v4's 30 / 63 / 32% and the exemplars' 22 / 42 / 11.5%.
+  - 26 new references, verified (`paper/references.bib`). One needs checking: the chapter's page range.
+  - R12 text is marked TODO.
+- **SI v5** (13 pages):
+  - model atlas with a selection rule and manifest;
+  - time-scale table;
+  - corrected long-run tables (R11);
+  - turnover profiles;
+  - heterogeneous-growth specification (results pending);
+  - parameter provenance;
+  - uses table (pending the memo);
+  - final-version section on the 2018 chapter;
+  - registration list extended to R9–R13.
