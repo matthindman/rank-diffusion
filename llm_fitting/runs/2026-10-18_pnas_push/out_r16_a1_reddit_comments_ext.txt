@@ -1,0 +1,4 @@
+reddit_comments_ext decay_world: chosen s [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4]; min objective median 19.2 [8.1, 49.5] (data 1012.8)
+reddit_comments_ext swing26_world: chosen s [0.0, 0.0, 0.1, 0.0, 0.0, 0.1, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1]; min objective median 111.6 [62.1, 177.1] (data 1012.8)
+reddit_comments_ext fixed_world: chosen s [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]; min objective median 12.9 [5.8, 28.9] (data 1012.8)
+peak RSS 4.47 GB (job tree, sampled: 4140 MB); swap 1567M -> 1567M; killed 0

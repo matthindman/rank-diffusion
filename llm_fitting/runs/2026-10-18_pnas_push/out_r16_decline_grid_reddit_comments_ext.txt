@@ -1,0 +1,29 @@
+reddit_comments_ext decline {'pi': 0.1, 's': 0.3, 'hl': 52, 'm': 0.7}: objective 3784.6
+reddit_comments_ext decline {'pi': 0.1, 's': 0.5, 'hl': 52, 'm': 0.7}: objective 3023.2
+reddit_comments_ext decline {'pi': 0.1, 's': 0.7, 'hl': 52, 'm': 0.7}: objective 2635.4
+reddit_comments_ext decline {'pi': 0.1, 's': 0.3, 'hl': 104, 'm': 0.7}: objective 3546.4
+reddit_comments_ext decline {'pi': 0.1, 's': 0.5, 'hl': 104, 'm': 0.7}: objective 2660.9
+reddit_comments_ext decline {'pi': 0.1, 's': 0.7, 'hl': 104, 'm': 0.7}: objective 2282.2
+reddit_comments_ext decline {'pi': 0.1, 's': 0.3, 'hl': 208, 'm': 0.7}: objective 3230.0
+reddit_comments_ext decline {'pi': 0.1, 's': 0.5, 'hl': 208, 'm': 0.7}: objective 2386.1
+reddit_comments_ext decline {'pi': 0.1, 's': 0.7, 'hl': 208, 'm': 0.7}: objective 2132.2
+reddit_comments_ext decline {'pi': 0.25, 's': 0.3, 'hl': 52, 'm': 0.7}: objective 3643.1
+reddit_comments_ext decline {'pi': 0.25, 's': 0.5, 'hl': 52, 'm': 0.7}: objective 2608.0
+reddit_comments_ext decline {'pi': 0.25, 's': 0.7, 'hl': 52, 'm': 0.7}: objective 1750.3
+reddit_comments_ext decline {'pi': 0.25, 's': 0.3, 'hl': 104, 'm': 0.7}: objective 3023.8
+reddit_comments_ext decline {'pi': 0.25, 's': 0.5, 'hl': 104, 'm': 0.7}: objective 1903.5
+reddit_comments_ext decline {'pi': 0.25, 's': 0.7, 'hl': 104, 'm': 0.7}: objective 1296.9
+reddit_comments_ext decline {'pi': 0.25, 's': 0.3, 'hl': 208, 'm': 0.7}: objective 2963.9
+reddit_comments_ext decline {'pi': 0.25, 's': 0.5, 'hl': 208, 'm': 0.7}: objective 1647.2
+reddit_comments_ext decline {'pi': 0.25, 's': 0.7, 'hl': 208, 'm': 0.7}: objective 1105.7
+reddit_comments_ext decline {'pi': 0.5, 's': 0.3, 'hl': 52, 'm': 0.7}: objective 3526.7
+reddit_comments_ext decline {'pi': 0.5, 's': 0.5, 'hl': 52, 'm': 0.7}: objective 2101.7
+reddit_comments_ext decline {'pi': 0.5, 's': 0.7, 'hl': 52, 'm': 0.7}: objective 1471.1
+reddit_comments_ext decline {'pi': 0.5, 's': 0.3, 'hl': 104, 'm': 0.7}: objective 3121.8
+reddit_comments_ext decline {'pi': 0.5, 's': 0.5, 'hl': 104, 'm': 0.7}: objective 1455.3
+reddit_comments_ext decline {'pi': 0.5, 's': 0.7, 'hl': 104, 'm': 0.7}: objective 1445.0
+reddit_comments_ext decline {'pi': 0.5, 's': 0.3, 'hl': 208, 'm': 0.7}: objective 2787.9
+reddit_comments_ext decline {'pi': 0.5, 's': 0.5, 'hl': 208, 'm': 0.7}: objective 1274.8
+reddit_comments_ext decline {'pi': 0.5, 's': 0.7, 'hl': 208, 'm': 0.7}: objective 1910.7
+best by pi {'0.1': ({'pi': 0.1, 's': 0.7, 'hl': 208, 'm': 0.7}, 2132.2), '0.25': ({'pi': 0.25, 's': 0.7, 'hl': 208, 'm': 0.7}, 1105.7), '0.5': ({'pi': 0.5, 's': 0.5, 'hl': 208, 'm': 0.7}, 1274.8)}
+peak RSS 4.39 GB (job tree, sampled: 4349 MB); swap 1567M -> 1567M; killed 0

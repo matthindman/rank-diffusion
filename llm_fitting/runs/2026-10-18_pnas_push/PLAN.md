@@ -1148,3 +1148,28 @@ The pockets are reported, not scored.
 7. F.
 
 A crash before any output is fixed and disclosed here, as in R12-A3. A killed run is not interpreted.
+
+### R16-G (2026-10-21, post hoc: added after R16-A's results and R16-B's grids, before any R16-B world or out-of-period output was read): the two together
+
+**Why.** R16-B's joint re-estimation fits the persistence moments. On submissions the objective is 38.8 over 24 moments, and 8.0 on R12's 9 moments against R16-C's correct-specification 95th percentile of 15. But its asymmetry is reversed in the grid's 3-seed means. R16-A's skewed decline state (π_D 0.25, half-life 208 weeks, best on both ladders) gives the asymmetry the data's sign but little persistence. The question is whether one world can do both.
+
+**Seen when this was written.**
+- R16-A's grids, worlds and out-of-period runs;
+- R16-B's grids (argmins: submissions s 0.8, head 0.25, km 0.5, m 0.8; comments s 0.6, head 0.25, km 0.5, m 0.7) with their 3-seed asymmetry and lag-52 means;
+- no R16-B world, summary or out-of-period output.
+
+**Design** (`r16_tier3.py jd_grid`).
+- **Model.** The joint argmin plus the decline state at π_D 0.25 and half-life 208, with its spread sd ∈ {0.3, 0.5, 0.7}. The calibration is on the 24 joint moments, with the drift re-solved.
+- **Then:** 10 worlds at the best sd, and the out-of-period head share with states from training history (20 seeds).
+- **Not chosen by a test.** sd is chosen by the objective only. All three points are reported.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R16-G1 | the best sd lowers the 24-moment objective below the joint argmin's on at least one ladder | 50% |
+| R16-G2 | the combined world's faller − riser asymmetry is positive on both ladders | 45% |
+| R16-G3 | its persistence at 13 weeks is at least half the data's (`r12_hetgrowth` statistic: 0.157, 0.127) on both ladders | 45% |
+| R16-G4 | with states from training history, the submissions 2022 head share is at least 0.05 below the matched control's 0.533 | 25% |
+
+This is post hoc. It is a development check and is labelled so wherever it is reported.

@@ -1,0 +1,11 @@
+reddit_submissions_long truth fitted seed 5: beta +0.074 (true +0.045); sigma0 0.1158 (true 0.1002)
+reddit_submissions_long truth fitted seed 6: beta +0.058 (true +0.045); sigma0 0.1031 (true 0.1002)
+reddit_submissions_long truth fitted seed 7: beta +0.059 (true +0.045); sigma0 0.1053 (true 0.1002)
+reddit_submissions_long truth fitted seed 8: beta +0.076 (true +0.045); sigma0 0.1173 (true 0.1002)
+reddit_submissions_long truth fitted seed 9: beta +0.059 (true +0.045); sigma0 0.1095 (true 0.1002)
+reddit_submissions_long truth zero seed 5: beta +0.076 (true +0.000); sigma0 0.1161 (true 0.1002)
+reddit_submissions_long truth zero seed 6: beta +0.070 (true +0.000); sigma0 0.1141 (true 0.1002)
+reddit_submissions_long truth zero seed 7: beta +0.064 (true +0.000); sigma0 0.1147 (true 0.1002)
+reddit_submissions_long truth zero seed 8: beta +0.060 (true +0.000); sigma0 0.1143 (true 0.1002)
+reddit_submissions_long truth zero seed 9: beta +0.067 (true +0.000); sigma0 0.1146 (true 0.1002)
+peak RSS 3.21 GB (job tree, sampled: 3150 MB); swap 1559M -> 1559M; killed 0

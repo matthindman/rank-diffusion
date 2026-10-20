@@ -1,0 +1,11 @@
+reddit_comments_ext decline_pi0.25_s0.7_hl208_m0.7 seed 0: asym +0.128; srho [-0.098, 0.004, 0.04]; tails {'after_fall': -0.12228119700015626, 'after_rise': -0.09110036562597261}
+reddit_comments_ext decline_pi0.25_s0.7_hl208_m0.7 seed 1: asym +0.130; srho [-0.077, 0.003, 0.045]; tails {'after_fall': -0.1420493204423606, 'after_rise': -0.07634439063323785}
+reddit_comments_ext decline_pi0.25_s0.7_hl208_m0.7 seed 2: asym +0.135; srho [-0.139, -0.008, 0.038]; tails {'after_fall': -0.12978268129936374, 'after_rise': -0.09757593832046947}
+reddit_comments_ext decline_pi0.25_s0.7_hl208_m0.7 seed 3: asym +0.135; srho [-0.125, 0.032, 0.047]; tails {'after_fall': -0.15677681804264135, 'after_rise': -0.08435197010422979}
+reddit_comments_ext decline_pi0.25_s0.7_hl208_m0.7 seed 4: asym +0.118; srho [-0.099, 0.01, 0.052]; tails {'after_fall': -0.14692455054488332, 'after_rise': -0.03653932843367747}
+reddit_comments_ext decline_pi0.25_s0.7_hl208_m0.7 seed 5: asym +0.142; srho [-0.107, 0.003, 0.04]; tails {'after_fall': -0.15829118854023452, 'after_rise': -0.09505212228739916}
+reddit_comments_ext decline_pi0.25_s0.7_hl208_m0.7 seed 6: asym +0.114; srho [-0.083, -0.0, 0.034]; tails {'after_fall': -0.09551101673975275, 'after_rise': -0.07325453635782712}
+reddit_comments_ext decline_pi0.25_s0.7_hl208_m0.7 seed 7: asym +0.138; srho [-0.07, 0.02, 0.058]; tails {'after_fall': -0.17877104893978876, 'after_rise': -0.05798356453991609}
+reddit_comments_ext decline_pi0.25_s0.7_hl208_m0.7 seed 8: asym +0.117; srho [-0.112, 0.003, 0.047]; tails {'after_fall': -0.14131987986108716, 'after_rise': -0.06724342180297915}
+reddit_comments_ext decline_pi0.25_s0.7_hl208_m0.7 seed 9: asym +0.103; srho [-0.111, 0.023, 0.047]; tails {'after_fall': -0.1222036348004546, 'after_rise': -0.06179945105682557}
+peak RSS 4.72 GB (job tree, sampled: 4411 MB); swap 1567M -> 1567M; killed 0

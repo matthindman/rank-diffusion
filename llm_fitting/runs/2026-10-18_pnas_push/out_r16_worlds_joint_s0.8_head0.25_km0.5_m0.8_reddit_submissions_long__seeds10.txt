@@ -1,0 +1,6 @@
+reddit_submissions_long joint_s0.8_head0.25_km0.5_m0.8 seed 10: asym -0.085; srho [0.062, 0.076, 0.149]; tails {'after_fall': -0.12608811126988909, 'after_rise': 0.21300177240167803}
+reddit_submissions_long joint_s0.8_head0.25_km0.5_m0.8 seed 11: asym -0.056; srho [0.015, 0.126, 0.151]; tails {'after_fall': -0.1246324347006021, 'after_rise': 0.19677297631495713}
+reddit_submissions_long joint_s0.8_head0.25_km0.5_m0.8 seed 12: asym -0.054; srho [0.052, 0.089, 0.126]; tails {'after_fall': -0.10783939390171045, 'after_rise': 0.1765485936786947}
+reddit_submissions_long joint_s0.8_head0.25_km0.5_m0.8 seed 13: asym -0.049; srho [0.002, 0.108, 0.123]; tails {'after_fall': -0.10933441419834011, 'after_rise': 0.16729021651098305}
+reddit_submissions_long joint_s0.8_head0.25_km0.5_m0.8 seed 14: asym -0.061; srho [0.017, 0.069, 0.139]; tails {'after_fall': -0.10765589744796174, 'after_rise': 0.19215596425459827}
+peak RSS 3.02 GB (job tree, sampled: 2935 MB); swap 1559M -> 1559M; killed 0

@@ -1,0 +1,2 @@
+{"panel": "reddit_comments_ext", "variant": "decline_hist", "prm": {"pi": 0.25, "s": 0.7, "hl": 208, "m": 0.7}, "share": 0.618971022045453, "share_q": [0.5446129017492012, 0.8723066792203727], "init_share": 0.06214}
+peak RSS 4.02 GB (job tree, sampled: 3919 MB); swap 1559M -> 1559M; killed 0

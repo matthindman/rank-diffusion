@@ -1,0 +1,144 @@
+{
+ "reddit_submissions_long": {
+  "0.7": {
+   "response": [
+    -0.014,
+    -0.075,
+    -0.166,
+    -0.282,
+    -0.393
+   ],
+   "retention": [
+    0.819,
+    0.721,
+    0.703,
+    0.66
+   ],
+   "T_mem": 5.02,
+   "tau_registered": 1.6,
+   "sse_registered": 0.0342,
+   "ratio_registered": 0.32,
+   "tau_lag": 4.46,
+   "sse_lag": 0.0004,
+   "ratio_lag": 0.89,
+   "sigma0": 0.07011410215938761
+  },
+  "1.0": {
+   "response": [
+    -0.014,
+    -0.075,
+    -0.167,
+    -0.266,
+    -0.368
+   ],
+   "retention": [
+    0.803,
+    0.729,
+    0.649,
+    0.6
+   ],
+   "T_mem": 4.55,
+   "tau_registered": 1.47,
+   "sse_registered": 0.0296,
+   "ratio_registered": 0.32,
+   "tau_lag": 3.72,
+   "sse_lag": 0.0002,
+   "ratio_lag": 0.82,
+   "sigma0": 0.10016300308483946
+  },
+  "1.4": {
+   "response": [
+    -0.014,
+    -0.07,
+    -0.157,
+    -0.258,
+    -0.333
+   ],
+   "retention": [
+    0.785,
+    0.676,
+    0.582,
+    0.5
+   ],
+   "T_mem": 4.12,
+   "tau_registered": 1.32,
+   "sse_registered": 0.0263,
+   "ratio_registered": 0.32,
+   "tau_lag": 3.04,
+   "sse_lag": 0.0002,
+   "ratio_lag": 0.74,
+   "sigma0": 0.14022820431877522
+  }
+ },
+ "reddit_comments_ext": {
+  "0.7": {
+   "response": [
+    -0.026,
+    -0.122,
+    -0.242,
+    -0.361,
+    -0.481
+   ],
+   "retention": [
+    0.785,
+    0.709,
+    0.668,
+    0.653
+   ],
+   "T_mem": 4.12,
+   "tau_registered": 2.45,
+   "sse_registered": 0.0238,
+   "ratio_registered": 0.59,
+   "tau_lag": 4.13,
+   "sse_lag": 0.0007,
+   "ratio_lag": 1.0,
+   "sigma0": 0.07986898905338992
+  },
+  "1.0": {
+   "response": [
+    -0.026,
+    -0.12,
+    -0.237,
+    -0.34,
+    -0.442
+   ],
+   "retention": [
+    0.791,
+    0.694,
+    0.638,
+    0.609
+   ],
+   "T_mem": 4.26,
+   "tau_registered": 2.17,
+   "sse_registered": 0.0199,
+   "ratio_registered": 0.51,
+   "tau_lag": 3.41,
+   "sse_lag": 0.0004,
+   "ratio_lag": 0.8,
+   "sigma0": 0.11409855579055703
+  },
+  "1.4": {
+   "response": [
+    -0.025,
+    -0.121,
+    -0.232,
+    -0.32,
+    -0.395
+   ],
+   "retention": [
+    0.782,
+    0.68,
+    0.598,
+    0.554
+   ],
+   "T_mem": 4.07,
+   "tau_registered": 1.9,
+   "sse_registered": 0.0153,
+   "ratio_registered": 0.47,
+   "tau_lag": 2.79,
+   "sse_lag": 0.0,
+   "ratio_lag": 0.69,
+   "sigma0": 0.15973797810677984
+  }
+ }
+}

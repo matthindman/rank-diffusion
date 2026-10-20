@@ -22,6 +22,7 @@ Every statistic is computed by the same code on data and worlds (r12_hetgrowth);
     python r16_tier3.py a1 <panel>
     python r16_tier3.py beta <panel> <s0> <s1>
     python r16_tier3.py durability <panel>
+    python r16_tier3.py jd_grid <panel>                      R16-G (post hoc): a decline state on the joint optimum
 """
 import gc
 import json
@@ -125,11 +126,24 @@ def joint_params(p, ladder, K, s_body, head_mult, km, m):
     return _hold(q, ladder)
 
 
+def joint_decline_params(p, ladder, K, prm, init=None):
+    """R16-G: the joint optimum's fixed differences, head spread and OU multiplier, plus a decline state."""
+    r = 1.0 - 0.5 ** (1.0 / prm["hl"])
+    pi = prm["pi"]
+    q = replace(p, sigma0=p.sigma0 * prm["m"], vel_var=(prm["s"] / 52.0) ** 2, vel_rho=1.0, vel_clip=h.CLIP,
+                vel_head_k=int(K // 16), vel_head_mult=float(prm["head"]), ou_kappa_mult=float(prm["km"]),
+                dec_delta=float((prm["sd"] / 52.0) / np.sqrt(pi * (1 - pi))), dec_enter=float(pi * r), dec_exit=float((1 - pi) * r),
+                dec_init=init)
+    return _hold(q, ladder)
+
+
 def build(variant, p, ladder, K, prm, init=None):
     if variant in ("decline", "decline_hist"):
         return dec_params(p, ladder, prm["pi"], prm["s"], prm["hl"], prm["m"], init=init)
     if variant == "joint":
         return joint_params(p, ladder, K, prm["s"], prm["head"], prm["km"], prm["m"])
+    if variant in ("joint_decline", "joint_decline_hist"):
+        return joint_decline_params(p, ladder, K, prm, init=init)
     return h.het_params(p, ladder, variant, s=prm.get("s", 0.0), half_life=prm.get("hl"), m=prm.get("m", 1.0))
 
 
@@ -218,6 +232,18 @@ def mode_joint_grid(pn):
     print("best", out["best"]["prm"], round(out["best"]["obj"], 1), flush=True)
 
 
+def mode_jd_grid(pn):
+    """R16-G (post hoc, registered before its run): a decline state (pi_D 0.25, half-life 208 weeks, R16-A's best on
+    both ladders) on top of the joint optimum, its spread sd in {0.3, 0.5, 0.7}, on the 24 joint moments."""
+    best = json.loads((HERE / f"r16_joint_grid__{pn}.json").read_text())["best"]["prm"]
+    pts = [dict(best, pi=0.25, hl=208, sd=x) for x in (0.3, 0.5, 0.7)]
+    out = _grid(pn, "joint_decline", pts, "joint")
+    out["best"] = min(out["rows"], key=lambda r: r["obj"])
+    out["joint_best_obj"] = json.loads((HERE / f"r16_joint_grid__{pn}.json").read_text())["best"]["obj"]
+    _dump(HERE / f"r16_jd_grid__{pn}.json", out)
+    print("best", out["best"]["prm"], round(out["best"]["obj"], 1), "against the joint optimum", round(out["joint_best_obj"], 1), flush=True)
+
+
 def mode_worlds(pn, variant, s0, s1, prm):
     df, K, T, p, base, ladder, L0 = _setup(pn)
     del df
@@ -277,7 +303,7 @@ def mode_oop(pn, variant, prm):
     p, base, ladder = h.fit_model(dtr, K, pn)
     levels = rk._filtered_levels(dtr, base)
     init = None
-    if variant == "decline_hist":
+    if variant in ("decline_hist", "joint_decline_hist"):
         X, R, floors, _, ids = m1.matrices(dtr, K)
         chg = h.wmean(X, t_origin - h.W, t_origin) - h.wmean(X, t_origin - h.SPAN - h.W, t_origin - h.SPAN)
         lab = h.strata(R, floors, K)
@@ -447,6 +473,8 @@ def main():
         return mode_decline_grid(pn)
     if mode == "joint_grid":
         return mode_joint_grid(pn)
+    if mode == "jd_grid":
+        return mode_jd_grid(pn)
     if mode == "worlds":
         return mode_worlds(pn, sys.argv[3], int(sys.argv[4]), int(sys.argv[5]), json.loads(sys.argv[6]))
     if mode == "summarize":

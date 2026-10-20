@@ -1363,3 +1363,212 @@ Submissions, K/64:
   - The net-of-C factor is the homogeneous-diffusion reading of D4: about 1 at the comments head (0.97) and about a half at the submissions head (0.53).
   - Under homogeneous growth the separation of time scales disappears at the heads.
 - **Also.** The positive C is a further trace of persistent growth differences, alongside gapped persistence and the prior-decliner contrast. Fixed differences reproduce its size on both ladders without being calibrated to it. It does not distinguish the forms' asymmetry, which every form still gets wrong.
+
+## R16. Tier 3 (expectations in PLAN.md addendum R16, committed ea93f04 before any run; `r16_tier3.py`, `r16_capture.py`, `run_r16.sh`; outputs `r16_*.json`, `out_r16_*.txt`)
+
+Every job ran alone under the swap watchdog, from the lean cache, in the registered order.
+
+### R16-E. Capture audit (daily panels on T9, streamed; aggregates only)
+
+**Steps at the archive's file boundaries.**
+- **Construction.** The head is each block's top K/64. A step is the mean log over the 14 days after a date minus the 14 days before. Steps at the first of each month (44 a ladder) are compared with steps at the 15th (43).
+
+| | submissions items | submissions karma | submissions karma per item | comments items | comments karma | comments karma per item |
+|---|---|---|---|---|---|---|
+| mean \|step\|, first of month | 0.031 | 0.018 | 0.025 | 0.018 | 0.013 | 0.011 |
+| mean \|step\|, 15th | 0.041 | 0.016 | 0.036 | 0.022 | 0.015 | 0.012 |
+| 1 July 2021 step (percentile among first-of-month steps) | −0.034 (20th) | −0.010 (36th) | +0.024 (86th) | −0.004 (39th) | −0.004 (34th) | −0.000 (59th) |
+| sum of first-of-month steps | +0.09 | −0.08 | −0.17 | +0.17 | +0.04 | −0.13 |
+| within-block total change | −0.93 | −0.47 | +0.46 | −0.28 | −0.19 | +0.08 |
+
+- **R16-E1: PASS.** The 1 July 2021 step, the file boundary where the collection delay jumped from about 20 to about 360 days, is −0.034. That is inside the other boundaries' 5–95% range (−0.064 to +0.091).
+- **R16-E2: PASS.** The first-of-month steps sum to +0.09 against a within-block change of −0.93: no part of the head's decline in item share sits at file boundaries.
+- **R16-E3: PASS.** Boundary steps are no larger than mid-month steps on every series (ratios 0.75–1.11).
+- **Large steps are events, not boundaries:** mid-February 2021 (−0.24 in the submissions head's item share), mid-May 2021 (−0.22) and mid-February 2022 (+0.14).
+- **Pockets (reported, not scored).** Against the trailing 28-day median, the submissions head's karma share in the week of 27 April 2020 is −0.17 in log, as the short-delay pocket would make it. The other three weeks are within ±0.07. The comments pockets are within ±0.02.
+
+**Post hoc (not registered): a small within-month gradient.**
+- **The pattern.** In the head's item share the median step is −0.024 at the 15th and +0.000 at the first of the month on submissions, and −0.010 against +0.004 on comments. The comments karma share shows the same: −0.008 against +0.002.
+- **Reading.** The share falls by roughly 1% within each monthly file and is restored at the next. A capture timing would do this, for example removals that accumulate with the time from posting to collection, which is longest at the start of a file.
+- **Size.** It cancels within each month and is far smaller than the decline. The decline is the sum of all steps, and none of it falls at boundaries.
+- **What it shows about the audit.** The method can see capture effects of 1%. So the null at July 2021 is not a lack of power.
+
+**Alternative rosters** (lean universe cache; head share = top K/64 within the top K by block total):
+
+| | submissions head share, blocks 0–3 | persistence 13 / 26 wk | comments head share, blocks 0–3 | persistence 13 / 26 wk |
+|---|---|---|---|---|
+| baseline | 0.510, 0.508, 0.428, 0.356 | 0.157 / 0.121 | 0.614, 0.569, 0.528, 0.505 | 0.127 / 0.106 |
+| without terminal collapses | 0.511, 0.508, 0.429, 0.357 | 0.157 / 0.121 | 0.617, 0.572, 0.530, 0.508 | 0.126 / 0.105 |
+| tracked at 2K | — | 0.157 / 0.121 | — | 0.127 / 0.106 |
+
+- **Collapses found.** The terminal-collapse rule finds 152 communities on submissions, none in the 2019 head. On comments it finds 2,259, of which 4 are in the 2019 top K/16 and r/Cringetopia and r/MGTOW are in the 2019 top K/64.
+- **R16-E4: PASS.** Without collapses, the submissions head's fall is 0.154, against 0.154.
+- **R16-E5: PASS.** Persistence is unchanged.
+- **The 2K threshold cannot matter here.** Every member of the top-K cohort that the statistics use was inside the weekly top 2K: 16,941 of 20,000 tracked submissions communities and 49,040 of 50,000 comments communities pass the threshold, and the cohort is among them.
+
+**Data on hand: sign-conditioned transitions and persistence by stratum** (`r16_moments__*.json`; the data side of R16-A's tests):
+
+| | after a bottom-decile fall | after a top-decile rise | persistence at 13 weeks: top K/16, K/16–K/4, K/4–K |
+|---|---|---|---|
+| submissions | −0.265 | +0.033 | −0.003, +0.097, +0.178 |
+| comments | −0.216 | +0.049 | +0.107, +0.139, +0.150 |
+
+**Reading of E.** Capture differs by file in this archive, and the method detects a 1% within-file effect. Even so:
+- no part of either head's decline sits at the file boundaries;
+- the boundary where the delay changed most is ordinary;
+- banned or collapsed communities do not drive the head's fall or persistence.
+
+What the audit cannot test is a removal that grows smoothly with calendar time across files. That needs the raw archive's collection timestamps (WD drive, not mounted).
+
+### R16-C. The registered A1 runs and the objective's size under correct specification (`r16_a1__*.json`)
+
+**Design.** 20 pseudo-data panels from each world (seeds 1000–1019), each calibrated by the fixed form against the registered grid's saved simulated moments and the data's bootstrap sd.
+
+| world (truth) | ladder | fixed form's chosen s (count of 20) | min objective, median [5–95%] | data's objective |
+|---|---|---|---|---|
+| (iii) fixed, s 0.5 (correct specification) | submissions | 0.5 (20) | 6.1 [3.4, 14.5] | 351 |
+| | comments | 0.5 (20) | 12.9 [5.8, 28.9] | 1,013 |
+| (ii) homogeneous, medium swing half-life 26 weeks (base 69 and 34) | submissions | 0.0 (20) | 1,165 [1,062, 1,469] | |
+| | comments | 0.0 (16), 0.1 (4) | 112 [62, 177] | |
+| (i) decaying, s 0.5, half-life 104 | submissions | 0.4 (13), 0.5 (7) | 13.7 [6.4, 18.4] | |
+| | comments | 0.4 (20) | 19.2 [8.1, 49.5] | |
+
+- **R16-C1: PASS.** Under correct specification the minimum objective over 9 moments has a median of 6 to 13, and its 95th percentile is 15 to 29. The data's 351 and 1,013 are 12 to 35 times the 95th percentile: the fixed form is rejected decisively on both ladders.
+- **R16-C2: PASS.** A faster passing swing does not produce heterogeneity in the calibration (s ≤ 0.1 in 20 of 20 on both ladders). It produces a large misfit instead.
+- **R16-C3: PASS.** The calibration cannot tell decaying from fixed differences. A world with a two-year half-life is fitted as fixed differences of 0.4–0.5 with an objective near the correct-specification range. The lag profile and the other untargeted tests are what can separate them.
+- **Not run.** A1's 20 re-simulated grids per replicate. The registered grid's 3-seed moments stand in for them (deviation stated in R16).
+
+### R16-A. A reversible decline state (R14) (`r16_decline_grid__*.json`, `r16_worlds__*__decline_*.json`, `r16_oop__*__decline*.json`)
+
+**Calibration** on R12 (b)'s 15 moments, 3 seeds a point. Best objective at each π_D:
+
+| π_D | submissions: best (s, hl), objective | comments: best (s, hl), objective |
+|---|---|---|
+| 0.1 | 0.7, 208: 773 | 0.7, 208: 2,132 |
+| 0.25 | 0.7, 208: **382** | 0.7, 208: **1,106** |
+| 0.5 | 0.5, 208: 482 | 0.5, 208: 1,275 |
+| R12 (b) decaying, for comparison | 0.5, 104: 620 | 0.5, 104: 1,469 |
+
+- **R16-A4: PASS.** The best decline world fits better than decaying differences on both ladders.
+- **The fit is still decisively rejected.** By R16-C's calibration, the 95th percentile under correct specification is 15–30 for 9 moments, and these are 15 moments.
+- **Edges.** The optima sit at the grid's largest spread and longest half-life. The objective still falls toward larger, longer-lived decline states.
+
+**Worlds** (10 seeds at each π_D's best; mean [5–95%]):
+
+| | data | π_D 0.1 | π_D 0.25 | π_D 0.5 |
+|---|---|---|---|---|
+| **submissions** | | | | |
+| faller − riser asymmetry | +0.072 | −0.002 [−0.029, +0.025] | **+0.031** [+0.008, +0.057] | −0.044 [−0.065, −0.024] |
+| persistence, 13-wk gap | +0.157 | −0.065 | +0.008 | +0.006 |
+| lag profile at 52 wk | +0.060 | −0.043 | +0.011 | +0.019 |
+| persistence by stratum (13 wk) | −0.003, +0.097, +0.178 | −0.108, −0.078, −0.062 | −0.012, −0.025, +0.014 | −0.006, −0.005, +0.008 |
+| next year after a bottom-decile fall / top-decile rise | −0.265 / +0.033 | +0.065 / −0.079 | −0.057 / +0.008 | +0.045 / +0.030 |
+| prior-decliner contrast (10⁻³/wk) | +2.7 | −0.0 | +1.0 | +1.0 |
+| boundary ratio | 0.80 | 0.81 | 0.95 | 1.14 |
+| **comments** | | | | |
+| faller − riser asymmetry | +0.071 | +0.079 [+0.063, +0.093] | **+0.126** [+0.108, +0.140] | −0.008 [−0.020, +0.010] |
+| persistence, 13-wk gap | +0.127 | −0.061 | +0.033 | +0.022 |
+| lag profile at 52 wk | +0.095 | −0.010 | +0.060 | +0.062 |
+| persistence by stratum (13 wk) | +0.107, +0.139, +0.150 | −0.162, −0.118, −0.045 | −0.102, +0.009, +0.045 | — |
+| next year after a bottom-decile fall / top-decile rise | −0.216 / +0.049 | −0.015 / −0.170 | −0.139 / −0.074 | +0.069 / −0.052 |
+| prior-decliner contrast (10⁻³/wk) | +2.3 | −1.0 | +1.0 | +2.0 |
+
+(The persistence here is the Spearman correlation computed by `r12_hetgrowth`'s statistics on the lean universe. The data's 13-week values 0.157 and 0.127 are that statistic, not the paper's headline gapped statistic.)
+
+**Out of period** (2022 head share; 20 seeds; full-panel calibration, so retrospective):
+
+| | observed | matched control | decline, stationary states | decline, states from training history |
+|---|---|---|---|---|
+| submissions | 0.356 | 0.533 | 0.546 [0.457, 0.840] | 0.519 [0.438, 0.662] |
+| comments | 0.505 | 0.574 | 0.566 [0.498, 0.629] | 0.619 [0.545, 0.872] |
+
+**Scores.**
+- **R16-A1: FAIL.** At π_D 0.1 the asymmetry is −0.002 on submissions, though +0.079 on comments.
+- **R16-A2: PASS.** At π_D 0.5 it is ≤ 0 on both ladders (−0.044, −0.008).
+- **R16-A3: FAIL.** At π_D 0.1 the prior-decliner contrast is ≤ 0 on both ladders.
+- **R16-A4: PASS.**
+- **R16-A5: FAIL.** The data's ordering holds (after a fall, further decline; after a rise, none). The π_D 0.1 worlds reverse it on both ladders. The π_D 0.25 worlds reproduce it on both, but that is not the registered value.
+- **R16-A6: FAIL.** With states from training history, the submissions head share is 0.519 against 0.533, which is 0.014 lower, not 0.05.
+
+**Reading.**
+- **What it gets right.** A skewed decline state, entered by a quarter of communities with a half-life of four years, is the first form calibrated here to give the asymmetry the data's sign on both ladders. It also gives the data's ordering of what follows a large fall and a large rise. Every symmetric form, the symmetric decline state included, reverses both.
+- **What it gets wrong.** It does not give the level of persistence: +0.008 and +0.033 at 13 weeks, against +0.157 and +0.127. On comments its lag profile rises with the gap where the data's falls. It does not forecast either head's 2022 fall, from stationary states or from the training history.
+- **What the profile shows.** The asymmetry is a property of skewed, persistent decline. The size of Reddit's persistence still needs more than one constant-rate decline state at the calibrated spreads.
+
+### R16-B. Joint re-estimation of fixed heterogeneity (`r16_joint_grid__*.json`, `r16_worlds__*__joint_*.json`, `r16_oop__*__joint.json`)
+
+**Grid.** 81 points, 24 moments (covariances at gaps 0, 13 and 26, the two-spacing variance, and weekly autocovariances at lags 1, 2, 4 and 8, each by stratum), 3 seeds a point.
+
+| | submissions | comments |
+|---|---|---|
+| argmin (s body, head multiplier, OU multiplier km, m) | 0.8, 0.25, 0.5, 0.8 | 0.6, 0.25, 0.5, 0.7 |
+| objective over 24 moments | **38.8** | 487.2 |
+| the same world on R12's 9 moments (R12's sd) | **8.0** (R12 fixed form: 351) | 285 (R12: 1,013) |
+| R12's correct-specification range on those 9 (R16-C) | median 6, 95th 15 | median 13, 95th 29 |
+| profile: best objective at km 0.5 / 1 / 2 | 39 / 338 / 1,752 | 487 / 1,130 / 2,085 |
+| profile: at head 0.25 / 0.5 / 1 | 39 / 47 / 78 | 487 / 515 / 692 |
+| misfit by block at the argmin: covariances / variance / weekly | 19.7 / 3.7 / 15.4 | 157 / 248 / 82 |
+
+- **The medium swing is the key.** Halving the moving home's OU reversion, from a median half-life of 69 weeks to about 140 on submissions and from 34 to about 70 on comments, with its variance kept, removes most of R12's misfit.
+- **On submissions** the jointly estimated fixed form fits R12's moments inside the correct-specification range.
+- **On comments** it cuts the misfit by more than two thirds. It is still rejected, mostly on the lasting variance.
+- **Edges.** km and the head multiplier are at the grid's edge on both ladders; s is at the edge on submissions.
+
+**Worlds** (20 seeds at the argmin; mean [5–95%]):
+
+| | data | joint world | R12 fixed | matched control |
+|---|---|---|---|---|
+| **submissions** | | | | |
+| persistence, 13-wk gap | +0.157 | **+0.122** [+0.106, +0.136] | +0.024 | −0.115 |
+| lag profile, gaps 0 / 26 / 52 | +0.199 / +0.121 / +0.060 | +0.123 / +0.115 / +0.095 | | |
+| persistence by stratum | −0.003, +0.097, +0.178 | +0.011, +0.074, +0.135 | | |
+| faller − riser asymmetry | +0.072 | −0.072 [−0.093, −0.053] | −0.063 | −0.052 |
+| next year after a large fall / rise | −0.265 / +0.033 | −0.108 / +0.189 | | |
+| prior-decliner contrast (10⁻³/wk) | +2.7 | +0.0 | +3.4 | −2.6 |
+| turnover, top 10 / 78 / 2,500 | 0.33 / 0.21 / 0.18 | 0.18 / 0.16 / 0.14 | 0.34 / 0.23 / 0.16 | 0.27 / 0.19 / 0.14 |
+| boundary ratio | 0.80 | 1.22 [1.17, 1.28] | 1.18 | 1.12 |
+| 2022 head share, out of period (observed 0.356) | | 0.510 [0.473, 0.541] | 0.504 | 0.533 |
+| **comments** | | | | |
+| persistence, 13-wk gap | +0.127 | +0.074 [+0.067, +0.081] | +0.045 | −0.087 |
+| lag profile, gaps 0 / 26 / 52 | +0.145 / +0.106 / +0.095 | +0.065 / +0.078 / +0.076 | | |
+| persistence by stratum | +0.107, +0.139, +0.150 | −0.004, +0.135, +0.064 | | |
+| faller − riser asymmetry | +0.071 | −0.047 [−0.059, −0.031] | −0.040 | −0.044 |
+| next year after a large fall / rise | −0.216 / +0.049 | −0.016 / +0.063 | | |
+| turnover, top 10 / 195 / 6,250 | 0.27 / 0.21 / 0.16 | 0.24 / 0.19 / 0.12 | 0.29 / 0.28 / 0.14 | 0.26 / 0.25 / 0.13 |
+| 2022 head share, out of period (observed 0.505) | | 0.561 [0.543, 0.579] | 0.613 | 0.574 |
+
+**Scores.**
+- **R16-B1: PASS.** The head multiplier is 0.25 on both ladders.
+- **R16-B2: FAIL.** km is at the edge on both ladders.
+- **R16-B3: PASS.** The asymmetry stays reversed.
+- **R16-B4: FAIL on comments, by a hair.** The joint world's share is 0.052 closer to the observed than R12's fixed form, which had moved away from it. Against the matched control it is 0.013 closer. **PASS on submissions:** 0.510 against the fixed form's 0.504.
+- **R16-B5: FAIL** (a good outcome). On submissions the minimum objective is 1.6 per moment, and the world fits.
+
+**Reading.**
+- **What the joint fit reproduces.** Estimated jointly with the passing swing, and with a smaller spread at the head, fixed growth differences reproduce most of submissions' persistence (+0.12 against +0.16, a falling lag profile) and its rank pattern. They reproduce three fifths of comments' persistence.
+- **"Standard heterogeneity reproduces at most three fifths" is withdrawn.** R12's result was an artefact of freezing the passing parts at their homogeneous estimates.
+- **What it gets wrong.** The persistence is symmetric: after a large rise the world keeps rising (+0.19), where the data does not (+0.03). Fallers persist less than risers, the reverse of the data.
+- **The cost.** Turnover falls below the data's (top ten 0.18 against 0.33), and the boundary ratio moves from 1.12 to 1.22.
+- **The two departures.** Neither the head's fall nor the asymmetry is explained.
+
+### R16-D. The size exponent with the world's own passing parts (`r16_beta__*.json`)
+
+**Design.** The data's estimator in full (`fit_model`) is run on 10 panels from the matched control at each truth.
+
+| | true β | mean β̂ (se) | sd across panels | true σ0 | mean σ̂0 |
+|---|---|---|---|---|---|
+| comments | 0.126 | 0.108 (0.011) | 0.034 | 0.114 | 0.133 |
+| | 0 | −0.012 (0.013) | 0.041 | 0.114 | 0.104 |
+| submissions | 0.045 | 0.063 (0.006) | 0.018 | 0.100 | 0.110 |
+| | 0 | 0.061 (0.004) | 0.012 | 0.100 | 0.113 |
+
+**Scores.**
+- **R16-D1: FAIL.** On comments the estimator is nearly unbiased: 0.108 for 0.126 (a bias of −0.018, 1.6 se) and −0.012 for 0.
+- **R16-D2: PASS.**
+- **R16-D3: PASS** as written: 0.063 for 0.045.
+
+**Reading.**
+- **R12's "0.069 for 0.126" is withdrawn as a statement about the data's estimator.** That recovery used the move-variant estimator with oracle passing parts and zero slides, not the hold estimator applied to the data.
+- **Comments.** Its exponent (0.126) is not materially understated. Its single-panel uncertainty is about ±0.04. A linear map through the two truths gives 0.145, but by the rule fixed before the run no corrected value is reported, because D1 failed.
+- **Submissions.** The estimator returns about 0.06 whether the truth is 0 or 0.045, so it has no power there. The data's 0.045 is below its null and consistent with no size dependence of lasting volatility.
+- **The measure to lead with.** The estimator-free quantile ratios (elasticities of about 0.08 and 0.04) remain the measure to lead with, and they are consistent with both.
