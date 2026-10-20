@@ -965,3 +965,24 @@ Statistics: the R12 auxiliary covariances by stratum (gap 0 and 13), the two-spa
 | R15-6 | D4: with a composition term of 0.30 removed, it is below 3 | 65% |
 
 **R15 D2, post hoc extension (2026-10-20, after D2's four settings were read; not registered).** None of the four settings explains the attenuation: about 0.06–0.10 of the planted 0.25 reaches the covariance. The remaining candidate is the drift by rank itself, which is a restoring force under either drift solution. One more pair of worlds runs with no drift by rank (`lasting="movinghome_vp_nodrift"`), s 0 against s 0.5, exits on, 3 seeds. It is descriptive.
+
+## Addendum R15-D5 (2026-10-20, written before the run): the composition term in the simulated worlds
+
+**Why.** The round-7 synthesis (`SYNTHESIS_R7.md` §5, Tier 2) listed the composition term in the simulated worlds as a cheap measurement, and the owner asked for Tier 2 ("Do 1 and 2"). It was not among D1–D4. D4's durability factor at the comments head is about 2 gross and about 1 with a composition term of 0.30 removed. Which row applies depends on whether homogeneous diffusion makes C itself.
+
+**Already seen.** The data's split (`runs/2026-10-18_remainder/output.txt`): C/(R_bc + C) is 0.22–0.27 at comments K/64…K/4 (mean 0.25) and 0.06–0.34 at submissions K/64…K/4 (mean 0.22). No world value of C has been computed.
+
+**D5.** `r15_d5_composition.py`. The exact split R_ac − R_ab = R_bc + C, with the blocks, starts, cohorts and cut-offs of `remainder_run.py`. It is computed on the R12-calibrated worlds: the matched control (s 0) and fixed differences (s 0.5, m 1.0), drift re-solved numerically, exits on, 3 seeds each, both ladders. It reports the share C/(R_bc + C) by cut-off, pooled as the mean over K/64…K/4.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R15-7 | the matched control's pooled share is below +0.10 on both ladders | 65% |
+| R15-8 | fixed differences raise the pooled share over the matched control by at least +0.05 on both ladders | 50% |
+| R15-9 | fixed differences' pooled share stays below the data's on both ladders | 70% |
+
+**Reading, fixed now.**
+- If the matched control's share is below 0.10, homogeneous diffusion does not make C. The data's C then comes from structure the homogeneous model lacks, and the net-of-C factor is the homogeneous-diffusion reading.
+- If it is 0.20 or more, C is a property of the statistic under homogeneous dynamics. The gross factor then stands, and the net row is withdrawn.
+- Between 0.10 and 0.20, both rows are reported.
