@@ -1,0 +1,6 @@
+reddit_comments_ext planted s 0.45 seed 0: sigma0 0.1559 (true 0.1141), beta +0.054 (true +0.126)
+reddit_comments_ext planted s 0.45 seed 1: sigma0 0.1564 (true 0.1141), beta +0.054 (true +0.126)
+reddit_comments_ext planted s 0.45 seed 2: sigma0 0.1565 (true 0.1141), beta +0.052 (true +0.126)
+reddit_comments_ext planted s 0.45 seed 3: sigma0 0.1523 (true 0.1141), beta +0.051 (true +0.126)
+reddit_comments_ext planted s 0.45 seed 4: sigma0 0.1541 (true 0.1141), beta +0.054 (true +0.126)
+peak RSS 3.05 GB (job tree, sampled: 2875 MB); swap 4554M -> 4584M; killed 0

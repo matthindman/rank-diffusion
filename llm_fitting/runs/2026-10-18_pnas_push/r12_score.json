@@ -123,11 +123,35 @@
    "head_inflation_vs_s0": 0.07701509404225737,
    "beta_shift_vs_s0": -0.0008596693906209318,
    "beta_bias_vs_truth": -0.057735026214575366
+  },
+  "0.3": {
+   "n": 20,
+   "true_beta": 0.12590117064475212,
+   "beta_mean": 0.05910912125269584,
+   "beta_se": 0.0007958288371362795,
+   "sigma0_mean": 0.14875543465657853,
+   "true_sigma0": 0.11409855579055703,
+   "head_lasting_mean": 0.0062368371005123635,
+   "head_inflation_vs_s0": 0.4300214164940326,
+   "beta_shift_vs_s0": -0.009916692568101848,
+   "beta_bias_vs_truth": -0.06679204939205628
+  },
+  "0.45": {
+   "n": 20,
+   "true_beta": 0.12590117064475212,
+   "beta_mean": 0.053670725793144955,
+   "beta_se": 0.0005693122278668186,
+   "sigma0_mean": 0.15555368540936537,
+   "true_sigma0": 0.11409855579055703,
+   "head_lasting_mean": 0.007808000539125307,
+   "head_inflation_vs_s0": 0.7902676967511102,
+   "beta_shift_vs_s0": -0.01535508802765273,
+   "beta_bias_vs_truth": -0.07223044485160716
   }
  },
  "R12-5 comments": {
-  "verdict": "NOT RUN",
-  "value": "planted s 0.45 (nearest the calibrated 0.5) not run yet",
+  "verdict": "FAIL",
+  "value": "planted s 0.45 (calibrated 0.5): head lasting variance +79.0%, beta -0.015 vs s = 0 (vs truth -0.072)",
   "prior": "50%"
  },
  "comments oop": {

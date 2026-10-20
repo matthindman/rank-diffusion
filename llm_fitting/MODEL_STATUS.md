@@ -13481,3 +13481,18 @@ The objective is still falling and the fit is poor, about 6 SD per moment (submi
   - whether to run a recovery study of the comments size exponent;
   - whether the queued comments jobs should wait for a quieter machine.
 - **Carried over:** the title; the chapter's pages and edition; Bruce Rogers's acknowledgement; classification; the protocol amendments; the data-statement TODOs; whether to push.
+
+### Addendum to §2z-dn (2026-10-20, 18:10): comments recovery; R12-5 scored on both ladders
+
+- **Comments recovery** (`run_r12_lean3.sh`, five-seed chunks, after memory allowed at 17:31). At planted s 0.15, 0.30 and 0.45 the head's lasting variance is overstated by +8%, +43% and **+82%** against the same seeds with nothing planted, and β moves by −0.001, −0.010 and **−0.016**. The 0.45 row has 15 of 20 seeds, with the SE of β about 0.0005.
+- **R12-5, comments: FAIL as written.** The variance part passes; |Δβ| is 0.016 against > 0.02. **R12-5, submissions: PASS** (§2z-dn). So R12-5 is mixed across ladders.
+- **The direction of the β bias differs:**
+  - comments: attenuated, as the memo predicted;
+  - submissions: raised.
+- **Reading.** If fixed differences as large as Reddit's persistence calls for were present, the measured comments head lasting variance would be overstated by up to four fifths. The time scales are then lower bounds. Not a correction: the fixed world does not fit comments' persistence pattern (§2z-dn).
+- **Watchdog kill.** The chunk for s 0.45, seeds 15–19, was killed at seed 19 (swap +543 MB, job 2.5 GB). It wrote nothing and is requeued, with the comments matched control, the factor rerun and the grid extension, in `run_r12_lean4.sh` (swap limit 300 MB).
+- **Manuscript:**
+  - main text R2: a fifth on submissions, four fifths on comments; "the time scales are therefore lower bounds if such differences are present";
+  - SI: recovery results and scores updated.
+
+_[Completed 2026-10-20 18:12 (`run_r12_lean4.sh`): s 0.45 on comments now has all 20 seeds: head lasting variance **+79%**, Δβ **−0.015** (SE 0.0006). R12-5 on comments remains FAIL as written. The 15-seed values above (+82%, −0.016) are superseded.]_

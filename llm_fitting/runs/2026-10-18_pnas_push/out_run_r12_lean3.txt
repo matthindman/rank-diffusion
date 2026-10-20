@@ -1,0 +1,12 @@
+waiting: 2650 MB reclaimable without swap, job needs 3072 MB (16:05:27)
+starting: 3092 MB reclaimable (17:31:31)
+peak RSS 3.37 GB (job tree, sampled: 3174 MB); swap 4281M -> 4249M; killed 0
+peak RSS 3.10 GB (job tree, sampled: 2702 MB); swap 4249M -> 4510M; killed 0
+peak RSS 3.12 GB (job tree, sampled: 2629 MB); swap 4510M -> 4528M; killed 0
+peak RSS 3.05 GB (job tree, sampled: 2403 MB); swap 4528M -> 4554M; killed 0
+peak RSS 3.05 GB (job tree, sampled: 2875 MB); swap 4554M -> 4584M; killed 0
+peak RSS 2.90 GB (job tree, sampled: 2760 MB); swap 4584M -> 4654M; killed 0
+peak RSS 3.06 GB (job tree, sampled: 2927 MB); swap 4654M -> 4395M; killed 0
+WATCHDOG: swap grew from 4395M to 4938M; killing the job
+peak RSS  GB (job tree, sampled: 2487 MB); swap 4395M -> 4938M; killed 1
+stopped at llm_fitting/runs/2026-10-18_pnas_push/out_r12_recovery_0.45_reddit_comments_ext__seeds15.txt

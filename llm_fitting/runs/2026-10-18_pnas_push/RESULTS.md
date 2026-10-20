@@ -1218,3 +1218,18 @@ The factor's inputs:
 - the post hoc grid extension on both ladders.
 
 The two killed attempts at comments recovery s 0.30 (15:35 and 16:0x) wrote no output and are not used.
+
+**Recovery, comments (run 17:31–17:58 from `run_r12_lean3.sh`, in five-seed chunks).** The chunk for s 0.45, seeds 15–19, was killed by the watchdog at seed 19: swap +543 MB, while the job itself sampled 2.5 GB, so other applications were growing. It wrote nothing. Seeds 15–19 are requeued in `run_r12_lean4.sh`.
+
+| comments, planted s | n | β̂ (true 0.126) | σ̂0 (true 0.114) | head lasting variance | change vs s 0 | Δβ vs s 0 |
+|---|---|---|---|---|---|---|
+| 0 | 20 | 0.069 | 0.141 | 0.0044 | — | — |
+| 0.15 | 20 | 0.068 | 0.143 | 0.0047 | +8% | −0.001 |
+| 0.30 | 20 | 0.059 | 0.149 | 0.0062 | +43% | −0.010 |
+| 0.45 | 15 | 0.054 (SE 0.0005) | 0.156 | 0.0079 | **+82%** | **−0.016** |
+
+**R12-5, comments: FAIL as written.** The head lasting variance part passes by far (+82% against > 10%); |Δβ| is 0.016 against > 0.02. Five more seeds cannot move Δβ by 0.004 at this standard error, so the verdict stands at n 15; the five are being completed.
+
+The comments ladder responds to heterogeneity much more than submissions, and in the other direction for β (attenuated, as the memo predicted). The overstatement bounds what fixed differences of this size would do to the comments time scales: at most about 1.8 times too short. It is not a correction, because the fixed-differences world does not fit comments' pattern of persistence.
+
+_[Completed 2026-10-20 18:12 (`run_r12_lean4.sh`): s 0.45 on comments now has all 20 seeds: head lasting variance **+79%**, Δβ **−0.015** (SE 0.0006). R12-5 on comments remains FAIL as written. The 15-seed values above (+82%, −0.016) are superseded.]_
