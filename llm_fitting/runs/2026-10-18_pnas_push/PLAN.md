@@ -963,3 +963,5 @@ Statistics: the R12 auxiliary covariances by stratum (gap 0 and 13), the two-spa
 | R15-4 | D3: on submissions, the permuted-loading placebo lowers persistence at a 13-week gap by at least half as much as the real loadings do (median over draws) | 60% |
 | R15-5 | D4: the gross durability factor at K/64 on comments (median over cells) is at least 3 | 55% |
 | R15-6 | D4: with a composition term of 0.30 removed, it is below 3 | 65% |
+
+**R15 D2, post hoc extension (2026-10-20, after D2's four settings were read; not registered).** None of the four settings explains the attenuation: about 0.06–0.10 of the planted 0.25 reaches the covariance. The remaining candidate is the drift by rank itself, which is a restoring force under either drift solution. One more pair of worlds runs with no drift by rank (`lasting="movinghome_vp_nodrift"`), s 0 against s 0.5, exits on, 3 seeds. It is descriptive.

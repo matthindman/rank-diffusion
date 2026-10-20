@@ -1,0 +1,5 @@
+drift numeric, exits on: cov0 increment by stratum [0.061, 0.056, 0.101] (planted 0.25); cov13 [0.051, 0.054, 0.101]; two-spacing sf increment [0.0014, 0.0016, 0.0031] (algebra 0.0072); rho13 +0.142; slope variance increment 0.075 (planted 0.25); s0 rho13 -0.112
+drift numeric, exits off: cov0 increment by stratum [0.075, 0.055, 0.104] (planted 0.25); cov13 [0.07, 0.055, 0.096]; two-spacing sf increment [0.0025, 0.0018, 0.0033] (algebra 0.0072); rho13 +0.140; slope variance increment 0.090 (planted 0.25); s0 rho13 -0.109
+drift closed-form, exits on: cov0 increment by stratum [0.072, 0.061, 0.102] (planted 0.25); cov13 [0.067, 0.065, 0.1]; two-spacing sf increment [0.0021, 0.0015, 0.003] (algebra 0.0072); rho13 +0.145; slope variance increment 0.073 (planted 0.25); s0 rho13 -0.119
+drift closed-form, exits off: cov0 increment by stratum [0.077, 0.055, 0.102] (planted 0.25); cov13 [0.072, 0.054, 0.094]; two-spacing sf increment [0.0026, 0.0018, 0.0032] (algebra 0.0072); rho13 +0.139; slope variance increment 0.082 (planted 0.25); s0 rho13 -0.111
+peak RSS 1.88 GB (job tree, sampled: 1653 MB); swap 1631M -> 1607M; killed 0

@@ -1253,3 +1253,95 @@ _[Completed 2026-10-20 18:12 (`run_r12_lean4.sh`): s 0.45 on comments now has al
   - comments: 1,013, 1,437, 2,830, 5,105, 13,860.
 
   The minimum is near 0.5 on both ladders, so the registered optimum at the grid's edge is effectively the overall one. "The objective is still falling" (written above, before the extension ran) is withdrawn: it was falling up to the edge and rises beyond it. The fit at the minimum stays poor.
+
+## R15. Round-7 diagnostics (expectations in PLAN.md addendum R15, committed 38e48a0 before the runs; scripts `r15_d1_shape_path.py`, `r15_d2_planted.py`, `r15_d3_loading_placebo.py`, `r15_d4_durability.py`; outputs `r15_*.json`, `out_r15_*.txt`)
+
+Every job read the lean cache and ran alone under the watchdog (peaks 1.8–2.7 GB; swap did not grow).
+
+**D1, the shape path (descriptive).** U_k − U_K by year, exact, from 52-week block means:
+
+| | 2019 | 2020 | 2021 | 2022 | year-on-year | total |
+|---|---|---|---|---|---|---|
+| comments, K/64 | 5.59 | 5.13 | 4.98 | 4.97 | −0.46, −0.15, −0.01 | −0.62 |
+| comments, K/16 | 4.21 | 3.80 | 3.72 | 3.74 | −0.42, −0.08, +0.03 | −0.47 |
+| submissions, K/64 | 4.61 | 4.41 | 4.15 | 3.99 | −0.19, −0.27, −0.15 | −0.62 |
+| submissions, K/16 | 3.36 | 3.15 | 2.98 | 2.88 | −0.21, −0.17, −0.09 | −0.48 |
+
+**Half-year rate-law cells, per year: observed against c − s̄ + e.**
+
+Comments, K/64:
+
+| start | observed | c − s̄ + e | s̄ |
+|---|---|---|---|
+| 1 | −0.40 | −0.37 | 0.47 |
+| 2 | −0.26 | −0.21 | 0.31 |
+| 3 | −0.01 | +0.01 | 0.12 |
+| 4 | +0.06 | +0.01 | 0.13 |
+| 5 | −0.13 | −0.20 | 0.34 |
+
+Submissions, K/64:
+
+| start | observed | c − s̄ + e | s̄ |
+|---|---|---|---|
+| 1 | −0.17 | −0.20 | 0.33 |
+| 2 | −0.23 | −0.26 | 0.37 |
+| 3 | −0.33 | −0.30 | 0.47 |
+| 4 | −0.26 | −0.35 | 0.49 |
+| 5 | −0.18 | −0.32 | 0.46 |
+
+- **The crossing gain is steady; the slide is not.** At the comments head c is about 0.19–0.21 a year in every cell. The slide varies from 0.12 to 0.47.
+- **The shape moves with the slide.** The comments head fell 0.46 in 2019→20, when s̄ was 0.31–0.47. It held in 2020–22, when s̄ was 0.12–0.13. The submissions head fell throughout, with s̄ 0.33–0.49.
+- **The tracking is close to accounting.** The measured terms track the observed change cell by cell, as the near-identity of the rate law with measured terms implies.
+- **The stable-parameter model** (from the 2019 ladder, with the 2020–22 slides) keeps the comments head flat (5.36, 5.33, 5.33, 5.35, 5.36, 5.36) and lowers the submissions head by 0.56 in five years.
+- **The 2019→20 comments drop is outside the annual rate-law cells,** which begin at 2020→21 because block 0 fixes each cohort. That is why the manuscript's "in no year more than a third of a log unit" was wrong.
+
+**D2, planted against recovered** (submissions, fixed form, s 0.5 against s 0, m 1.0, 3 seeds). Increments, planted minus s 0:
+
+| setting | cov, gap 0, by stratum (planted 0.25) | two-spacing sf (algebra 0.0072) | ρ at 13 weeks | slope variance, communities ≥104 weeks (planted 0.25) |
+|---|---|---|---|---|
+| numeric drift, exits on (as R12) | 0.061, 0.056, 0.101 | 0.0014, 0.0016, 0.0031 | +0.142 | 0.075 |
+| numeric drift, exits off | 0.075, 0.055, 0.104 | 0.0025, 0.0018, 0.0033 | +0.140 | 0.090 |
+| closed-form drift, exits on | 0.072, 0.061, 0.102 | 0.0021, 0.0015, 0.0030 | +0.145 | 0.073 |
+| closed-form drift, exits off | 0.077, 0.055, 0.102 | 0.0026, 0.0018, 0.0032 | +0.139 | 0.082 |
+| no drift by rank, exits on (post hoc) | 0.067, 0.064, 0.103 | 0.0021, 0.0020, 0.0038 | +0.133 | 0.120 |
+
+- **R15-1: FAIL.** With the closed-form drift the bottom-stratum increment is 0.102, against ≥ 0.125.
+- **R15-2: FAIL as written.** Neither switch matters: exits off adds 0.003, drift off 0.001.
+- **Reading.**
+  - About a quarter to two fifths of the planted variance reaches the covariances, under every setting.
+  - The drift by rank, a restoring force (FIK 2013), takes the long-run slope variance among long-lived communities from 0.12 to 0.075.
+  - The rest of the shortfall comes from what the statistics condition on: strata of whole-window permanent rank, which partly sort communities by their own growth, and survival in the panel. The same conditioning applies to the data, so the calibration is consistent.
+  - The spread of 0.5 is a parameter of the generating process. Among surviving communities the realized spread is about √0.075–√0.12 ≈ 0.27–0.35.
+
+**D3, the loading adjustment of persistence** (full membership, as `persistence_r3.py`). Gapped persistence at gaps of 0, 13 and 26 weeks:
+
+| | submissions | comments |
+|---|---|---|
+| raw | 0.188, 0.149, 0.112 | 0.175, 0.158, 0.126 |
+| adjusted, real 2019 loadings (reproduces `persistence_r3`) | 0.132, 0.020, −0.029 | 0.191, 0.177, 0.141 |
+| placebo, permuted loadings (median of 50) | 0.131, 0.016, −0.047 | 0.201, 0.189, 0.149 |
+| adjusted, EB-shrunk loadings | 0.188, 0.149, 0.112 | 0.178, 0.162, 0.129 |
+| split-half reliability of loadings | −0.004 | −0.001 |
+| loading variance against mean se² | 2.92 against 3.08 (signal 0) | 0.88 against 0.70 (signal 0.18) |
+| platform factor change: 2019; after | +0.51; −0.24 | +1.33; +0.45 |
+
+- **R15-3: PASS.** Split-half reliability is −0.004 and −0.001.
+- **R15-4: PASS.** The placebo lowers submissions persistence at 13 weeks by 0.133, against 0.129 for the real loadings.
+- **Reading.** The 2019 loadings are noise. Multiplied by a platform factor that rose in 2019 and fell after (submissions), noise loadings manufacture negative covariance: the "removal" of submissions persistence (§2z-dd D7, manuscript l.188) is an artefact. Where the factor kept rising (comments), they inflate it. With shrunk loadings, persistence survives the platform factor on both ladders. "The two ladders favour different readings" is withdrawn.
+
+**D4, the durability factor from measured crossings** (saved half-year cells; F = 2 ln(K/k)(c/(s̄ − e))², median of 5 cells):
+
+| | K/64 | K/32 | K/16 | K/8 | K/4 | K/2 |
+|---|---|---|---|---|---|---|
+| comments, c/(s̄ − e) | 0.49 | 0.52 | 0.63 | 0.72 | 0.80 | 0.78 |
+| comments, F gross | **1.98** | 1.87 | 2.22 | 2.18 | 1.76 | 0.83 |
+| comments, F with C 0.30 removed | **0.97** | 0.92 | 1.09 | 1.07 | 0.86 | 0.41 |
+| submissions, F gross | 1.08 | 0.49 | 2.87 | 4.01 | 1.90 | 1.26 |
+
+- **R15-5: FAIL.** The gross factor at the comments head is 1.98, against ≥ 3.
+- **R15-6: PASS.** With C 0.30 removed it is 0.97, against < 3.
+- **Reading.**
+  - The variance-based calculation (SI time scales; §2z-dl) gave about 4 at the comments head. The crossing-based one gives about 2, because measured crossings at the head fall short of σ²/2S.
+  - Either way the ratio is two to four on comments and about one at the submissions head, not "several times".
+  - If the composition term is not lasting movement, the separation disappears at the head.
+  - Durability as a separation of time scales is therefore weak. What holds the shape on comments in 2020–22 is that the slide was near the crossings it induces (c/(s̄ − e) near 1 in cells 3 and 4), not a long relaxation time.
