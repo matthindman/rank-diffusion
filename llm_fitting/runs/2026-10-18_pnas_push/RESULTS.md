@@ -994,7 +994,7 @@ The only change is the drift by rank. It is now built from the persisters' slide
 | part | status |
 |---|---|
 | R13a, R13b, R13e | **RAN-OK**, saved outputs only (`r13_saved_outputs.py` → `r13_saved_outputs.json`, `out_r13_saved_outputs.txt`; R13b is `gllm_relaxation_check.py`, §2z-dl) |
-| R13c, R13d | **NOT RUN.** BLOCKED: `/Volumes/T9` is not mounted (`data/ssd` → `/Volumes/T9/rank-diffusion-data`). Both attempts stopped at the file open; no value was read. They are queued in `run_r12_r13.sh` |
+| R13c, R13d | **RAN-OK 2026-10-20**, step 0 of `run_r12_r13.sh` once the owner mounted T9 (`lockin_funnel__<panel>.json`, `out_r13_lockin_<panel>.txt`; results at the end of this section). Earlier the same day: NOT RUN, BLOCKED because `/Volumes/T9` was not mounted; both attempts stopped at the file open and no value was read |
 
 **R13a. Five-year values** from the corrected runs (R11, noentry). Head shape at K/64:
 - **From the observed 2019 ladder, with volatility and slide:**
@@ -1020,3 +1020,36 @@ The only change is the drift by rank. It is now built from the persisters' slide
 | calibrated model | 0.897 |
 
 **R13-3: PASS.** The ladder alone shifts b by 0.111 (size-blind) and 0.127 (firm-like), against the expected ≥ 0.05. Inferences about copying from turnover profiles (Bentley 2007; Acerbi & Bentley 2014) therefore need a control for the ladder's slope.
+
+**R13c. Lock-in: the share of each top set replaced in one and two years** (52-week block means; top sets by block mean; mean over the 3 one-year and 2 two-year pairs of blocks, range in brackets):
+
+| top k | submissions, 1 yr | 2 yr | ratio | comments, 1 yr | 2 yr | ratio |
+|---|---|---|---|---|---|---|
+| 10 | 0.333 [0.30–0.40] | 0.550 [0.50–0.60] | 1.65 | 0.267 [0.20–0.30] | 0.350 [0.30–0.40] | 1.31 |
+| 25 | 0.293 | 0.500 | 1.70 | 0.267 | 0.400 | 1.50 |
+| K/64 (78; 195) | 0.209 [0.19–0.23] | 0.340 [0.33–0.35] | **1.62** | 0.210 [0.21–0.22] | 0.336 [0.32–0.35] | **1.60** |
+| K/32 | 0.212 | 0.317 | 1.50 | 0.192 | 0.310 | 1.61 |
+| K/16 | 0.204 | 0.325 | 1.59 | 0.189 | 0.298 | 1.58 |
+| K/8 | 0.202 | 0.322 | 1.59 | 0.181 | 0.287 | 1.59 |
+| K/4 | 0.181 | 0.299 | 1.65 | 0.165 | 0.265 | 1.61 |
+| K/2 | 0.178 | 0.295 | 1.66 | 0.157 | 0.256 | 1.63 |
+
+**R13-1: PASS** on both ladders (1.62 and 1.60 at K/64, against 1.2–1.8). Across top sets from K/64 to K/2 the ratio is 1.50–1.66. A top set loses about a fifth of its members in a year and about a third in two; two-thirds of the comments top 10 and 45% of the submissions top 10 were still in it two years later. These retention values recompute the profile exponent of R13e independently: the replaced share falls with k as k^(b−1) with b ≈ 0.95 (submissions) and 0.92 (comments), as there.
+
+**R13d. The funnel check: one-year |Δ| of block-mean log activity** (block 1 to block 2, centred on the stratum's median change), by stratum of permanent rank in block 0, from the top K/64 to K/2–K:
+
+| | submissions, top K/64 (n 76) | K/2–K (n 2,363) | ratio | comments, top K/64 (n 191) | K/2–K (n 5,822) | ratio |
+|---|---|---|---|---|---|---|
+| p50 | 0.249 | 0.290 | 1.16 | 0.229 | 0.364 | 1.59 |
+| p90 | 0.731 | 0.909 | **1.24** | 0.668 | 1.093 | **1.64** |
+| p95 | 0.883 | 1.245 | 1.41 | 0.882 | 1.405 | 1.59 |
+| SD | 0.785 | 0.674 | 0.86 | 0.424 | 0.670 | 1.58 |
+| max | 5.662 | 4.766 | **0.84** | 1.712 | 5.191 | **3.03** |
+
+The intermediate strata are in `out_r13_lockin_<panel>.txt`.
+
+**R13-2: FAIL as written, on both ladders, for different reasons.**
+- **Submissions:** the p90 rises by 1.24 (< 1.5, as expected), but the stratum maximum does not rise at all (0.84). The largest change in the top stratum of 76 communities is 5.66 log units; its extremes also lift its SD above the bottom stratum's.
+- **Comments:** the maximum rises 1.85 times as much as the p90 (≥ 1.3, as expected), but the p90 itself rises by 1.64 (≥ 1.5).
+
+**What the numbers say about the owner's point.** The quantiles rise modestly over a 64-fold range of rank: by 1.2–1.4 on submissions and by about 1.6 on comments. The comments figure is uniform across the 50th, 90th and 95th percentiles and the SD, so it is a scale change of the whole distribution. As an elasticity it is about ln 1.6 / ln 64 ≈ 0.11, the rank-dependent volatility the model already carries (β). The visual funnel is carried by the extremes: the comments maximum triples, drawn from 30 times as many communities. On submissions, the extremes at the head are as large as anywhere. The owner's correction holds in direction. On comments the quantiles do widen, but by much less than the maxima.

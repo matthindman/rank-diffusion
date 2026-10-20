@@ -866,3 +866,27 @@ The weekly autocovariances at lags 1–8 are kept only as a check on the passing
 - **(b):** half-life ∈ {26, 52, 104} weeks, crossed with stationary s ∈ {0.2, 0.3, 0.4, 0.5}, at the m that (a) selects at its optimum.
 
 Each grid point is run with 3 seeds on both ladders. The objective is the sum of squared differences scaled by the data's bootstrap standard deviations (communities resampled, 40 draws).
+
+### Amendment R12-A3 (2026-10-20, after a smoke test and before any factor, out-of-period or recovery output; no R12 output used in any choice below)
+
+**What had been seen when this was written.** T9 was mounted and `run_r12_r13.sh` ran:
+- **Step 0** (R13c–d) and **step 1** (data moments) finished.
+- **Step 2** stopped at its first line on a key error in `aux_vector`: the data moments are read back from JSON with string keys. No grid point was simulated.
+
+A one-seed smoke test of every path on submissions (scratch script, outputs outside the run folder) then printed:
+- the fixed (s 0.3, m 0.9) and decay (s 0.3, half-life 52, m 0.9) grid points, with their auxiliary vectors and objective;
+- one world's statistics for each: gapped persistence at 13 weeks −0.027 and −0.078; boundary 1.16 and 1.12; R10 contrast −0.0004 and −0.0009; asymmetry −0.017 and −0.049;
+- the factor's loading diagnostics: the noise-corrected loading variance is 0 in strata K/16–K/4, K/4–K and K–4K, and 0.036 of a raw 0.54 in the top K/16. Loadings estimated from one year of weekly changes are almost pure noise at the community level, so empirical Bayes shrinks them to their stratum means: 0.41, 0.56, 0.75 and 1.09.
+
+The factor path then failed (below) before simulating anything.
+
+**Changes:**
+1. **`aux_vector`** reads string or integer keys. This is a bug fix that changes no number.
+2. **The factor's path is the observed path, as registered.** The code had centred f_t on its full-panel mean, which the addendum does not ask for. Centring removes the platform-wide trend that variant (c) exists to carry: "communities share a platform-wide trend with different exposure to it". λ̄_K already removes the move of the top-K mean.
+3. **The hold drift for (c).**
+   - **Path.** It is solved with the factor term present, but with the path's weekly values centred and shuffled (seeded). The drift then includes the term's variance but not the observed path's trend. Because the loadings are nearly constant within strata, a drift by rank solved on the observed path would absorb its trend by stratum. In the out-of-period run it would absorb the 2021 path and cancel the term the test is about.
+   - **Bug fixed.** The solver sorts its starting ladder (N slots), while the loadings were aligned to the starting communities (fewer slots). The loadings are now put in ladder order and padded from the reborn pool.
+   - Variants (a) and (b) are unchanged: their terms have no observed path.
+4. **`run_r12_r13.sh`** resumes at a given step (`FROM=2`). Each later step refuses to run without the calibration files it reads; before, the script would have gone on with empty parameters.
+
+**Disclosed, not changed.** With the loadings shrunk to stratum means, variant (c) is in effect exposure to the platform path by 2019 stratum of rank. It is reported as such. No grid, threshold or expectation changes. The one-seed values above are not used in any calibration or score.

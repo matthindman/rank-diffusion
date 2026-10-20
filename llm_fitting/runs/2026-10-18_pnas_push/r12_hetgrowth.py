@@ -142,7 +142,8 @@ def aux(X, R, floors, K, gaps):
 
 
 def aux_vector(a, gaps):
-    return np.array([c for g in gaps for c in a["gapped"][int(g)]["cov"]] + list(a["sf"]))
+    gp = a["gapped"]                                 # int keys in memory, str keys once read back from JSON
+    return np.array([c for g in gaps for c in gp.get(int(g), gp.get(str(g)))["cov"]] + list(a["sf"]))
 
 
 # --------------------------------------------------------------------------- data and model
@@ -177,9 +178,27 @@ def het_params(p, ladder, variant, s=0.0, half_life=None, m=1.0, fac=None):
     elif variant == "factor":
         q = replace(q, fac_path=fac["path"], fac_load=fac["load"], fac_pool=fac["pool"])
     if variant != "control" and (s > 0 or variant == "factor" or m != 1.0):
-        dz, dg, _ = rdm.drift_hold_numeric(q, ladder)
+        qd = _factor_for_drift(q, ladder, fac) if variant == "factor" else q
+        dz, dg, _ = rdm.drift_hold_numeric(qd, ladder)
         q = replace(q, drift_z=dz, drift_g=dg)
     return q
+
+
+def _factor_for_drift(q, ladder, fac):
+    """Amendment A3: the hold drift for (c) is solved with the factor term present, but with the path's weekly
+    values centred and shuffled (so the drift carries the term's variance, not the observed path's trend, which
+    a drift by rank would otherwise absorb, the loadings being nearly constant within strata), and with the
+    loadings in ladder order (drift_hold_numeric sorts its starting levels), padded from the pool."""
+    rng = np.random.default_rng(12)
+    path = np.asarray(fac["path"], float)
+    path = rng.permutation(path - path.mean())
+    L0 = np.asarray(fac["L0"], float)
+    o = np.argsort(np.where(np.isfinite(L0), -L0, np.inf), kind="stable")
+    load = np.asarray(fac["load"], float)[o]
+    n = len(ladder)
+    if load.size < n:
+        load = np.concatenate([load, np.asarray(fac["pool"], float)[rng.integers(0, len(fac["pool"]), n - load.size)]])
+    return replace(q, fac_path=path, fac_load=load[:n])
 
 
 def _nw(K, T):
@@ -247,8 +266,9 @@ def factor_inputs(df, K, weeks, start_ids, T_path):
     dev = dict(zip(ids, np.nan_to_num(shr - lbar)))
     load = np.array([dev.get(str(e), 0.0) for e in start_ids])
     pool = np.nan_to_num(shr[(lab == 3) & np.isfinite(shr)] - lbar)
-    path = f_all - float(np.mean(f_all))           # centred: the factor moves relative positions, not the mean
-    return dict(path=path[:max(T_path - 1, 1)], load=load, pool=pool if pool.size else np.zeros(1), strata=var_corr, lbar=lbar)
+    path = f_all                                   # the observed path (A3: not centred; lambar removes the mean move)
+    return dict(path=path[:max(T_path - 1, 1)], load=load, pool=pool if pool.size else np.zeros(1), strata=var_corr, lbar=lbar,
+                f_mean=float(np.mean(f_all)))
 
 
 # --------------------------------------------------------------------------- R10, lock-in, Gomez on a world
@@ -382,6 +402,7 @@ def main():
                 nb = T // 52
                 start = T - nb * 52
                 fac = factor_inputs(df, K, range(start, start + 52), lev0.index.to_numpy(), T)
+                fac["L0"] = L0
             q = het_params(p, ladder, variant, s=s_, half_life=h, m=m_, fac=fac)
             for seed in range(s0, s1 + 1):
                 fr, Xs, ids = sim_frame(q, L0, T, seed, K)
@@ -407,7 +428,9 @@ def main():
         if variant == "factor":
             dfull = mrd.restrict_universe(full, K, buffer_mult=4)
             fx = factor_inputs(dfull, K, range(start, t_origin), levels.index.to_numpy(), T)
-            fac = dict(path=fx["path"][t_origin - 1:], load=fx["load"], pool=fx["pool"])
+            fac = dict(path=fx["path"][t_origin - 1:], load=fx["load"], pool=fx["pool"], L0=levels.to_numpy(),
+                       f_mean_test=float(np.mean(fx["path"][t_origin - 1:])), f_mean_train=float(np.mean(fx["path"][start:t_origin - 1])),
+                       strata=fx["strata"])
         q = het_params(p, ladder, variant, s=s_, half_life=h, m=m_, fac=fac)
         test_len = T - t_origin
         shares = []
@@ -420,9 +443,13 @@ def main():
             A = np.nan_to_num(np.expm1(M[-52:]), nan=0.0).sum(0)
             o = np.argsort(-A, kind="stable")
             shares.append(float(A[o[:K // 64]].sum() / A[o[:K]].sum()))
+        if fac is not None:
+            fac_diag = {k: fac[k] for k in ("f_mean_test", "f_mean_train", "strata")}
         out = dict(panel=pn, variant=variant, s=s_, half_life=h, m=m_, share_3=float(np.mean(shares)),
                    share_3_q=[float(np.quantile(shares, 0.05)), float(np.quantile(shares, 0.95))], shares=shares)
-        (HERE / f"r12_oop__{pn}__{variant}.json").write_text(json.dumps(out, indent=1))
+        if fac is not None:
+            out["factor"] = fac_diag
+        (HERE / f"r12_oop__{pn}__{variant}.json").write_text(json.dumps(out, indent=1, default=float))
         print(json.dumps({k: v for k, v in out.items() if k != "shares"}), flush=True)
         return
     if mode == "recovery":

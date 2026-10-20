@@ -1,0 +1,15 @@
+reddit_submissions_long k=10: replaced in 1 yr 0.333, in 2 yr 0.550, ratio 1.65
+reddit_submissions_long k=25: replaced in 1 yr 0.293, in 2 yr 0.500, ratio 1.70
+reddit_submissions_long k=78: replaced in 1 yr 0.209, in 2 yr 0.340, ratio 1.62
+reddit_submissions_long k=156: replaced in 1 yr 0.212, in 2 yr 0.317, ratio 1.50
+reddit_submissions_long k=312: replaced in 1 yr 0.204, in 2 yr 0.325, ratio 1.59
+reddit_submissions_long k=625: replaced in 1 yr 0.202, in 2 yr 0.322, ratio 1.59
+reddit_submissions_long k=1250: replaced in 1 yr 0.181, in 2 yr 0.299, ratio 1.65
+reddit_submissions_long k=2500: replaced in 1 yr 0.178, in 2 yr 0.295, ratio 1.66
+reddit_submissions_long stratum 0-78 (n 76): sd 0.785  p50 0.249  p90 0.731  p95 0.883  max 5.662
+reddit_submissions_long stratum 78-156 (n 75): sd 0.304  p50 0.202  p90 0.400  p95 0.537  max 1.291
+reddit_submissions_long stratum 156-312 (n 153): sd 0.343  p50 0.226  p90 0.530  p95 0.591  max 1.055
+reddit_submissions_long stratum 312-624 (n 306): sd 0.571  p50 0.268  p90 0.673  p95 0.964  max 5.470
+reddit_submissions_long stratum 624-1248 (n 613): sd 0.538  p50 0.261  p90 0.762  p95 0.957  max 5.040
+reddit_submissions_long stratum 1248-2496 (n 1213): sd 0.579  p50 0.261  p90 0.805  p95 1.083  max 5.135
+reddit_submissions_long stratum 2496-4992 (n 2363): sd 0.674  p50 0.290  p90 0.909  p95 1.245  max 4.766
