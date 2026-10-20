@@ -169,3 +169,94 @@ def test_velocity_clip_bounds_fixed_heterogeneity():
     p0.vel_clip = 0.0
     b = rdm._State(p0, np.linspace(10.0, 0.0, 50), np.random.default_rng(5), lasting="movinghome_vp").vel
     assert np.array_equal(a, b)
+
+
+def _r16_toy(vel=False):
+    p = _toy_params(-0.001)
+    p.base.exit_rate = np.full(3, 0.01)
+    p.base.bottom_mu = np.array([0.0, 0.5])
+    if vel:
+        p.vel_var, p.vel_rho, p.vel_clip = 0.004 ** 2, 1.0, 2.5
+    return p
+
+
+def test_r16_defaults_are_bit_identical():
+    """R16 terms are opt-in: with their fields absent or at their defaults, the panels match the pre-R16 code
+    (fingerprints taken before the change, 2026-10-21)."""
+    import hashlib
+    ref = {("movinghome_vp", False): "baf7bb58eeec036950452f3bda7a66b92b84f6ec77ae8ee983e9332f2263765c",
+           ("movinghome_vp", True): "daabf2ccebcffc8c018c78c6f940cb269c0f22543ba10007da0c29ba94b47bf3",
+           ("rdm", False): "40431c8e8e2fe4af317edb39717c675a66b29ee27a32677e924c97c4ef20732c",
+           ("rdm", True): "c4bd79c6021df8f7c013e5d37f73d98a3f877daecfcab7963d02be4857c3ba13"}
+    for (lasting, vel), h in ref.items():
+        for explicit in (False, True):
+            p = _r16_toy(vel)
+            if explicit:
+                p.vel_head_k, p.vel_head_mult, p.ou_kappa_mult = 0, 1.0, 1.0
+                p.dec_delta, p.dec_enter, p.dec_exit = 0.0, 0.0, 0.0
+            X, ids = rdm.simulate_panel(p, np.linspace(10.0, 0.0, 300), 60, seed=11, lasting=lasting)
+            assert hashlib.sha256(X.tobytes() + ids.tobytes()).hexdigest() == h, (lasting, vel, explicit)
+    p = _r16_toy()
+    p.vel_var, p.vel_rho = 0.004 ** 2, 0.98
+    st = rdm._State(p, np.linspace(10.0, 0.0, 300), np.random.default_rng(4))
+    for _ in range(40):
+        st.step_lasting()
+    assert hashlib.sha256(st.L.tobytes() + st.ids.tobytes()).hexdigest() == "be7bda475c902e526c96e7c4cc09aaa41166177287495ad6ca447fb3e325444c"
+
+
+def test_decline_state_has_its_stationary_share_and_mean_zero():
+    """R16-A: the state's share stays at pi_D = a / (a + b), and its increment -delta (Z - pi_D) averages zero."""
+    p = _r16_toy()
+    p.dec_delta, p.dec_enter, p.dec_exit = 0.01, 0.004, 0.016          # pi_D = 0.2
+    st = rdm._State(p, np.linspace(10.0, 0.0, 20000), np.random.default_rng(2), lasting="movinghome_vp")
+    shares, incs = [], []
+    for _ in range(200):
+        shares.append(st.dec.mean())
+        incs.append(float(np.mean(-p.dec_delta * (st.dec - st.dec_pi))))
+        st.step()
+    assert abs(np.mean(shares) - 0.2) < 0.01
+    assert abs(np.mean(incs)) < 2e-4
+
+
+def test_decline_state_moves_a_member_by_delta_while_in_it():
+    """R16-A, exact: with no lasting noise and no switching out, a slot in the state drifts by -delta (1 - pi_D) a week."""
+    p = _r16_toy()
+    p.base.exit_rate = np.zeros(3)
+    p.drift_g = np.zeros(3)
+    p.sigma0 = 1e-12
+    p.dec_delta, p.dec_enter, p.dec_exit = 0.01, 1e-12, 1e-12          # pi_D = 0.5; no switches in practice
+    st = rdm._State(p, np.linspace(10.0, 0.0, 200), np.random.default_rng(3), lasting="movinghome_vp")
+    z0, h0 = st.dec.copy(), st.home.copy()
+    for _ in range(25):
+        st.step()
+    moved = st.home - h0
+    assert np.allclose(moved[z0], -0.25 * 0.5, atol=1e-6) and np.allclose(moved[~z0], 0.25 * 0.5, atol=1e-6)
+
+
+def test_head_spread_scales_the_head_velocities_only():
+    """R16-B: slots that start in the top vel_head_k get velocities times vel_head_mult; the rest are unchanged."""
+    L0 = np.linspace(10.0, 0.0, 400)
+    p0 = _r16_toy(vel=True)
+    a = rdm._State(p0, L0, np.random.default_rng(5), lasting="movinghome_vp").vel
+    p1 = _r16_toy(vel=True)
+    p1.vel_head_k, p1.vel_head_mult = 40, 2.0
+    b = rdm._State(p1, L0, np.random.default_rng(5), lasting="movinghome_vp").vel
+    assert np.allclose(b[:40], 2.0 * a[:40]) and np.array_equal(b[40:], a[40:])
+
+
+def test_ou_kappa_multiplier_keeps_the_swing_variance():
+    """R16-B: a faster OU reversion with the same stationary variance leaves var(L - home) about unchanged."""
+    def dev_var(km):
+        p = _r16_toy()
+        p.base.exit_rate = np.zeros(3)
+        p.sigma0 = 1e-12
+        p.ou_kappa_mult = km
+        st = rdm._State(p, np.linspace(10.0, 0.0, 4000), np.random.default_rng(8), lasting="movinghome")
+        out = []
+        for t in range(300):
+            st.step()
+            if t >= 100:
+                out.append(np.var(st.L - st.home))
+        return np.mean(out)
+    v1, v2 = dev_var(1.0), dev_var(2.0)
+    assert abs(v2 / v1 - 1) < 0.1, (v1, v2)

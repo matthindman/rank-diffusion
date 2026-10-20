@@ -986,3 +986,165 @@ Statistics: the R12 auxiliary covariances by stratum (gap 0 and 13), the two-spa
 - If the matched control's share is below 0.10, homogeneous diffusion does not make C. The data's C then comes from structure the homogeneous model lacks, and the net-of-C factor is the homogeneous-diffusion reading.
 - If it is 0.20 or more, C is a property of the statistic under homogeneous dynamics. The gross factor then stands, and the net row is withdrawn.
 - Between 0.10 and 0.20, both rows are reported.
+
+## Addendum R16 (2026-10-21, written before any run): the Tier 3 analyses
+
+**Why.** The owner, 2026-10-21: "try all the tier 3 items, revising the draft as appropriate. Once those are done … do another round of reviewers." Tier 3 is listed in `SYNTHESIS_R7.md` §5 and its GPT-6 Pro addendum. Code:
+- `r16_tier3.py`: A, B, C, D and F;
+- `r16_capture.py`: E;
+- new opt-in fields in `rankdiff_rdm.py`: the decline state, the head's spread, the OU multiplier and the starting states. Defaults are bit-identical, pinned by fingerprints taken before the change (`tests/test_rankdiff_rdm.py`).
+
+Every job reads the lean cache and runs alone under the swap watchdog. Nothing below uses a gate evaluation or sealed data.
+
+**What has been seen.** Every R12 and R15 output, and the data moments (`r12_moments__*.json`). The data moments include the faller/riser asymmetry (+0.071, +0.072) and the lag profile. Nothing from R16 had been computed when this was written.
+
+### R16-A. A reversible decline state (R14; mirrored GLLM type switching)
+
+**Model.** The home drifts by −δ(Z − π_D). Z ∈ {0, 1}, with weekly hazards a (entering) and b (leaving), and π_D = a/(a + b).
+- **Parameterization.** The annual spread is s = 52δ√(π_D(1 − π_D)). The state's half-life is hl, with a + b = 1 − 0.5^(1/hl).
+- **Drift.** The hold drift is re-solved numerically with the state present.
+- **Starting states and rebirth.** Stationary draws.
+- **Lasting multiplier m:** R12 (a)'s optimum (submissions 1.0, comments 0.7).
+
+**Calibration.** Indirect inference on R12 (b)'s 15 moments: covariances at gaps 0, 13, 26 and 39 by stratum, plus the two-spacing lasting variance. It uses R12's bootstrap sd.
+- **Grid:** π_D ∈ {0.1, 0.25, 0.5} × hl ∈ {52, 104, 208} × s ∈ {0.3, 0.5, 0.7}, 3 seeds a point (CRN with R12).
+- **Reporting.** The argmin for each π_D is reported. π_D is not chosen by any test statistic: all three are reported as a profile.
+
+**Worlds.** 10 seeds at each π_D's argmin.
+
+**Out of period** (20 seeds, A6's design, full-panel calibration as in R12, so retrospective), at the overall argmin, with two starts:
+- stationary starting states;
+- starting states from training history: in decline if the community's last training-year change is in the bottom π_D of its stratum.
+
+**Tests (untargeted).**
+- the faller-minus-riser asymmetry;
+- the lag profile at 52 weeks;
+- persistence by stratum;
+- the prior-decliner contrast (R10);
+- sign-conditioned transitions: the next year's stratum-demeaned change after the bottom decile and after the top decile of this year's change, `tail_followup`, computed identically on the data;
+- turnover and retention;
+- the out-of-period head share.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R16-A1 | at π_D = 0.1 the calibrated decline world's asymmetry is positive on both ladders | 55% |
+| R16-A2 | at π_D = 0.5 it is ≤ 0 on both ladders | 60% |
+| R16-A3 | at π_D = 0.1 the prior-decliner contrast is positive on both ladders | 70% |
+| R16-A4 | the best decline world's objective on the 15 moments is below R12 (b)'s (submissions 620, comments 1,469) on both ladders | 50% |
+| R16-A5 | in the data, the next year's change after the bottom decile is negative and below the change after the top decile, and the π_D = 0.1 world reproduces that ordering on both ladders | 45% |
+| R16-A6 | out of period with history-initialized states, the submissions head share is at least 0.05 below the matched control's (0.533) | 35% |
+
+### R16-B. Joint re-estimation of fixed heterogeneity
+
+**Model.** Fixed effects with:
+- an annual spread s for the body;
+- head_mult × s for communities that start in the top K/16;
+- the moving home's OU reversion times km, with its stationary variance kept (exact for the discrete AR(1));
+- the lasting multiplier m.
+
+**Calibration.** 24 moments with a new bootstrap (`r16_moments__*.json`, 40 draws over communities within strata):
+- covariances at gaps 0, 13 and 26 by stratum;
+- the two-spacing variance by stratum;
+- weekly growth autocovariances at lags 1, 2, 4 and 8 by stratum.
+
+**Grid.** s ∈ {0.4, 0.6, 0.8} × head_mult ∈ {0.25, 0.5, 1.0} × km ∈ {0.5, 1, 2} × m ∈ {0.8, 1.0, 1.2} (submissions) or {0.5, 0.7, 0.9} (comments): 81 points, 3 seeds each.
+
+**Worlds** (20 seeds) and the out-of-period head share (20 seeds), at the argmin. The tests are as in A.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R16-B1 | the argmin has head_mult < 1 on both ladders | 65% |
+| R16-B2 | the argmin is not at the grid's edge in s or km on at least one ladder | 40% |
+| R16-B3 | the jointly estimated world's asymmetry stays ≤ 0 on both ladders | 80% |
+| R16-B4 | its out-of-period head share is not closer to the observed than the fixed form's (submissions 0.504; comments 0.613) by more than 0.05 | 70% |
+| R16-B5 | its minimum objective per moment exceeds 4 on both ladders (with C below, a rejection) | 80% |
+
+### R16-C. The registered A1 runs, and the objective's size under correct specification
+
+These are 20 pseudo-data panels (seeds 1000–1019) from each of three worlds. Each is calibrated by the fixed form against the registered fixed grid's saved simulated moments and the data's bootstrap sd (`r12_grid__<panel>__fixed.json`; the grid's simulations do not depend on the target).
+- **(i) misspecification:** the decaying world at R12 (b)'s optimum;
+- **(ii) false positive:** the matched homogeneous world with the moving home's median OU half-life set to 26 weeks (variance kept);
+- **(iii) correct specification:** the fixed world at R12 (a)'s optimum.
+
+This deviates from A1's "each replicated 20 times" in one respect: the grid is the registered one, not re-simulated per replicate.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R16-C1 | (iii): the median minimum objective is below 40 on both ladders, so the data's 351 and 1,013 are rejections | 70% |
+| R16-C2 | (ii): the fixed form chooses s ≤ 0.1 in at least 15 of 20 replicates on both ladders | 70% |
+| R16-C3 | (i): the fixed form chooses s ≥ 0.3 in at least 15 of 20 replicates on both ladders: the calibration cannot tell decaying from fixed differences | 60% |
+
+### R16-D. The size exponent with the world's own passing parts
+
+**Design.** `fit_model`, the data's estimator in full (base passing parts, then the hold model's σ0 and β), is run on panels simulated from the matched homogeneous control. Each world panel goes through `restrict_universe` with buffer 4, as the data does.
+- **Truths:** β at the data's fitted value, and β = 0 (drift re-solved).
+- **Seeds:** 10 each, comments first, then submissions.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R16-D1 | comments: at the fitted β (0.126), the mean β̂ is below 0.10 | 55% |
+| R16-D2 | comments: at β 0, the mean β̂ is within ±0.03 of 0 | 50% |
+| R16-D3 | submissions: at the fitted β, the mean β̂ is within ±0.03 of the truth | 60% |
+
+**Reading, fixed now.** If D1 holds, the comments β in the paper is reported with the bias found. A bias-corrected value is given only as a linear map through the two truths, labelled as such.
+
+### R16-E. Capture audit (`r16_capture.py`)
+
+The data are the DEVELOPMENT daily panels on T9, streamed, filtered to every block's top K, aggregates only. The raw archive (WD) is not mounted, so the collection delay itself cannot be read.
+
+**daily.**
+- **Shares by day:** the head's share of items, its share of karma, and its karma per item relative to the top K. The head is each 52-week block's top K/64 by total activity, and the top K is that block's.
+- **Steps:** the mean log over the 14 days after each first-of-month boundary minus the 14 days before. The placebos are the 15th of each month. Dates within 15 days of a block edge are excluded.
+- **Pockets:** the four short-delay weeks against their trailing 28-day median.
+
+**rosters.**
+- **Exclusions:** terminal collapses, defined as a fall of at least 3 log units below the trailing 13-week mean, with no return within 2 log units and at least 8 weeks left.
+- **Statistics:** the head share by block and the gapped persistence, with collapses excluded, and with a 2K tracking threshold. The threshold uses within-universe weekly ranks, an approximation.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R16-E1 | the 1 July 2021 step in the submissions head's log item share lies within the 5–95% range of the other first-of-month steps | 55% |
+| R16-E2 | on submissions, the sum of first-of-month steps in the log item share is less than a third of the within-block total change | 65% |
+| R16-E3 | the mean absolute first-of-month step is less than 1.5 times the mid-month placebo's, on both ladders and all three series | 60% |
+| R16-E4 | without terminal collapses, the submissions head's fall in arithmetic share from the first to the last block shrinks by less than a third | 65% |
+| R16-E5 | gapped persistence at 13 weeks stays ≥ +0.10 on both ladders, both without collapses and with the 2K threshold | 75% |
+
+The pockets are reported, not scored.
+
+### R16-F. The durability comparison in the calibrated model
+
+**Design.**
+- **Model:** the matched homogeneous model from the observed 2019 ladder at lasting multipliers m ∈ {0.7, 1.0, 1.4}, with the drift re-solved to hold the ladder at each.
+- **Runs:** 10 seeds and 260 weeks per m, with and without a step of 0.2 a year in the decline of the current top K/64 from week 0, on common seeds.
+- **Measures:** the shape U_k − U_K at K/64 and K/16 by 52-week block (responses: shock minus control), and the retention of each block-0 top k at blocks 1–4 (control).
+- **The model's time constant τ_model** is fitted to the response by least squares on the block means of −Δτ(1 − e^{−t/τ}).
+- **The membership e-folding** is −1/ln(retention at one year).
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R16-F1 | at m 1.0 the ratio τ_model / membership e-folding at K/64 is between 0.5 and 2 on both ladders | 60% |
+| R16-F2 | the SI's linearized τ at the comments head (9 years) exceeds τ_model by at least 1.5 times | 55% |
+| R16-F3 | across m 0.7–1.4 the ratio in F1 varies by less than ±30%, so the comparison is robust to the lasting-variance uncertainty that changes each time scale separately | 60% |
+
+**Order of the runs.** Submissions before comments within each item.
+1. E (data);
+2. the moments;
+3. C;
+4. A's grid, worlds and out-of-period runs;
+5. B's grid, worlds and out-of-period runs;
+6. D;
+7. F.
+
+A crash before any output is fixed and disclosed here, as in R12-A3. A killed run is not interpreted.

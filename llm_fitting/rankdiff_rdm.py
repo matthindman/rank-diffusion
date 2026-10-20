@@ -81,6 +81,13 @@ class RDMParams:
     fac_load: np.ndarray | None = None   # R12 (c): loading deviation of each starting slot (same order as L0)
     fac_pool: np.ndarray | None = None   # R12 (c): loading deviations drawn for reborn identities
     vel_clip: float = 0.0           # R12-A1 (a), opt-in: draws of the velocity truncated at +/- vel_clip sd (0 = off)
+    vel_head_k: int = 0             # R16-B, opt-in: slots starting in the top vel_head_k of L0 get velocity sd x vel_head_mult
+    vel_head_mult: float = 1.0      #   (reborn identities get the body's sd; 0 = off)
+    ou_kappa_mult: float = 1.0      # R16-B, opt-in: the moving home's OU reversion times this, its stationary variance kept (1 = off)
+    dec_delta: float = 0.0          # R16-A, opt-in: a reversible decline state, the home's drift -dec_delta (Z - pi_D) (0 = off)
+    dec_enter: float = 0.0          #   weekly hazard of entering the state
+    dec_exit: float = 0.0           #   weekly hazard of leaving it; pi_D = enter / (enter + exit)
+    dec_init: np.ndarray | None = None   # R16-A: starting states (same order as L0); None = stationary draws
 
 
 # --------------------------------------------------------------------------- #
@@ -412,6 +419,17 @@ class _State:
         if self.vel is not None and getattr(p, "vel_clip", 0.0) > 0:
             c = p.vel_clip * math.sqrt(p.vel_var)
             self.vel = np.clip(self.vel, -c, c)
+        self.vmult = None                                # R16-B: spread by starting stratum, opt-in (no draws)
+        if self.vel is not None and getattr(p, "vel_head_k", 0) > 0:
+            self.vmult = np.ones(self.N)
+            self.vmult[np.argsort(-self.L, kind="stable")[:int(p.vel_head_k)]] = float(p.vel_head_mult)
+            self.vel = self.vel * self.vmult
+        self.dec = None                                  # R16-A: the decline state, opt-in (draws only when on)
+        if getattr(p, "dec_delta", 0.0) > 0:
+            self.dec_pi = p.dec_enter / (p.dec_enter + p.dec_exit)
+            init = getattr(p, "dec_init", None)
+            self.dec = (np.asarray(init, bool).copy() if init is not None and len(init) == self.N
+                        else rng.random(self.N) < self.dec_pi)
         mix_b = getattr(b, "mix_b", 0.0)                # model A's --mix-hetero: sigma_perm scaled by v^(b/2)
         self.mix_b = mix_b
         self.sqw = mrd._sqw(self.sqv, mix_b, ts) if (ts > 0 and mix_b > 0) else 1.0
@@ -437,6 +455,28 @@ class _State:
         if self.fac is not None and ne:
             self.fac[ex] = self.p.fac_pool[self.rng.integers(0, len(self.p.fac_pool), ne)]
 
+    def _vel_step(self):
+        """The velocity's AR(1) update; with R16-B's spread by starting stratum the innovation is scaled too."""
+        p = self.p
+        e = math.sqrt(p.vel_var * (1 - p.vel_rho ** 2)) * self.rng.standard_normal(self.N)
+        self.vel = p.vel_rho * self.vel + (e if self.vmult is None else e * self.vmult)
+
+    def _dec_step(self):
+        """R16-A: the decline state's increment to the lasting level, -delta (Z - pi_D), then its switches."""
+        if self.dec is None:
+            return 0.0
+        p = self.p
+        inc = -p.dec_delta * (self.dec.astype(float) - self.dec_pi)
+        u = self.rng.random(self.N)
+        self.dec = np.where(self.dec, u >= p.dec_exit, u < p.dec_enter)
+        return inc
+
+    def _reborn_r16(self, ex, ne):
+        if self.vmult is not None and ne:
+            self.vmult[ex] = 1.0
+        if self.dec is not None and ne:
+            self.dec[ex] = self.rng.random(ne) < self.dec_pi
+
     def step_lasting(self):
         """The lasting level alone (drift, size-law diffusion with amplitude, jumps, exit and rebirth).  For the
         moving-home variant the lasting process is the home, which has the same law."""
@@ -451,7 +491,9 @@ class _State:
         self.L = self.L + self._fac_step()
         if self.vel is not None:
             self.L = self.L + self.vel
-            self.vel = p.vel_rho * self.vel + math.sqrt(p.vel_var * (1 - p.vel_rho ** 2)) * rng.standard_normal(N)
+            self._vel_step()
+        if self.dec is not None:
+            self.L = self.L + self._dec_step()
         if p.pi > 0 and p.lam > 0:
             jmp = rng.random(N) < p.lam
             nj = int(jmp.sum())
@@ -468,6 +510,7 @@ class _State:
             if self.vel is not None:
                 self.vel[ex] = self._vel_draw(ne)
             self._fac_reborn(ex, ne)
+            self._reborn_r16(ex, ne)
         if self.fac is not None:
             self.t += 1
 
@@ -498,7 +541,9 @@ class _State:
             self.home = self.home + self._fac_step()
             if self.vel is not None:                      # drift by name: a persistent velocity of the home
                 self.home = self.home + self.vel
-                self.vel = p.vel_rho * self.vel + math.sqrt(p.vel_var * (1 - p.vel_rho ** 2)) * rng.standard_normal(N)
+                self._vel_step()
+            if self.dec is not None:                      # R16-A: the decline state
+                self.home = self.home + self._dec_step()
             if p.pi > 0 and p.lam > 0:
                 jmp = rng.random(N) < p.lam
                 nj = int(jmp.sum())
@@ -506,6 +551,11 @@ class _State:
                     self.home[jmp] += sLh[jmp] * math.sqrt(p.pi / p.lam) * rng.standard_normal(nj)
             kz = np.interp(zp, b.z_knots, b.kappa_z) if b.kappa_z is not None else b.kappa
             sp2 = np.interp(zp, b.z_knots, b.sigma_perm) ** 2
+            km = getattr(p, "ou_kappa_mult", 1.0)
+            if km != 1.0:                                 # R16-B: faster or slower reversion, same stationary variance
+                kz1 = np.minimum(kz * km, 0.99)           #   of the discrete AR(1): s^2 / (2k - k^2) held fixed
+                sp2 = sp2 * kz1 * (2 - kz1) / (kz * (2 - kz))
+                kz = kz1
             if self.lasting in ("movinghome_vp", "movinghome_vp_nodrift"):   # 2z-dg A5b: subtract kappa*sigma_L^2/2 (A's one-step variance)
                 sp = np.sqrt(np.maximum(sp2 - kz * sLh ** 2 / 2.0, 0.1 * sp2))
             else:                                       # the frozen form (2z-dd): short by sigma_L^2 at one step (2z-df V4)
@@ -545,6 +595,7 @@ class _State:
                 if self.mix_b > 0:
                     self.sqw[ex] = mrd._sqw(self.sqv[ex], self.mix_b, self.ts)
             self._fac_reborn(ex, ne)
+            self._reborn_r16(ex, ne)
         if self.fac is not None:
             self.t += 1
         return self.L + self.m + self.xi + so * self.sqv * rng.standard_normal(N)
