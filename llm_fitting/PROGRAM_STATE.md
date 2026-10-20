@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-20** (the paragraphs on §2z-da … §2z-dn were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-20** (the paragraphs on §2z-da … §2z-dp were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -337,10 +337,16 @@ spine, "size does not protect", and the model and momentum. The outline
     - Fixed, AR and factor forms were calibrated by indirect inference
       (A2–A4). Even calibrated to the persistence, they reproduce at most
       three fifths of it.
+      _[Restated by §2z-do/§2z-dp: by gap. At 52 weeks on comments the
+      fixed form matches, with a lag profile of the wrong shape.]_
     - The optimum is near s 0.5 (a post hoc extension confirms it), with a
       poor fit.
+      _[§2z-do G26: not established on comments, and within noise on
+      submissions. The fit is rejected by about 6 SD per moment on
+      submissions and 11 on comments.]_
     - They give no faller/riser asymmetry, and the wrong rank pattern: the
       data's persistence lives below the head.
+      _[§2z-do G15: every form gives a reversed asymmetry, −0.04 to −0.10.]_
     - They close about a sixth of the 2022 head-share gap, which cannot be
       told from none (fixed 0.504, matched control 0.533; observed 0.356).
       On comments, fixed differences move the forecast away from the
@@ -360,6 +366,34 @@ spine, "size does not protect", and the model and momentum. The outline
   - **Memory rule (owner, 2026-10-20): no sustained swapping.** Heavy jobs
     run one at a time, from the lean universe cache (`r12_cache.py`,
     checked exact), under `r12_safe_run.sh`.
+- **Referee round 7 (§2z-do, 2026-10-20; planning) and R15 with
+  manuscript v6 (§2z-dp, 2026-10-20).**
+  - **Core result restated.** The hierarchy outlasts its members *when*
+    the leaders' decline stays near the steady crossing gain (about 0.2 a
+    year at the comments head). When the decline jumped, it flattened
+    within the year: the comments head by 0.46 in 2019–20, the
+    submissions head by 0.62 over 2019–22 (D1).
+  - **The separation of time scales is modest.**
+    - Gross, it is 2–4 at the comments head and 1–2 at the submissions
+      head (D4).
+    - Homogeneous growth makes the composition term negative, while fixed
+      growth differences give it the data's size (D5). Net of it, the
+      factor is about 1 and a half, which is the homogeneous reading.
+  - **Persistence survives the platform factor** once loadings are shrunk.
+    Unshrunk 2019 loadings are noise, and their "removal" of submissions
+    persistence is an artefact (D3).
+  - **R12 worlds:** a quarter to two fifths of a planted spread reaches
+    the statistics, because of the drift by rank and conditioning on rank
+    and survival. The realized spread among survivors is about 0.3 (D2).
+  - **GPT-6 Pro** reviewed v5 for the owner: send out, not with
+    enthusiasm. Its points are in `SYNTHESIS_R7.md` (addendum P1–P13).
+  - **Tier 3, waiting for the owner:**
+    - the joint R12 re-estimation;
+    - the A1 runs;
+    - R14 (decline state);
+    - comments β recovery;
+    - the capture audit;
+    - the durability comparison rebuilt in the calibrated model.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it

@@ -1345,3 +1345,21 @@ Submissions, K/64:
   - Either way the ratio is two to four on comments and about one at the submissions head, not "several times".
   - If the composition term is not lasting movement, the separation disappears at the head.
   - Durability as a separation of time scales is therefore weak. What holds the shape on comments in 2020–22 is that the slide was near the crossings it induces (c/(s̄ − e) near 1 in cells 3 and 4), not a long relaxation time.
+
+**D5, the composition term in the simulated worlds** (PLAN.md addendum R15-D5, committed 4637fe5 before the run; `r15_d5_composition.py`, `r15_d5_composition.json`, `out_r15_d5.txt`). The exact split R_ac − R_ab = R_bc + C, with `remainder_run.py`'s blocks, starts, cohorts and cut-offs, on the R12-calibrated worlds (drift re-solved numerically, exits on, 3 seeds each). Peak 4.4 GB; swap did not grow. Share C/(R_bc + C), mean over K/64…K/4 (range across cut-offs):
+
+| | data | matched homogeneous | fixed differences (s 0.5, m 1.0) |
+|---|---|---|---|
+| submissions | +0.215 (0.06 to 0.34) | −0.055 (−0.11 to −0.01) | +0.263 (0.23 to 0.31) |
+| comments | +0.251 (0.22 to 0.27) | −0.403 (−0.57 to −0.29) | +0.226 (0.19 to 0.26) |
+
+- The seed-to-seed spread of a cut-off's share is about ±0.1 in the homogeneous submissions world and ±0.05–0.1 elsewhere.
+- In the homogeneous worlds the estimated drift part C_drift is small and positive: +0.00 to +0.14 per 1,000 weeks. The negative C is therefore the one-time selection part: the set chosen at b carries passing gains that reverse.
+- **R15-7: PASS.** The matched control's pooled share is −0.055 and −0.403, both below +0.10.
+- **R15-8: PASS.** Fixed differences raise it by +0.318 and +0.629.
+- **R15-9: FAIL.** Fixed differences exceed the data on submissions (+0.263 against +0.215). They stay below it on comments (+0.226 against +0.251).
+- **Reading, by the rule fixed before the run.**
+  - The matched control's share is below 0.10, so homogeneous diffusion does not make C.
+  - The net-of-C factor is the homogeneous-diffusion reading of D4: about 1 at the comments head (0.97) and about a half at the submissions head (0.53).
+  - Under homogeneous growth the separation of time scales disappears at the heads.
+- **Also.** The positive C is a further trace of persistent growth differences, alongside gapped persistence and the prior-decliner contrast. Fixed differences reproduce its size on both ladders without being calibrated to it. It does not distinguish the forms' asymmetry, which every form still gets wrong.

@@ -13585,3 +13585,128 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-20; work started 
 - **Tier 4:** owner items.
 
 **Not done in this entry:** no manuscript change beyond 61b6bbe, no new run, GPT-6 Pro not yet run.
+
+## 2z-dp. 2026-10-20 — EXPLORATORY MEASUREMENT R15 (D1–D5; expectations in PLAN.md addenda R15 and R15-D5, committed at 38e48a0 and 4637fe5 before the runs) and MANUSCRIPT v6 (round-7 Tier 1, plus GPT-6 Pro). The crossing gain is steady while the leaders' decline varies, and the shape moves with the decline. The durability factor is 1–2 at the heads, not "several times". The platform-loading "removal" of persistence is an artefact of noisy loadings. Only a quarter to two fifths of a planted growth spread reaches the R12 statistics. Homogeneous growth makes the crossing statistic's composition term negative, while fixed growth differences give it the data's size, so the time-scale factor net of it (about 1 at the heads) is the homogeneous reading. Nothing adopted; no gate evaluation; bridge sealed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-20; work started from aa45ff9 (§2z-do); R15 committed at bc40120, the D5 registration at 4637fe5. Owner instruction, 2026-10-20: "Do 1 and 2. wait for 3 until I tell you." Tier 3 was not started._
+- **Status of earlier entries:** this entry closes §2z-dm's IN PROGRESS status for the manuscript (v5 is superseded by v6) and carries out §2z-do's Tiers 1 and 2.
+- **Run folder:** `runs/2026-10-18_pnas_push/`. Scripts are `r15_d1_shape_path.py`, `r15_d2_planted.py` (and its post hoc `nodrift` option), `r15_d3_loading_placebo.py`, `r15_d4_durability.py` and `r15_d5_composition.py`. Outputs are `r15_*.json` and `out_r15_*.txt`; RESULTS R15 holds the tables and scores.
+- **Every job** read the lean universe cache and ran alone under `r12_safe_run.sh`. Peaks were 1.8–2.7 GB, and swap did not grow.
+- **Review folder:** `runs/2026-10-20_external_critiques_round7/`. It adds `REVIEW_gpt-6-pro.md` (verbatim; the owner ran it in ChatGPT with the v5 PDFs) and an addendum to `SYNTHESIS_R7.md` (P1–P13).
+
+### 1. R15 results (RESULTS R15)
+
+**D1, the shape path (descriptive).**
+- U_k − U_K by year, exact:
+  - comments K/64: 5.59, 5.13, 4.98, 4.97;
+  - submissions K/64: 4.61, 4.41, 4.15, 3.99.
+- At the comments head the crossing gain is about 0.2 a year in every half-year cell, while the slide runs 0.47, 0.31, 0.12, 0.13 and 0.34. The observed change tracks c − s̄ + e cell by cell (−0.40 against −0.37 … +0.06 against +0.01).
+- The annual rate-law cells begin at 2020–21, so they omit the comments head's 2019–20 fall. That is how v5's "in no year more than a third of a log unit" arose (§2z-do G1).
+- The stable-parameter model from the 2019 ladder keeps the comments head flat (−0.03 after one year) and lowers the submissions head by 0.56 in five years.
+
+**D2, planted against recovered** (submissions, fixed form, s 0.5, 3 seeds).
+- About a quarter to two fifths of the planted 0.25 reaches the covariances, under every setting (cov increment 0.06–0.10).
+- **R15-1 FAIL** (0.102 against ≥ 0.125). **R15-2 FAIL** as written: exits off adds 0.003, closed-form drift 0.001.
+- Post hoc, a world with no drift by rank (not registered) raises the slope-variance increment among long-lived communities from 0.075 to 0.120. The drift by rank is a restoring force. The rest of the shortfall comes from conditioning on permanent rank and survival, which applies to the data too.
+- The realized spread among survivors is about 0.3. The manuscript now says so.
+
+**D3, the loading adjustment of persistence.**
+- The split-half reliability of the 2019 loadings is −0.004 and −0.001 (**R15-3 PASS**).
+- Permuted loadings lower submissions persistence at 13 weeks by 0.133, against 0.129 for the real ones (**R15-4 PASS**).
+- With EB-shrunk loadings, persistence is unchanged on submissions (0.149 at 13 weeks) and nearly so on comments (0.162).
+- §2z-dd D7's "removal" of submissions persistence by platform loadings is an artefact. "The two ladders favour different readings" is withdrawn.
+
+**D4, the durability factor from measured crossings** (F = 2 ln(K/k)(c/(s̄ − e))², median of 5 cells).
+- Comments K/64: 1.98 gross (**R15-5 FAIL**, ≥ 3 expected) and 0.97 with C 0.30 removed (**R15-6 PASS**).
+- Submissions K/64: 1.08.
+- The variance-based factor at the comments head is about 4.
+- The separation of time scales is two to four at the head of comments and one to two at the head of submissions. It disappears at the head if C is not lasting movement.
+
+**D5, the composition term in the simulated worlds.**
+- **Design.** The exact split R_ac − R_ab = R_bc + C, as in `remainder_run.py`, on the R12-calibrated matched control and on fixed differences (s 0.5, m 1.0), 3 seeds each, both ladders. Peak 4.4 GB.
+- **Share of C in the statistic,** as a mean over K/64…K/4:
+  - data: +0.215 on submissions, +0.251 on comments;
+  - matched homogeneous: −0.055 and −0.403;
+  - fixed differences: +0.263 and +0.226.
+- **Scores.** **R15-7 PASS** (homogeneous below +0.10) and **R15-8 PASS** (fixed raises it by ≥ 0.05). **R15-9 FAIL**: the fixed world exceeds the data on submissions.
+- **Mechanism.** The homogeneous negative C is the selection part: the set chosen at b carries passing gains that reverse. Its drift part C_drift is small and positive.
+- **Reading, by the rule fixed before the run.** Homogeneous diffusion does not make C, so D4's net-of-C row is the homogeneous reading: 0.97 at the comments head and 0.53 at the submissions head. Under homogeneous growth the separation of time scales disappears at the heads.
+- **Also.** The positive C is a further trace of persistent growth differences, which fixed differences reproduce without being calibrated to it.
+
+### 2. Manuscript v6 (`paper/pnas_draft.tex`, `paper/pnas_si.tex`, `paper/references.bib`, `make_v5_figures.py`)
+
+**Restated claims.**
+- **The core result.** The hierarchy outlasts its members *when* the leaders' decline stays near the steady crossing gain. While the decline jumped, it flattened within the year:
+  - comments in 2019–20 (−0.46 at the head);
+  - submissions over 2019–22 (−0.62).
+- **Time scales.** The separation is modest: two to four times at the comments head and one to two at the submissions head, gross (D4). Net of the composition term, which homogeneous growth does not produce (D5), it is about 1 and a half. "Several times" is withdrawn from the significance statement, abstract and SI.
+- **The variance caveat now has the right sign.** An overstated σ² lengthens the true movement time and shortens τ (G6, P1).
+- **The five-year rates** are now consistent with Results 2 (G7).
+- **Persistence.** Unshrunk platform loadings are noise (D3). With shrinkage, persistence survives the platform factor on both ladders.
+- **R12.**
+  - The worlds carry a realized spread of about 0.3 among survivors (D2).
+  - The forms fail as specified (one spread, independent of size), not persistent heterogeneity in general.
+  - "At most three fifths" is restated by gap (G20).
+  - The top-ten claim holds only against the closed-form control (G21).
+  - The out-of-period runs are retrospective projections with full-panel heterogeneity grids (G22).
+  - The fit is rejected by about 6 SD per moment on submissions (G25).
+  - "Minimum near 0.5" is withdrawn on comments (G26).
+  - Every form gives a reversed asymmetry (G15, P9).
+- **The rate law** with measured terms is close to an identity: it locates change rather than testing a mechanism (G29).
+- **Retention forecasts:** small errors, mixed value against carrying forward (G32).
+- **Turnover range** in the abstract is "a sixth to a third" (P4). The opening cites the top 6,250 (P5).
+- **"Homogeneous" is defined** (P12).
+- **Uses.** Agreement with the benchmark does not show that design is irrelevant, and turnover among communities is not market power (P11). The SI "rate of response" is a conditional model response.
+
+**Corrections of fact:**
+- the Table 1 data column (G2);
+- "Zipf ladder" for the atlas's stylized worlds (G3);
+- two forms calibrated, not one (G4);
+- the missing e (G5);
+- uniform in rank (G8);
+- "below the top 780" (G9);
+- the Fig. 4C line (G10);
+- the statistic's name (G11);
+- recovery of the fixed form only (G12);
+- the A1 runs listed as not run (G13);
+- "clipped" (G14);
+- the duplicate heading (G16);
+- selection by design (G17);
+- R10 shares 40–63% (G18);
+- the smaller slips (G19);
+- the R13-1 rationale (G30);
+- the Results 4 wording (G31);
+- the SI completeness qualifier (P6);
+- the Gomez prior-year decomposition marked not exact.
+
+**Presentation:**
+- Table 1 at full width with the submissions values and the matched control;
+- Fig. 2C on the net-decline axis;
+- Figs. 3A and 3B cut at ten years; 3B shows the change since 2019, with the observed D1 points;
+- the Fig. 4A axis, Fig. 4C's misleading dashed line removed, Fig. 4D's ladder labels, Fig. 1D's columns;
+- the long continuations moved to the SI;
+- a new SI subsection, "The shape's path" (D1), and the D4 factor table in SI time scales;
+- an SI paragraph and table, "The composition term" (D5);
+- the registration list (R15, including R15-9's failure) and the use-of-AI note (six referee rounds plus GPT-6 Pro).
+
+**References verified and added:** Hagar & Shaw 2022, Ichiba–Pal–Shkolnikov 2013, TeBlunthuis 2025, Fernholz & Koch 2021. Luttmer 2011, Fernholz 2017 and Guvenen et al. 2021 are now engaged in the main text.
+
+**Checks.**
+- The main text is 8 pages and the SI 19, with no undefined references. The abstract is 249 words, the significance statement 118.
+- Sentence lengths: median 21 words, 90th percentile 43, 12.3% over 40 words, against the exemplars' 22, 42 and 11.5%.
+- The remaining `\todo`s are owner items.
+
+### 3. What was not done
+- **Tier 3** (owner's call; not started):
+  - the joint R12 re-estimation;
+  - the two registered A1 recovery runs (still not run);
+  - R14, the decline-state model;
+  - the comments β recovery study;
+  - the capture audit (GPT-6 Pro rank 2);
+  - the durability comparison rebuilt in the calibrated model with propagated uncertainty (GPT-6 Pro rank 1).
+- **Not done:** the full restructure of Results 2 (P13; paragraphs split only).
+- **Owner items:**
+  - the title (GPT-6 Pro proposes "Why online attention hierarchies can outlast their members");
+  - the classification (Social Sciences; Economic Sciences the alternative);
+  - the DOI, acquisition source and date, acknowledgements, Page IDs;
+  - the protocol amendments.

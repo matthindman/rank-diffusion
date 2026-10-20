@@ -135,3 +135,49 @@ Whether the 2019→20 drop is the surge, a capture artefact or a real departure 
 - data provenance (Pushshift terms; CrowdTangle Page IDs and date; DOI);
 - classification;
 - the protocol amendments (P5's source switch and blackout; P6).
+
+## Addendum (2026-10-20): GPT-6 Pro
+
+The owner ran `PROMPT_GPT6PRO_R7.md` in the ChatGPT interface with the v5 PDFs and pasted the report; it is saved verbatim as `REVIEW_gpt-6-pro.md`. The reviewer had the PDFs only, with no repository access. Its arithmetic was checked against the record. Its references were checked against publisher or Crossref records in this session.
+
+**Decision.** "Send out, but not with enthusiasm in its present form." It names three repairs: the durability argument mixes time scales; the submissions departure crosses an incompletely audited capture change; and the heterogeneous-growth conclusions exceed the fitted specifications. It recommends the Social Sciences classification, with Economic Sciences as the alternative, and the title "Why online attention hierarchies can outlast their members". Both are owner items.
+
+**Items that agree with G1–G33** (independent confirmations, no new work):
+- Table 1's pooled value (G2);
+- the missing e (G5);
+- the sign of the variance correction for τ (G6);
+- uniform in rank, not log rank (G8);
+- "at most three fifths" (G20);
+- "a sixth to a third within five years" (G7);
+- 50% against 51% (G19);
+- the out-of-period labels (G22);
+- the Fig. 2C diagonal;
+- Fig. 3B's horizon (G33);
+- the Table 1 layout.
+
+**New items, checked:**
+
+| # | item | check | status / action |
+|---|---|---|---|
+| P1 | With net decline fixed, a 79% variance overstatement takes the comments-head ratio of relaxation to movement from 3.9 to about 1.2 | algebra: τ ∝ q, T_move ∝ 1/q, so the ratio ∝ q²; 3.9/1.79² ≈ 1.2 | **CONFIRMED.** Consistent with R15 D4 (crossings-based factor 1.98 gross, 0.97 net of C). Significance and abstract no longer claim "several times"; SI time scales give both rows |
+| P2 | "Several times" fails at comments K/2: relaxation 5–10 years against movement 5.9 and membership about 5.7 | SI table | **CONFIRMED.** Restated by rank in the SI |
+| P3 | "Stable parameters do not change the slide" is false at finite horizon | — | **CONFIRMED** (wording); removed |
+| P4 | The abstract's "a sixth to a quarter of each Reddit top set" excludes the top ten (27–33%) | main text | **CONFIRMED.** Now "a sixth to a third" |
+| P5 | The opening's "a sixth of the top 12,500" is supported at K/2 = 6,250 | SI turnover table | **CONFIRMED.** Now "the top 6,250" |
+| P6 | Completeness is guaranteed only for weekly top sets, not for sets ranked by annual totals | definition | **CONFIRMED.** SI Data qualified; not checked numerically |
+| P7 | The 1.3–1.7 two-year/one-year ratio does not identify passing swings (√2 under diffusion) | algebra | **CONFIRMED** (= G30) |
+| P8 | Capture sensitivity: the head/rest odds of a recorded submission fell to 0.33 of 2019, so relative detection would have to fall by about two thirds to explain the item-share change | 0.087/0.913 ÷ 0.224/0.776 = 0.330 | **CONFIRMED** arithmetic; in the main text as a sensitivity quantity. **The capture audit itself is Tier 3** |
+| P9 | Gaussian primitives need not give a symmetric observed asymmetry after rank drift, boundaries, exits and selection | R12 worlds give −0.04 to −0.10 | **CONFIRMED** (= G15); the text now uses the simulated reversal |
+| P10 | Riser/faller figures: main 0.146/0.155 against the SI assessment's +0.07 | two constructions | **RESOLVED** as a definition: the true-sign split pools origins with one cohort, while the +0.07 uses 13-week origins within whole-window strata, as in the worlds. SI footnote added |
+| P11 | Uses: agreement with the benchmark does not show that the design is irrelevant; internal concentration is not market power; "can respond" should read as a conditional model response | — | **ADOPTED** in the Discussion and SI uses |
+| P12 | Define "homogeneous" (no persistent identity-specific component; rank- and size-dependence allowed) | — | **ADOPTED** (Introduction) |
+| P13 | Reorganize Results 2; the Discussion's second paragraph reads like a response letter | — | Partly done (paragraphs split). A full restructure is not done |
+
+**References.** Hagar & Shaw 2022 (J. Commun. 72(6):675–686), Ichiba–Pal–Shkolnikov 2013 (PTRF 156:415–448), TeBlunthuis 2025 (ICWSM 19:1880–1892) and Fernholz & Koch 2021 (EER 135:103723) were verified and added. Luttmer 2011 and Fernholz 2017 are now cited in the main text. Guvenen et al. 2021 is engaged on asymmetric earnings persistence.
+
+**Tier 3 additions** (owner's call, not started):
+- the durability comparison rebuilt in the calibrated curved model with entry and exit, with joint uncertainty in variance and decline (GPT-6 Pro's rank 1);
+- the capture audit by date and rank, with alternative rosters and thresholds (rank 2);
+- the reversible decline-state model (R14), with the identification constraint that its covariance equals an OU growth component's (rank 3). Sign-conditioned, recovery and rank-stratum outcomes must therefore stay outside calibration.
+
+**What D1–D4 settle of rank 1.** D4 computes the factor from measured crossings, without the variance estimator. It gives 2 gross and 1 net of C at the comments head, and 1–2 at the submissions head. D1 shows the observed path against the rate law and the stable-parameter model. The calibrated-model rebuild with propagated uncertainty is not done.

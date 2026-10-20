@@ -73,7 +73,7 @@ def fig1v5():
     a.set_xscale("log")
     a.set_xlabel("rank / K")
     a.set_ylabel("log activity (offset)")
-    a.set_title("The shape changes slowly", fontsize=6.3)
+    a.set_title("The shape changes far less", fontsize=6.3)
     a.legend(loc="lower left", frameon=False, fontsize=4.8)
     tag(a, "B")
     # C: share of each top set replaced in a year
@@ -97,7 +97,7 @@ def fig1v5():
         hn = load(HERE / f"head_named__{pn}.json")
         ranks22 = dict((n, rk) for n, rk in hn["head"]["rank_2022_of_2019_head"])
         rows = hn["head"]["top10_losers"][:3]
-        x0, x1 = j * 3.6, j * 3.6 + 1
+        x0, x1 = j * 4.6, j * 4.6 + 1
         ys = []
         for name, s19, s22 in rows:
             a.plot([x0, x1], [100 * s19, 100 * s22], "-", marker=MK[pn], color=COL[pn], ms=2.5, lw=0.9)
@@ -109,11 +109,11 @@ def fig1v5():
             lab_y.append(y_)
             rk = ranks22.get(name, -1)
             a.text(x1 + 0.08, y_, f"r/{name} ({'gone' if rk < 0 else f'#{rk}'})", fontsize=4.0, va="center", color="#333333")
-    a.set_xticks([0, 1, 3.6, 4.6])
+    a.set_xticks([0, 1, 4.6, 5.6])
     a.set_xticklabels(["'19", "'22", "'19", "'22"], fontsize=5)
     a.text(0.5, 17, "submissions", ha="center", fontsize=5, color=COL["reddit_submissions_long"])
-    a.text(4.1, 17, "comments", ha="center", fontsize=5, color=COL["reddit_comments_ext"])
-    a.set_xlim(-0.3, 7.4)
+    a.text(5.1, 17, "comments", ha="center", fontsize=5, color=COL["reddit_comments_ext"])
+    a.set_xlim(-0.3, 8.6)
     a.set_yscale("log")
     a.set_ylim(0.03, 22)
     a.set_yticks([0.03, 0.1, 0.3, 1, 3, 10])
@@ -158,7 +158,7 @@ def fig2v5():
     a.minorticks_off()
     a.set_xlabel("size of the top set, k")
     a.set_ylabel("years")
-    a.set_title("Shape outlasts members", fontsize=6.3)
+    a.set_title("Movement and relaxation times", fontsize=6.3)
     a.legend(loc="upper left", frameon=False, fontsize=4.4)
     tag(a, "A")
     # B: measured crossings against sigma^2/2S
@@ -185,7 +185,7 @@ def fig2v5():
     a.set_title("Crossings: σ²/2S", fontsize=6.3)
     a.legend(loc="lower right", frameon=False, fontsize=4.6)
     tag(a, "B")
-    # C: the balance, crossings against the slide (half-year cells), with the 20-seed worlds
+    # C: the balance, crossings against the members' net decline s̄ - e (half-year cells); on the diagonal the shape holds
     a = ax[2]
     lim = [0, 12]
     a.plot(lim, lim, color=GREY, lw=0.8)
@@ -195,22 +195,14 @@ def fig2v5():
         for q in d["pairs"]:
             rows = [rr for rr in q["rows"] if rr["k"] < K]
             c = np.array([rr["c"] for rr in rows]) * 1000
-            sb = np.array([rr["sbar"] for rr in rows]) * 1000
+            sb = np.array([rr["sbar"] - rr["entry"] for rr in rows]) * 1000
             kk = np.array([rr["k"] for rr in rows])
             a.scatter(sb, c, s=5 + 26 * (np.log(K / kk) / np.log(64)), marker=MK[pn], color=COL[pn], alpha=0.75, lw=0)
-    for w, lab, col, ls in WORLDS7:
-        o = S7.get(w)
-        if not o or "law_c" not in o:
-            continue
-        x, y = 1000 * o["law_sbar"]["mean"], 1000 * o["law_c"]["mean"]
-        a.errorbar([x], [y], xerr=[[x - 1000 * o["law_sbar"]["q05"]], [1000 * o["law_sbar"]["q95"] - x]],
-                   yerr=[[y - 1000 * o["law_c"]["q05"]], [1000 * o["law_c"]["q95"] - y]], fmt="X", color=col, ms=4,
-                   mec="white", mew=0.4, elinewidth=0.5, alpha=0.8)
     a.text(11.6, 0.3, "decline wins: flattens", fontsize=5, color=GREY, ha="right")
     a.text(0.4, 10.8, "crossings win: steepens", fontsize=5, color=GREY, ha="left")
     a.set_xlim(lim)
     a.set_ylim(0, 11.5)
-    a.set_xlabel("slide of members (per 1,000 wk)")
+    a.set_xlabel("net decline, s̄ − e (per 1,000 wk)")
     a.set_ylabel("crossing gain (per 1,000 wk)")
     a.set_title("Crossings return two thirds", fontsize=6.3)
     tag(a, "C")
@@ -263,24 +255,30 @@ def fig3v5():
     a.set_title("Volatility and decline build a hierarchy", fontsize=6.3)
     a.legend(loc="lower right", frameon=False, fontsize=4.8)
     tag(a, "A")
-    # B: from the observed 2019 ladder, three scenarios; first five years shaded, the rest model-implied
+    # B: change of the head's shape since 2019: the model with stable parameters (three scenarios, 0-10 years)
+    # against the observed path 2019-22 (R15 D1, exact block means)
     a = ax[1]
-    LS = {"churn_slide": ("-", "volatility and decline"), "slide_only": ("--", "decline only"), "churn_only": (":", "volatility only")}
+    D1 = load(HERE / "r15_d1_shape_path.json")
+    LS = {"churn_slide": ("-", "model: volatility and decline"), "slide_only": ("--", "decline only"), "churn_only": (":", "volatility only")}
     for pn in PANELS2:
         for wk, (ls, lab) in LS.items():
-            y = np.array(L30[pn][wk]["shape_by_year"])[:, 0]
-            lo, hi = (np.array(q)[:, 0] for q in L30[pn][wk]["shape_q"])
+            y = np.array(L30[pn][wk]["shape_by_year"])[:11, 0]
+            lo, hi = (np.array(q)[:11, 0] for q in L30[pn][wk]["shape_q"])
             yrs = np.arange(y.size)
-            a.plot(yrs, y, ls, color=COL[pn], lw=1.0, label=lab if pn == "reddit_submissions_long" else None)
-            a.fill_between(yrs, lo, hi, color=COL[pn], alpha=0.12, lw=0)
-    a.axvspan(0, 5, color="#e8e8e8", zorder=0)
-    a.text(5.4, 7.6, "model-implied beyond 5 years", fontsize=4.8, color=GREY)
-    a.set_xlim(0, 30)
-    a.set_ylim(0, 8)
-    a.set_xlabel("years from the observed 2019 ladder")
-    a.set_ylabel("shape at K/64 (log units)")
-    a.set_title("The shape responds slowly", fontsize=6.3)
-    a.legend(loc="lower left", frameon=False, fontsize=4.6)
+            a.plot(yrs, y - y[0], ls, color=COL[pn], lw=1.0, label=lab if pn == "reddit_submissions_long" else None)
+            a.fill_between(yrs, lo - y[0], hi - y[0], color=COL[pn], alpha=0.12, lw=0)
+        obs = np.array(D1[pn]["shape"])[:, 0]
+        a.plot(np.arange(obs.size), obs - obs[0], "o", color=COL[pn], ms=3.2, mec="black", mew=0.4,
+               label="observed, 2019-22" if pn == "reddit_submissions_long" else None)
+    a.axvspan(5, 10, color="#efefef", zorder=0)
+    a.text(5.3, 0.62, "model-implied", fontsize=4.8, color=GREY)
+    a.axhline(0, color=GREY, lw=0.4)
+    a.set_xlim(0, 10)
+    a.set_ylim(-1.6, 0.8)
+    a.set_xlabel("years from the 2019 ladder")
+    a.set_ylabel("change in shape at K/64 (log units)")
+    a.set_title("Stable parameters miss the falls", fontsize=6.3)
+    a.legend(loc="lower left", frameon=False, fontsize=4.2)
     tag(a, "B")
     # C: backtest, fit on 2019-20, forecast 2021-22 one-year retention, by k (A6)
     a = ax[2]
@@ -298,7 +296,7 @@ def fig3v5():
     a.set_ylim(0, 0.32)
     a.set_xlabel("size of the top set, k")
     a.set_ylabel("share replaced, 2021 to 2022")
-    a.set_title("A year ahead, retention is forecast", fontsize=6.3)
+    a.set_title("A year ahead, replacement is reproduced", fontsize=6.3)
     a.legend(loc="upper right", frameon=False, fontsize=4.2)
     tag(a, "C")
     fig.tight_layout(w_pad=1.0)
@@ -326,17 +324,17 @@ def fig4v5():
                 g = load(f)
                 a.errorbar([x + 0.07 * (i_ + 1)], [100 * g["share_3"]], yerr=[[100 * (g["share_3"] - g["share_3_q"][0])], [100 * (g["share_3_q"][1] - g["share_3"])]],
                            fmt=mk_, color=COL[pn], ms=2.6, lw=0.6)
-    a.plot([], [], "D", color="k", mfc="white", ms=3, label="homogeneous model, fit 2019-20 (5-95%)")
+    a.plot([], [], "D", color="k", mfc="white", ms=3, label="homogeneous, fit 2019-20")
     if (HERE / "r12_oop__reddit_submissions_long__factor.json").exists():
         for tag_, mk_ in (("fixed", "v"), ("decay", "^"), ("factor", "P")):
-            a.plot([], [], mk_, color="k", ms=2.6, label={"fixed": "fixed differences in growth", "decay": "decaying differences",
-                                                           "factor": "exposure to the platform trend"}[tag_])
-    a.set_xticks([2019, 2020, 2021, 2022])
+            a.plot([], [], mk_, color="k", ms=2.6, label={"fixed": "fixed growth diff.", "decay": "decaying diff.",
+                                                           "factor": "platform-trend exposure"}[tag_])
+    a.set_xticks([2019, 2020, 2021, 2022]); a.set_xticklabels(["2019", "'20", "'21", "'22"], fontsize=5.5)
     a.set_xlim(2018.8, 2022.6)
-    a.set_ylim(20, 75)
+    a.set_ylim(20, 100)
     a.set_ylabel("head's share of the top K (%)")
     a.set_title("Faster than forecast", fontsize=6.3)
-    a.legend(loc="lower left", frameon=False, fontsize=4.2)
+    a.legend(loc="upper left", frameon=False, fontsize=4.2)
     tag(a, "A")
     # B: the head's share split exactly into items and activity per item
     a = ax[1]
@@ -367,10 +365,6 @@ def fig4v5():
         gs = sorted(dd, key=lambda x: int(x))
         a.plot([int(g) for g in gs], [dd[g]["mean"] for g in gs], "-", marker=MK[pn], color=COL[pn], ms=3, lw=1,
                label={"reddit_comments_ext": "comments", "reddit_submissions_long": "submissions", "facebook_a": "Facebook"}[pn])
-    for pn in PANELS2:
-        md = load(HERE / f"momentum_decomposition__{pn}.json")["D7"]["minus_aggregate_loading"]
-        gs = sorted(md, key=lambda x: int(x))
-        a.plot([int(g) for g in gs], [md[g] for g in gs], "--", color=COL[pn], lw=0.9, label="net of platform loading" if pn == "reddit_submissions_long" else None)
     for n, w in enumerate(("sb_data", "firm_data", "sb_flat", "firm_flat", "gibrat", "atlas", "neutral", "rdm")):
         if w not in S7:
             continue
@@ -411,6 +405,8 @@ def fig4v5():
         a.bar(x + 0.85, 1000 * sm["mean_rest"], 0.8, color=COL[pn], alpha=0.45)
         ticks += [x + 0.42]
         labs += ["data"]
+        a.text(x + 0.42 + (1.1 if pn == "reddit_comments_ext" else 2.2), 9.6, {"reddit_comments_ext": "comments", "reddit_submissions_long": "submissions"}[pn],
+               ha="center", fontsize=5, color=COL[pn])
         x += 2.2
         for (p2, kind), fn in worlds.items():
             if p2 != pn:
@@ -428,8 +424,9 @@ def fig4v5():
     a.set_ylabel("slide of members (per 1,000 wk)")
     a.set_title("Decliners keep declining", fontsize=6.3)
     from matplotlib.patches import Patch
+    a.set_ylim(top=a.get_ylim()[1] * 1.35)
     a.legend(handles=[Patch(color="#555555", label="bottom fifth of prior change"), Patch(color="#555555", alpha=0.45, label="the rest")],
-             loc="upper right", frameon=False, fontsize=4.4)
+             loc="upper left", frameon=False, fontsize=4.4, ncol=2, columnspacing=0.8)
     tag(a, "D")
     fig.tight_layout(w_pad=0.8)
     save(fig, "fig4_v5")
