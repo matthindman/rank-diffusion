@@ -49,7 +49,8 @@ def main():
         tag = "R12-1" if lab == "comments" else "R12-1b"
         if gf:
             s = gf["best"]["s"]
-            score(tag, lab, s > 0 and 0.1 <= s <= 0.5, f"s = {s}, m = {gf['best']['m']}", "60%" if lab == "comments" else "50%")
+            edge = " (AT THE GRID'S EDGE: the objective is still falling)" if s == 0.5 else ""
+            score(tag, lab, s > 0 and 0.1 <= s <= 0.5, f"s = {s}, m = {gf['best']['m']}{edge}", "60%" if lab == "comments" else "50%")
         else:
             score(tag, lab, None, "-", "")
         # R12-2 as amended (A2): (a) reproduces the data's 52-week lag-profile value within 0.05 on comments, not on submissions
@@ -106,9 +107,13 @@ def main():
                     continue
                 tv = W[v]["turnover"]
                 d64, d2 = tv[k64]["mean"] - tc[k64]["mean"], tv[k2]["mean"] - tc[k2]["mean"]
-                b = W[v]["boundary"]["mean"]
-                ok = abs(d64) <= 0.03 and abs(d2) <= 0.03 and 0.90 <= b <= 1.15
-                score("R12-6", f"{lab} {v}", ok, f"vs {cname}: turnover K/64 {d64:+.3f}, K/2 {d2:+.3f}; boundary {b:.3f}", "70%")
+                b = W[v]["boundary"]["mean"] if W[v].get("boundary") else float("nan")
+                okt = abs(d64) <= 0.03 and abs(d2) <= 0.03
+                if np.isfinite(b):
+                    ok, bt = okt and 0.90 <= b <= 1.15, f"boundary {b:.3f}"
+                else:
+                    ok, bt = okt, "boundary NOT COMPUTED (the boundary module needs complete block levels to 1.42K; turnover part only)"
+                score("R12-6", f"{lab} {v}", ok, f"vs {cname}: turnover K/64 {d64:+.4f}, K/2 {d2:+.4f}; {bt}", "70%")
         # R12-7 (A1): calibrated (a) and (b) give a faller-riser asymmetry below half the data's
         if dm:
             da = dm["aux"]["asym"]["diff"]
@@ -139,9 +144,11 @@ def main():
             res[f"{lab} recovery"][s] = ent
         if gf and base0:
             sc = gf["best"]["s"]
-            near = min((s for s in rec if rec[s]), key=lambda s: abs(float(s) - sc))
-            e = res[f"{lab} recovery"][near]
-            if float(near) == 0.0:
+            near = min(rec, key=lambda s: abs(float(s) - sc))        # the registered grid, run or not
+            e = res[f"{lab} recovery"].get(near)
+            if e is None:
+                score("R12-5", lab, None, f"planted s {near} (nearest the calibrated {sc}) not run yet", "50%")
+            elif float(near) == 0.0:
                 score("R12-5", lab, False, f"calibrated s = {sc}: nothing planted at the nearest grid value", "50%")
             else:
                 ok = e["head_inflation_vs_s0"] > 0.10 and abs(e["beta_shift_vs_s0"]) > 0.02

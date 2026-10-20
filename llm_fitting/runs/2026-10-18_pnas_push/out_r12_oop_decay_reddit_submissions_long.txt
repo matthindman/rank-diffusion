@@ -1,0 +1,1 @@
+{"panel": "reddit_submissions_long", "variant": "decay", "s": 0.5, "half_life": 104.0, "m": 1.0, "share_3": 0.5257196199335751, "share_3_q": [0.45684928706672434, 0.6316132771235712]}

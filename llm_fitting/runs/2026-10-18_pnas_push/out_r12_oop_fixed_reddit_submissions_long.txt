@@ -1,0 +1,1 @@
+{"panel": "reddit_submissions_long", "variant": "fixed", "s": 0.5, "half_life": null, "m": 1.0, "share_3": 0.5036833613661721, "share_3_q": [0.455453900648633, 0.5708855575962887]}

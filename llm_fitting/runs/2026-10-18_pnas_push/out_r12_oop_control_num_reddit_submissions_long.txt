@@ -1,0 +1,2 @@
+{"panel": "reddit_submissions_long", "variant": "control_num", "s": 0.0, "half_life": null, "m": 1.0, "share_3": 0.5329800492995908, "share_3_q": [0.454297960801672, 0.8967317308765979]}
+peak RSS 1.23 GB; swap 7040M -> 7040M; killed 0

@@ -13298,6 +13298,7 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-20. Work started 
   - registration list extended to R9–R13.
 
 ### Addendum to §2z-dm (2026-10-20, end of session): manuscript v5 complete except R12; R12 and R13c–d remain IN PROGRESS (BLOCKED)
+_[STATUS SUPERSEDED 2026-10-20 by §2z-dn: T9 mounted; R13c–d and the registered parts of R12 run and scored; the remaining comments jobs are queued.]_
 
 **Done since the entry above:**
 - **Uses memo** (`MEMO_USES_APPLICATIONS_opus-5.5.md`; references checked by its sub-agents), integrated:
@@ -13331,3 +13332,152 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-20. Work started 
 - the protocol amendments (forecasts from every eligible model; P5, P6);
 - the data-statement TODOs;
 - whether to push.
+
+## 2z-dn. 2026-10-20 — EXPLORATORY MEASUREMENT R12 and R13c–d (development data; expectations and amendments A1–A4 written in PLAN.md before the outputs they govern): three standard forms of heterogeneous growth, calibrated in the standard way, reproduce at most three fifths of Reddit's persistence and little of the submissions head's fall; what persists is decline, and below the head. Lock-in over two years is 1.6 times the one-year share; the "funnel" is mostly the extremes. IN PROGRESS for queued comments jobs (memory); closes the IN PROGRESS status of §2z-dm for R13c–d and the registered parts of R12 listed below. Nothing adopted; no gate evaluation; bridge sealed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-20. Work started from 6c804a6; skills at aeda027. Results: `runs/2026-10-18_pnas_push/RESULTS.md` R12 and R13; plan and amendments: `PLAN.md` addenda R12 (A1–A4, post hoc grid extension) and R13._
+
+### The question
+
+What a calibrated heterogeneous-growth world adds (owner, §2z-dm). GLLM (2016) offer heterogeneity in growth and scale dependence as the two ways to speed up random growth. Do the standard forms of the first produce Reddit's persistence and the submissions head's fall?
+
+### Execution, in order (every problem disclosed)
+
+1. **Owner mounted T9;** contact logged first (6c804a6). Steps 0–1 ran: R13c–d, then the R12 data moments.
+2. **Step 2 stopped at its first line** on a JSON key error in `aux_vector`, before any simulation. Fixed.
+3. **A one-seed smoke test** of every path found a shape bug in the factor's drift solve. **A3** (committed b113d0f before any factor, out-of-period or recovery output):
+   - the factor path is the observed path, as registered (the code had centred it);
+   - the factor's hold drift is solved with the path centred and shuffled, with the loadings in ladder order.
+
+   The smoke-test values are disclosed in A3 and used nowhere.
+4. **A4** (committed a042575 before any world output): the control kept the closed-form drift while every variant re-solves it numerically. A matched control, `control_num`, was added. The same commit discloses that the lasting-variance calibration statistic is the two-spacing slope, not `rdm.structure_function`, and shows why that does not decide the optimum.
+5. **Memory.**
+   - **Jobs stopped (about 14:30, 14:40).** Under heavy swap, one comments out-of-period job was stopped at 14:29. At about 14:40 the owner said: "this much swap continually will destroy my hard drive. you must find a better way." Every job was stopped.
+   - **Lean cache.** `r12_cache.py` builds each universe frame once, lean. It was checked exact: all 50 data statistics are identical on both ladders, and the out-of-period control file reproduces byte for byte.
+   - **Watchdog.** `r12_safe_run.sh` kills a job if swap grows by more than 400 MB, and later also waits until the memory a job needs is reclaimable without swap. Jobs run one at a time.
+   - **Two further watchdog kills** came on the comments recovery at s 0.30, as other applications' memory grew. Seeds now run in five-seed chunks.
+   - Nothing from a stopped job is used. The rule is saved for future sessions.
+
+### R13c–d (PLAN.md R13, committed aeda027 before any run)
+
+- **R13-1: PASS.** At K/64 the share replaced in two years is 1.62 (submissions) and 1.60 (comments) times the one-year share, against 1.2–1.8; across K/64…K/2 it is 1.50–1.66.
+  - A top set loses about a fifth of its members a year and a third in two.
+  - Of the top ten, 65% (comments) and 45% (submissions) remain after two years.
+- **R13-2: FAIL as written, on both ladders.** From the top K/64 to K/2–K, the 90th percentile of one-year |Δ| rises 1.24-fold (submissions) and 1.64-fold (comments, where < 1.5 was expected). The maximum does not rise on submissions, because the top stratum's maximum is r/Cringetopia's collapse (−5.98 log units). Without that collapse, the bottom stratum's maximum is 3.1 times the top's, as on comments (3.03).
+  - Reading: across a 64-fold range of rank the quantiles rise only 1.2–1.6-fold. On comments that is a change of scale of about rank^0.11, and the extremes carry the visual funnel. This supports the owner's correction in direction.
+
+### R12 results (20 seeds a world; RESULTS R12 has the full tables)
+
+**Calibration (registered grids).** Both forms reach the edge of their grids on both ladders:
+- fixed: s 0.5 (m 1.0 submissions, 0.7 comments);
+- decay: s 0.5 with a half-life of 104 weeks.
+
+The objective is still falling and the fit is poor, about 6 SD per moment (submissions) and 11 (comments). The covariance moments alone choose s 0.5; the lasting-variance moments alone choose s 0. The data's year-apart covariance grows down the ladder (submissions, gap 0: −0.001, +0.024, +0.067 by stratum). A spread that is the same at every rank gives the head too much and the body too little (+0.013, +0.001, +0.017).
+
+**Worlds:**
+
+| | submissions | comments |
+|---|---|---|
+| persistence at a 13- and 26-week gap, data | +0.174, +0.140 | +0.154, +0.141 |
+| fixed, calibrated to it | +0.043, +0.047 | +0.062, +0.085 |
+| decay | +0.001, −0.002 | −0.001, +0.016 |
+| factor | −0.099, −0.092 | −0.016, −0.014 |
+| homogeneous (both controls) | −0.10 | −0.11 |
+
+- **Asymmetry, fallers minus risers:** data +0.07; every form −0.04 to −0.10.
+- **Fixed differences:**
+  - reproduce the prior-decliner contrast (+0.0019, +0.0034 against data +0.0027, +0.0023);
+  - reproduce the 52-week lag-profile value on comments (+0.094 against +0.095);
+  - reproduce submission top-ten turnover (0.335 against 0.333; matched control 0.272) and two-year retention of the top ten (0.47 against 0.45).
+- **Costs of fixed differences:**
+  - head lasting variance +28–33% over the control under the two-spacing statistic;
+  - on comments, the raw size exponent halves (0.026 against 0.065) and the funnel flattens (p90 ratio 1.18 against data 1.64).
+- **Factor loadings.** Loadings from one year of weekly changes are almost pure noise: the empirical-Bayes corrected spread is 0 in three of four strata. Exposure to the platform's trend reduces to exposure by 2019 rank group.
+
+**Out of period** (submissions, 2022 head share, fit before 2021):
+
+| | share | 5–95% |
+|---|---|---|
+| closed-form control | 0.537 | 0.476–0.718 (= A6) |
+| matched control | 0.533 | 0.454–0.897 |
+| fixed | 0.504 | 0.455–0.571 |
+| decay | 0.526 | 0.457–0.632 |
+| factor | 0.540 | 0.476–0.858 |
+| observed | 0.356 | |
+
+- Paired against the matched control, fixed is −0.029 (−0.42 to +0.10): about a sixth of the gap, not distinguishable from none.
+- The drift method alone moves the mean by 0.004.
+- The platform path fell in 2021–22 (−0.0035 a week, against +0.0136 before), but the head's 2019–20 loading is near the top set's mean.
+
+**Recovery** (submissions; comments partly run):
+- **At planted s 0.45 against s 0:** head lasting variance +21%, σ0 +26%, β +0.023. Heterogeneity raises β; the memo predicted attenuation.
+- **Caution outside R12-5.** With nothing planted, the estimator returns β 0.063 for a true 0.045 on submissions, but **0.069 for a true 0.126 on comments**, with σ0 24% high.
+  - The design differences out the estimator (oracle passing parts are the data's), so this is not a validation.
+  - If the comments bias is a property of the estimator on such panels, the comment exponents in the paper (0.06–0.13) may be understated, and "size gives little protection" would need a check on comments.
+  - Open item; a proper recovery study (the world's own base, several planted β) has not been run.
+
+### Scores (expectations written before any run; `r12_score.py`)
+
+| | result |
+|---|---|
+| R12-1, R12-1b | **PASS as written, at the grid's edge** |
+| R12-2(a), A2 | comments **PASS**; submissions **FAIL** (a miss was expected; it is within 0.05) |
+| R12-2(c) | **FAIL** on both ladders |
+| R12-3, R12-3b | **FAIL** |
+| R12-4 | **PASS** |
+| R12-5 | submissions **PASS**; comments NOT RUN yet |
+| R12-6 | submissions, against the matched control: fixed **FAIL**, decay **FAIL** (boundary 1.155), factor **PASS**. Comments, turnover only, against the closed-form control until `control_num` runs: fixed **FAIL** (+0.0302), decay **PASS**, factor **FAIL**. The boundary ratio cannot be computed in comments worlds (fewer than K complete blocks) |
+| R12-7 | **PASS** on both ladders, both forms |
+
+### What this licenses (development evidence; the binding claim set is unchanged)
+
+- **Not supported:**
+  - persistent symmetric heterogeneity in growth, in its standard forms (fixed, AR, factor), as the explanation of Reddit's persistence;
+  - the same as the explanation of the submissions head's fall.
+- **Supported:**
+  - the persistent component is asymmetric (decline persists, gains do not) and concentrated below the head;
+  - scale dependence in volatility is weak (β 0.05–0.13; quantiles 1.2–1.6-fold over 64-fold rank);
+  - the head's fall is accounted for by a change in its drift after 2020 (§2z-dl C2 correction): GLLM's second channel, but as a shift, not a stable law.
+- **Proposed, not registered:** the natural next test is GLLM's type-switching mechanism mirrored, a decline state entered and left at constant rates, calibrated to the asymmetry and lag profile, and tested out of period. Owner's call.
+
+### Manuscript
+
+- **Main text:**
+  - abstract sentence;
+  - R5 paragraph on the three forms;
+  - R2 recovery sentence (a fifth at the submissions head);
+  - Discussion ("little of the head's fall");
+  - Table 1 column (fixed growth differences);
+  - Fig. 4 series and caption;
+  - R13c–d sentences (lock-in; funnel).
+- **SI:**
+  - the calibration paragraph rewritten to A2;
+  - R12 results (worlds table, out of period, recovery, scores);
+  - lock-in and funnel tables;
+  - the final-version (`\iffinal`) section on the 2018 chapter, drafted, with page references to check and the owner's web-data quantile plot as a placeholder.
+- **Two references added:** Gouriéroux, Monfort & Renault 1993; Guvenen & Smith 2014.
+- **Length:** main text 8 pages (PNAS allows 12); SI 17. The red placeholders left are the queued comments results and the owner's items.
+
+### Not run, queued (`run_r12_lean3.sh`, waiting for 3 GB reclaimable without swap)
+
+- comments recovery at s 0.30 and 0.45;
+- the comments matched control (worlds, out of period);
+- the comments factor out-of-period rerun;
+- the post hoc grid extension (both ladders).
+
+### Ledgers and commands
+
+- **EXPOSURE_LEDGER:** contact with the two development panels logged before the runs (6c804a6). The lean cache is a derived copy of the same frames, in a scratch folder outside the repository; no new data.
+- **GATE_LEDGER:** no gate evaluation.
+- **Commands:**
+  - `FROM=2 zsh run_r12_r13.sh`, then `run_r12_lean.sh`, `run_r12_lean2.sh`, `run_r12_lean3.sh`;
+  - scoring: `r12_score.py`, `r12_table.py`;
+  - cache: `R12_CACHE=<dir> r12_cache.py <panel>`, `r12_cache_check.py <panel>`.
+
+### Owner items
+
+- **New:**
+  - whether to register R14 (mirrored type switching);
+  - whether to run a recovery study of the comments size exponent;
+  - whether the queued comments jobs should wait for a quieter machine.
+- **Carried over:** the title; the chapter's pages and edition; Bruce Rogers's acknowledgement; classification; the protocol amendments; the data-statement TODOs; whether to push.

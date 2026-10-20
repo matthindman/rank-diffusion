@@ -1,0 +1,1 @@
+{"panel": "reddit_comments_ext", "variant": "control", "s": 0.0, "half_life": null, "m": 1.0, "share_3": 0.5969931847001488, "share_3_q": [0.5474774404716184, 0.6703904840216107]}

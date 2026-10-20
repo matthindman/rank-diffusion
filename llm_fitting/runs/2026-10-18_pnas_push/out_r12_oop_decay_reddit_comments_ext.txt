@@ -1,0 +1,4 @@
+waiting for a heavy-job slot; held by:
+  unknown
+  pid 55517 since 2026-10-20 14:29:17 in /Users/hindman/Documents/GitHub/rank-diffusion :: /bin/sleep 21600
+{"panel": "reddit_comments_ext", "variant": "decay", "s": 0.5, "half_life": 104.0, "m": 0.7, "share_3": 0.5943936585350662, "share_3_q": [0.5275058451235503, 0.7132320342283274]}

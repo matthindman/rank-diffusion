@@ -1,0 +1,406 @@
+{
+ "comments calibration": {
+  "fixed_best": {
+   "s": 0.5,
+   "half_life": null,
+   "m": 0.7,
+   "obj": 1012.7564660658361,
+   "aux": [
+    0.008683879335315477,
+    0.022453941388087807,
+    -0.04256895955333682,
+    0.033095602163483374,
+    0.05801975311013971,
+    -0.002982569103105164,
+    0.01063688458571794,
+    0.013785033555660069,
+    0.01773053593108591
+   ]
+  },
+  "fixed_profile": {
+   "0.0": 2736.2246798274778,
+   "0.1": 2586.5422021482423,
+   "0.2": 2158.624670599987,
+   "0.3": 1731.5055170437736,
+   "0.4": 1215.0450037649998,
+   "0.5": 1012.7564660658361
+  },
+  "decay_best": {
+   "s": 0.5,
+   "half_life": 104,
+   "m": 0.7,
+   "obj": 1469.2676696395267,
+   "aux": [
+    -0.029166934828133068,
+    -0.02859535707043262,
+    -0.06912025589033576,
+    -0.006795318919787626,
+    0.0020099952885077707,
+    -0.03659671977635819,
+    0.012885276910949922,
+    0.019394223327673644,
+    -0.01935850213441186,
+    0.02402679535899971,
+    0.03127941815236782,
+    -0.010036591981807064,
+    0.010298465303686022,
+    0.013538088902296616,
+    0.01698291290334742
+   ]
+  },
+  "decay_profile": {
+   "26": 3019.9849104815685,
+   "52": 2163.5685147241416,
+   "104": 1469.2676696395267
+  }
+ },
+ "R12-1 comments": {
+  "verdict": "PASS",
+  "value": "s = 0.5, m = 0.7 (AT THE GRID'S EDGE: the objective is still falling)",
+  "prior": "60%"
+ },
+ "R12-2(a) comments": {
+  "verdict": "PASS",
+  "value": "world +0.094 [+0.083, +0.109] vs data +0.095",
+  "prior": "50%"
+ },
+ "R12-2(c) comments": {
+  "verdict": "FAIL",
+  "value": "-0.016 [-0.032, -0.001]",
+  "prior": "25%"
+ },
+ "R12-4 comments": {
+  "verdict": "PASS",
+  "value": "fixed +0.0034, decay +0.0011 (control_num +nan, control -0.0028; data +0.0023)",
+  "prior": "60%"
+ },
+ "R12-6 comments fixed": {
+  "verdict": "FAIL",
+  "value": "vs control (closed-form drift; matched control not yet run): turnover K/64 +0.0302, K/2 +0.0040; boundary NOT COMPUTED (the boundary module needs complete block levels to 1.42K; turnover part only)",
+  "prior": "70%"
+ },
+ "R12-6 comments decay": {
+  "verdict": "PASS",
+  "value": "vs control (closed-form drift; matched control not yet run): turnover K/64 +0.0280, K/2 +0.0017; boundary NOT COMPUTED (the boundary module needs complete block levels to 1.42K; turnover part only)",
+  "prior": "70%"
+ },
+ "R12-6 comments factor": {
+  "verdict": "FAIL",
+  "value": "vs control (closed-form drift; matched control not yet run): turnover K/64 +0.0456, K/2 +0.0111; boundary NOT COMPUTED (the boundary module needs complete block levels to 1.42K; turnover part only)",
+  "prior": "70%"
+ },
+ "R12-7 comments fixed": {
+  "verdict": "PASS",
+  "value": "world -0.040 vs data +0.071",
+  "prior": "70%"
+ },
+ "R12-7 comments decay": {
+  "verdict": "PASS",
+  "value": "world -0.039 vs data +0.071",
+  "prior": "70%"
+ },
+ "comments recovery": {
+  "0.0": {
+   "n": 20,
+   "true_beta": 0.12590117064475212,
+   "beta_mean": 0.06902581382079769,
+   "beta_se": 0.0011369384664367704,
+   "sigma0_mean": 0.14110093165264068,
+   "true_sigma0": 0.11409855579055703,
+   "head_lasting_mean": 0.00436135922761433,
+   "head_inflation_vs_s0": 0.0,
+   "beta_shift_vs_s0": 0.0,
+   "beta_bias_vs_truth": -0.056875356823954434
+  },
+  "0.15": {
+   "n": 20,
+   "true_beta": 0.12590117064475212,
+   "beta_mean": 0.06816614443017675,
+   "beta_se": 0.0009100136310792579,
+   "sigma0_mean": 0.1432663381285306,
+   "true_sigma0": 0.11409855579055703,
+   "head_lasting_mean": 0.004697249718681114,
+   "head_inflation_vs_s0": 0.07701509404225737,
+   "beta_shift_vs_s0": -0.0008596693906209318,
+   "beta_bias_vs_truth": -0.057735026214575366
+  }
+ },
+ "R12-5 comments": {
+  "verdict": "NOT RUN",
+  "value": "planted s 0.45 (nearest the calibrated 0.5) not run yet",
+  "prior": "50%"
+ },
+ "comments oop": {
+  "control": {
+   "share_3": 0.5969931847001488,
+   "q": [
+    0.5474774404716184,
+    0.6703904840216107
+   ]
+  },
+  "control_num": null,
+  "fixed": {
+   "share_3": 0.6129516183937918,
+   "q": [
+    0.5484303430587504,
+    0.9635499387935877
+   ]
+  },
+  "decay": {
+   "share_3": 0.5943936585350662,
+   "q": [
+    0.5275058451235503,
+    0.7132320342283274
+   ]
+  },
+  "factor": null
+ },
+ "comments data": {
+  "gapped_rho": {
+   "0": 0.14479408968289267,
+   "13": 0.12660480078445258,
+   "26": 0.10603799856725989,
+   "39": 0.09741339723447766,
+   "52": 0.09488973132294971
+  },
+  "asym": {
+   "fallers": 0.11325102167029151,
+   "risers": 0.04239986787610075,
+   "diff": 0.07085115379419077
+  }
+ },
+ "submissions calibration": {
+  "fixed_best": {
+   "s": 0.5,
+   "half_life": null,
+   "m": 1.0,
+   "obj": 350.63158459753663,
+   "aux": [
+    0.013355592504998778,
+    0.0009409366841467582,
+    0.016529114019296357,
+    0.012001613502793338,
+    0.00635122623995905,
+    0.02448854058426676,
+    0.00797173990364181,
+    0.009515779161835929,
+    0.015031204263056172
+   ]
+  },
+  "fixed_profile": {
+   "0.0": 1215.3209585505444,
+   "0.1": 1079.8646514650059,
+   "0.2": 912.2911516551012,
+   "0.3": 700.196628753045,
+   "0.4": 535.7649464031309,
+   "0.5": 350.63158459753663
+  },
+  "decay_best": {
+   "s": 0.5,
+   "half_life": 104,
+   "m": 1.0,
+   "obj": 619.7032175998381,
+   "aux": [
+    -0.0039512906713504705,
+    -0.00425794150333866,
+    -0.018994656605644287,
+    0.003191481163664956,
+    0.000378345632594202,
+    -0.014536735725973152,
+    0.00638632475215675,
+    0.0017845366009705914,
+    -0.01282968311547722,
+    0.004864533436340173,
+    0.0029144904621146057,
+    -0.013128595134324607,
+    0.007578790942491503,
+    0.009157882929480853,
+    0.014536179427895922
+   ]
+  },
+  "decay_profile": {
+   "26": 1141.0592693443969,
+   "52": 767.366458373318,
+   "104": 619.7032175998381
+  }
+ },
+ "R12-1b submissions": {
+  "verdict": "PASS",
+  "value": "s = 0.5, m = 1.0 (AT THE GRID'S EDGE: the objective is still falling)",
+  "prior": "50%"
+ },
+ "R12-2(a) submissions": {
+  "verdict": "FAIL",
+  "value": "world +0.036 [+0.023, +0.051] vs data +0.060",
+  "prior": "65% (expects a miss)"
+ },
+ "R12-2(c) submissions": {
+  "verdict": "FAIL",
+  "value": "-0.099 [-0.112, -0.086]",
+  "prior": "45%"
+ },
+ "R12-3 submissions": {
+  "verdict": "FAIL",
+  "value": "0.540 (homogeneous 0.537)",
+  "prior": "45%"
+ },
+ "R12-3b submissions": {
+  "verdict": "FAIL",
+  "value": "[0.476, 0.858] vs observed 0.356",
+  "prior": "20%"
+ },
+ "R12-3 matched control": {
+  "control_share": 0.5365001192575288,
+  "paired_diff": 0.003306038268822109,
+  "paired_q": [
+   -0.2326561567297027,
+   0.3554940714995052
+  ]
+ },
+ "R12-3 matched control_num": {
+  "control_share": 0.5329800492995908,
+  "paired_diff": 0.006826108226760147,
+  "paired_q": [
+   -0.4097225229526894,
+   0.38955112775750783
+  ]
+ },
+ "R12-6 submissions fixed": {
+  "verdict": "FAIL",
+  "value": "vs control_num: turnover K/64 +0.0385, K/2 +0.0197; boundary 1.180",
+  "prior": "70%"
+ },
+ "R12-6 submissions decay": {
+  "verdict": "FAIL",
+  "value": "vs control_num: turnover K/64 +0.0244, K/2 +0.0161; boundary 1.155",
+  "prior": "70%"
+ },
+ "R12-6 submissions factor": {
+  "verdict": "PASS",
+  "value": "vs control_num: turnover K/64 +0.0103, K/2 +0.0203; boundary 1.146",
+  "prior": "70%"
+ },
+ "R12-7 submissions fixed": {
+  "verdict": "PASS",
+  "value": "world -0.063 vs data +0.072",
+  "prior": "70%"
+ },
+ "R12-7 submissions decay": {
+  "verdict": "PASS",
+  "value": "world -0.057 vs data +0.072",
+  "prior": "70%"
+ },
+ "submissions recovery": {
+  "0.0": {
+   "n": 20,
+   "true_beta": 0.044777391332326014,
+   "beta_mean": 0.06337220128790745,
+   "beta_se": 0.005952081574196764,
+   "sigma0_mean": 0.10416787659287415,
+   "true_sigma0": 0.10016300308483946,
+   "head_lasting_mean": 0.005651295362212706,
+   "head_inflation_vs_s0": 0.0,
+   "beta_shift_vs_s0": 0.0,
+   "beta_bias_vs_truth": 0.018594809955581437
+  },
+  "0.15": {
+   "n": 20,
+   "true_beta": 0.044777391332326014,
+   "beta_mean": 0.07674351271818033,
+   "beta_se": 0.0028704055206724773,
+   "sigma0_mean": 0.11469287717405781,
+   "true_sigma0": 0.10016300308483946,
+   "head_lasting_mean": 0.0057110423783490695,
+   "head_inflation_vs_s0": 0.01057226924217436,
+   "beta_shift_vs_s0": 0.013371311430272884,
+   "beta_bias_vs_truth": 0.03196612138585432
+  },
+  "0.3": {
+   "n": 20,
+   "true_beta": 0.044777391332326014,
+   "beta_mean": 0.08226710695484854,
+   "beta_se": 0.001431269673402824,
+   "sigma0_mean": 0.12378529502753817,
+   "true_sigma0": 0.10016300308483946,
+   "head_lasting_mean": 0.006290707890728451,
+   "head_inflation_vs_s0": 0.11314441867455138,
+   "beta_shift_vs_s0": 0.01889490566694109,
+   "beta_bias_vs_truth": 0.037489715622522526
+  },
+  "0.45": {
+   "n": 20,
+   "true_beta": 0.044777391332326014,
+   "beta_mean": 0.08658938897430668,
+   "beta_se": 0.001980410217715302,
+   "sigma0_mean": 0.13095240534657887,
+   "true_sigma0": 0.10016300308483946,
+   "head_lasting_mean": 0.006819609793664852,
+   "head_inflation_vs_s0": 0.2067339179020904,
+   "beta_shift_vs_s0": 0.02321718768639923,
+   "beta_bias_vs_truth": 0.04181199764198067
+  }
+ },
+ "R12-5 submissions": {
+  "verdict": "PASS",
+  "value": "planted s 0.45 (calibrated 0.5): head lasting variance +20.7%, beta +0.023 vs s = 0 (vs truth +0.042)",
+  "prior": "50%"
+ },
+ "submissions oop": {
+  "control": {
+   "share_3": 0.5365001192575288,
+   "q": [
+    0.4758576233178264,
+    0.7178366733640035
+   ]
+  },
+  "control_num": {
+   "share_3": 0.5329800492995908,
+   "q": [
+    0.454297960801672,
+    0.8967317308765979
+   ]
+  },
+  "fixed": {
+   "share_3": 0.5036833613661721,
+   "q": [
+    0.455453900648633,
+    0.5708855575962887
+   ]
+  },
+  "decay": {
+   "share_3": 0.5257196199335751,
+   "q": [
+    0.45684928706672434,
+    0.6316132771235712
+   ]
+  },
+  "factor": {
+   "share_3": 0.5398061575263509,
+   "q": [
+    0.47611272696333623,
+    0.8584024613782935
+   ]
+  }
+ },
+ "submissions data": {
+  "gapped_rho": {
+   "0": 0.19887043810763796,
+   "13": 0.157049285155694,
+   "26": 0.12098745351949587,
+   "39": 0.08355706195331036,
+   "52": 0.06039937264789242
+  },
+  "asym": {
+   "fallers": 0.1410066409186135,
+   "risers": 0.06936056520308466,
+   "diff": 0.07164607571552885
+  }
+ },
+ "notes": [
+  "R12-5 compares each planted world with the planted-0 world on the same seeds (oracle passing parts), so the estimator's own bias without heterogeneity is differenced out; the bias against the truth is shown beside it.",
+  "R12-5 uses the planted spread nearest the calibrated one (grid 0, 0.15, 0.30, 0.45).",
+  "R12-2(a) uses the pooled Spearman lag profile of r12_hetgrowth (gaps 0-52); R12-2(c) the null_worlds.stats gapped persistence at 13 weeks, as registered.",
+  "R12-6 compares each variant with the matched control (control_num, A4) on the same seeds; the boundary ratio range is absolute.",
+  "R12-3 is scored as registered against 0.537 (A6, closed-form drift); the paired difference from each control on the same seeds is shown beside it (A4)."
+ ]
+}

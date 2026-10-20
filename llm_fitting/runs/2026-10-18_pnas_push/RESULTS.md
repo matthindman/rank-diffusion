@@ -1057,3 +1057,164 @@ The intermediate strata are in `out_r13_lockin_<panel>.txt`.
 **R13d, the extremes named** (post hoc, read after scoring; an inline query of the same matrices, printed in this session and not saved as a script):
 - **Submissions, top stratum.** The 5.66 is a single community: r/Cringetopia, whose block-mean log submissions fell by 5.98 (14.44 → 8.46, a factor of about 400). The next largest changes are r/greentext (+1.23), r/marvelstudios (+0.81), r/Damnthatsinteresting (+0.61) and r/Unexpected (+0.54). Without the one collapse, the top stratum's maximum |Δ| is 1.55, and the bottom stratum's maximum is 3.1 times it, as on comments. We did not look up why r/Cringetopia collapsed.
 - **Comments, top stratum.** The largest changes are r/marvelstudios (+1.73), r/greentext (+1.55), r/PewdiepieSubmissions (−1.28), r/TheMonkeysPaw (−1.27) and r/WatchPeopleDieInside (−1.01).
+
+## R12. Calibrated heterogeneous-growth worlds (`r12_hetgrowth.py`; expectations in PLAN.md addendum R12 and amendments A1–A4, each committed before the outputs it governs; scores by `r12_score.py`, tables by `r12_table.py`)
+
+**Runs and their order** (2026-10-20, T9 mounted by the owner; `run_r12_r13.sh`, then `run_r12_after.sh`):
+
+| step | what | status |
+|---|---|---|
+| 1 | data auxiliary statistics, bootstrap SDs (`r12_moments__<panel>.json`) | RAN-OK |
+| 2 | registered calibration grids: fixed (24 points), decay (12 points), 3 seeds a point | RAN-OK. The first launch stopped at its first line on a JSON key error, before any simulation; fixed, and resumed at step 2 |
+| — | one-seed smoke test of every path (scratch, outside the run folder) | found the factor's shape bug (A3); its values are disclosed in A3 and used nowhere |
+| 3 | worlds, 20 seeds each: control (closed-form drift), factor, fixed, decay | see below |
+| 4 | out-of-period head share, 20 seeds each | see below |
+| 5 | recovery, planted s 0, 0.15, 0.30, 0.45, 20 seeds each | see below |
+| A4 | matched control (`control_num`): worlds and out of period | see below |
+| post hoc | grid extension for fixed, s 0.6–1.0 (`gridx`; not registered) | see below |
+
+**Calibration (registered grids).**
+
+| | fixed: optimum | objective (9 moments) | decay: optimum | objective (15 moments) |
+|---|---|---|---|---|
+| comments | s 0.5, m 0.7 (both at the grid's edge) | 1,013 | s 0.5, half-life 104 (corner) | 1,469 |
+| submissions | s 0.5, m 1.0 (edge) | 351 | s 0.5, half-life 104 (corner) | 620 |
+
+- **The objective falls monotonically with the spread on both ladders,** for both forms, and the longest half-life is preferred. The data ask for the largest and most persistent heterogeneity on offer. At the optimum the fit is poor: about 6 SD per moment on submissions and 11 on comments.
+- **The two kinds of moment pull in opposite directions.** Re-profiled from the saved grid output:
+  - the window-change covariances alone choose s 0.5 (comments m 1.0, objective 196; submissions m 1.0, 95);
+  - the lasting-variance moments alone choose s 0 and the smallest multiplier, m 0.7.
+- **Covariances by stratum, fixed at the optimum against the data** (gap 0):
+
+  | | top K/16 | K/16–K/4 | K/4–K |
+  |---|---|---|---|
+  | submissions, data | −0.001 | +0.024 | +0.067 |
+  | submissions, world | +0.013 | +0.001 | +0.017 |
+  | comments, data | +0.011 | +0.030 | +0.066 |
+  | comments, world | +0.009 | +0.022 | −0.043 |
+
+  The data's persistence grows down the ladder. A spread of growth that is the same at every rank gives the head too much and the body too little.
+- **Lasting variance.** The world's two-spacing lasting variance at the head at the optimum is 0.008 a week on submissions, against the data's 0.005. The homogeneous control is 0.006 (1.2–2.1 times the data across strata and ladders under this statistic; A4 discloses that the statistic is the two-spacing slope, not `rdm.structure_function`). At s 0.5 the term alone adds about 3(0.5/52)²·26 ≈ 0.007 a week, so the data's head lasting variance bounds a spread of growth that is the same at every rank well below what their persistence asks for.
+
+**Assessment worlds** (20 seeds each, at the registered optima; mean [5–95% across runs, parameters fixed]; `r12_table.py` → `r12_table.json`). "control" is the closed-form drift, as in A6 and R7. The matched control of A4 is reported below once run.
+
+*Submissions* (fixed s 0.5, m 1.0; decay s 0.5, half-life 104, m 1.0):
+
+| | data | control | fixed | decay | factor |
+|---|---|---|---|---|---|
+| turnover, top 10 | 0.333 | 0.228 [0.13, 0.30] | **0.335** [0.27, 0.44] | 0.273 [0.17, 0.37] | 0.207 [0.13, 0.30] |
+| turnover, top K/64 | 0.209 | 0.200 | 0.233 | 0.219 | 0.205 |
+| turnover, top K/2 | 0.178 | 0.140 | 0.159 | 0.155 | 0.159 |
+| retained 2 yr, top 10 | 0.45 | 0.63 | **0.47** | 0.59 | 0.68 |
+| replaced 2 yr / 1 yr, K/64 | 1.62 | 1.48 | 1.64 | 1.57 | 1.51 |
+| boundary ratio (pooled) | 0.80 | 1.11 | 1.18 | 1.16 | 1.15 |
+| crossings / slide | 0.72 | 0.75 | 0.89 | 0.91 | 0.46 |
+| persistence, 13 / 26 wk (null_worlds) | +0.174 / +0.140 | −0.098 / −0.092 | +0.043 / +0.047 | +0.001 / −0.002 | −0.099 / −0.092 |
+| lag profile ρ, gap 0 / 26 / 52 | +0.199 / +0.121 / +0.060 | −0.133 / −0.103 / −0.084 | +0.012 / +0.031 / +0.036 | −0.024 / −0.013 / −0.014 | −0.095 / −0.072 / −0.058 |
+| faller − riser asymmetry | +0.072 | −0.052 | −0.063 | −0.057 | −0.065 |
+| R10 contrast Q1 − rest (per wk) | +0.0027 (R10) | −0.0026 | **+0.0019** | +0.0006 | −0.0016 |
+| R10 slide, all (per wk) | 0.0056 (R10) | 0.0033 | 0.0040 | 0.0037 | **0.0059** |
+| raw size exponent | 0.045–0.082 | 0.067 | 0.062 | 0.060 | 0.070 |
+| two-spacing lasting var, head | 0.0050 | 0.0064 | 0.0082 | 0.0078 | 0.0063 |
+| funnel: p90 ratio, K/2–K over top K/64 | 1.24 | 1.48 | 1.41 | 1.41 | 1.45 |
+
+*Comments* (fixed s 0.5, m 0.7; decay s 0.5, half-life 104, m 0.7):
+
+| | data | control | fixed | decay | factor |
+|---|---|---|---|---|---|
+| turnover, top 10 | 0.267 | 0.232 | 0.285 | 0.265 | 0.313 |
+| turnover, top K/64 | 0.210 | 0.250 | 0.280 | 0.278 | 0.295 |
+| turnover, top K/2 | 0.157 | 0.133 | 0.137 | 0.135 | 0.144 |
+| retained 2 yr, top 10 | 0.65 | 0.72 | 0.54 | 0.56 | 0.55 |
+| replaced 2 yr / 1 yr, K/64 | 1.60 | 1.37 | 1.52 | 1.47 | 1.52 |
+| boundary ratio | 1.07 | NOT COMPUTED (below) | — | — | — |
+| crossings / slide | — | 0.58 | 1.36 | 1.03 | 5.8 (slide near zero) |
+| persistence, 13 / 26 wk | +0.154 / +0.141 | −0.107 / −0.085 | +0.062 / +0.085 | −0.001 / +0.016 | −0.016 / −0.014 |
+| lag profile ρ, gap 0 / 26 / 52 | +0.145 / +0.106 / +0.095 | −0.120 / −0.065 / −0.037 | +0.010 / +0.069 / **+0.094** | −0.036 / +0.015 / +0.032 | +0.027 / +0.033 / +0.010 |
+| faller − riser asymmetry | +0.071 | −0.047 | −0.040 | −0.039 | −0.095 |
+| R10 contrast | +0.0023 (R10) | −0.0028 | **+0.0034** | +0.0011 | +0.0010 |
+| R10 slide, all | 0.0036 (R10) | 0.0030 | 0.0009 | 0.0019 | −0.0043 |
+| raw size exponent | 0.059–0.075 | 0.065 | **0.026** | 0.031 | 0.059 |
+| two-spacing lasting var, head | 0.0039 | 0.0080 | 0.0106 | 0.0103 | 0.0116 |
+| funnel: p90 ratio | 1.64 | 1.67 | **1.18** | 1.23 | 1.50 |
+
+- **The boundary ratio is not computed for comments worlds.** `mts_boundary_law.analyse` indexes the K-th block level, and fewer than K simulated communities (12,000–12,250) have a complete block. The R7 worlds were submissions-only, so this statistic never existed for comments worlds. The comments half of R12-6 is scored on turnover only.
+- **The data's R10 values** are from RESULTS R10 (`slide_by_persistence.py`). The worlds' values are from `r10_rows` in `r12_hetgrowth.py`, a re-implementation of the same design. Its control reproduces R10's model and driftless worlds in sign and size (−0.0026 and −0.0028 against −0.0019 to −0.0030).
+
+**Out of period, submissions** (fit before 2021; arithmetic share of the top K/64 in 2022, 20 seeds; observed 0.356):
+
+| | share | 5–95% |
+|---|---|---|
+| control (closed-form drift) | 0.537 | 0.476–0.718 (reproduces A6 exactly) |
+| fixed (s 0.5) | 0.504 | 0.455–0.571 |
+| decay (s 0.5, half-life 104) | 0.526 | 0.457–0.632 |
+| factor (2019–20 loadings, observed 2021–22 path) | 0.540 | 0.476–0.858 |
+
+The factor's inputs:
+- The platform path's mean weekly change was +0.0136 in training and −0.0035 in 2021–22.
+- The 2019–20 loadings shrink to stratum means of 0.83 (top K/16), 0.90, 0.92 and 1.03, so the head's deviation from λ̄_K is small. A falling platform path then moves the head's share by little.
+
+**A job stopped for memory** (14:29). Two out-of-period jobs on comments ran together while the machine's swap was nearly full (12.8 of 13.3 GB, mostly other applications). The comments factor job was stopped; it is the one no registered expectation covers. It is rerun after the queue. Nothing from the stopped job was read. From then on, a placeholder held one of the two heavy-job slots, so the remaining jobs ran one at a time.
+
+**Stopped for memory, then rerun lean (2026-10-20, ~14:40).** The owner: "this much swap continually will destroy my hard drive. you must find a better way."
+- **Everything was stopped:** `run_r12_r13.sh` in step 5 (one recovery job partly done), `run_r12_after.sh`, the slot placeholder and the queued reruns. Nothing from a stopped job is used.
+- **The cause.** Every R12 job loaded a full Reddit panel (26–54 million rows, several GB as pandas with string ids) before cutting it to the tracked universe. Two at a time, with the machine's other applications, kept swap at 12–13 GB.
+- **The fix:**
+  - `r12_cache.py` builds the universe frames once per panel, lean. Ids become integer codes in string-sort order; weekly ranks and the absence-penalized permanent rank are computed exactly, in integer sums; only member rows go through the original `_rank_within`. The frames go to a scratch folder outside the repository.
+  - **Exact.** `r12_cache_check.py` reproduces all 50 data statistics of `r12_moments__<panel>.json` with difference 0 on both ladders. The cached out-of-period universe reproduces the saved closed-form control share file byte for byte.
+  - **Peak memory:** 3.1 GB (submissions) and 3.8 GB (comments) to build, once; 1.6–3.0 GB per job afterwards.
+- **The remaining jobs** (recovery, the matched control, the comments factor rerun, the post hoc grid extension) run one at a time from the cache in `run_r12_lean.sh`. Each runs under `r12_safe_run.sh`, which kills a job, descendants included, if swap grows more than 400 MB and logs its peak resident memory.
+
+**Matched control (A4), submissions** (`control_num`: drift re-solved numerically, no term; 20 seeds):
+- **Worlds.** Persistence at 13 weeks −0.096. Turnover is 0.272 for the top 10, 0.194 for the top K/64 and 0.139 for the top K/2. Boundary ratio 1.117; R10 contrast −0.0022; asymmetry −0.052. The drift method alone raises top-ten turnover from 0.228 to 0.272 and changes nothing else materially. Against the matched control, fixed differences add +0.06 to top-ten turnover, not +0.11.
+- **Out of period.** The 2022 head share is 0.533 (0.454–0.897), against 0.537 with the closed form. The drift method moves the mean by 0.004.
+
+  | paired over seeds, against `control_num` | mean | 5–95% |
+  |---|---|---|
+  | fixed | −0.029 | −0.42 to +0.10 |
+  | decay | −0.007 | −0.39 to +0.18 |
+  | factor | +0.007 | −0.41 to +0.39 |
+
+  Fixed differences close about a sixth of the gap to the observed 0.356, and that cannot be distinguished from none.
+
+**Recovery** (registered step 5, with A4's single drift method; oracle passing parts, the data's `base`; 20 panels each):
+
+| | planted s | β̂ (true) | σ̂0 (true) | head lasting variance | change vs s 0 | Δβ vs s 0 |
+|---|---|---|---|---|---|---|
+| submissions | 0 | 0.063 (0.045) | 0.104 (0.100) | 0.0057 | — | — |
+| | 0.15 | 0.077 | 0.115 | 0.0057 | +1% | +0.013 |
+| | 0.30 | 0.082 | 0.124 | 0.0063 | +11% | +0.019 |
+| | 0.45 | 0.087 | 0.131 | 0.0068 | **+21%** | **+0.023** |
+| comments | 0 | 0.069 (**0.126**) | 0.141 (0.114) | 0.0044 | — | — |
+| | 0.15 | 0.068 | 0.143 | 0.0047 | +8% | −0.001 |
+| | 0.30, 0.45 | queued (below) | | | | |
+
+- **Heterogeneity moves β up, not down.** At the spread the persistence calls for, the structure-function estimator overstates the head's lasting variance by a fifth and σ0, the SD at the universe's boundary, by 26% (about 58% in variance). It raises β by 0.02. The memo predicted that β would be attenuated. On submissions it is not, because the inflation is larger lower down.
+- **A caution outside R12-5:**
+  - On comments, with nothing planted, the estimator returns β 0.069 against the world's 0.126, and σ0 24% high. On submissions the bias with nothing planted is +0.019.
+  - This recovery was designed to difference out the estimator's behaviour (each planted world against s 0), not to validate it. The oracle `base` is the data's, not the world's.
+  - If the comments bias is a property of the estimator on such panels, the comments size exponent in the paper (0.06–0.13) may be understated.
+  - It needs a proper recovery study before any claim changes: the world's own base and several planted β. Open item; not yet run.
+
+**Scores so far** (`r12_score.py` → `r12_score.json`):
+
+| | expectation (prior) | result |
+|---|---|---|
+| R12-1 | σ_b > 0 at the optimum of (a), comments, 52σ_b in 0.1–0.5 (60%) | **PASS as written, at the grid's edge** (s 0.5; the objective is still falling) |
+| R12-1b | the same, submissions (50%) | **PASS as written, at the grid's edge** (s 0.5) |
+| R12-2(a), A2 | (a) reproduces the 52-week lag-profile value within 0.05 on comments (50%), and misses on submissions (65%) | comments **PASS** (+0.094 against +0.095); submissions **FAIL**: it is within 0.05 (+0.036 against +0.060), where a miss was expected |
+| R12-2(c) | (c) persistence ≥ +0.08 at 13 weeks: submissions (45%), comments (25%) | **FAIL** on both (−0.099; −0.016) |
+| R12-3 | (c) 2022 head share ≥ 0.05 below 0.537 (45%) | **FAIL** (0.540; matched control 0.533) |
+| R12-3b | its band contains 0.356 (20%) | **FAIL** (0.476–0.858) |
+| R12-4 | comments: prior-decliner contrast > 0 in (a) and (b) (60%) | **PASS** (+0.0034, +0.0011; closed-form control −0.0028) |
+| R12-5 | recovery under calibrated (a): head lasting variance > +10% and \|Δβ\| > 0.02 (50%) | submissions **PASS** (+21%, +0.023); comments NOT RUN yet (s 0.45 queued) |
+| R12-6 | must not worsen: turnover at K/64 and K/2 within 0.03 of the control; boundary 0.90–1.15 (70%) | submissions against `control_num`: fixed **FAIL** (+0.039 at K/64; boundary 1.18), decay **FAIL** (boundary 1.155), factor **PASS**. Comments, against the closed-form control until `control_num` runs, turnover only: fixed **FAIL** (+0.0302), decay **PASS**, factor **FAIL** (+0.046) |
+| R12-7 | (a) and (b) asymmetry below half the data's (70%) | **PASS** on both ladders for both forms (−0.04 to −0.06 against +0.07) |
+
+**Queued, waiting for memory** (`run_r12_lean3.sh`; each job starts only when 3 GB can be handed over without swap; 2.5–2.65 GB was available from 16:05):
+- comments recovery at s 0.30 and 0.45, in five-seed chunks;
+- comments matched control (worlds and out of period);
+- the comments factor out-of-period rerun;
+- the post hoc grid extension on both ladders.
+
+The two killed attempts at comments recovery s 0.30 (15:35 and 16:0x) wrote no output and are not used.

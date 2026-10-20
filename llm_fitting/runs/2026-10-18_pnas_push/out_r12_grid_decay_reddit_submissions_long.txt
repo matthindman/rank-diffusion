@@ -1,0 +1,85 @@
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.2 hl 26 m 1.0: objective 1670.79
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.3 hl 26 m 1.0: objective 1322.16
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.4 hl 26 m 1.0: objective 1283.38
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.5 hl 26 m 1.0: objective 1141.06
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.2 hl 52 m 1.0: objective 1461.79
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.3 hl 52 m 1.0: objective 1286.21
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.4 hl 52 m 1.0: objective 1053.20
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.5 hl 52 m 1.0: objective 767.37
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.2 hl 104 m 1.0: objective 1545.99
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.3 hl 104 m 1.0: objective 1097.63
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.4 hl 104 m 1.0: objective 867.84
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:53: RuntimeWarning: Mean of empty slice
+  with np.errstate(all="ignore"):
+reddit_submissions_long decay s 0.5 hl 104 m 1.0: objective 619.70
+best {'s': 0.5, 'half_life': 104, 'm': 1.0, 'obj': 619.7032175998381, 'aux': [-0.0039512906713504705, -0.00425794150333866, -0.018994656605644287, 0.003191481163664956, 0.000378345632594202, -0.014536735725973152, 0.00638632475215675, 0.0017845366009705914, -0.01282968311547722, 0.004864533436340173, 0.0029144904621146057, -0.013128595134324607, 0.007578790942491503, 0.009157882929480853, 0.014536179427895922]}

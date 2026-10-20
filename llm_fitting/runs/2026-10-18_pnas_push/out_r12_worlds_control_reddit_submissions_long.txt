@@ -1,0 +1,140 @@
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 0: gapped {13: -0.09827379375853137, 26: -0.09894899671095604}; asym {'fallers': -0.0989164036339207, 'risers': -0.03650191440103594, 'diff': -0.06241448923288476}; turnover {10: 0.30000000000000004, 25: 0.2133333333333333, 78: 0.24786324786324784, 312: 0.18910256410256407, 1250: 0.16106666666666666, 2500: 0.13786666666666667}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 1: gapped {13: -0.09749249783450697, 26: -0.0872566148335648}; asym {'fallers': -0.088972824113001, 'risers': -0.05509951840775997, 'diff': -0.03387330570524103}; turnover {10: 0.16666666666666663, 25: 0.2133333333333333, 78: 0.18803418803418803, 312: 0.19658119658119658, 1250: 0.16506666666666667, 2500: 0.1438666666666667}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 2: gapped {13: -0.10200925178078171, 26: -0.10241719568337128}; asym {'fallers': -0.12101900402048264, 'risers': -0.03669686351545851, 'diff': -0.08432214050502412}; turnover {10: 0.19999999999999998, 25: 0.25333333333333335, 78: 0.2136752136752137, 312: 0.2126068376068376, 1250: 0.16666666666666666, 2500: 0.14186666666666667}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 3: gapped {13: -0.07907725863339438, 26: -0.0775148604389111}; asym {'fallers': -0.09319164739320375, 'risers': -0.04285140538511429, 'diff': -0.05034024200808946}; turnover {10: 0.3333333333333333, 25: 0.24, 78: 0.18376068376068377, 312: 0.20833333333333334, 1250: 0.16853333333333334, 2500: 0.13573333333333334}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 4: gapped {13: -0.1000134104112328, 26: -0.09256368516354735}; asym {'fallers': -0.09444026683121161, 'risers': -0.041075373377995404, 'diff': -0.053364893453216204}; turnover {10: 0.23333333333333336, 25: 0.22666666666666668, 78: 0.18376068376068375, 312: 0.18589743589743588, 1250: 0.1610666666666667, 2500: 0.1378666666666667}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 5: gapped {13: -0.11014604278129753, 26: -0.10254874226613413}; asym {'fallers': -0.0769487029527149, 'risers': -0.05577984486635293, 'diff': -0.021168858086361972}; turnover {10: 0.26666666666666666, 25: 0.25333333333333335, 78: 0.23076923076923075, 312: 0.20085470085470084, 1250: 0.17280000000000004, 2500: 0.14226666666666668}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 6: gapped {13: -0.10055983795307405, 26: -0.08305602990291404}; asym {'fallers': -0.09516309419533166, 'risers': -0.044338945310670064, 'diff': -0.050824148884661594}; turnover {10: 0.19999999999999996, 25: 0.2133333333333333, 78: 0.19230769230769232, 312: 0.21688034188034186, 1250: 0.16479999999999997, 2500: 0.13706666666666664}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 7: gapped {13: -0.09846930690946948, 26: -0.091529462264814}; asym {'fallers': -0.10367644092970335, 'risers': -0.04196099918039017, 'diff': -0.061715441749313184}; turnover {10: 0.1333333333333333, 25: 0.22666666666666666, 78: 0.18376068376068377, 312: 0.2094017094017094, 1250: 0.16266666666666663, 2500: 0.1418666666666667}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 8: gapped {13: -0.09172072607826195, 26: -0.0805981936280314}; asym {'fallers': -0.09565397927605253, 'risers': -0.05284850998058973, 'diff': -0.0428054692954628}; turnover {10: 0.09999999999999998, 25: 0.2533333333333333, 78: 0.18376068376068375, 312: 0.1955128205128205, 1250: 0.164, 2500: 0.14053333333333332}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 9: gapped {13: -0.09694423782174946, 26: -0.09496082311785685}; asym {'fallers': -0.09397703166371268, 'risers': -0.029874930797108307, 'diff': -0.06410210086660438}; turnover {10: 0.3, 25: 0.28, 78: 0.21794871794871795, 312: 0.20619658119658116, 1250: 0.16613333333333333, 2500: 0.1393333333333333}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 10: gapped {13: -0.09662503440941736, 26: -0.08269537525285912}; asym {'fallers': -0.09202270061478794, 'risers': -0.05701311585201926, 'diff': -0.035009584762768685}; turnover {10: 0.26666666666666666, 25: 0.17333333333333334, 78: 0.21367521367521367, 312: 0.19658119658119658, 1250: 0.17013333333333336, 2500: 0.14426666666666665}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 11: gapped {13: -0.09784026653324918, 26: -0.0892906675271682}; asym {'fallers': -0.10307704477706627, 'risers': -0.03802666808502578, 'diff': -0.06505037669204049}; turnover {10: 0.19999999999999998, 25: 0.22666666666666668, 78: 0.2094017094017094, 312: 0.19658119658119663, 1250: 0.16346666666666665, 2500: 0.1373333333333333}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 12: gapped {13: -0.11430347852452881, 26: -0.10767651467288948}; asym {'fallers': -0.08692867304567815, 'risers': -0.035310805444611945, 'diff': -0.05161786760106621}; turnover {10: 0.2333333333333333, 25: 0.19999999999999998, 78: 0.18803418803418803, 312: 0.2136752136752137, 1250: 0.16746666666666665, 2500: 0.13826666666666665}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 13: gapped {13: -0.10950420810113329, 26: -0.11206145159672205}; asym {'fallers': -0.11125481490666034, 'risers': -0.04659701390303423, 'diff': -0.06465780100362611}; turnover {10: 0.26666666666666666, 25: 0.27999999999999997, 78: 0.18376068376068377, 312: 0.19764957264957264, 1250: 0.1712, 2500: 0.14533333333333334}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 14: gapped {13: -0.0780096409736294, 26: -0.0652914485746551}; asym {'fallers': -0.09767841070419907, 'risers': -0.026633891770735565, 'diff': -0.0710445189334635}; turnover {10: 0.26666666666666666, 25: 0.21333333333333335, 78: 0.18803418803418803, 312: 0.1944444444444445, 1250: 0.17066666666666666, 2500: 0.1428}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 15: gapped {13: -0.10910088532478081, 26: -0.1022126892055456}; asym {'fallers': -0.08990744905285968, 'risers': -0.06534234076633978, 'diff': -0.024565108286519893}; turnover {10: 0.26666666666666666, 25: 0.24, 78: 0.17521367521367517, 312: 0.21367521367521367, 1250: 0.15839999999999999, 2500: 0.1366666666666667}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 16: gapped {13: -0.09494732930012795, 26: -0.09330434625298224}; asym {'fallers': -0.09307776028802622, 'risers': -0.06887434363513523, 'diff': -0.024203416652890997}; turnover {10: 0.19999999999999998, 25: 0.29333333333333333, 78: 0.20940170940170943, 312: 0.20299145299145296, 1250: 0.1658666666666667, 2500: 0.13813333333333333}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 17: gapped {13: -0.09596119822043513, 26: -0.08441181436059647}; asym {'fallers': -0.10816023564770595, 'risers': -0.040580310654576596, 'diff': -0.06757992499312936}; turnover {10: 0.1333333333333333, 25: 0.18666666666666668, 78: 0.19230769230769232, 312: 0.21474358974358973, 1250: 0.16746666666666665, 2500: 0.14106666666666665}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 18: gapped {13: -0.09776519240883755, 26: -0.09492825359984426}; asym {'fallers': -0.10305487565571403, 'risers': -0.04264980296783758, 'diff': -0.06040507268787645}; turnover {10: 0.19999999999999998, 25: 0.24, 78: 0.1923076923076923, 312: 0.22115384615384615, 1250: 0.16186666666666663, 2500: 0.1404}
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/null_worlds.py:166: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-10-18_pnas_push/r12_hetgrowth.py:54: RuntimeWarning: Mean of empty slice
+  return np.where(ok, np.nanmean(seg, 0), np.nan)
+reddit_submissions_long control seed 19: gapped {13: -0.09446136837109849, 26: -0.0929052825574298}; asym {'fallers': -0.08777096479759117, 'risers': -0.03715789490017443, 'diff': -0.050613069897416735}; turnover {10: 0.3, 25: 0.18666666666666665, 78: 0.21794871794871795, 312: 0.21047008547008547, 1250: 0.16453333333333334, 2500: 0.13560000000000003}

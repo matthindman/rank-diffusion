@@ -1,0 +1,11 @@
+peak RSS 1.68 GB; swap 8301M -> 8277M; killed 0
+oop cache check: identical
+peak RSS 2.09 GB; swap 8277M -> 7741M; killed 0
+peak RSS 2.07 GB; swap 7741M -> 7653M; killed 0
+peak RSS 2.00 GB; swap 7653M -> 7509M; killed 0
+peak RSS 2.11 GB; swap 7509M -> 6996M; killed 0
+peak RSS 2.91 GB; swap 6996M -> 7046M; killed 0
+peak RSS 2.72 GB; swap 7046M -> 6932M; killed 0
+WATCHDOG: swap grew from 6932M to 7856M; killing the job
+peak RSS  GB; swap 6932M -> 7848M; killed 1
+stopped at llm_fitting/runs/2026-10-18_pnas_push/out_r12_recovery_0.3_reddit_comments_ext.txt

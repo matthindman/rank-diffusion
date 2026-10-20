@@ -1,0 +1,14 @@
+reddit_comments_ext planted s 0.3 seed 0: sigma0 0.1507 (true 0.1141), beta +0.063 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 1: sigma0 0.1494 (true 0.1141), beta +0.059 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 2: sigma0 0.1507 (true 0.1141), beta +0.059 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 3: sigma0 0.1448 (true 0.1141), beta +0.058 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 4: sigma0 0.1491 (true 0.1141), beta +0.059 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 5: sigma0 0.1517 (true 0.1141), beta +0.062 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 6: sigma0 0.1495 (true 0.1141), beta +0.058 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 7: sigma0 0.1516 (true 0.1141), beta +0.055 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 8: sigma0 0.1483 (true 0.1141), beta +0.058 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 9: sigma0 0.1455 (true 0.1141), beta +0.059 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 10: sigma0 0.1451 (true 0.1141), beta +0.049 (true +0.126)
+reddit_comments_ext planted s 0.3 seed 11: sigma0 0.1471 (true 0.1141), beta +0.063 (true +0.126)
+WATCHDOG: swap grew from 7040M to 7545M; killing the job
+peak RSS  GB; swap 7040M -> 7545M; killed 1

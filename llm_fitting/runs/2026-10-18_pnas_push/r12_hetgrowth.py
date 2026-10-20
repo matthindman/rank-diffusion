@@ -24,6 +24,7 @@ drift is re-solved with the heterogeneity present.  Every statistic is computed 
 Outputs: r12_moments__<panel>.json, r12_grid__<panel>__<variant>.json, r12_world__<panel>__<variant>__s<seed>.json,
 r12_worlds__<panel>__<variant>.json, r12_oop__<panel>__<variant>.json, r12_recovery__<panel>__s<planted>.json.
 """
+import gc
 import json
 import math
 import sys
@@ -150,8 +151,21 @@ def aux_vector(a, gaps):
 
 # --------------------------------------------------------------------------- data and model
 def load(pn, member_window=None):
+    """The universe frame; from the lean cache (r12_cache.py) when $R12_CACHE is set, so that no full panel is
+    loaded (owner, 2026-10-20: no sustained swapping)."""
+    import os
+    import pandas as pd
     import minimal_rankdiff as mrd
     K = m1.PANELS[pn]["K"]
+    cache = os.environ.get("R12_CACHE")
+    if cache:
+        name = "univ" if member_window is None else "univoop"
+        df = pd.read_parquet(Path(cache) / f"{name}__{pn}.parquet")
+        if member_window is not None:                  # the cache holds the out-of-period universe only
+            T = int(df["period"].max()) + 1
+            assert member_window == T - (T // 52) * 52 + 2 * 52, "cached univoop is for the R12 out-of-period origin only"
+        df.attrs["score_k"], df.attrs["universe_B"] = int(K), 4 * int(K)
+        return df, K
     full = mrd.load_panel(mrd.PLATFORMS[m1.PANELS[pn]["platform"]])
     df = mrd.restrict_universe(full, K, buffer_mult=4, **({"member_window": member_window} if member_window else {}))
     return df, K
@@ -365,6 +379,8 @@ def main():
         m_fixed = float(sys.argv[4]) if len(sys.argv) > 4 else None
         p, base, ladder = fit_model(df, K, pn)
         L0 = rk._filtered_levels(df[df["period"] < 30].copy(), base).to_numpy()
+        del df                                         # memory (owner, 2026-10-20): the frame is not needed below
+        gc.collect()
         dm = json.loads((HERE / f"r12_moments__{pn}.json").read_text())
         gaps = GAPS_FIXED if variant == "fixed" else GAPS_DECAY
         sd_all = np.array(dm["boot_sd"])
@@ -411,6 +427,8 @@ def main():
                 fac = factor_inputs(df, K, range(start, start + 52), lev0.index.to_numpy(), T)
                 fac["L0"] = L0
             q = het_params(p, ladder, variant, s=s_, half_life=h, m=m_, fac=fac)
+            del df                                     # memory: the data frame is not needed for the simulated worlds
+            gc.collect()
             for seed in range(s0, s1 + 1):
                 fr, Xs, ids = sim_frame(q, L0, T, seed, K)
                 res = world_stats(fr, Xs, ids, K, T, f"{variant}")
@@ -423,18 +441,19 @@ def main():
             return
         # oop: as A6 (structure_oop.py): fit on weeks before 2021, simulate 2021-22 from the filtered state
         import minimal_rankdiff as mrd
-        full = mrd.load_panel(mrd.PLATFORMS[m1.PANELS[pn]["platform"]])
         nb = T // 52
         start = T - nb * 52
         t_origin = start + 2 * 52
-        dtr = mrd.restrict_universe(full, K, buffer_mult=4, member_window=t_origin)
+        if variant != "factor":                        # memory: only the factor uses the in-sample universe here
+            del df
+            gc.collect()
+        dtr, _ = load(pn, member_window=t_origin)        # cached when $R12_CACHE is set
         dtr = dtr[dtr["period"] < t_origin].copy()
         p, base, ladder = fit_model(dtr, K, pn)
         levels = rk._filtered_levels(dtr, base)
         fac = None
         if variant == "factor":
-            dfull = mrd.restrict_universe(full, K, buffer_mult=4)
-            fx = factor_inputs(dfull, K, range(start, t_origin), levels.index.to_numpy(), T)
+            fx = factor_inputs(df, K, range(start, t_origin), levels.index.to_numpy(), T)   # df: the in-sample universe
             fac = dict(path=fx["path"][t_origin - 1:], load=fx["load"], pool=fx["pool"], L0=levels.to_numpy(),
                        f_mean_test=float(np.mean(fx["path"][t_origin - 1:])), f_mean_train=float(np.mean(fx["path"][start:t_origin - 1])),
                        strata=fx["strata"])
@@ -464,6 +483,8 @@ def main():
         import rankdiff_rdm as rdm
         p, base, ladder = fit_model(df, K, pn)
         L0 = rk._filtered_levels(df[df["period"] < 30].copy(), base).to_numpy()
+        del df                                         # memory: the data frame is not needed for the recovery panels
+        gc.collect()
         q = het_params(p, ladder, "fixed" if planted > 0 else "control_num", s=planted, m=1.0)   # A4: one drift method
         rows = []
         for seed in range(s0, s1 + 1):
@@ -472,8 +493,14 @@ def main():
             pw = rdm.estimate_rdm(fr, K, base=base, jumps=False, variant="move", slides=(np.array([1.0, 4.0 * K]), np.zeros(2)))
             rows.append(dict(seed=seed, sigma0=float(pw.sigma0), beta=float(pw.beta), s_band=np.asarray(pw.s_band).tolist()))
             print(f"{pn} planted s {planted} seed {seed}: sigma0 {pw.sigma0:.4f} (true {q.sigma0:.4f}), beta {pw.beta:+.3f} (true {q.beta:+.3f})", flush=True)
+        f = HERE / f"r12_recovery__{pn}__s{planted}.json"
+        if f.exists():                                 # memory (2026-10-20): seeds may run in chunks; merge by seed
+            old = json.loads(f.read_text())
+            assert old["planted_s"] == planted and abs(old["true_sigma0"] - float(q.sigma0)) < 1e-12
+            done = {r["seed"] for r in rows}
+            rows = sorted([r for r in old["rows"] if r["seed"] not in done] + rows, key=lambda r: r["seed"])
         out = dict(panel=pn, planted_s=planted, true_sigma0=float(q.sigma0), true_beta=float(q.beta), rows=rows)
-        (HERE / f"r12_recovery__{pn}__s{planted}.json").write_text(json.dumps(out, indent=1))
+        f.write_text(json.dumps(out, indent=1))
         return
     raise SystemExit(f"unknown mode {mode}")
 

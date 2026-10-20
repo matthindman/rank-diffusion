@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-20** (the paragraphs on §2z-da … §2z-dm were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-20** (the paragraphs on §2z-da … §2z-dn were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -330,6 +330,31 @@ spine, "size does not protect", and the model and momentum. The outline
   - **R12** (calibrated heterogeneous growth) is registered with amendments
     A1–A2, and its code is ready (`r12_hetgrowth.py`, `run_r12_r13.sh`).
     R12, R13c and R13d are BLOCKED until `/Volumes/T9` is mounted.
+    _[Superseded by §2z-dn: run 2026-10-20.]_
+- **R12 and R13c–d (§2z-dn, 2026-10-20; exploratory, registered
+  expectations; IN PROGRESS for queued comments jobs).**
+  - **Standard heterogeneous growth does not explain the departures.**
+    - Fixed, AR and factor forms were calibrated by indirect inference
+      (A2–A4). Even calibrated to the persistence, they reproduce at most
+      three fifths of it.
+    - The optimum sits at the edge of the grid, with a poor fit.
+    - They give no faller/riser asymmetry, and the wrong rank pattern: the
+      data's persistence lives below the head.
+    - They close about a sixth of the 2022 head-share gap, which cannot be
+      told from none (fixed 0.504, matched control 0.533; observed 0.356).
+  - **What persists is decline.** Scale dependence in volatility is weak;
+    the head's fall is a shift in its drift after 2020. Next candidate
+    (owner's call): mirrored GLLM type switching, with a decline state.
+  - **Recovery.** At the spread the persistence calls for, the head's
+    lasting variance is overstated by a fifth and β is raised by 0.02.
+  - **Open caution.** With nothing planted, the estimator returns β 0.069
+    for a true 0.126 on comments; that needs a proper recovery study.
+  - **R13:** two-year turnover is 1.6× the one-year (R13-1 PASS). The
+    quantiles of change rise only 1.2–1.6-fold over a 64-fold range of rank
+    (R13-2 FAIL as written; the funnel is the extremes).
+  - **Memory rule (owner, 2026-10-20): no sustained swapping.** Heavy jobs
+    run one at a time, from the lean universe cache (`r12_cache.py`,
+    checked exact), under `r12_safe_run.sh`.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it

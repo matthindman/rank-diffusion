@@ -320,13 +320,17 @@ def fig4v5():
         x = 2022.15 + 0.12 * j
         a.errorbar([x], [100 * m], yerr=[[100 * (m - lo)], [100 * (hi - m)]], fmt="D", color=COL[pn], mfc="white", ms=3.2, capsize=1.5, lw=0.8)
         a.plot([2022, x], [100 * o["data"]["share_3"]] * 2, ":", color=COL[pn], lw=0.6)
-        for tag_ in ("fixed", "decay", "factor"):                          # R12 heterogeneous worlds, when run
+        for i_, (tag_, mk_) in enumerate((("fixed", "v"), ("decay", "^"), ("factor", "P"))):   # R12 heterogeneous worlds, when run
             f = HERE / f"r12_oop__{pn}__{tag_}.json"
             if f.exists():
                 g = load(f)
-                a.errorbar([x + 0.06], [100 * g["share_3"]], yerr=[[100 * (g["share_3"] - g["share_3_q"][0])], [100 * (g["share_3_q"][1] - g["share_3"])]],
-                           fmt="v", color=COL[pn], ms=3, lw=0.7)
+                a.errorbar([x + 0.07 * (i_ + 1)], [100 * g["share_3"]], yerr=[[100 * (g["share_3"] - g["share_3_q"][0])], [100 * (g["share_3_q"][1] - g["share_3"])]],
+                           fmt=mk_, color=COL[pn], ms=2.6, lw=0.6)
     a.plot([], [], "D", color="k", mfc="white", ms=3, label="homogeneous model, fit 2019-20 (5-95%)")
+    if (HERE / "r12_oop__reddit_submissions_long__factor.json").exists():
+        for tag_, mk_ in (("fixed", "v"), ("decay", "^"), ("factor", "P")):
+            a.plot([], [], mk_, color="k", ms=2.6, label={"fixed": "fixed differences in growth", "decay": "decaying differences",
+                                                           "factor": "exposure to the platform trend"}[tag_])
     a.set_xticks([2019, 2020, 2021, 2022])
     a.set_xlim(2018.8, 2022.6)
     a.set_ylim(20, 75)
@@ -374,20 +378,24 @@ def fig4v5():
         for gap in ("13", "26"):
             a.errorbar([int(gap) + (n - 3.5) * 0.35], [g7[gap]["mean"]], yerr=[[g7[gap]["mean"] - g7[gap]["q05"]], [g7[gap]["q95"] - g7[gap]["mean"]]],
                        fmt="x", color="#666666", ms=2.5, mew=0.7, elinewidth=0.4, label="homogeneous worlds" if (n == 0 and gap == "13") else None)
-    for tag_, mk in (("fixed", "v"), ("decay", "^"), ("factor", "P")):          # R12 heterogeneous worlds, when run
+    for i_, (tag_, mk) in enumerate((("fixed", "v"), ("decay", "^"), ("factor", "P"))):   # R12 heterogeneous worlds, when run
+        shown = False
         for pn in PANELS2:
             f = HERE / f"r12_worlds__{pn}__{tag_}.json"
             if f.exists():
-                g = load(f)["gapped"]
+                g = load(f)["gapped_stats"]                                 # the same statistic as the homogeneous worlds
                 for gap in ("13", "26"):
-                    a.errorbar([int(gap) + 1.5], [g[gap]["mean"]], yerr=[[g[gap]["mean"] - g[gap]["q05"]], [g[gap]["q95"] - g[gap]["mean"]]],
-                               fmt=mk, color=COL[pn], ms=3, lw=0.6)
+                    a.errorbar([int(gap) + 1.6 + 0.9 * i_], [g[gap]["mean"]], yerr=[[g[gap]["mean"] - g[gap]["q05"]], [g[gap]["q95"] - g[gap]["mean"]]],
+                               fmt=mk, color=COL[pn], ms=2.6, lw=0.6,
+                               label=({"fixed": "fixed growth diff.", "decay": "decaying diff.", "factor": "platform-trend exposure"}[tag_]
+                                      if (not shown and gap == "13") else None))
+                    shown = True
     a.axhline(0, color=GREY, lw=0.4)
     a.set_xlabel("gap between the two changes (weeks)")
     a.set_ylabel("rank correlation of changes")
     a.set_title("Changes persist on Reddit", fontsize=6.3)
-    a.legend(loc="upper right", frameon=False, fontsize=4.2, ncol=2, columnspacing=0.5, handlelength=1.4)
-    a.set_ylim(-0.16, 0.45)
+    a.legend(loc="upper right", frameon=False, fontsize=4.0, ncol=1, handlelength=1.4, labelspacing=0.3)
+    a.set_ylim(-0.16, 0.66)
     tag(a, "C")
     # D: the slide by prior change: the bottom fifth of prior change against the rest, data and worlds
     a = ax[3]
