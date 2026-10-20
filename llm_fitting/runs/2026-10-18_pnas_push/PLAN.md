@@ -1173,3 +1173,122 @@ A crash before any output is fixed and disclosed here, as in R12-A3. A killed ru
 | R16-G4 | with states from training history, the submissions 2022 head share is at least 0.05 below the matched control's 0.533 | 25% |
 
 This is post hoc. It is a development check and is labelled so wherever it is reported.
+
+## Addendum R17 (2026-10-21, written before any run): referee round 8, Tiers 2 and 3
+
+**Why.** Referee round 8 (`runs/2026-10-21_external_critiques_round8/SYNTHESIS_R8.md`; §2z-dr). The owner, 2026-10-21: "do all 3 tiers … do add asymmetry to the protocol for the sealed data." Code: `r17_round8.py`; queue: `run_r17.sh`. Every job reads the lean cache and runs alone under the swap watchdog.
+
+**Seen when this was written.**
+- Every R16 output.
+- The three round-8 reports, which quote the data's Spearman split (fallers +0.141 and +0.113; risers +0.069 and +0.042) and the tail follow-ups (−0.265/+0.033 and −0.216/+0.049).
+- The two 2021 mid-month steps (−0.243 and −0.220) from `r16_capture_daily__reddit_submissions_long.json`.
+- The statistic below, computed on synthetic panels only (symmetric growth types D +0.02; skewed decline types +0.42).
+
+No value of the statistic below has been computed on data or on a calibrated world.
+
+**Tier 1 changes already made, before this addendum:**
+- **The capture placebo filter** now checks each mid-month date itself (H6). The daily audit was rerun: ratios 0.69–1.10, July 2021 unchanged.
+- **`r16_durability_fit.py` deposited.** It reproduces `r16_durability_scores.json` exactly (H12).
+
+### R17-A. The asymmetry as one statistic
+
+**The primary statistic D.**
+- **Pairs.** For origins every 13 weeks, x and y are the year-apart changes of 13-week window means sharing no weeks (gap 13), demeaned within the three strata of whole-window permanent rank: the construction of `r12_hetgrowth`, used for every world.
+- **Tail persistence.** In the bottom and top deciles of x:
+  - p_fall = mean(y | x ≤ q10) / mean(x | x ≤ q10);
+  - p_rise = mean(y | x ≥ q90) / mean(x | x ≥ q90).
+- **D = p_fall − p_rise,** averaged over origins. Under persistence that is linear in x the two ratios are equal, whatever the skew of x.
+- **Bands:** 200 bootstrap draws over communities within strata.
+- **Beside it:** the decile curve, mean y against mean x by decile of x.
+- **Kept for continuity:** the Spearman split.
+
+**On the data** (`asym_data`):
+- D with bands;
+- by stratum, with bands;
+- early and late origins (the first and second halves);
+- before July 2021 at gap 4 (the only gap at which both changes end before it; one or two origins, descriptive);
+- without terminal collapses (R16-E's rule);
+- with absent weeks at that week's universe floor.
+
+An after-the-surge split is impossible with year-apart changes in a 212-week panel. Each comparison spans 143 weeks, so no origin can start after July 2020 and end inside the panel.
+
+**In worlds** (`asym_worlds`, by the same code):
+- the matched homogeneous control: 20 seeds;
+- the R16-B joint world: 20 seeds;
+- the R16-A decline world at π_D 0.25: 10 seeds;
+- the R17-D worlds below.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R17-1 | the data's D > 0 on both ladders, with the 5–95% band excluding 0 | 80% |
+| R17-2 | the data's D lies above the matched control's 95th percentile across seeds on both ladders | 80% |
+| R17-3 | the joint world's mean D ≤ 0.02 on both ladders | 65% |
+| R17-4 | the decline world's mean D > 0 on both ladders | 60% |
+| R17-5 | the data's D > 0 in the early and the late origins, without collapses and with absences at the floor, on both ladders | 55% |
+| R17-6 | by stratum, the submissions top K/16 has the smallest D of its three strata | 50% |
+
+### R17-B. Smaller checks
+
+- **Table 1's statistics on the data by the worlds' code** (`table_data`, `null_worlds.stats`). R17-7: on submissions, crossings over slide computed this way is within ±0.10 of 0.72, the SI's pooled value (prior 50%). It replaces the table's data entry whatever it is.
+- **The two 2021 mid-month steps** (`events`, submissions): the head communities whose share of items moved most across 15 February and 15 May 2021, named, and the block's head item share without them. R17-8: the three largest contributors carry at least half of each step (prior 50%).
+
+### R17-C. R16-F extended (`durability2`)
+
+**Design.**
+- **Runs:** m 1.0, 10 seeds, 520 weeks, in the matched homogeneous world and in the R16-B joint world.
+- **Arms:** the head step (0.2 a year in the decline of the current top K/64) and a GLLM-style step (lasting volatility ×1.2 at every rank, drift not re-solved), each against a control on common seeds.
+- **Shapes:** observed and lasting (the moving home, known in simulation), at K/64 and K/16, by 52-week block.
+- **Membership** retention from the control.
+- **Fits** (in the scoring script, written before the outputs are read):
+  - the lasting response fitted by −Δτ(1 − e^{−t/τ}) with no lag;
+  - the observed response with the lag free;
+  - τ's band from the seeds (each seed fitted).
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R17-9 | homogeneous world, head step: the lasting-shape τ at K/64 is within 0.6–1.5 times the membership e-folding on both ladders | 55% |
+| R17-10 | homogeneous world, volatility step: the τ of the shape's response at K/64 is at most twice the membership e-folding on both ladders | 50% |
+| R17-11 | joint world, head step: the observed response in year 1 is smaller than in the homogeneous world on both ladders (the slower swing delays it) | 70% |
+
+### R17-D. Tier 3
+
+**The joint grid past its edges** (`jgrid2`).
+- **Submissions** (42 points): s ∈ {0.8, 1.0} × head ∈ {0, 0.1, 0.25} × km ∈ {0.25, 0.35, 0.5} × m ∈ {0.6, 0.8}, plus s 0 at each km and m.
+- **Comments** (12 points): s 0.6 × head ∈ {0, 0.1, 0.25} × km ∈ {0.25, 0.35, 0.5} at m 0.7, plus s 0 at each km.
+- The argmin is taken over the union with R16-B's grid. 3 seeds a point, the 24 moments.
+
+**Calibration under correct specification** (`jcalib`). 20 pseudo-data panels (seeds 2000–2019) from:
+- **(i)** the joint world at the overall argmin;
+- **(ii)** a homogeneous world with the slower swing (km 0.5, s 0), the false-positive check in the direction R16-B needs (K6).
+
+Each panel is calibrated by the union of the joint grids' saved moments.
+
+**R16-G redone** (`jdgrid2`).
+- **Grid:** the decline state (π_D 0.25, half-life 208) with the fixed spread free: sd ∈ {0.3, 0.5, 0.7} × s ∈ {0.4, 0.6, 0.8} × km ∈ {0.35, 0.5}, with head and m at the overall joint argmin. 18 points, 24 moments, the asymmetry untargeted.
+- **Then:** 10 worlds at its best with D (R17-A).
+- **Also:** 20 asymmetry worlds at the overall joint argmin if it differs from R16-B's.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R17-12 | the overall joint argmin is interior in km on at least one ladder | 35% |
+| R17-13 | (i) on submissions, the data's minimum objective is within the 95th percentile of the correct-specification minima (the joint form is not rejected there) | 45% |
+| R17-14 | (i) on comments it is beyond the 95th percentile (rejected) | 85% |
+| R17-15 | (ii) the slow-swing homogeneous world is fitted with s ≤ 0.2 in at least 15 of 20 panels on both ladders | 55% |
+| R17-16 | R16-G redone: the best point has sd > 0 and an objective below the overall joint argmin's on at least one ladder | 40% |
+| R17-17 | its worlds' mean D > 0.02 on at least one ladder (untargeted) | 35% |
+
+**Order.**
+1. A on the data;
+2. B;
+3. A's worlds;
+4. C;
+5. the D grids, calibration and G grids;
+6. the D worlds.
+
+A crash before any output is fixed and disclosed here; a killed run is not interpreted.

@@ -104,8 +104,9 @@ def mode_daily(pn):
     def near_block_edge(day):
         return min(abs((day - e).days) for e in bstarts) < 15
 
-    firsts = [d for d in pd.date_range(D.index.min() + pd.Timedelta(days=15), D.index.max() - pd.Timedelta(days=15), freq="MS") if not near_block_edge(d)]
-    mids = [d + pd.Timedelta(days=14) for d in firsts]
+    days = pd.date_range(D.index.min() + pd.Timedelta(days=15), D.index.max() - pd.Timedelta(days=15), freq="MS")
+    firsts = [d for d in days if not near_block_edge(d)]
+    mids = [d + pd.Timedelta(days=14) for d in days if not near_block_edge(d + pd.Timedelta(days=14))]   # fixed 2026-10-21 (round 8, H6): each date checked itself
     S1 = {str(d.date()): step(d) for d in firsts}
     S2 = {str(d.date()): step(d) for d in mids}
     S1 = {k: v for k, v in S1.items() if v}
