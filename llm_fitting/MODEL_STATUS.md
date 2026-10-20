@@ -13496,3 +13496,24 @@ The objective is still falling and the fit is poor, about 6 SD per moment (submi
   - SI: recovery results and scores updated.
 
 _[Completed 2026-10-20 18:12 (`run_r12_lean4.sh`): s 0.45 on comments now has all 20 seeds: head lasting variance **+79%**, Δβ **−0.015** (SE 0.0006). R12-5 on comments remains FAIL as written. The 15-seed values above (+82%, −0.016) are superseded.]_
+
+### Completion addendum to §2z-dn (2026-10-20, 19:00): queue complete; supersedes the IN PROGRESS status in the headline
+
+- **Every queued job ran** (`run_r12_lean4.sh`, one at a time from the lean cache under the watchdog; no kills; swap fell from 4.9 to 2.7 GB after the owner freed memory).
+- **Comments matched control:** out of period 0.574 (0.515–0.618), against the closed-form 0.597; observed 0.505.
+  - Fixed differences give 0.613, a paired +0.039 (−0.05 to +0.41), away from the observed share.
+  - Factor exposure gives 0.551, a paired −0.024 (−0.13 to +0.18).
+  - Worlds: persistence −0.107 at 13 weeks; R10 contrast −0.0029.
+- **R12-6, comments, against the matched control (turnover only):** fixed PASS, decay PASS, factor FAIL.
+- **Post hoc grid extension:** the objective is lowest near s 0.5 on both ladders (submissions 351 at 0.5 against 362 at 0.6; comments 1,013 against 1,437). The registered edge optimum is effectively the minimum. §2z-dn's "still falling" is withdrawn; the fit at the minimum is poor.
+- **Final R12 scores:**
+  - PASS: R12-1 and R12-1b (s 0.5; minimum near 0.5); R12-4; R12-7 (both ladders, both forms).
+  - FAIL: R12-2(c), both ladders; R12-3 and R12-3b.
+  - Mixed: R12-2(a), comments PASS and submissions FAIL (a miss was expected); R12-5, submissions PASS and comments FAIL as written.
+  - R12-6, against the matched control: submissions fixed and decay FAIL, factor PASS; comments fixed and decay PASS, factor FAIL.
+- **Manuscript:**
+  - main text: comments out-of-period shares (55–61% against 51%); "at an annual spread of about 0.5, and even there the fit is poor";
+  - SI: the extension, the comments out-of-period results and R12-6 on comments.
+
+  The only red placeholders left are owner items.
+- **Repository incident** (recorded in the 845fd2c commit message): iCloud Drive renamed `.git/index` to "index 2" at about 18:19. The index was restored from the copy; full fsck is clean. Owner item: move the repository out of iCloud sync, or exclude it.

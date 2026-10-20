@@ -1,0 +1,10 @@
+peak RSS 2.56 GB (job tree, sampled: 2478 MB); swap 4866M -> 4760M; killed 0
+peak RSS 5.60 GB (job tree, sampled: 5238 MB); swap 4760M -> 2894M; killed 0
+peak RSS 4.70 GB (job tree, sampled: 4221 MB); swap 2894M -> 2862M; killed 0
+peak RSS 4.44 GB (job tree, sampled: 4088 MB); swap 2862M -> 2846M; killed 0
+peak RSS 4.96 GB (job tree, sampled: 4954 MB); swap 2846M -> 2838M; killed 0
+peak RSS 4.13 GB (job tree, sampled: 3972 MB); swap 2838M -> 2838M; killed 0
+peak RSS 4.34 GB (job tree, sampled: 4305 MB); swap 2838M -> 2838M; killed 0
+peak RSS 3.45 GB (job tree, sampled: 3507 MB); swap 2838M -> 2798M; killed 0
+peak RSS 5.24 GB (job tree, sampled: 5125 MB); swap 2798M -> 2742M; killed 0
+R12 lean runs finished

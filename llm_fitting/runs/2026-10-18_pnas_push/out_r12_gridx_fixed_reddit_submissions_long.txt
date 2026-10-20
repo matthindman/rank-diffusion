@@ -1,0 +1,18 @@
+reddit_submissions_long fixed s 0.6 hl None m 0.8: objective 362.44
+reddit_submissions_long fixed s 0.6 hl None m 0.9: objective 368.03
+reddit_submissions_long fixed s 0.6 hl None m 1.0: objective 495.03
+reddit_submissions_long fixed s 0.6 hl None m 1.1: objective 555.05
+reddit_submissions_long fixed s 0.7 hl None m 0.8: objective 650.06
+reddit_submissions_long fixed s 0.7 hl None m 0.9: objective 709.31
+reddit_submissions_long fixed s 0.7 hl None m 1.0: objective 797.91
+reddit_submissions_long fixed s 0.7 hl None m 1.1: objective 900.87
+reddit_submissions_long fixed s 0.8 hl None m 0.8: objective 1190.68
+reddit_submissions_long fixed s 0.8 hl None m 0.9: objective 1339.65
+reddit_submissions_long fixed s 0.8 hl None m 1.0: objective 1420.52
+reddit_submissions_long fixed s 0.8 hl None m 1.1: objective 1542.60
+reddit_submissions_long fixed s 1.0 hl None m 0.8: objective 3410.74
+reddit_submissions_long fixed s 1.0 hl None m 0.9: objective 3398.54
+reddit_submissions_long fixed s 1.0 hl None m 1.0: objective 3738.86
+reddit_submissions_long fixed s 1.0 hl None m 1.1: objective 3729.03
+best {'s': 0.6, 'half_life': None, 'm': 0.8, 'obj': 362.4448267479651, 'aux': [0.02857175053207907, 0.02838669748618358, 0.03659113248146572, 0.0373793341464675, 0.03497498527241222, 0.05063679757663537, 0.008580378646643969, 0.010119629211229683, 0.015100782735101945]}
+peak RSS 3.45 GB (job tree, sampled: 3507 MB); swap 2838M -> 2798M; killed 0

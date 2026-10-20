@@ -56,7 +56,7 @@
  },
  "R12-1 comments": {
   "verdict": "PASS",
-  "value": "s = 0.5, m = 0.7 (AT THE GRID'S EDGE: the objective is still falling)",
+  "value": "s = 0.5, m = 0.7 (at the registered grid's edge; post hoc extension: objective 1013 at 0.5 against 1437 at 0.6, so the minimum is near 0.5)",
   "prior": "60%"
  },
  "R12-2(a) comments": {
@@ -71,22 +71,22 @@
  },
  "R12-4 comments": {
   "verdict": "PASS",
-  "value": "fixed +0.0034, decay +0.0011 (control_num +nan, control -0.0028; data +0.0023)",
+  "value": "fixed +0.0034, decay +0.0011 (control_num -0.0029, control -0.0028; data +0.0023)",
   "prior": "60%"
  },
  "R12-6 comments fixed": {
-  "verdict": "FAIL",
-  "value": "vs control (closed-form drift; matched control not yet run): turnover K/64 +0.0302, K/2 +0.0040; boundary NOT COMPUTED (the boundary module needs complete block levels to 1.42K; turnover part only)",
+  "verdict": "PASS",
+  "value": "vs control_num: turnover K/64 +0.0263, K/2 +0.0039; boundary NOT COMPUTED (the boundary module needs complete block levels to 1.42K; turnover part only)",
   "prior": "70%"
  },
  "R12-6 comments decay": {
   "verdict": "PASS",
-  "value": "vs control (closed-form drift; matched control not yet run): turnover K/64 +0.0280, K/2 +0.0017; boundary NOT COMPUTED (the boundary module needs complete block levels to 1.42K; turnover part only)",
+  "value": "vs control_num: turnover K/64 +0.0242, K/2 +0.0015; boundary NOT COMPUTED (the boundary module needs complete block levels to 1.42K; turnover part only)",
   "prior": "70%"
  },
  "R12-6 comments factor": {
   "verdict": "FAIL",
-  "value": "vs control (closed-form drift; matched control not yet run): turnover K/64 +0.0456, K/2 +0.0111; boundary NOT COMPUTED (the boundary module needs complete block levels to 1.42K; turnover part only)",
+  "value": "vs control_num: turnover K/64 +0.0417, K/2 +0.0109; boundary NOT COMPUTED (the boundary module needs complete block levels to 1.42K; turnover part only)",
   "prior": "70%"
  },
  "R12-7 comments fixed": {
@@ -162,7 +162,13 @@
     0.6703904840216107
    ]
   },
-  "control_num": null,
+  "control_num": {
+   "share_3": 0.5744175931718581,
+   "q": [
+    0.515393968102995,
+    0.6180360691280299
+   ]
+  },
   "fixed": {
    "share_3": 0.6129516183937918,
    "q": [
@@ -177,7 +183,13 @@
     0.7132320342283274
    ]
   },
-  "factor": null
+  "factor": {
+   "share_3": 0.5505388028872158,
+   "q": [
+    0.4817099845613326,
+    0.7281834565911568
+   ]
+  }
  },
  "comments data": {
   "gapped_rho": {
@@ -250,7 +262,7 @@
  },
  "R12-1b submissions": {
   "verdict": "PASS",
-  "value": "s = 0.5, m = 1.0 (AT THE GRID'S EDGE: the objective is still falling)",
+  "value": "s = 0.5, m = 1.0 (at the registered grid's edge; post hoc extension: objective 351 at 0.5 against 362 at 0.6, so the minimum is near 0.5)",
   "prior": "50%"
  },
  "R12-2(a) submissions": {

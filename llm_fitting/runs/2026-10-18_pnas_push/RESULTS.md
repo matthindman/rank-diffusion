@@ -1233,3 +1233,23 @@ The two killed attempts at comments recovery s 0.30 (15:35 and 16:0x) wrote no o
 The comments ladder responds to heterogeneity much more than submissions, and in the other direction for β (attenuated, as the memo predicted). The overstatement bounds what fixed differences of this size would do to the comments time scales: at most about 1.8 times too short. It is not a correction, because the fixed-differences world does not fit comments' pattern of persistence.
 
 _[Completed 2026-10-20 18:12 (`run_r12_lean4.sh`): s 0.45 on comments now has all 20 seeds: head lasting variance **+79%**, Δβ **−0.015** (SE 0.0006). R12-5 on comments remains FAIL as written. The 15-seed values above (+82%, −0.016) are superseded.]_
+
+**Queue completed** (`run_r12_lean4.sh`, 18:12–18:55; each job one at a time from the cache under the watchdog, swap limit 300 MB; no kills; peaks 2.6–5.6 GB; swap fell from 4.9 to 2.7 GB):
+- **Comments matched control:**
+  - worlds (20 seeds, four chunks): persistence at 13 weeks −0.107; top-10 turnover 0.262, K/64 0.254, K/2 0.133; R10 contrast −0.0029; asymmetry −0.044;
+  - out of period: 0.574 (0.515–0.618), against the closed-form 0.597 (0.547–0.670); observed 0.505.
+- **Comments out of period, paired against the matched control:**
+
+  | | share | 5–95% | paired difference | 5–95% |
+  |---|---|---|---|---|
+  | fixed | 0.613 | 0.548–0.964 | +0.039 | −0.049 to +0.414 |
+  | decay | 0.594 | 0.528–0.713 | +0.020 | — |
+  | factor (rerun, complete) | 0.551 | 0.482–0.728 | −0.024 | −0.127 to +0.175 |
+
+  On comments, fixed differences move the forecast away from the observed share.
+- **R12-6, comments, against `control_num`, turnover only:** fixed **PASS** (+0.026 at K/64), decay **PASS** (+0.024), factor **FAIL** (+0.042). This supersedes the closed-form comparison above.
+- **Post hoc grid extension** (not registered; `r12_gridx__<panel>__fixed.json`). Profile of the objective over s, minimised over m:
+  - submissions: 351 (0.5), 362 (0.6), 650 (0.7), 1,191 (0.8), 3,399 (1.0);
+  - comments: 1,013, 1,437, 2,830, 5,105, 13,860.
+
+  The minimum is near 0.5 on both ladders, so the registered optimum at the grid's edge is effectively the overall one. "The objective is still falling" (written above, before the extension ran) is withdrawn: it was falling up to the edge and rises beyond it. The fit at the minimum stays poor.

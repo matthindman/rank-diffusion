@@ -49,7 +49,12 @@ def main():
         tag = "R12-1" if lab == "comments" else "R12-1b"
         if gf:
             s = gf["best"]["s"]
-            edge = " (AT THE GRID'S EDGE: the objective is still falling)" if s == 0.5 else ""
+            gx = jl(f"r12_gridx__{pn}__fixed.json")
+            if s == 0.5 and gx:
+                after = min(r["obj"] for r in gx["rows"] if r["s"] == 0.6)
+                edge = f" (at the registered grid's edge; post hoc extension: objective {gf['best']['obj']:.0f} at 0.5 against {after:.0f} at 0.6, so the minimum is near 0.5)"
+            else:
+                edge = " (AT THE GRID'S EDGE)" if s == 0.5 else ""
             score(tag, lab, s > 0 and 0.1 <= s <= 0.5, f"s = {s}, m = {gf['best']['m']}{edge}", "60%" if lab == "comments" else "50%")
         else:
             score(tag, lab, None, "-", "")

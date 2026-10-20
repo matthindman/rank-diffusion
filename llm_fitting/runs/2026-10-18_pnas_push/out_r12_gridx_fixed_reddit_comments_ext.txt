@@ -1,0 +1,18 @@
+reddit_comments_ext fixed s 0.6 hl None m 0.8: objective 1436.87
+reddit_comments_ext fixed s 0.6 hl None m 0.9: objective 1667.62
+reddit_comments_ext fixed s 0.6 hl None m 1.0: objective 1862.42
+reddit_comments_ext fixed s 0.6 hl None m 1.1: objective 2176.02
+reddit_comments_ext fixed s 0.7 hl None m 0.8: objective 2830.29
+reddit_comments_ext fixed s 0.7 hl None m 0.9: objective 3039.91
+reddit_comments_ext fixed s 0.7 hl None m 1.0: objective 3336.36
+reddit_comments_ext fixed s 0.7 hl None m 1.1: objective 3750.06
+reddit_comments_ext fixed s 0.8 hl None m 0.8: objective 5105.31
+reddit_comments_ext fixed s 0.8 hl None m 0.9: objective 5413.05
+reddit_comments_ext fixed s 0.8 hl None m 1.0: objective 5864.70
+reddit_comments_ext fixed s 0.8 hl None m 1.1: objective 6559.77
+reddit_comments_ext fixed s 1.0 hl None m 0.8: objective 13860.47
+reddit_comments_ext fixed s 1.0 hl None m 0.9: objective 14520.17
+reddit_comments_ext fixed s 1.0 hl None m 1.0: objective 14412.69
+reddit_comments_ext fixed s 1.0 hl None m 1.1: objective 14923.58
+best {'s': 0.6, 'half_life': None, 'm': 0.8, 'obj': 1436.868715721165, 'aux': [0.061467937931896456, 0.08762367141106808, 0.023694049482403657, 0.08100001390282725, 0.12139373639578747, 0.05746000964709197, 0.012209950354757762, 0.016469930552318494, 0.019886689764966325]}
+peak RSS 5.24 GB (job tree, sampled: 5125 MB); swap 2798M -> 2742M; killed 0

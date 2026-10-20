@@ -332,16 +332,21 @@ spine, "size does not protect", and the model and momentum. The outline
     R12, R13c and R13d are BLOCKED until `/Volumes/T9` is mounted.
     _[Superseded by §2z-dn: run 2026-10-20.]_
 - **R12 and R13c–d (§2z-dn, 2026-10-20; exploratory, registered
-  expectations; IN PROGRESS for queued comments jobs).**
+  expectations; complete, with its completion addendum).**
   - **Standard heterogeneous growth does not explain the departures.**
     - Fixed, AR and factor forms were calibrated by indirect inference
       (A2–A4). Even calibrated to the persistence, they reproduce at most
       three fifths of it.
-    - The optimum sits at the edge of the grid, with a poor fit.
+    - The optimum is near s 0.5 (a post hoc extension confirms it), with a
+      poor fit.
     - They give no faller/riser asymmetry, and the wrong rank pattern: the
       data's persistence lives below the head.
     - They close about a sixth of the 2022 head-share gap, which cannot be
       told from none (fixed 0.504, matched control 0.533; observed 0.356).
+      On comments, fixed differences move the forecast away from the
+      observed share (0.613 against matched control 0.574; observed 0.505).
+    - **Recovery on comments:** head lasting variance +79%, β −0.015 at the
+      persistence-sized spread (R12-5 FAIL there; PASS on submissions).
   - **What persists is decline.** Scale dependence in volatility is weak;
     the head's fall is a shift in its drift after 2020. Next candidate
     (owner's call): mirrored GLLM type switching, with a decline state.
