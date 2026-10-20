@@ -723,3 +723,22 @@ worlds from the observed ladder, with the drift built from s̄ alone
 | R11-1 | flat start, drift from s̄ alone: the 30-year slope at K/64 is at least 15% steeper than with s̄ − e on comments, and at least 5% steeper on submissions | 60% |
 | R11-2 | the shortfall of the model's K/64 slope against the observed one shrinks on both ladders | 75% |
 | R11-3 | the qualitative long-run results survive: collapse without volatility, steepening without the slide, and agreement of the two starts within 20% | 85% |
+
+## Addendum R13 (2026-10-20, after the round-6 reviews and the owner's directions of 2026-10-20; before any run): lock-in, the "funnel", turnover profiles, and 5-year values
+
+**Why.** The owner asks for lock-in at the level of individual communities over 1–2 years. The owner states that the earlier web-traffic "funnel of churn" is largely a visual effect of the greater mass further down the tail: quantiles show only a modest rise. Round 6 (T1 Opus, T2 Opus, T2 GPT) asks whether turnover profiles are confounded with geometry. The owner limits system-level statements to about 5 years.
+
+**Runs and calculations** (post hoc, descriptive; development data):
+- **R13a.** Shape at 1, 2 and 5 years in the corrected runs (`…__noentry.json`, R11): flat start and the three worlds from the 2019 ladder. No new run.
+- **R13b.** Shape relaxation 8S²/σ² against the membership time S²/σ² by rank. This is `runs/2026-10-19_literature_and_design_reviews/gllm_relaxation_check.py` (§2z-dl), already run; restated here for completeness.
+- **R13c.** One- and two-year retention of each top set, k = 10, 25, K/64 … K/2 (`lockin_funnel.py <panel>`), on the data. The same measure goes into the R12 worlds.
+- **R13d.** Quantiles of the one-year change of block-mean log activity by stratum of permanent rank, with stratum sizes doubling from K/64 to K/2: the 50th, 90th and 95th percentiles of |Δ|, the SD, and the stratum maximum (`lockin_funnel.py`).
+- **R13e.** The turnover-profile exponent b in z = a·y^b (new entries into the top y in a year; Acerbi & Bentley 2014) for the data and for the 20-seed worlds, from saved turnover by k (`null_worlds_r7_summary.json` and R13c).
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R13-1 | at K/64 the share of a top set replaced in two years is 1.2–1.8 times the one-year share on both ladders (passing swings reverse, so it does not double) | 65% |
+| R13-2 | from the top stratum (top K/64) to the bottom stratum (K/2–K), the 90th percentile of the one-year |Δ| rises by less than a factor of 1.5 on both ladders, while the stratum maximum rises by at least 1.3 times as much as the 90th percentile does | 60% |
+| R13-3 | the profile exponent b differs between the calibrated size-blind world on the data's ladder and the same dynamics on a constant-slope ladder (sb_data against sb_flat) by at least 0.05 | 70% |
