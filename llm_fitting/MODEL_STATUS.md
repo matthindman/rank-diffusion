@@ -13826,3 +13826,64 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started 
   - the DOI, acquisition source and date, acknowledgements, Page IDs;
   - the protocol amendments.
 - **Next:** referee round 8 (§2z-dr).
+
+## 2z-dr. 2026-10-21 — REVIEW (referee round 8, three models, on manuscript v7; PLANNING ONLY, nothing adopted): all three say send out; Fable 5.1 "closer to enthusiasm" than v5. All agree the asymmetry is the best claim, and that in its world-comparable form it is "declines persist about twice as strongly as gains", not "gains do not persist". Errors found in v7, including two passages commented out of the PDFs and the decline state's persistence share. No gate evaluation; bridge sealed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; manuscript v7 at 1652645. The owner's instruction of 2026-10-21 ends with this round ("do another round of reviewers")._
+- **Folder:** `runs/2026-10-21_external_critiques_round8/`.
+- **Reviews** (each verbatim with a provenance header; all three read-only, with no tracked change after any of them):
+  - `REVIEW_gpt-6-astra.md` (Codex CLI 0.163.0, read-only);
+  - `REVIEW_opus-5.5.md` and `REVIEW_fable-5.1.md` (read-only sub-agents).
+- **Synthesis:** `SYNTHESIS_R8.md`, findings H1–H18 and K1–K10, each rechecked.
+- **For the owner:** `PROMPT_GPT6PRO_R8.md`, a self-contained prompt for GPT-6 Pro with the v7 PDFs.
+
+**Verdicts.**
+- gpt-6-astra: send out, without enthusiasm.
+- Opus 5.5: send out, without enthusiasm.
+- Fable 5.1: send out, closer to enthusiasm than v5, not yet with it.
+
+**Most consequential verified findings** (SYNTHESIS_R8 §2):
+- **H3, the asymmetry against its null.**
+  - In the split computed identically in data and worlds, the data's risers persist at +0.069 and +0.042, against the matched control's −0.043 and −0.038. Fallers are at +0.141 and +0.113, against −0.095 and −0.083.
+  - So, relative to homogeneous growth, declines persist about twice as strongly as gains (+0.24 and +0.20 against +0.11 and +0.08).
+  - v7's "among those that rose 0.00 to +0.03" is the true-sign split, never computed in a world.
+  - The title-level claim "declines persist and gains do not" is to be restated.
+- **H1:** the decline state's persistence share is 43% and 32% in the paper's statistic, not "a fifth or less".
+- **H2:** the abstract's "as much as" is wrong; the joint world's gains persist more.
+- **H7:** two passages are absent from the PDFs because they were appended to comment lines:
+  - the SI variance caveat (introduced in this session);
+  - main l.152 ("Part of the slide is mechanical…"), to which the Discussion refers.
+- **Other errors:**
+  - H4: the 0.7–1.4 multiplier scales σ0, not the variance;
+  - H5: the R16-F3 "±12%" is wrong (+25%/−14%; F3 still passes);
+  - H6: the capture placebo filter bug (two mid-month dates cross roster edges; the ratios are unchanged at 0.69–1.09 by the reviewer's recomputation);
+  - H8: the SI contradiction on the grid minimum;
+  - H9: Table 1's run count, its "calibration statistic" label, and crossings/slide defined two ways;
+  - H10: on submissions all four joint parameters are at grid edges;
+  - H11: "rising down the ladder" is false on comments;
+  - H12: the lag-aware fitter was run inline, not committed;
+  - H13: "three fifths offset" is not a decomposition;
+  - H14: main l.193 mixes membership rules;
+  - H15: the capture odds are misstated;
+  - H16: smaller slips, including this record's "55–62%" (§2z-dq), which should read 55–65%;
+  - H17: platform exposure is not excluded;
+  - H18: the Fig. 1A caption.
+- **Claims above evidence:**
+  - K1: "fits on submissions" uses a borrowed reference distribution;
+  - K2: the decline state is in effect a skewed permanent type (mean spell about 7.7 years), with 1.4–2.4 times the data's lasting variance;
+  - K3: R16-F's τ is weakly identified and depends on the lag. "No evidence for a large separation" is what holds, and F2's comparison should use the model's own S* = S;
+  - K4: capture: two unnamed mid-month 2021 steps carry half the submissions head's item-share fall;
+  - K5: R16-G cannot answer whether the forms combine;
+  - K6: the A1 false-positive arm tested the wrong swing direction;
+  - K10: on submissions the asymmetry lives below the head.
+
+**Plan** (SYNTHESIS_R8 §3):
+- **Tier 1:** corrections and restatements, the fitter deposited, the capture placebo fixed and rerun.
+- **Tier 2:** the asymmetry made a banded, single-statistic result, with impulse-response curves; Table 1's crossings/slide for the data by the worlds' code; the two 2021 events named; R16-F extended.
+- **Tier 3** (owner): the joint grid past its edges with a calibrated 24-moment objective; R16-G redone; R16-F in the joint world; a combined calibration.
+- **Tier 4:** owner items, including the 2023–24 protocol with the decline law and the null-relative asymmetry as primaries.
+
+**Not done in this entry:**
+- no manuscript change since 1652645;
+- no new run;
+- GPT-6 Pro not yet run.

@@ -425,6 +425,10 @@ spine, "size does not protect", and the model and momentum. The outline
   - **Size exponent.** Nearly unbiased on comments (0.13 stands). The
     submissions value is undetectable.
   - **Next:** referee round 8.
+    _[Done: §2z-dr. All three say send out. The asymmetry restated: declines
+    persist about twice as strongly as gains, relative to homogeneous growth.
+    Tier 1–4 plan in `runs/2026-10-21_external_critiques_round8/SYNTHESIS_R8.md`;
+    owner to choose.]_
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it
