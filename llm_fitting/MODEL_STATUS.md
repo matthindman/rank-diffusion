@@ -13710,3 +13710,119 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-20; work started 
   - the classification (Social Sciences; Economic Sciences the alternative);
   - the DOI, acquisition source and date, acknowledgements, Page IDs;
   - the protocol amendments.
+
+## 2z-dq. 2026-10-21 — EXPLORATORY MEASUREMENT R16 (Tier 3; expectations in PLAN.md addendum R16, committed at ea93f04 before any run; R16-G post hoc, registered at e9c6ded before its run) and MANUSCRIPT v7. Persistence as such is reproduced by fixed growth differences once they are estimated jointly with the passing swing (R12's "at most three fifths" withdrawn). Its asymmetry is not: a skewed decline state gives the asymmetry's sign but little persistence, and the two together do not combine. In the calibrated model the head's shape responds to a change in decline on the time scale of membership turnover, so there is no separation of time scales. The head's fall does not sit at the archive's capture changes. The comments size exponent is not understated; the submissions one is undetectable. Nothing adopted; no gate evaluation; bridge sealed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started from 2031723 (§2z-dp). Owner instruction, 2026-10-21: "try all the tier 3 items, revising the draft as appropriate. Once those are done, and you've made all of the changes to the draft that result, do another round of reviewers."_
+- **Code.**
+  - `r16_tier3.py`, `r16_capture.py`, `run_r16.sh`, `run_r16g.sh`.
+  - New opt-in fields in `rankdiff_rdm.py`: `dec_delta`, `dec_enter`, `dec_exit` and `dec_init` (the decline state); `vel_head_k` and `vel_head_mult` (the head's spread); `ou_kappa_mult` (the moving home's reversion, variance kept exactly for the discrete AR(1)).
+  - Defaults are bit-identical. Fingerprints taken before the change are pinned in `tests/test_rankdiff_rdm.py`, with five new known-answer tests.
+- **Runs.** Every job ran alone under `r12_safe_run.sh`, from the lean cache. Peaks were 1.6–4.5 GB, swap did not grow, and nothing was killed.
+- **Outputs.** `r16_*.json` and `out_r16_*.txt`. RESULTS R16-A … R16-G hold the tables and scores.
+
+### 1. Results (RESULTS R16)
+
+**E, the capture audit** (daily panels, streamed; a new kind of contact, logged).
+- **File boundaries.** Steps in the head's item share, karma share and karma per item at the 44 first-of-month file boundaries are no larger than at the 43 mid-month placebos, on both ladders.
+- **1 July 2021.** The boundary where the collection delay rose from about 20 to about 360 days is ordinary: −0.034 in the submissions head's log item share, the 20th percentile.
+- **Where the decline sits.** Boundary steps sum to +0.09 against a within-year change of −0.93, so none of the decline is at file boundaries.
+- **Post hoc: a within-file gradient** of about 1% (median −0.024 at mid-month against 0.000 at boundaries), consistent with removals that accumulate before collection. So the method can see capture effects.
+- **Collapses.** Excluding terminal collapses (152 on submissions, none in its 2019 head; 2,259 on comments, including r/Cringetopia and r/MGTOW) leaves the head's fall and persistence unchanged to 0.001.
+- **The 2K threshold** cannot affect the statistics.
+- **Scores.** R16-E1 … E5 all PASS.
+- **Not testable here.** A loss that grows smoothly with calendar time needs the WD raw files.
+
+**C, the A1 runs and the objective under correct specification.**
+- **Correct specification.** Pseudo-data from the fixed world at its optimum give a median minimum objective of 6 (95th percentile 15) on submissions and 13 (29) on comments. The data's 351 and 1,013 are decisive rejections.
+- **A 26-week swing world** is fitted with s ≤ 0.1 in 20 of 20.
+- **A decaying world** is fitted as fixed differences of 0.4–0.5 with a good objective: the calibration cannot tell them apart.
+- **Scores.** R16-C1 … C3 all PASS.
+
+**A, a reversible decline state.**
+- **Calibration.** It is calibrated on R12 (b)'s 15 moments. The best fit, on both ladders, has π_D 0.25, s 0.7 and a half-life of 208 weeks, at the grid's edge. Its objective is 382 and 1,106, against decaying differences' 620 and 1,469, so better but rejected.
+- **Asymmetry.** At π_D 0.25 the asymmetry has the data's sign on both ladders: +0.031 [0.008, 0.057] and +0.126 [0.108, 0.140], against the data's +0.072 and +0.071. The ordering after large falls and rises is also right.
+- **Persistence.** It is +0.008 and +0.033 (`r12_hetgrowth` statistic) against 0.157 and 0.127.
+- **Symmetric case.** At π_D 0.5 the asymmetry is reversed.
+- **Out of period.** No out-of-period gain, from stationary states or from states set by training history: submissions 0.546 and 0.519 against the control's 0.533.
+- **Scores.** R16-A2 and A4 PASS. A1, A3, A5 and A6 FAIL: the registered expectations named π_D 0.1.
+
+**B, joint re-estimation of fixed heterogeneity** (24 moments, 81 points).
+- **Argmins.** Submissions s 0.8, head 0.25, km 0.5, m 0.8; comments s 0.6, head 0.25, km 0.5, m 0.7.
+- **The slower passing swing does the work.**
+  - On submissions the objective is 38.8 over 24 moments, and 8.0 on R12's 9 moments (inside the correct-specification range).
+  - On comments it is 487, and 285 on the 9, against 1,013 before.
+- **Worlds** (20 seeds; the paper's statistic).
+  - **Persistence:** +0.15 [0.14, 0.17] against +0.17 on submissions, and +0.11 against +0.15 on comments, with the rank pattern on submissions.
+  - **Asymmetry:** reversed (−0.07, −0.05). A large rise is followed by further rise (+0.19).
+  - **Turnover** falls below the data's, and the boundary ratio rises to 1.22.
+- **Out of period:** 0.510 and 0.561, against the controls' 0.533 and 0.574.
+- **Scores.** R16-B1 and B3 PASS. B2 FAIL (edges). B4 FAIL on comments by 0.002. B5 FAIL: it fits on submissions.
+- **Withdrawn.** R12's "at most three fifths of the persistence"; it came from freezing the passing parts.
+
+**D, the size exponent with each panel's own passing parts** (`fit_model` in full, 10 panels per truth).
+- **Comments:** 0.108 (se 0.011) for a true 0.126, and −0.012 for 0, so nearly unbiased.
+- **Submissions:** 0.063 for 0.045 and 0.061 for 0, so no power.
+- **Scores.** R16-D1 FAIL; D2 and D3 PASS.
+- **Withdrawn.** R12's "0.069 for 0.126" as a statement about the data's estimator; that recovery used the move-variant estimator. The comments caution in v6 is withdrawn.
+
+**F, the durability comparison in the calibrated model.**
+- **Response.** A step of 0.2 a year in the head's decline reaches the observed shape after about a year, through the passing swing, then responds over five years. With m 1.0 the response is −0.01 … −0.37 on submissions and −0.03 … −0.44 on comments.
+- **The registered fit** cannot follow the S-shape: τ is 1.3–2.5 years and the ratio to membership e-folding 0.32–0.59. R16-F1 FAIL.
+- **The post hoc lag-aware fit** gives τ of 3.0–4.5 years against membership e-folding of 4.1–5.0. The ratio is 0.69–1.00 on both ladders and at every m.
+- **Scores.** R16-F2 PASS (the SI's linearized 9 years overstates τ 2.6-fold) and R16-F3 PASS.
+- **Reading.** No separation of time scales.
+
+**G (post hoc): the decline state on the joint optimum.**
+- **Design.** The joint argmin is held fixed, with the decline state at π_D 0.25 and half-life 208 added, its spread sd ∈ {0.3, 0.5, 0.7}.
+- **Fit.** The best is sd 0.3, with objectives 80 and 536 against the joint 39 and 487.
+- **Worlds** (10 seeds):
+  - persistence reaches the data's level: +0.167 against +0.174, and +0.140 against +0.154;
+  - the asymmetry stays reversed (−0.074, −0.039);
+  - on comments a larger state moves the asymmetry to +0.023, at four times the misfit.
+- **Out of period, from history:** 0.508 and 0.650.
+- **Scores.** R16-G1, G2 and G4 FAIL; G3 PASS.
+- **Reading.** The moments that persistence fits do not want the decline state that the asymmetry needs. A calibration with every spread free and the asymmetry targeted is not done; it would make the asymmetry fitted.
+
+### 2. Manuscript v7
+
+**Results 2.**
+- **Time scales.** These now come from the calibrated model itself, a response time 0.7–1.0 times the membership time, with the linearized factors as approximations. Fig. 2A adds the model's response time (stars).
+- **Size exponent:** the recovery result.
+
+**Results 4: the capture audit.**
+
+**Results 5, rewritten.**
+- Jointly estimated fixed differences account for the level of persistence.
+- What no symmetric form produces is the asymmetry. The decline state gets its sign, not its size.
+- No form forecasts the 2022 shares (50–55% and 55–62% against 36% and 50.5%).
+
+**Abstract and Introduction.** The heterogeneity sentence is restated. The abstract is 243 words.
+
+**Discussion.**
+- the alternatives and the capture audit;
+- the fourth tool is now a single rate (absorption on the membership time scale, three fifths offset over five years);
+- the limits.
+
+**Table 1:** "fixed growth diff., joint" and "decline state" columns, and a fallers-minus-risers row.
+
+**Fig. 4A and C:** the joint and decline-state worlds.
+
+**SI.**
+- the archive's capture (Data);
+- the A1 results in the calibration paragraph;
+- joint re-estimation and decline-state sections with tables;
+- the model's response time in Time scales;
+- the exponent recovery;
+- the registration list (R16).
+
+### 3. Not done
+- The registered A1 per-replicate grids; the saved grid stands in.
+- A joint calibration of the decline state with the fixed spread free. R16-G held the joint optimum fixed.
+- Grids extended beyond the edges (km, head multiplier; the decline state's spread and half-life).
+- The raw-file capture audit (WD drive not mounted).
+- **Owner items, unchanged:**
+  - the title and the classification;
+  - the DOI, acquisition source and date, acknowledgements, Page IDs;
+  - the protocol amendments.
+- **Next:** referee round 8 (§2z-dr).

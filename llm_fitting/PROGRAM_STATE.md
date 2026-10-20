@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-20** (the paragraphs on §2z-da … §2z-dp were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-20** (the paragraphs on §2z-da … §2z-dq were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -343,7 +343,8 @@ spine, "size does not protect", and the model and momentum. The outline
       poor fit.
       _[§2z-do G26: not established on comments, and within noise on
       submissions. The fit is rejected by about 6 SD per moment on
-      submissions and 11 on comments.]_
+      submissions and 11 on comments. §2z-dq: re-estimated jointly with the
+      passing swing, the fixed form fits on submissions.]_
     - They give no faller/riser asymmetry, and the wrong rank pattern: the
       data's persistence lives below the head.
       _[§2z-do G15: every form gives a reversed asymmetry, −0.04 to −0.10.]_
@@ -394,6 +395,36 @@ spine, "size does not protect", and the model and momentum. The outline
     - comments β recovery;
     - the capture audit;
     - the durability comparison rebuilt in the calibrated model.
+
+    _[Done in §2z-dq (R16), on the owner's instruction of 2026-10-21.]_
+- **R16, the Tier 3 analyses, with manuscript v7 (§2z-dq, 2026-10-21;
+  exploratory, registered expectations; R16-G post hoc, registered before
+  its run).**
+  - **Persistence as such is not the departure.** Fixed growth differences
+    estimated jointly with the passing swing, with a smaller spread at the
+    head, reproduce it: +0.15 against +0.17 on submissions, where the form
+    fits; +0.11 against +0.15 on comments. R12's "at most three fifths" is
+    withdrawn.
+  - **The departure is the asymmetry.**
+    - Every symmetric form makes gains persist too.
+    - A skewed decline state (a quarter of communities, half-life four
+      years) gets the asymmetry's sign on both ladders, but little
+      persistence.
+    - The two together do not combine (R16-G).
+    - No form forecasts the 2022 head shares.
+  - **No separation of time scales.** In the calibrated model the head's
+    shape responds to a step in decline after about a year, with a time
+    constant of 0.7–1.0 times the membership e-folding time, robust to the
+    lasting variance. Durability is the balance, not a slow transition.
+  - **Capture.** None of the head's fall sits at the archive's file
+    boundaries, including July 2021. The audit detects a 1% within-file
+    gradient, and banned or collapsed communities do not matter.
+  - **The objective is calibrated.** Under correct specification its 95th
+    percentile is 15–29. The calibration cannot tell fixed from decaying
+    differences.
+  - **Size exponent.** Nearly unbiased on comments (0.13 stands). The
+    submissions value is undetectable.
+  - **Next:** referee round 8.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it

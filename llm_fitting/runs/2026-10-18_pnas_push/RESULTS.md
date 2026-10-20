@@ -1572,3 +1572,67 @@ What the audit cannot test is a removal that grows smoothly with calendar time a
 - **Comments.** Its exponent (0.126) is not materially understated. Its single-panel uncertainty is about ±0.04. A linear map through the two truths gives 0.145, but by the rule fixed before the run no corrected value is reported, because D1 failed.
 - **Submissions.** The estimator returns about 0.06 whether the truth is 0 or 0.045, so it has no power there. The data's 0.045 is below its null and consistent with no size dependence of lasting volatility.
 - **The measure to lead with.** The estimator-free quantile ratios (elasticities of about 0.08 and 0.04) remain the measure to lead with, and they are consistent with both.
+
+### R16-F. The durability comparison in the calibrated model (`r16_durability__*.json`; fits in `r16_durability_scores.json`)
+
+**Design.** The matched homogeneous model from the 2019 ladder, at lasting multipliers m 0.7, 1.0 and 1.4 with the drift re-solved, 10 seeds each, 260 weeks. The shock is an extra decline of 0.2 a year for the current top K/64 from week 0, on common seeds. The response is in the observed shape U_{K/64} − U_K, by 52-week block (mean over seeds):
+
+| | m | response, years 1–5 | retention of the top K/64, years 1–4 | membership e-folding (yr) | τ, registered fit (yr) | ratio | τ, lag-aware fit, post hoc (yr) | ratio |
+|---|---|---|---|---|---|---|---|---|
+| submissions | 0.7 | −0.014, −0.075, −0.166, −0.282, −0.393 | 0.82, 0.72, 0.70, 0.66 | 5.0 | 1.6 | 0.32 | 4.5 | 0.89 |
+| | 1.0 | −0.014, −0.075, −0.167, −0.266, −0.368 | 0.80, 0.73, 0.65, 0.60 | 4.6 | 1.5 | 0.32 | 3.7 | 0.82 |
+| | 1.4 | −0.014, −0.070, −0.157, −0.258, −0.333 | 0.79, 0.68, 0.58, 0.50 | 4.1 | 1.3 | 0.32 | 3.0 | 0.74 |
+| comments | 0.7 | −0.026, −0.122, −0.242, −0.361, −0.481 | 0.79, 0.71, 0.67, 0.65 | 4.1 | 2.5 | 0.59 | 4.1 | 1.00 |
+| | 1.0 | −0.026, −0.120, −0.237, −0.340, −0.442 | 0.79, 0.69, 0.64, 0.61 | 4.3 | 2.2 | 0.51 | 3.4 | 0.80 |
+| | 1.4 | −0.025, −0.121, −0.232, −0.320, −0.395 | 0.78, 0.68, 0.60, 0.55 | 4.1 | 1.9 | 0.47 | 2.8 | 0.69 |
+
+**The registered fit is misspecified.**
+- **Why.** The shock moves the lasting level (the moving home). The observed level follows it through the passing swing, an OU with a median half-life of 69 weeks on submissions and 34 on comments. So the observed response starts slowly and accelerates; for example, −0.014 in year 1 against −0.1 for the undamped shock.
+- **The registered form,** −Δτ(1 − e^{−t/τ}), cannot fit an S-shape: its squared error is 0.015–0.034.
+- **Post hoc fix.** The same form, passed through a first-order lag with the model's own swing half-life, fits almost exactly (squared error ≤ 0.0007). That fit is labelled post hoc.
+
+**Scores.**
+- **R16-F1: FAIL** as registered. The ratio is 0.32 on submissions (comments 0.51). With the lag-aware fit it is 0.82 and 0.80.
+- **R16-F2: PASS.** The SI's linearized 9 years at the comments head is 3.7 times the registered τ (2.2) and 2.6 times the lag-aware τ (3.4).
+- **R16-F3: PASS.** Across m 0.7–1.4 the ratio varies by less than ±12% under either fit. The lasting-variance uncertainty moves the two times together.
+
+**Reading.**
+- **No separation of time scales.** In the actual calibrated model, with its curved ladder, drift by rank and entry and exit, the head's shape responds to a change in the leaders' decline on the time scale on which members turn over: 0.7–1.0 times the membership e-folding, after a lag of about a year from the passing swing.
+- **How much is offset.** Over five years the shape falls by 0.33–0.48 for a cumulative extra decline of 1.0, so crossings offset about three fifths of it.
+- **Agreement with D4 and D5.** This agrees with the crossing-based factor of about 1, and it does not depend on the estimator of the lasting variance.
+- **Durability is not a slow transition.** It is the balance itself: the shape holds when the decline sits near the crossings it induces, and moves within a year or two when it does not.
+- **The paper's "rates".** The paper's "closes a tenth to a fifth of its remaining gap each year at the head of comments" came from the linearized τ. It is replaced by the model's own response.
+
+### R16-G (post hoc, registered at e9c6ded before its run): the decline state on the joint optimum (`r16_jd_grid__*.json`, `r16_worlds__*__joint_decline_*.json`, `r16_oop__*__joint_decline_hist.json`)
+
+**Calibration.** The joint argmin is held fixed and a decline state added (π_D 0.25, half-life 208), with spread sd. The objective is on the 24 joint moments; the 3-seed asymmetry is in brackets.
+
+| sd | submissions objective (asym) | comments objective (asym) |
+|---|---|---|
+| 0 (the joint argmin) | 38.8 (−0.078) | 487 (−0.042) |
+| 0.3 | 80.2 (−0.073) | 536 (−0.043) |
+| 0.5 | 161 (−0.075) | 1,024 (−0.001) |
+| 0.7 | 298 (−0.075) | 1,902 (+0.023) |
+
+**Worlds** (10 seeds at sd 0.3):
+
+| | data | combined world | joint world (R16-B) |
+|---|---|---|---|
+| submissions persistence, 13 wk (paper's statistic) | +0.174 | +0.167 | +0.151 |
+| submissions fallers − risers | +0.072 | −0.074 [−0.097, −0.056] | −0.072 |
+| submissions next year after a large fall / rise | −0.265 / +0.033 | −0.131 / +0.212 | −0.108 / +0.189 |
+| submissions 2022 head share (states from history; observed 0.356) | | 0.508 [0.468, 0.540] | 0.510 |
+| comments persistence, 13 wk (paper's statistic) | +0.154 | +0.140 | +0.108 |
+| comments fallers − risers | +0.071 | −0.039 [−0.050, −0.022] | −0.047 |
+| comments next year after a large fall / rise | −0.216 / +0.049 | −0.055 / +0.096 | −0.016 / +0.063 |
+| comments 2022 head share (observed 0.505) | | 0.650 [0.557, 0.998] | 0.561 |
+
+**Scores.**
+- **R16-G1: FAIL.** Adding the decline state raises the objective on both ladders.
+- **R16-G2: FAIL.** The asymmetry stays reversed on both ladders.
+- **R16-G3: PASS.** Persistence is at least half the data's: 0.136 and 0.101 in the calibration statistic.
+- **R16-G4: FAIL.** 0.508, which is 0.025 below the control's 0.533.
+
+**Reading.**
+- **The trade-off.** On comments a larger decline state moves the asymmetry toward the data's sign (+0.023 at sd 0.7), at a large cost to the moments that the persistence fits. With the fixed spread held at its joint value, strong symmetric differences swamp the decline state's asymmetry.
+- **Not answered.** Whether a joint calibration with the fixed spread free, and with asymmetric moments targeted, could reproduce both. That would make the asymmetry fitted, not tested.

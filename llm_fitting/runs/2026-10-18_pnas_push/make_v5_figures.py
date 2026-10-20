@@ -147,8 +147,16 @@ def fig2v5():
         a.plot(k[sel], relax_bal[sel], "-", color=COL[pn], lw=1.2)
         a.plot(k[sel], move[sel], ":", color=COL[pn], lw=1.2)
         a.plot(kk, memb, MK[pn], color=COL[pn], ms=3, mfc="white", lw=0)
-    a.plot([], [], "-", color="k", label="shape relaxes (model)")
+        sc = HERE / "r16_durability_scores.json"                                   # R16-F: the model's own response time
+        if sc.exists():
+            dsc = load(sc)[pn]
+            taus = [dsc[m_]["tau_lag"] for m_ in ("0.7", "1.0", "1.4")]
+            kh = K // 64
+            a.errorbar([kh * 1.08], [taus[1]], yerr=[[taus[1] - min(taus)], [max(taus) - taus[1]]], fmt="*", color=COL[pn], ms=5.5,
+                       mec="k", mew=0.3, elinewidth=0.6, capsize=1.2)
+    a.plot([], [], "-", color="k", label="shape relaxes (linearized)")
     a.plot([], [], ":", color="k", label="lasting move, one e-fold (model)")
+    a.plot([], [], "*", color="k", ms=5, label="shape responds (calibrated model)")
     a.plot([], [], "o", color="k", mfc="white", ms=3, label="membership turns over (data)")
     a.set_xscale("log")
     a.set_yscale("log")
@@ -303,6 +311,31 @@ def fig3v5():
     save(fig, "fig3_v5")
 
 
+R16_TAGS = {"reddit_submissions_long": {"joint": "joint_s0.8_head0.25_km0.5_m0.8", "decline": "decline_pi0.25_s0.7_hl208_m1.0"},
+            "reddit_comments_ext": {"joint": "joint_s0.6_head0.25_km0.5_m0.7", "decline": "decline_pi0.25_s0.7_hl208_m0.7"}}
+HET_LAB = {"joint": "fixed growth diff. (joint)", "decline": "decline state", "factor": "platform-trend exposure"}
+HET_MK = {"joint": "v", "decline": "^", "factor": "P"}
+
+
+def _r16_gapped(pn, kind):
+    """R16 worlds (r16_tier3.py): mean and 5-95% of the paper's gapped statistic at gaps 13 and 26 across seeds."""
+    import glob
+    W = [load(Path(f)) for f in sorted(glob.glob(str(HERE / f"r16_world__{pn}__{R16_TAGS[pn][kind]}__s*.json")))]
+    if not W:
+        return None
+    return {g: dict(mean=float(np.mean([w["gapped"][g] for w in W])), q05=float(np.quantile([w["gapped"][g] for w in W], 0.05)),
+                    q95=float(np.quantile([w["gapped"][g] for w in W], 0.95))) for g in ("13", "26")}
+
+
+def _het_oop(pn, kind):
+    f = {"joint": HERE / f"r16_oop__{pn}__joint.json", "decline": HERE / f"r16_oop__{pn}__decline_hist.json",
+         "factor": HERE / f"r12_oop__{pn}__factor.json"}[kind]
+    if not f.exists():
+        return None
+    g = load(f)
+    return (g["share_3"], g["share_3_q"]) if "share_3" in g else (g["share"], g["share_q"])
+
+
 def fig4v5():
     S7 = r7()
     fig, ax = plt.subplots(1, 4, figsize=(W2, 2.3), gridspec_kw=dict(width_ratios=[1, 0.95, 1.1, 0.95]))
@@ -318,17 +351,14 @@ def fig4v5():
         x = 2022.15 + 0.12 * j
         a.errorbar([x], [100 * m], yerr=[[100 * (m - lo)], [100 * (hi - m)]], fmt="D", color=COL[pn], mfc="white", ms=3.2, capsize=1.5, lw=0.8)
         a.plot([2022, x], [100 * o["data"]["share_3"]] * 2, ":", color=COL[pn], lw=0.6)
-        for i_, (tag_, mk_) in enumerate((("fixed", "v"), ("decay", "^"), ("factor", "P"))):   # R12 heterogeneous worlds, when run
-            f = HERE / f"r12_oop__{pn}__{tag_}.json"
-            if f.exists():
-                g = load(f)
-                a.errorbar([x + 0.07 * (i_ + 1)], [100 * g["share_3"]], yerr=[[100 * (g["share_3"] - g["share_3_q"][0])], [100 * (g["share_3_q"][1] - g["share_3"])]],
-                           fmt=mk_, color=COL[pn], ms=2.6, lw=0.6)
+        for i_, kind in enumerate(("joint", "decline", "factor")):          # heterogeneous worlds (R12, R16)
+            g = _het_oop(pn, kind)
+            if g is not None:
+                m_, (lo_, hi_) = g
+                a.errorbar([x + 0.07 * (i_ + 1)], [100 * m_], yerr=[[100 * (m_ - lo_)], [100 * (hi_ - m_)]], fmt=HET_MK[kind], color=COL[pn], ms=2.6, lw=0.6)
     a.plot([], [], "D", color="k", mfc="white", ms=3, label="homogeneous, fit 2019-20")
-    if (HERE / "r12_oop__reddit_submissions_long__factor.json").exists():
-        for tag_, mk_ in (("fixed", "v"), ("decay", "^"), ("factor", "P")):
-            a.plot([], [], mk_, color="k", ms=2.6, label={"fixed": "fixed growth diff.", "decay": "decaying diff.",
-                                                           "factor": "platform-trend exposure"}[tag_])
+    for kind in ("joint", "decline", "factor"):
+        a.plot([], [], HET_MK[kind], color="k", ms=2.6, label=HET_LAB[kind])
     a.set_xticks([2019, 2020, 2021, 2022]); a.set_xticklabels(["2019", "'20", "'21", "'22"], fontsize=5.5)
     a.set_xlim(2018.8, 2022.6)
     a.set_ylim(20, 100)
@@ -372,18 +402,20 @@ def fig4v5():
         for gap in ("13", "26"):
             a.errorbar([int(gap) + (n - 3.5) * 0.35], [g7[gap]["mean"]], yerr=[[g7[gap]["mean"] - g7[gap]["q05"]], [g7[gap]["q95"] - g7[gap]["mean"]]],
                        fmt="x", color="#666666", ms=2.5, mew=0.7, elinewidth=0.4, label="homogeneous worlds" if (n == 0 and gap == "13") else None)
-    for i_, (tag_, mk) in enumerate((("fixed", "v"), ("decay", "^"), ("factor", "P"))):   # R12 heterogeneous worlds, when run
+    for i_, kind in enumerate(("joint", "decline", "factor")):           # heterogeneous worlds (R16 joint and decline; R12 factor)
         shown = False
         for pn in PANELS2:
-            f = HERE / f"r12_worlds__{pn}__{tag_}.json"
-            if f.exists():
-                g = load(f)["gapped_stats"]                                 # the same statistic as the homogeneous worlds
-                for gap in ("13", "26"):
-                    a.errorbar([int(gap) + 1.6 + 0.9 * i_], [g[gap]["mean"]], yerr=[[g[gap]["mean"] - g[gap]["q05"]], [g[gap]["q95"] - g[gap]["mean"]]],
-                               fmt=mk, color=COL[pn], ms=2.6, lw=0.6,
-                               label=({"fixed": "fixed growth diff.", "decay": "decaying diff.", "factor": "platform-trend exposure"}[tag_]
-                                      if (not shown and gap == "13") else None))
-                    shown = True
+            if kind == "factor":
+                f = HERE / f"r12_worlds__{pn}__factor.json"
+                g = load(f)["gapped_stats"] if f.exists() else None       # the same statistic as the homogeneous worlds
+            else:
+                g = _r16_gapped(pn, kind)
+            if g is None:
+                continue
+            for gap in ("13", "26"):
+                a.errorbar([int(gap) + 1.6 + 0.9 * i_], [g[gap]["mean"]], yerr=[[g[gap]["mean"] - g[gap]["q05"]], [g[gap]["q95"] - g[gap]["mean"]]],
+                           fmt=HET_MK[kind], color=COL[pn], ms=2.6, lw=0.6, label=(HET_LAB[kind] if (not shown and gap == "13") else None))
+                shown = True
     a.axhline(0, color=GREY, lw=0.4)
     a.set_xlabel("gap between the two changes (weeks)")
     a.set_ylabel("rank correlation of changes")

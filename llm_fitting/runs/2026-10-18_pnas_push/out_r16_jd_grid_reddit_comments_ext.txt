@@ -1,0 +1,5 @@
+reddit_comments_ext joint_decline {'s': 0.6, 'head': 0.25, 'km': 0.5, 'm': 0.7, 'pi': 0.25, 'hl': 208, 'sd': 0.3}: objective 535.8
+reddit_comments_ext joint_decline {'s': 0.6, 'head': 0.25, 'km': 0.5, 'm': 0.7, 'pi': 0.25, 'hl': 208, 'sd': 0.5}: objective 1024.3
+reddit_comments_ext joint_decline {'s': 0.6, 'head': 0.25, 'km': 0.5, 'm': 0.7, 'pi': 0.25, 'hl': 208, 'sd': 0.7}: objective 1901.5
+best {'s': 0.6, 'head': 0.25, 'km': 0.5, 'm': 0.7, 'pi': 0.25, 'hl': 208, 'sd': 0.3} 535.8 against the joint optimum 487.2
+peak RSS 3.99 GB (job tree, sampled: 3788 MB); swap 1559M -> 1559M; killed 0
