@@ -13517,3 +13517,71 @@ _[Completed 2026-10-20 18:12 (`run_r12_lean4.sh`): s 0.45 on comments now has al
 
   The only red placeholders left are owner items.
 - **Repository incident** (recorded in the 845fd2c commit message): iCloud Drive renamed `.git/index` to "index 2" at about 18:19. The index was restored from the copy; full fsck is clean. Owner item: move the repository out of iCloud sync, or exclude it.
+
+## 2z-do. 2026-10-20 — REVIEW (referee round 7, three models, on manuscript v5; PLANNING ONLY, nothing adopted): all three say send out without enthusiasm. A verified error goes to the core: the observed shape moved more than the paper says (the comments head lost 0.45 log units in 2019→20, and both heads about 0.65 over 2019–22). R12 is stated above its evidence, and the worlds carry less heterogeneity than planted. The asymmetry of persistence is the undersold discovery. GPT-6 Pro prompt prepared for the owner. No gate evaluation; bridge sealed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-20; work started from 1250777 (draft consistency pass 61b6bbe; brief 9d78e65)._
+- **Folder:** `runs/2026-10-20_external_critiques_round7/`.
+- **Reviews:** `REVIEW_gpt-6-astra.md` (Codex CLI, read-only), `REVIEW_fable-5.1.md` and `REVIEW_opus-5.5.md` (read-only sub-agents), each saved verbatim with a provenance header.
+- **Synthesis:** `SYNTHESIS_R7.md` (G1–G33, each marked CONFIRMED, PARTLY CONFIRMED or PLAUSIBLE after recheck).
+- **For the owner:** `PROMPT_GPT6PRO_R7.md`, a self-contained prompt for GPT-6 Pro with the PDFs.
+
+**Before the review: a consistency pass on v5** (61b6bbe):
+- the Methods calibration text (A2);
+- the comments size-exponent caution;
+- a heterogeneity caveat on time scales;
+- the composition-term wording;
+- the SI atlas and provenance tables;
+- the registration list.
+
+**Verdicts.**
+- gpt-6-astra: send out without enthusiasm after correcting substantive errors.
+- Fable 5.1: send out, not yet with enthusiasm.
+- Opus 5.5: send out without enthusiasm.
+
+**Most consequential verified findings** (SYNTHESIS_R7 §2):
+- **G1. The shape moved.** l.110 says no cut-off moved more than a third of a log unit in any year. Recomputed from the saved block ladders (`runs/2026-10-15_puzzle/`):
+  - comments K/64: 5.58, 5.13, 4.98, 4.95 (2019→20 −0.45);
+  - submissions: 4.57, 4.38, 4.10, 3.89.
+
+  The claim generalized the 2020–22 rate-law cells. The model from the 2019 ladder moves the comments head by less than 1% in five years. Durability on comments is a statement about the balance and about 2020–22, not about the observed 2019–22 path.
+- **Table 1:** the data column mixes pooled with submissions values (boundary ratio 0.94 pooled against 0.80 for submissions; G2), and "constant slope" names two different sets of worlds (G3).
+- **Abstract:** says "one" form was calibrated to persistence; it was two (G4).
+- **SI after Eq. S2:** omits e (G5).
+- **SI time scales: my 2026-10-20 caveat had the wrong sign for relaxation** (τ ∝ σ²) (G6).
+- **The five-year rate in the Discussion** is inconsistent with Results 2 (G7).
+- **Smaller corrections:**
+  - the uniform-in-log-rank error (G8);
+  - "below the top 780" (G9);
+  - Fig. 4C's dashed line is the cohort-mean adjustment (G10);
+  - the calibration statistic misnamed (G11);
+  - recovery covers the fixed form only (G12);
+  - the two registered A1 recovery runs were never run and were not listed (G13);
+  - "truncated" for clipped (G14);
+  - the asymmetry is reversed in the worlds, not absent (G15);
+  - a duplicate SI heading (G16);
+  - "selection excluded by design" overbroad (G17).
+- **R10, recomputed on matched eligibility sets:** comments 61.5% (was 47.3%), submissions 40.9% (39.4%), model world 63.2% (60.0%) (G18).
+- **R12 claims above their evidence:**
+  - "at most three fifths" fails at 52 weeks on comments (G20);
+  - the top-ten claim fails against the matched control, 0.272 [0.133, 0.370] (G21);
+  - the out-of-period projections use full-panel heterogeneity grids (G22);
+  - the worlds carry 20–45% of the planted covariance and a quarter of the planted two-spacing variance (G23, partly confirmed);
+  - the extension did not establish a minimum on comments (G26).
+- **The loading adjustment of persistence is fragile.** It raises comments persistence (0.158 → 0.177) while removing submissions' (G27).
+- **The lasting-variance estimators disagree about twofold** at the comments head: 0.0064–0.0097 against 0.0039 a week (G28).
+- **The R13-1 rationale is wrong** (G30). R13-1 still passes.
+
+**Framing adopted for the next draft (owner to confirm).** Durability is GLLM's slow transition, measured. The head's fall is a drift shift that rank-based growth transmits fast, and "a shift in its drift" is an accounting, not an identification. Persistence, and its asymmetry, is the discovery. Size dependence is to be stated in size units from the estimator-free quantiles: elasticity about 0.08 on comments and 0.04 on submissions, against firms' 0.15–0.2.
+
+**Plan** (SYNTHESIS_R7 §5):
+- **Tier 1:** corrections with no new analysis.
+- **Tier 2:** cheap measurements on development data:
+  - the observed shape path against the rate law and the model;
+  - the R12 planted-against-recovered diagnostic;
+  - the loading placebo;
+  - the durability factor from measured crossings.
+- **Tier 3** (owner): joint R12 re-estimation with the medium swing freed and a rank-specific spread; the two A1 runs; R14; the comments β recovery study.
+- **Tier 4:** owner items.
+
+**Not done in this entry:** no manuscript change beyond 61b6bbe, no new run, GPT-6 Pro not yet run.

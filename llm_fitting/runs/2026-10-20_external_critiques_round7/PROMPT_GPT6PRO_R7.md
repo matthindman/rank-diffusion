@@ -1,4 +1,4 @@
-Attached are two PDFs: a manuscript prepared for PNAS (`pnas_draft.pdf`, main text, 8 pages) and its Supporting Information (`pnas_si.pdf`, 17 pages). The figures and tables are inside them.
+Attached are two PDFs: a manuscript prepared for PNAS (`pnas_draft.pdf`, main text, 8 pages) and its Supporting Information (`pnas_si.pdf`, 17 pages). The figures and tables are inside them. Red [TODO] markers are items the author still has to supply (a data DOI, the acknowledgements, a page range); ignore them.
 
 Act as a PNAS editor and a panel of referees reviewing a submission. My goal is a paper that an editor sends out with enthusiasm, and that referees cannot sink. Be candid. I would rather hear now what will kill it.
 
