@@ -986,3 +986,37 @@ The only change is the drift by rank. It is now built from the persisters' slide
   - the comments collapse becomes −31%.
 
   This change is to be made after the round-6 reviews finish, since they read v4.
+
+## R13. Lock-in, the funnel check, turnover profiles and 5-year values (expectations in PLAN.md addendum R13, committed aeda027 before any run)
+
+**Status:**
+
+| part | status |
+|---|---|
+| R13a, R13b, R13e | **RAN-OK**, saved outputs only (`r13_saved_outputs.py` → `r13_saved_outputs.json`, `out_r13_saved_outputs.txt`; R13b is `gllm_relaxation_check.py`, §2z-dl) |
+| R13c, R13d | **NOT RUN.** BLOCKED: `/Volumes/T9` is not mounted (`data/ssd` → `/Volumes/T9/rank-diffusion-data`). Both attempts stopped at the file open; no value was read. They are queued in `run_r12_r13.sh` |
+
+**R13a. Five-year values** from the corrected runs (R11, noentry). Head shape at K/64:
+- **From the observed 2019 ladder, with volatility and slide:**
+  - comments: 5.36 → 5.36 in 5 years (−0.0%);
+  - submissions: 4.51 → 3.95 (−12.5%).
+- **Slide only:** +5.1% on comments, −26.5% on submissions.
+- **Volatility only:** +4.3% on comments, +9.0% on submissions.
+- **From equality:**
+  - comments 1.71, 2.29, 3.14 and 3.70 at 1, 2, 5 and 10 years (observed 5.36);
+  - submissions 1.18, 1.59, 2.36 and 3.07 (observed 4.51).
+
+**R13e. Turnover-profile exponent b** in z = a·y^b:
+
+| | b |
+|---|---|
+| data, submissions (y = 78–2,496) | 0.947 |
+| data, comments (y = 195–6,240) | 0.919 |
+| size-blind, data's ladder | 0.882 |
+| size-blind, constant slope | 0.993 |
+| firm-like, data's ladder | 0.908 |
+| firm-like, constant slope | 1.035 |
+| neutral copying | 1.179 |
+| calibrated model | 0.897 |
+
+**R13-3: PASS.** The ladder alone shifts b by 0.111 (size-blind) and 0.127 (firm-like), against the expected ≥ 0.05. Inferences about copying from turnover profiles (Bentley 2007; Acerbi & Bentley 2014) therefore need a control for the ladder's slope.

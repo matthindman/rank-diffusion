@@ -387,7 +387,7 @@ def fig4v5():
     a.set_ylabel("rank correlation of changes")
     a.set_title("Changes persist on Reddit", fontsize=6.3)
     a.legend(loc="upper right", frameon=False, fontsize=4.2, ncol=2, columnspacing=0.5, handlelength=1.4)
-    a.set_ylim(-0.16, 0.36)
+    a.set_ylim(-0.16, 0.45)
     tag(a, "C")
     # D: the slide by prior change: the bottom fifth of prior change against the rest, data and worlds
     a = ax[3]
@@ -418,7 +418,7 @@ def fig4v5():
     a.set_xticks(ticks)
     a.set_xticklabels(labs, fontsize=4.6, rotation=30)
     a.set_ylabel("slide of members (per 1,000 wk)")
-    a.set_title("Prior decliners keep declining", fontsize=6.3)
+    a.set_title("Decliners keep declining", fontsize=6.3)
     from matplotlib.patches import Patch
     a.legend(handles=[Patch(color="#555555", label="bottom fifth of prior change"), Patch(color="#555555", alpha=0.45, label="the rest")],
              loc="upper right", frameon=False, fontsize=4.4)

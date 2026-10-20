@@ -155,3 +155,17 @@ def test_factor_exposure_moves_homes_by_loading():
     moved = st.home - h0
     assert abs(moved[3] - 0.25) < 1e-6 and abs(moved[4] + 0.25) < 1e-6, moved[[3, 4]]
     assert np.allclose(np.delete(moved, [3, 4]), 0.0, atol=1e-6)
+
+
+def test_velocity_clip_bounds_fixed_heterogeneity():
+    """R12-A1: with vel_rho = 1 and vel_clip = 2.5, every velocity stays within 2.5 sd; vel_clip = 0 leaves draws unchanged."""
+    p = _toy_params(0.0)
+    p.vel_var, p.vel_rho, p.vel_clip = 0.01 ** 2, 1.0, 2.5
+    st = rdm._State(p, np.linspace(10.0, 0.0, 4000), np.random.default_rng(5), lasting="movinghome_vp")
+    assert np.max(np.abs(st.vel)) <= 2.5 * 0.01 + 1e-12
+    p0 = _toy_params(0.0)
+    p0.vel_var, p0.vel_rho = 0.01 ** 2, 1.0
+    a = rdm._State(p0, np.linspace(10.0, 0.0, 50), np.random.default_rng(5), lasting="movinghome_vp").vel
+    p0.vel_clip = 0.0
+    b = rdm._State(p0, np.linspace(10.0, 0.0, 50), np.random.default_rng(5), lasting="movinghome_vp").vel
+    assert np.array_equal(a, b)

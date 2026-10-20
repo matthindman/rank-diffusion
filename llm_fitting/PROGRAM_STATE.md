@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-19** (the paragraphs on §2z-da … §2z-dl were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-20** (the paragraphs on §2z-da … §2z-dm were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -315,6 +315,21 @@ spine, "size does not protect", and the model and momentum. The outline
   - R11: entry and exit were counted twice in the model's drift. The
     corrected model matches the comments body; the head is still 37–41%
     flatter.
+- **Owner directions and manuscript v5 (§2z-dm, 2026-10-20; IN PROGRESS).**
+  - **The owner adopted the GLLM frame,** and set the horizons: 1–2 years
+    for communities, 5 for the system, decades only as model-implied rates.
+  - **Durability is presented as a property of homogeneous random growth.**
+    It is a contribution to platform research, stated without claiming
+    novelty.
+  - **Correction to §2z-dl:** the submissions head's fall follows the rate
+    law with its measured slide. What changed after 2020 was the slide
+    itself. Out of period, both heads' 2022 shares fall below the
+    homogeneous model's 5–95% band.
+  - **v5:** 7 pages, 4 figures, Table 1 of models × facts, and a 13-page SI
+    with the model atlas.
+  - **R12** (calibrated heterogeneous growth) is registered with amendments
+    A1–A2, and its code is ready (`r12_hetgrowth.py`, `run_r12_r13.sh`).
+    R12, R13c and R13d are BLOCKED until `/Volumes/T9` is mounted.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it

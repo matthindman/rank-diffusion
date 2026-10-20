@@ -1,0 +1,6 @@
+sb 0.0: expected cov 0.0000; got g0: -0.0191 (rho -0.061), g13: -0.0027 (rho -0.010), g26: 0.0002 (rho +0.000), g52: 0.0067 (rho +0.020)
+   two-spacing lasting variance 0.00420; expected q 0.004 + 3 B h = 0.00400
+   asymmetry {'fallers': 0.015904887764823943, 'risers': -0.0010147294072812944, 'diff': 0.016919617172105238}
+sb 0.006: expected cov 0.0973; got g0: 0.0796 (rho +0.188), g13: 0.0968 (rho +0.228), g26: 0.1005 (rho +0.239), g52: 0.1022 (rho +0.241)
+   two-spacing lasting variance 0.00708; expected q 0.004 + 3 B h = 0.00681
+   asymmetry {'fallers': 0.1458921087086706, 'risers': 0.12459452752188353, 'diff': 0.021297581186787054}

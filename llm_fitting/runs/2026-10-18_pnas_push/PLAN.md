@@ -836,3 +836,33 @@ The parallel Opus methods memo (`runs/2026-10-20_v5_revision/MEMO_HETGROWTH_opus
    Each is replicated 20 times, as already stated.
 
 The SI cites the variance identity V(h) = qh + Bh² + C to Guvenen 2009 and Hryshko 2012 (standard HIP algebra), not to Gomez.
+
+### Amendment R12-A2 (2026-10-20, before any run; no R12 output exists): power, and what each variant is tested on
+
+**The power problem.** Under fixed heterogeneity, weekly growth autocovariances at lags beyond the passing memory equal σ_b² (Hryshko 2012, eq. 8). At the spreads of interest (s = 52σ_b ≈ 0.3 a year) that is about 4×10⁻⁵ a week. The sampling standard error of one such autocovariance in these panels is of order 10⁻⁴, from a weekly change variance near 0.1 over roughly 10⁶ community-weeks. This is the low-power problem the income literature documents (Guvenen 2009 §5; Baker 1997). Changes of 13-week window means over a year carry the same component as (52σ_b)², relative to a much smaller passing variance. Long differences are therefore the standard way to identify slope heterogeneity in short panels (Baker & Solon 2003; Guvenen 2009 §4).
+
+**Changes to the calibration of (a) and (b).** Calibration is by indirect inference (Gourieroux, Monfort & Renault 1993; Guvenen & Smith 2014) on two auxiliary statistics, computed by the same code in data and world:
+
+1. **Persistence.** The Pearson covariance, within strata of permanent rank, of changes between 13-week window means a year apart, at gaps of 0 and 13 weeks for (a), and at 0, 13, 26 and 39 weeks for (b).
+2. **The structure-function lasting variance by stratum** (`rdm.structure_function`, the estimator of σ0 and β). With the multiplier m on σ0, this makes the world's measured lasting variance equal the data's under heterogeneity: the G15 correction.
+
+The weekly autocovariances at lags 1–8 are kept only as a check on the passing parts.
+
+**What is then a test, and what is not:**
+- **(a) and (b).** Their gapped correlations at the calibration gaps are no longer tests. They are reported as fit. The untargeted tests are:
+  - the lag profile beyond the calibration gaps (52 weeks for (a));
+  - the riser/faller asymmetry (R12-7);
+  - the prior-decliner contrast (R12-4);
+  - the out-of-period head share (R12-3);
+  - turnover and retention;
+  - the boundary ratio (R12-6);
+  - recovery (R12-5).
+
+  R12-2 and R12-2b are withdrawn as tests for (a) and (b). They are replaced by: the calibrated (a) reproduces the 52-week value of the lag profile within 0.05 on comments (prior 50%) and does not on submissions (prior 65%), whose profile decays.
+- **(c).** Loadings come from 2019 co-movement only. Every statistic, including the gapped correlation at every gap, remains untargeted. R12-2 applies to (c) as written: gapped persistence ≥ +0.08 at a 13-week gap on submissions (prior 45%) and on comments (prior 25%).
+
+**The grids.**
+- **(a):** s ∈ {0, 0.1, 0.2, 0.3, 0.4, 0.5} a year, crossed with m ∈ {0.7, 0.8, 0.9, 1.0}.
+- **(b):** half-life ∈ {26, 52, 104} weeks, crossed with stationary s ∈ {0.2, 0.3, 0.4, 0.5}, at the m that (a) selects at its optimum.
+
+Each grid point is run with 3 seeds on both ladders. The objective is the sum of squared differences scaled by the data's bootstrap standard deviations (communities resampled, 40 draws).

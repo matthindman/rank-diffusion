@@ -13296,3 +13296,38 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-20. Work started 
   - uses table (pending the memo);
   - final-version section on the 2018 chapter;
   - registration list extended to R9–R13.
+
+### Addendum to §2z-dm (2026-10-20, end of session): manuscript v5 complete except R12; R12 and R13c–d remain IN PROGRESS (BLOCKED)
+
+**Done since the entry above:**
+- **Uses memo** (`MEMO_USES_APPLICATIONS_opus-5.5.md`; references checked by its sub-agents), integrated:
+  - **Discussion.** Two paragraphs:
+    - **uses:** a benchmark against random growth from the platform's own ladder; a selection baseline (−5% of share a year, R7); an accounting of a change in concentration; response as a rate, a sixth to a third of an effect within five years;
+    - **non-uses**, each tied to one of the paper's own failures: individual forecasting, mechanism from shape, long continuations, intervention effects.
+  - **SI section** "What these models are for": a uses table, an avoidances table, and applications including the lock-in record (§§2z-cy, cz, da: Brier 13–21% below constant turnover, but a logistic on log rank wins on every ladder).
+  - **Horizon rule.** Main-text durations in decades are replaced by rates (about a tenth of the gap closed a year at the comments head; a quarter to a third at the submissions head). Bands are labelled "across runs, parameters fixed".
+  - **17 references added** for uses and non-uses. One title from memory (Fernholz & Koch 2017) was removed in favour of the 2016 working paper the reviewers read.
+- **R12 code** (`r12_hetgrowth.py`; `run_r12_r13.sh` queues everything):
+  - Synthetic known-answer check (`r12_synthetic_check.py` and its output):
+    - the window-change covariance recovers (52σ_b)² at gaps of 13–52 weeks;
+    - an annual spread of 0.3 inflates the two-spacing lasting variance from 0.0040 to 0.0071, about 70%;
+    - Gaussian heterogeneity gives no riser/faller asymmetry.
+
+    Stated in SI and main text as a caution on Results 2.
+  - **Amendment A2,** before any run: weekly autocovariances lack power, so calibration is by indirect inference on year-apart window-change covariances plus the structure-function variance. For (a) and (b), persistence at the calibration gaps is therefore fit, not test. (c) is fully untargeted.
+  - **Opt-in `vel_clip`** (A1) in `rankdiff_rdm.py`, with tests. Suite: 12 rdm tests.
+  - **Bug found in review and fixed before any run:** `null_worlds` functions read K and T as module globals. `_nw()` sets them per panel.
+- **R13 recorded in RESULTS.md:** R13a and R13e run, R13-3 PASS; R13c and R13d not run (blocked).
+- **v5 final:** main text 7 pages; sentence-length distribution median 21, 90th percentile 43, 11.9% over 40 words (exemplars 22 / 42 / 11.5%); 54 references. SI 14 pages.
+
+**Not run, and why.** R12 entire; R13c; R13d. `/Volumes/T9` was not mounted, so the registered Reddit panels were unavailable. Nothing was substituted; the panels in `data/reddit/` are other datasets.
+
+**Owner items:**
+- mount T9 and run `zsh llm_fitting/runs/2026-10-18_pnas_push/run_r12_r13.sh`;
+- the title;
+- the chapter's page range and the edition cited;
+- Bruce Rogers's acknowledgement;
+- classification;
+- the protocol amendments (forecasts from every eligible model; P5, P6);
+- the data-statement TODOs;
+- whether to push.

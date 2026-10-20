@@ -80,6 +80,7 @@ class RDMParams:
     fac_path: np.ndarray | None = None   # R12 (c), opt-in: weekly common factor f_t added to the home as (lambda_i - lambar) f_t
     fac_load: np.ndarray | None = None   # R12 (c): loading deviation of each starting slot (same order as L0)
     fac_pool: np.ndarray | None = None   # R12 (c): loading deviations drawn for reborn identities
+    vel_clip: float = 0.0           # R12-A1 (a), opt-in: draws of the velocity truncated at +/- vel_clip sd (0 = off)
 
 
 # --------------------------------------------------------------------------- #
@@ -408,6 +409,9 @@ class _State:
         self.ts = ts
         self.sqv = np.sqrt(rng.lognormal(-0.5 * ts * ts, ts, self.N)) if ts > 0 else np.ones(self.N)
         self.vel = (math.sqrt(p.vel_var) * rng.standard_normal(self.N)) if p.vel_var > 0 else None
+        if self.vel is not None and getattr(p, "vel_clip", 0.0) > 0:
+            c = p.vel_clip * math.sqrt(p.vel_var)
+            self.vel = np.clip(self.vel, -c, c)
         mix_b = getattr(b, "mix_b", 0.0)                # model A's --mix-hetero: sigma_perm scaled by v^(b/2)
         self.mix_b = mix_b
         self.sqw = mrd._sqw(self.sqv, mix_b, ts) if (ts > 0 and mix_b > 0) else 1.0
@@ -415,6 +419,12 @@ class _State:
         if getattr(p, "fac_path", None) is not None:
             self.fac = np.asarray(p.fac_load, float).copy()
             self.t = 0
+
+    def _vel_draw(self, n):
+        """New velocities for reborn identities (truncated when vel_clip > 0; R12-A1)."""
+        v = math.sqrt(self.p.vel_var) * self.rng.standard_normal(n)
+        c = getattr(self.p, "vel_clip", 0.0)
+        return np.clip(v, -c * math.sqrt(self.p.vel_var), c * math.sqrt(self.p.vel_var)) if c > 0 else v
 
     def _fac_step(self):
         """R12 (c): the common factor's increment for this week, (lambda_i - lambar) f_t; zero when off."""
@@ -456,7 +466,7 @@ class _State:
             if self.ts > 0:
                 self.sqv[ex] = np.sqrt(rng.lognormal(-0.5 * self.ts ** 2, self.ts, ne))
             if self.vel is not None:
-                self.vel[ex] = math.sqrt(p.vel_var) * rng.standard_normal(ne)
+                self.vel[ex] = self._vel_draw(ne)
             self._fac_reborn(ex, ne)
         if self.fac is not None:
             self.t += 1
@@ -529,7 +539,7 @@ class _State:
             self.ids[ex] = np.arange(self.next_id, self.next_id + ne)
             self.next_id += ne
             if self.vel is not None:
-                self.vel[ex] = math.sqrt(p.vel_var) * rng.standard_normal(ne)
+                self.vel[ex] = self._vel_draw(ne)
             if self.ts > 0:
                 self.sqv[ex] = np.sqrt(rng.lognormal(-0.5 * self.ts ** 2, self.ts, ne))
                 if self.mix_b > 0:
