@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-21** (the paragraphs on §2z-da … §2z-du were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-21** (the paragraphs on §2z-da … §2z-dv were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -477,14 +477,21 @@ spine, "size does not protect", and the model and momentum. The outline
     - Two readings about fixed differences are withdrawn.
     - The retrospective exposure form comes close to the comments head's 2022 share.
   - **Asymmetry:** described by secant slopes, "extreme declines behave as lasting, extreme gains as transient". The Discussion offers the hypothesis that gains arrive as transient surges and losses last.
-  - **Next (owner):**
-    1. sealed confirmation, after amending P8 (secant slopes, tail skew, karma or counts, gapped persistence as a primary);
-    2. the Facebook starting-ladder rerun;
-    3. the surge world;
-    4. the swing's tails (a model change);
-    5. Reddit worlds at Facebook's settings;
-    6. a longer Facebook history;
-    7. title confirmation.
+  - **Next (owner):** see §2z-dv, which ran items 2, 3 and 5 and adopted the owner's title.
+- **R18-D, R19, R20 (§2z-dv, 2026-10-22; owner: "do the light fb rerun", "do the fading surge model", Reddit sims at Facebook's settings; sealed data closed "until we've squeezed every last ounce of juice from what we have").**
+  - **Title (owner's):** "Turnover within digital platforms closely matches random growth models".
+  - **Facebook from a matched starting ladder** (one scalar, c 0.96): the head's turnover is in range (0.275 [0.24, 0.33] against 0.315). The shortfall was the starting state. The 219-over-54 ordering still fails. Table 1 now uses these arms.
+  - **Reddit at Facebook's settings and dates:** excess persistence over its own matched control is 0.06–0.15, against Facebook's 0.01–0.06, and D_FB is +0.18 and +0.11 against +0.05. The cross-platform contrast is now like for like.
+  - **Boosts that fade** (calibrated only to the skew of single changes).
+    - On Reddit they fade over one to three years. On the fixed differences they turn D positive by ending the largest gains' persistence, but not the declines'. They lower year-apart persistence.
+    - "Surges sufficient" is NOT met, robust to the post hoc half-life extension.
+    - On Facebook they move D toward the data's (+0.05 and +0.01 from two starts), weakly identified.
+  - **Open for the owner:**
+    1. sealed confirmation, when the owner decides (P8 to gain secant slopes and tail skew);
+    2. the lighter-tailed swing (explained, not run);
+    3. a joint re-estimation of fixed differences with boosts present;
+    4. a longer Facebook history;
+    5. comments in Table 1.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it

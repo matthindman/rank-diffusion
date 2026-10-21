@@ -1,0 +1,6 @@
+reddit_comments_ext joint seed 5: D -0.034 -> +0.055; gapped 13 +0.110 -> +0.072
+reddit_comments_ext joint seed 6: D -0.053 -> +0.049; gapped 13 +0.091 -> +0.068
+reddit_comments_ext joint seed 7: D -0.028 -> +0.046; gapped 13 +0.108 -> +0.083
+reddit_comments_ext joint seed 8: D -0.049 -> +0.047; gapped 13 +0.104 -> +0.080
+reddit_comments_ext joint seed 9: D -0.054 -> +0.041; gapped 13 +0.104 -> +0.076
+peak RSS 5.02 GB (job tree, sampled: 4938 MB); swap 2663M -> 2647M; killed 0

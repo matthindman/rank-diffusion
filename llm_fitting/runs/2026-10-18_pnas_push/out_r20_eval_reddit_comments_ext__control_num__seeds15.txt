@@ -1,0 +1,6 @@
+reddit_comments_ext control_num seed 15: D -0.049 -> +0.022; gapped 13 -0.103 -> -0.120
+reddit_comments_ext control_num seed 16: D -0.052 -> -0.003; gapped 13 -0.108 -> -0.128
+reddit_comments_ext control_num seed 17: D -0.049 -> +0.018; gapped 13 -0.118 -> -0.131
+reddit_comments_ext control_num seed 18: D -0.039 -> -0.003; gapped 13 -0.099 -> -0.116
+reddit_comments_ext control_num seed 19: D -0.070 -> -0.009; gapped 13 -0.112 -> -0.123
+peak RSS 5.34 GB (job tree, sampled: 5083 MB); swap 2663M -> 2663M; killed 0

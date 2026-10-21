@@ -14108,6 +14108,8 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started 
 | persistence at gaps 0 / 4 | −0.114 / −0.067 | — | inside some arms' ranges (all of the 0.019 calibrated arm's) |
 | D_FB | +0.052 [−0.008, +0.101] | upper bounds +0.015 to +0.045 | above every arm; own interval includes 0 |
 
+_[Revised 2026-10-22 by §2z-dv: from a starting ladder matched to the data's first block (R18-D, c = 0.96) the matched control's top-54 turnover is 0.275 [0.240, 0.325], containing the data's; the shortfall is attributed to the simulated starting state. The 219-over-54 ordering still fails.]_
+
 **CORRECTION (post hoc, found while building R18-C's SI table).**
 - **What is fragile.** `r18_facebook.fb_stats` computes the head share from expm1 of log activity summed over the last 26-week block.
 - **Where it broke.** In the matched control at 0.019, two runs give 0.010 and 0.023. Every other arm except the 0.097 matched control has one run at 0.000–0.019; the constant-slope start at 0.019 has another at 0.10.
@@ -14178,3 +14180,97 @@ python r18_facebook.py summ; python r18_table1.py; python levelsum_medians.py; p
 R18_DIR=<scratchpad>/r18 python r18c_headshare_diag.py controlb0.019 0
 ```
 Health check PASS at 632779b and before the v9.4 commit (583 research, 8 package, legacy 14/15, churn 0.013).
+
+## 2z-dv. 2026-10-22 — EXPLORATORY MEASUREMENTS R18-D, R19 and R20 (expectations in PLAN.md addenda committed at 2d4a33e before any run; post hoc amendments R20-A1 and R20-A2 committed before their runs), with the OWNER'S TITLE. From a starting ladder matched to the data's, Facebook's model turns the head over at a rate whose range contains the data's (R18-D1 met; the top-219 ordering still fails). At Facebook's settings and dates, against each platform's own homogeneous worlds, Reddit's excess persistence is 0.06–0.15 against Facebook's 0.01–0.06 (R19, 4/4 met). Boosts that fade, calibrated only to the skew of single changes, fade over one to three years on Reddit. On the joint fixed differences they turn D positive (+0.06 to +0.12) by ending the largest gains' persistence, but not the declines'. They lower year-apart persistence below the floor: 'surges sufficient' NOT met, robust to the post hoc half-life extension. On Facebook they move D toward the data's, but weakly identified (+0.05 and +0.01 from two starts). Nothing adopted; no gate evaluation; bridge sealed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21/22; work started from b7d23eb (§2z-du). Owner, 2026-10-21:_
+- _title: "Turnover within digital platforms closely matches random growth models."_
+- _"still wait to open the data: we will not do so until we've squeezed every last ounce of juice from what we have."_
+- _"do the light fb rerun." "do the fading surge model." "Yes, worth doing Reddit sims on FB settings."_
+- _On the lighter-tailed swing variant: an explanation was asked for and given; nothing was run._
+
+**R18-D. Facebook from a starting ladder matched to the data's** (RESULTS R18-D).
+- **Calibration.** One scalar c compresses the starting levels and the held ladder around their rank-K level. It is calibrated to the first-block ladder on seeds 100–104: c = 0.96, with squared error 0.002 against 0.174 at c = 1.
+- **The matched control from that start:**
+  - the top-54 turnover is 0.275 [0.240, 0.325], against the data's 0.315 (now inside the range);
+  - the head share (median) is 0.27, against 0.23;
+  - the crossing ratio is 1.05 and the rank-1 change 0.53;
+  - the top half turns over slightly fast, 0.23 against 0.21;
+  - the top 219 still turn over faster than the top 54.
+- **Scores:** D0, D1, D3, D4 and D5 met; D2 failed.
+- **By the registered reading,** the Facebook head shortfall of §2z-dt/§2z-du is attributed to the simulated starting state. Table 1's Facebook block now uses the matched-start arms.
+
+**R19. Reddit at Facebook's settings and dates** (RESULTS R19). Both Reddit ladders were cut to Facebook's 86 weeks from 2020-12-28 and scored by `fb_stats` unchanged, against Reddit's own homogeneous worlds.
+- **Excess persistence over the matched control** at gaps 0/4/8 is +0.078/+0.101/+0.121 on submissions and +0.061/+0.104/+0.150 on comments, against Facebook's +0.009/+0.034/+0.060.
+- **D_FB** is +0.18 [0.12, 0.23] and +0.11 [0.07, 0.14], against Facebook's +0.05 [−0.01, +0.10].
+- **Scores:** all four expectations met.
+- **What it replaces.** The cross-platform contrast is now a like-for-like difference of excess persistence. This replaces the raw-correlation comparison that Opus flagged twice in round 9.
+
+**R20. The fading-surge world** (RESULTS R20).
+- **The component.** An observation-level surge: Bernoulli(λ) arrivals of Exponential(μ) jumps, decaying with half-life h. It is exact as an observation component because the simulator's ranks read only the lasting level.
+- **Calibration.** Only the marginal shape of single changes is used (Kelly skewness and tail asymmetry at 4–52 weeks).
+- **Bases:** Reddit's matched control and joint fixed differences, and Facebook's matched control.
+- **Facebook:**
+  - D_FB +0.046 [0.004, 0.102], against the data's +0.052;
+  - p_rise and p_fall within 0.01 of the data's;
+  - top-54 turnover 0.305;
+  - top-10 turnover overshoots (0.41 against 0.35), and the head share rises (0.31);
+  - persistence is unchanged.
+- **Reddit, joint + surge:**
+  - D is +0.11 and +0.08, against the data's +0.22 and +0.13;
+  - p_rise falls to −0.04 and −0.05 (data +0.02, +0.03);
+  - p_fall stays at +0.07 and +0.03 (data +0.24, +0.16);
+  - gapped persistence at 13 weeks falls to +0.07 (data +0.17, +0.15).
+- **Scores:** R20-2, 3, 5, 6 and 7 met; R20-1, 3b, 4 and 8 failed.
+- **By the registered rule,** "surges sufficient" is NOT met. The surges account for the gains half of the asymmetry, and on Facebook for all of it. They do not account for the persistence of Reddit's large declines.
+
+**R20-A1 (post hoc, committed fc1bd35 before its run): half-lives to 156 weeks** (RESULTS R20-A1).
+- **Every Reddit optimum moves longer and fits better:**
+  - submissions: control_num to h 156 (60.4), joint to h 104 (48.7);
+  - comments: both to h 156 (162.9; 37.5).
+  - Three of the four are at the new edge.
+- **Joint + boosts:**
+  - D is +0.119 and +0.056;
+  - p_rise is −0.04 and −0.03; p_fall is +0.08 and +0.03;
+  - gapped persistence at 13 weeks is +0.073 and +0.079;
+  - top-10 turnover is 0.30 and 0.42 (data 0.30, 0.27).
+- **Long-lived boosts on the matched control no longer move D.**
+- **Scores:** A1-1 and A1-2 met; A1-3 failed.
+- **R20's reading stands:** the gains half is accounted for, the declines half is not.
+
+**R20-A2 (post hoc, committed c96e2e6 before its run): Facebook's boosts on the matched start** (RESULTS R20-A2).
+- **Recalibration** gives λ 0.005, μ 0.5 and h 52, against 0.002, 1.0 and 26 from the data's start: the 86 weeks identify the boosts weakly.
+- **Results:**
+  - D_FB is +0.010 [−0.030, +0.046], with the data's +0.052 above the range;
+  - top-54 turnover is 0.317 [0.268, 0.380], with the data inside;
+  - top-10 turnover is 0.38, with the data inside;
+  - gap-8 persistence stays below the data's.
+- **Scores:** A2-1 and A2-4 met; A2-2 and A2-3 failed.
+- **R20's "reproduces Facebook's asymmetry" is qualified** to "moves it toward the data's".
+- **The matched start and the boosts do not overshoot the head together.**
+
+**The owner's title** was adopted in both files: "Turnover within digital platforms closely matches random growth models". The SI's title had been stale since v9.0.
+
+**Manuscript v9.5:** 
+- the owner's title;
+- Table 1's Facebook block from the matched start: the top K/2 is now "below" (0.22–0.23 against 0.21), the head "in";
+- Results 4 rewritten for the matched start;
+- Results 5's raw cross-platform comparison replaced by R19;
+- the boosts paragraph (Results 5) and the reworded hypothesis (Discussion: "gains in attention often arrive as boosts that fade, while losses last … the second, the persistence of Reddit's large declines, no form we calibrated reproduces");
+- abstract and introduction: the Facebook-head sentence replaced by the like-for-like excess and the boosts;
+- Fig. 3 (A: Facebook's matched control from the matched start; C: "fixed + surges" on both ladders and "Facebook + surges" from the matched start);
+- SI: the matched-start table, the R19 table, a new section "Boosts that fade" with all arms, and the registration rows;
+- cuts to stay at 7 pages (the size sentence, the gate sentence, the analogies, the Discussion's summary, caption text).
+- Main text 7 pages, abstract 239 words, significance 118.
+
+**Not done:**
+- the lighter-tailed swing variant (explained to the owner; not run);
+- sealed confirmation (owner: not until the existing data are exhausted);
+- comments in Table 1;
+- nothing pushed.
+
+**Ledgers.**
+- EXPOSURE_LEDGER: rows for R18-D, R19, R20, R20-A1 and R20-A2 (`facebook_a`, `reddit_submissions_long`, `reddit_comments_ext`; DEVELOPMENT).
+- GATE_LEDGER: no row.
+
+Commands: `run_r18d_r19_r20.sh` (with `DEFER_COMMENTS=1` first, because the comments jobs need 6 GB and waited about six hours for it), `run_r20a1.sh`; R20-A2 run inline under the watchdog (`r20_surge.py calib|eval|summ facebook_a fbcontrolm`).

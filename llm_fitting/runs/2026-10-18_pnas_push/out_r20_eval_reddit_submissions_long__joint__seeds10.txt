@@ -1,0 +1,6 @@
+reddit_submissions_long joint seed 10: D -0.076 -> +0.112; gapped 13 +0.142 -> +0.064
+reddit_submissions_long joint seed 11: D -0.065 -> +0.175; gapped 13 +0.167 -> +0.092
+reddit_submissions_long joint seed 12: D -0.064 -> +0.092; gapped 13 +0.149 -> +0.068
+reddit_submissions_long joint seed 13: D -0.053 -> +0.109; gapped 13 +0.159 -> +0.071
+reddit_submissions_long joint seed 14: D -0.078 -> +0.110; gapped 13 +0.157 -> +0.065
+peak RSS 3.09 GB (job tree, sampled: 3168 MB); swap 1495M -> 1495M; killed 0

@@ -4,7 +4,7 @@ same code within its platform (Facebook: `r18_facebook.fb_stats`; Reddit submiss
 as `r17_table1.py`), and each world's value is followed by where the data's value falls relative to the world's 5-95%
 range of runs (in, above, below; edge: within 0.005 of a bound).
 
-  Facebook: r18_data__facebook_a.json, r18_summary.json (worlds calibb0.019, controlb0.019, flatb0.019; R18-C)
+  Facebook: r18_data__facebook_a.json, r18_summary.json (worlds calibb0.019m<c>, controlb0.019m<c>, flatb0.019; R18-C, R18-D)
   Reddit submissions: r17_table1.json (worlds rdm, control, sb_flat, joint, decline)
 
     python r18_table1.py          writes r18_table1.json and prints the LaTeX rows
@@ -35,8 +35,10 @@ def cell(x, b, signed):
 def main():
     fb = json.loads((HERE / "r18_summary.json").read_text())
     fd, fw = fb["data"], fb["worlds"]
-    # R18-C: every Facebook column at the two-step size exponent 0.019 (the structure-function 0.097 is biased on 86 weeks)
-    fwc = {"calibrated": fw["calibb0.019"], "control": fw["controlb0.019"], "flat": fw["flatb0.019"], "joint": None, "decline": None}
+    # R18-C: every Facebook column at the two-step size exponent 0.019 (the structure-function 0.097 is biased on 86 weeks);
+    # R18-D (its D1 met): the calibrated model and the matched control from the starting ladder matched to the data's
+    cm = json.loads((HERE / "r18d_matchcal.json").read_text())["c"]
+    fwc = {"calibrated": fw[f"calibb0.019m{cm}"], "control": fw[f"controlb0.019m{cm}"], "flat": fw["flatb0.019"], "joint": None, "decline": None}
     rd = json.loads((HERE / "r17_table1.json").read_text())
     rdd, rw = rd["data"], rd["worlds"]
     rwc = {"calibrated": rw["rdm"], "control": rw["control"], "flat": rw["sb_flat"], "joint": rw["joint"], "decline": rw["decline"]}
@@ -67,6 +69,7 @@ def main():
         rows += lines
     out["si_b0.019"] = si_rows(fd, fw, ("calibb0.019", "controlb0.019", "flatb0.019"))
     out["si_b0.097"] = si_rows(fd, fw, ("calib", "control", "flat"))
+    out["si_matched"] = si_rows(fd, fw, (f"calibb0.019m{cm}", f"controlb0.019m{cm}", "flatb0.019"))
     (HERE / "r18_table1.json").write_text(json.dumps(out, indent=1))
     print("\n".join(rows))
     print("\n".join(out["si_b0.019"]))

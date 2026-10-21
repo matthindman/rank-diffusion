@@ -1,0 +1,11 @@
+reddit_submissions_long control_num seed 0: gapped [-0.043, -0.033, -0.038]; D_FB -0.017; turnover [0.2, 0.176, 0.155, 0.129, 0.115]; boundary 1.0232528433630286
+reddit_submissions_long control_num seed 1: gapped [-0.047, -0.036, -0.03]; D_FB -0.051; turnover [0.3, 0.139, 0.162, 0.15, 0.115]; boundary 0.9837650670988776
+reddit_submissions_long control_num seed 2: gapped [-0.046, -0.033, -0.023]; D_FB -0.016; turnover [0.25, 0.12, 0.155, 0.138, 0.103]; boundary 0.9560628102432585
+reddit_submissions_long control_num seed 3: gapped [-0.074, -0.063, -0.059]; D_FB -0.049; turnover [0.15, 0.139, 0.135, 0.143, 0.113]; boundary 0.9732142736988304
+reddit_submissions_long control_num seed 4: gapped [-0.074, -0.06, -0.046]; D_FB -0.035; turnover [0.3, 0.213, 0.148, 0.149, 0.111]; boundary 0.9355972036230717
+reddit_submissions_long control_num seed 5: gapped [-0.079, -0.071, -0.067]; D_FB -0.043; turnover [0.2, 0.176, 0.167, 0.143, 0.113]; boundary 0.956659797554757
+reddit_submissions_long control_num seed 6: gapped [-0.052, -0.031, -0.026]; D_FB -0.045; turnover [0.2, 0.139, 0.176, 0.143, 0.11]; boundary 0.9377971809102571
+reddit_submissions_long control_num seed 7: gapped [-0.065, -0.061, -0.057]; D_FB -0.066; turnover [0.15, 0.167, 0.146, 0.153, 0.112]; boundary 0.9737254764027075
+reddit_submissions_long control_num seed 8: gapped [-0.05, -0.045, -0.038]; D_FB -0.056; turnover [0.2, 0.185, 0.142, 0.151, 0.117]; boundary 0.9347215820676987
+reddit_submissions_long control_num seed 9: gapped [-0.055, -0.048, -0.044]; D_FB +0.009; turnover [0.1, 0.157, 0.176, 0.141, 0.111]; boundary 0.9414271316537867
+peak RSS 2.44 GB (job tree, sampled: 2422 MB); swap 1503M -> 1503M; killed 0

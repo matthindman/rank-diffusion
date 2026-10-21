@@ -1,0 +1,4 @@
+reddit_submissions_long control_num gapped {'0': -0.06, '4': -0.047, '8': -0.042} excess {'0': 0.078, '4': 0.101, '8': 0.121} D_FB -0.044 [-0.075, -0.012]
+reddit_submissions_long control gapped {'0': -0.062, '4': -0.047, '8': -0.043} excess {'0': 0.081, '4': 0.1, '8': 0.122} D_FB -0.04 [-0.06, -0.009]
+reddit_submissions_long data gapped {'0': 0.019, '4': 0.054, '8': 0.08} D_FB 0.184
+peak RSS 0.13 GB (job tree, sampled: 0 MB); swap 1503M -> 1503M; killed 0

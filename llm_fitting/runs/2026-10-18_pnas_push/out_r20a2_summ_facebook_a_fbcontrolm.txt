@@ -1,0 +1,14 @@
+facebook_a fbcontrolm D: base -0.007  surge +0.010 [-0.030, +0.046]  paired +0.017
+facebook_a fbcontrolm p_fall: base -0.125  surge -0.117 [-0.148, -0.082]  paired +0.008
+facebook_a fbcontrolm p_rise: base -0.118  surge -0.127 [-0.150, -0.096]  paired -0.009
+facebook_a fbcontrolm turn10: base +0.348  surge +0.375 [+0.247, +0.500]  paired +0.028
+facebook_a fbcontrolm turn54: base +0.275  surge +0.317 [+0.268, +0.380]  paired +0.042
+facebook_a fbcontrolm turn219: base +0.304  surge +0.313 [+0.292, +0.336]  paired +0.009
+facebook_a fbcontrolm turn875: base +0.241  surge +0.253 [+0.241, +0.260]  paired +0.012
+facebook_a fbcontrolm turn1750: base +0.225  surge +0.234 [+0.224, +0.239]  paired +0.008
+facebook_a fbcontrolm gap0: base -0.122  surge -0.126 [-0.148, -0.109]  paired -0.004
+facebook_a fbcontrolm gap4: base -0.099  surge -0.105 [-0.129, -0.089]  paired -0.006
+facebook_a fbcontrolm gap8: base -0.090  surge -0.097 [-0.119, -0.077]  paired -0.007
+facebook_a fbcontrolm boundary: base +1.046  surge +1.089 [+1.021, +1.172]  paired +0.043
+facebook_a fbcontrolm head_share: base +0.262  surge +0.281 [+0.198, +0.350]  paired +0.019
+peak RSS 0.08 GB (job tree, sampled: 0 MB); swap 2647M -> 2647M; killed 0

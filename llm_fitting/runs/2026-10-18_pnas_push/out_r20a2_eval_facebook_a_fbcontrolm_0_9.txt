@@ -1,0 +1,11 @@
+facebook_a fbcontrolm seed 0: D_FB +0.035 -> +0.043; top-54 turnover 0.241 -> 0.278
+facebook_a fbcontrolm seed 1: D_FB -0.019 -> +0.017; top-54 turnover 0.333 -> 0.380
+facebook_a fbcontrolm seed 2: D_FB -0.055 -> -0.029; top-54 turnover 0.241 -> 0.315
+facebook_a fbcontrolm seed 3: D_FB -0.014 -> -0.022; top-54 turnover 0.278 -> 0.278
+facebook_a fbcontrolm seed 4: D_FB -0.037 -> -0.002; top-54 turnover 0.241 -> 0.296
+facebook_a fbcontrolm seed 5: D_FB +0.025 -> +0.027; top-54 turnover 0.269 -> 0.370
+facebook_a fbcontrolm seed 6: D_FB +0.004 -> +0.036; top-54 turnover 0.231 -> 0.296
+facebook_a fbcontrolm seed 7: D_FB -0.021 -> +0.007; top-54 turnover 0.250 -> 0.269
+facebook_a fbcontrolm seed 8: D_FB -0.007 -> +0.002; top-54 turnover 0.278 -> 0.370
+facebook_a fbcontrolm seed 9: D_FB -0.044 -> -0.029; top-54 turnover 0.306 -> 0.324
+peak RSS 0.85 GB (job tree, sampled: 850 MB); swap 2647M -> 2647M; killed 0

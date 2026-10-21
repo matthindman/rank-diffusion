@@ -1,0 +1,15 @@
+reddit_comments_ext joint D: base -0.035  surge +0.056 [+0.041, +0.071]  paired +0.091
+reddit_comments_ext joint p_fall: base +0.008  surge +0.026 [+0.014, +0.040]  paired +0.018
+reddit_comments_ext joint p_rise: base +0.044  surge -0.029 [-0.039, -0.014]  paired -0.073
+reddit_comments_ext joint turn10: base +0.238  surge +0.417 [+0.330, +0.503]  paired +0.178
+reddit_comments_ext joint turn25: base +0.207  surge +0.337 [+0.289, +0.453]  paired +0.130
+reddit_comments_ext joint turn195: base +0.194  surge +0.251 [+0.237, +0.267]  paired +0.057
+reddit_comments_ext joint turn781: base +0.183  surge +0.197 [+0.187, +0.205]  paired +0.014
+reddit_comments_ext joint turn3125: base +0.145  surge +0.156 [+0.153, +0.159]  paired +0.011
+reddit_comments_ext joint turn6250: base +0.116  surge +0.124 [+0.122, +0.127]  paired +0.008
+reddit_comments_ext joint gap13: base +0.108  surge +0.079 [+0.068, +0.092]  paired -0.029
+reddit_comments_ext joint gap26: base +0.112  surge +0.084 [+0.071, +0.097]  paired -0.028
+reddit_comments_ext joint secant_low: base -0.115  surge -0.055 [-0.091, -0.022]  paired +0.060
+reddit_comments_ext joint secant_mid: base +0.151  surge +0.137 [+0.111, +0.158]  paired -0.014
+reddit_comments_ext joint secant_high: base -0.043  surge -0.150 [-0.165, -0.119]  paired -0.107
+peak RSS 0.08 GB (job tree, sampled: 0 MB); swap 2647M -> 2647M; killed 0

@@ -1,0 +1,15 @@
+reddit_comments_ext control_num D: base -0.045  surge -0.012 [-0.026, +0.007]  paired +0.033
+reddit_comments_ext control_num p_fall: base -0.140  surge -0.125 [-0.140, -0.110]  paired +0.015
+reddit_comments_ext control_num p_rise: base -0.095  surge -0.113 [-0.128, -0.097]  paired -0.017
+reddit_comments_ext control_num turn10: base +0.262  surge +0.400 [+0.300, +0.503]  paired +0.138
+reddit_comments_ext control_num turn25: base +0.192  surge +0.349 [+0.291, +0.401]  paired +0.157
+reddit_comments_ext control_num turn195: base +0.254  surge +0.278 [+0.249, +0.298]  paired +0.025
+reddit_comments_ext control_num turn781: base +0.170  surge +0.195 [+0.190, +0.204]  paired +0.025
+reddit_comments_ext control_num turn3125: base +0.156  surge +0.167 [+0.163, +0.172]  paired +0.012
+reddit_comments_ext control_num turn6250: base +0.133  surge +0.140 [+0.137, +0.142]  paired +0.007
+reddit_comments_ext control_num gap13: base -0.107  surge -0.107 [-0.118, -0.096]  paired -0.000
+reddit_comments_ext control_num gap26: base -0.086  surge -0.088 [-0.101, -0.073]  paired -0.002
+reddit_comments_ext control_num secant_low: base -0.201  surge -0.177 [-0.232, -0.135]  paired +0.025
+reddit_comments_ext control_num secant_mid: base -0.080  surge -0.074 [-0.093, -0.049]  paired +0.006
+reddit_comments_ext control_num secant_high: base -0.108  surge -0.142 [-0.167, -0.108]  paired -0.034
+peak RSS 0.08 GB (job tree, sampled: 0 MB); swap 2663M -> 2663M; killed 0

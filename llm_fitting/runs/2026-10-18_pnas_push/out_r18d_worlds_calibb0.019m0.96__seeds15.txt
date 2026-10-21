@@ -1,0 +1,6 @@
+calibb0.019m0.96 seed 15: turnover [0.4, 0.296, 0.32, 0.237, 0.219]; rank-1 change 0.47; boundary 1.1517383717268885; gapped [-0.112, -0.082, -0.08]; D_FB +0.020; head share 0.309
+calibb0.019m0.96 seed 16: turnover [0.25, 0.278, 0.331, 0.243, 0.222]; rank-1 change 0.74; boundary 1.0557772686334397; gapped [-0.112, -0.089, -0.077]; D_FB -0.041; head share 0.301
+calibb0.019m0.96 seed 17: turnover [0.4, 0.213, 0.299, 0.235, 0.217]; rank-1 change 0.59; boundary 1.1296084873904615; gapped [-0.122, -0.081, -0.063]; D_FB +0.022; head share 0.200
+calibb0.019m0.96 seed 18: turnover [0.55, 0.315, 0.251, 0.231, 0.221]; rank-1 change 0.61; boundary 1.1314892138607142; gapped [-0.111, -0.092, -0.089]; D_FB -0.043; head share 0.312
+calibb0.019m0.96 seed 19: turnover [0.5, 0.333, 0.281, 0.231, 0.225]; rank-1 change 0.41; boundary 1.117458038517732; gapped [-0.103, -0.064, -0.052]; D_FB -0.008; head share 0.294
+peak RSS 0.73 GB (job tree, sampled: 653 MB); swap 1503M -> 1503M; killed 0

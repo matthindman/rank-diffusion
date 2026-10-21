@@ -336,6 +336,8 @@ def fig3v5():
     save(fig, "fig3_v5")
 
 
+FB_ARM = f"controlb0.019m{load(HERE / 'r18d_matchcal.json')['c']}"   # R18-D: Table 1's matched control
+
 R16_TAGS = {"reddit_submissions_long": {"joint": "joint_s0.8_head0.25_km0.5_m0.8", "decline": "decline_pi0.25_s0.7_hl208_m1.0"},
             "reddit_comments_ext": {"joint": "joint_s0.6_head0.25_km0.5_m0.7", "decline": "decline_pi0.25_s0.7_hl208_m0.7"}}
 HET_LAB = {"joint": "fixed growth diff. (joint)", "decline": "decline state", "factor": "platform-trend exposure"}
@@ -472,9 +474,9 @@ def fig4v5():
                 a.errorbar([int(gap) + 1.6 + 0.9 * i_], [g[gap]["mean"]], yerr=[[g[gap]["mean"] - g[gap]["q05"]], [g[gap]["q95"] - g[gap]["mean"]]],
                            fmt=HET_MK[kind], color=COL[pn], ms=2.6, lw=0.6, label=(HET_LAB[kind] if (not shown and gap == "13") else None))
                 shown = True
-    f18 = HERE / "r18_summary.json"                                      # R18-C: Facebook's own model, matched control, beta 0.019 (Table 1)
+    f18 = HERE / "r18_summary.json"                                      # Facebook's own model, Table 1's matched control (R18-C, R18-D)
     if f18.exists():
-        g18 = load(f18)["worlds"]["controlb0.019"]["gapped"]
+        g18 = load(f18)["worlds"][FB_ARM]["gapped"]
         for gap in ("0", "4", "8"):
             b = g18[gap]
             a.errorbar([int(gap) + 0.9], [b["mean"]], yerr=[[b["mean"] - b["q05"]], [b["q95"] - b["mean"]]], fmt="x", color=COL["facebook_a"],
@@ -527,13 +529,21 @@ def fig4v5():
                         ("fixed + decline", R17_TAGS[pn]["traded"]), ("decline state", R16_TAGS[pn]["decline"])):
             w = load(HERE / f"r17_asym_worlds__{pn}__{tg}.json")["D"]
             rows.append((pn, lab, w["mean"], w["q05"], w["q95"], "world"))
+        f20 = HERE / f"r20_summary__{pn}__joint.json"                    # R20: the joint world with fading surges
+        if f20.exists():
+            w = load(f20)["surge_world"]["D"]
+            rows.append((pn, "fixed + surges", w["mean"], w["q05"], w["q95"], "world"))
     f18, b18 = HERE / "r18_summary.json", HERE / "r18_boot__facebook_a.json"
     fbrows = []
     if f18.exists() and b18.exists():
         s18, bb = load(f18), load(b18)
+        w = s18["worlds"][FB_ARM]["D_FB"]
         fbrows = [("Facebook data", s18["data"]["D_FB"]["D"], bb["D_FB_band"][0], bb["D_FB_band"][2], "data"),
-                  ("Facebook model", s18["worlds"]["controlb0.019"]["D_FB"]["mean"], s18["worlds"]["controlb0.019"]["D_FB"]["q05"],
-                   s18["worlds"]["controlb0.019"]["D_FB"]["q95"], "world")]
+                  ("Facebook model", w["mean"], w["q05"], w["q95"], "world")]
+        f20 = next((f for f in (HERE / "r20_summary__facebook_a__fbcontrolm.json", HERE / "r20_summary__facebook_a__fbcontrol.json") if f.exists()), None)
+        if f20 is not None:                                             # R20-A2 (matched start) if run, else R20
+            w = load(f20)["surge_world"]["D"]
+            fbrows.append(("Facebook + surges", w["mean"], w["q05"], w["q95"], "world"))
     labels = [r[1] for r in rows if r[0] == "reddit_submissions_long"] + [r[0] for r in fbrows]
     n = len(labels)
     for k, pn in enumerate(PANELS2):
@@ -556,7 +566,7 @@ def fig4v5():
     a.set_title("Asymmetry in data and worlds", fontsize=6.3)
     a.plot([], [], "s", color=COL["reddit_submissions_long"], ms=2.6, label="submissions")
     a.plot([], [], "o", color=COL["reddit_comments_ext"], ms=2.6, label="comments")
-    a.legend(loc="center right", bbox_to_anchor=(1.0, 0.33), frameon=False, fontsize=5.2, handlelength=1.0)
+    a.legend(loc="lower right", frameon=False, fontsize=5.2, handlelength=1.0)
     tag(a, "C")
     fig.tight_layout(w_pad=0.8)
     save(fig, "fig4_v5")

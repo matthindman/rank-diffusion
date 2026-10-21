@@ -1,0 +1,6 @@
+reddit_submissions_long control_num seed 5: D -0.057 -> +0.173; gapped 13 -0.088 -> -0.099
+reddit_submissions_long control_num seed 6: D -0.061 -> +0.136; gapped 13 -0.065 -> -0.088
+reddit_submissions_long control_num seed 7: D -0.055 -> +0.174; gapped 13 -0.106 -> -0.113
+reddit_submissions_long control_num seed 8: D -0.069 -> +0.148; gapped 13 -0.094 -> -0.107
+reddit_submissions_long control_num seed 9: D -0.054 -> +0.158; gapped 13 -0.083 -> -0.099
+peak RSS 3.07 GB (job tree, sampled: 3020 MB); swap 1495M -> 1495M; killed 0

@@ -1916,3 +1916,173 @@ Readings:
 python levelsum_medians.py > out_levelsum_medians.txt
 python make_v5_figures.py figS3v5      # Fig. S2: medians and quartiles from the per-run shares
 ```
+
+### R18-D. Facebook from a starting ladder matched to the data's (PLAN.md amendment R18-D, committed 2d4a33e before its run; `r18_facebook.py matchcal`, `worlds controlb0.019m0.96 | calibb0.019m0.96`; `r18d_matchcal.json`, `r18_summary.json`)
+
+**Calibration.** The squared error of the first-block ladder (ranks 1, 54, 219 and 875 above rank K; matched control, seeds 100–104) is smallest at c = 0.96:
+
+| c | 0.86 | 0.90 | 0.94 | **0.96** | 0.98 | 1.00 |
+|---|---|---|---|---|---|---|
+| squared error | 0.329 | 0.082 | 0.006 | **0.002** | 0.061 | 0.174 |
+
+At c = 0.96 the ladder is 6.00, 4.01, 2.93 and 1.71 above rank K, against the data's 6.00, 4.04, 2.91 and 1.68.
+
+| statistic | data | matched control, matched start | calibrated, matched start | matched control, data's start (R18-B) |
+|---|---|---|---|---|
+| turnover top 10 / 54 / 219 / 875 / 1,750 | 0.35 / 0.315 / 0.26 / 0.24 / 0.21 | 0.35 / **0.275 [0.240, 0.325]** / 0.30 / 0.24 / 0.23 | 0.35 / 0.269 [0.213, 0.316] / 0.29 / 0.24 / 0.22 | 0.33 / 0.255 [0.212, 0.306] / 0.30 / 0.23 / 0.22 |
+| rank-1 weekly change | 0.52 | 0.53 | 0.53 | 0.55 |
+| crossing ratio | 0.98 | 1.05 | 1.04 | 1.01 |
+| head share (median of runs) | 0.23 | 0.27 | 0.30 | 0.28 |
+| persistence, gaps 0 / 4 / 8 | −0.114 / −0.067 / −0.031 | −0.122 / −0.099 / −0.090 [−0.122, −0.063] | −0.110 / −0.083 / −0.076 [−0.091, −0.059] | −0.123 / −0.101 / −0.091 |
+| D_FB | +0.052 | −0.007 [−0.045, +0.037] | −0.009 [−0.043, +0.023] | −0.003 |
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R18-D0 | c in 0.90–0.97 | 70% | **met** (0.96) |
+| R18-D1 | data's top-54 turnover inside the matched control's range | 50% | **met** (0.315 in [0.240, 0.325]) |
+| R18-D2 | mean top-54 ≥ mean top-219 turnover | 35% | **failed** (0.275 against 0.304) |
+| R18-D3 | median head share within ±0.05 of 0.23 | 55% | **met**, narrowly (0.274) |
+| R18-D4 | crossing 0.9–1.15 and rank-1 change 0.40–0.70 in both arms | 80% | **met** |
+| R18-D5 | data's gap-8 persistence and D_FB above both arms' ranges | 60% | **met** |
+
+**Reading, by the registered rule (D1 holds).**
+- The Facebook head shortfall is attributed to the simulated starting state: from a ladder that matches the data's first block, the matched control turns the top 54 over at a rate whose range contains the data's.
+- The model still turns the top 219 over faster than the top 54, the reverse of the data.
+- The persistence excess at 8 weeks and D_FB remain above every arm's range.
+
+### R19. Reddit at Facebook's settings and dates (PLAN.md addendum R19, committed 2d4a33e before its run; `r19_fbsettings.py`; `r19_data__*.json`, `r19_boot__*.json`, `r19_world__*.json`, `r19_summary__*.json`)
+
+The window is the 86 weeks from 2020-12-28 on both ladders, and `r18_facebook.fb_stats` is applied unchanged. Data bands are 200 bootstrap draws; world entries are the mean [5–95%] over 20 runs.
+
+| statistic (gaps 0 / 4 / 8) | submissions | comments | Facebook (R18-B, matched control at β 0.019) |
+|---|---|---|---|
+| data persistence | +0.019 / +0.054 / +0.080 (bands [0.00, 0.04] / [0.03, 0.07] / [0.06, 0.10]) | −0.037 / +0.024 / +0.077 ([−0.05, −0.03] / [0.01, 0.04] / [0.06, 0.09]) | −0.114 / −0.067 / −0.031 |
+| matched control | −0.060 / −0.047 / −0.042 (q95 −0.042 / −0.027 / −0.022) | −0.098 / −0.080 / −0.074 (q95 −0.090 / −0.071 / −0.062) | −0.123 / −0.101 / −0.091 |
+| excess over own matched control | **+0.078 / +0.101 / +0.121** | **+0.061 / +0.104 / +0.150** | +0.009 / +0.034 / +0.060 |
+| calibrated model | −0.062 / −0.047 / −0.043 | −0.098 / −0.078 / −0.070 | — |
+| D_FB, data | +0.184 [0.12, 0.23] | +0.106 [0.07, 0.14] | +0.052 [−0.01, +0.10] |
+| D_FB, matched control | −0.044 [−0.075, −0.012] | −0.013 [−0.042, +0.011] | −0.003 [−0.039, +0.035] |
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R19-1 | matched control negative at every gap (−0.03 to −0.15) on both ladders | 80% | **met** |
+| R19-2 | data above the matched control's range at every gap on both ladders | 75% | **met** |
+| R19-3 | Reddit's excess over its own matched control exceeds Facebook's at every gap on both ladders | 65% | **met** |
+| R19-4 | D_FB positive in the data and above the matched control's range on both ladders | 50% | **met** |
+
+**Reading.**
+- Over the same 86 weeks, through Facebook's code and against each platform's own homogeneous worlds, Reddit's changes persist beyond random growth by 0.06–0.15, against Facebook's 0.01–0.06. At the 4- and 8-week gaps that is two to three times Facebook's; at gap 0 the ratio is unstable.
+- Reddit's asymmetry in Facebook's construction is two to three and a half times Facebook's and clearly positive, where Facebook's interval includes zero.
+- The cross-platform contrast is a difference of excess persistence, not an artefact of different nulls or settings.
+
+### R20. The fading-surge world (PLAN.md addendum R20, committed 2d4a33e before its run; `r20_surge.py`; `r20_moments__*.json`, `r20_calib__*.json`, `r20_world__*.json`, `r20_summary__*.json`)
+
+**Calibration** (the marginal shape of single changes only; the objective is in bootstrap-SD units):
+
+| panel, base | λ | μ | h (weeks) | objective (base without surge) |
+|---|---|---|---|---|
+| Facebook, matched control | 0.002 | 1.0 | 26 | 7.8 (114.0) |
+| submissions, matched control | 0.005 | 1.0 | 52 (grid edge) | 106.5 (1,200.0) |
+| submissions, joint | 0.01 | 0.5 | 52 (grid edge) | 86.0 (1,305.9) |
+| comments, matched control | 0.01 | 0.5 | 52 (grid edge) | 441.6 (2,167.1) |
+| comments, joint | 0.002 | 1.0 | 52 (grid edge) | 206.3 (1,877.1) |
+
+**Evaluation**, 20 paired seeds. Each cell gives the base world, then the same world with surges, with the 5–95% range over runs where shown.
+
+| statistic | submissions: data | matched control | joint | comments: data | matched control | joint |
+|---|---|---|---|---|---|---|
+| D | +0.22 | −0.07 → +0.15 [0.12, 0.17] | −0.07 → **+0.11 [0.09, 0.14]** | +0.13 | −0.05 → +0.01 | −0.04 → **+0.08 [0.07, 0.10]** |
+| p_fall | +0.24 | −0.17 → −0.08 | +0.10 → +0.07 | +0.16 | −0.14 → −0.12 | +0.01 → +0.03 |
+| p_rise | +0.02 | −0.10 → −0.23 | +0.17 → −0.04 | +0.03 | −0.10 → −0.14 | +0.04 → −0.05 |
+| gapped persistence, 13 weeks | +0.17 | −0.10 → −0.11 | +0.15 → +0.07 | +0.15 | −0.11 → −0.12 | +0.11 → +0.07 |
+| secant, highest two tenths | −0.08 | −0.06 → −0.34 | +0.19 → −0.17 | −0.05 | −0.11 → −0.17 | −0.04 → −0.20 |
+| secant, lowest two tenths | +0.34 | −0.21 → +0.01 | +0.04 → +0.10 | +0.15 | −0.20 → −0.15 | −0.12 → −0.03 |
+| turnover, top 10 | 0.30 | 0.27 → 0.51 | 0.18 → 0.28 | 0.27 | 0.26 → 0.32 | 0.24 → 0.37 |
+| turnover, top K/64 | 0.18 | 0.19 → 0.32 | 0.16 → 0.22 | 0.21 | 0.25 → 0.28 | 0.19 → 0.24 |
+| turnover, top K/2 | 0.15 | 0.14 → 0.17 | 0.14 → 0.16 | 0.15 | 0.13 → 0.14 | 0.12 → 0.12 |
+| boundary ratio | 1.04 | 1.12 → 1.13 | 1.22 → 1.23 | — | not computable | not computable |
+
+Facebook (matched control at β 0.019, base → surge):
+- **D_FB:** −0.003 → **+0.046 [0.004, 0.102]**, against the data's +0.052.
+- **p_fall / p_rise:** −0.129 / −0.126 → −0.109 / −0.155, against the data's −0.112 / −0.164.
+- **Turnover, top 54:** 0.255 → **0.305**, against 0.315. **Top 10:** 0.33 → 0.41, against 0.35.
+- **Persistence, gaps 0 / 4 / 8:** unchanged (−0.12 / −0.10 / −0.09).
+- **Head share (median):** 0.28 → 0.31, against 0.23.
+- **Boundary ratio:** 1.01 → 1.06.
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R20-1 | 52-week tail asymmetry within 0.05 of the data's, every Reddit ladder and base | 55% | **failed** (submissions joint 0.041 against 0.092; the other three within) |
+| R20-2 | control_num + surge raises D by ≥ +0.05 on both ladders | 65% | **met** (+0.22, +0.06) |
+| R20-3 | joint + surge: mean D > 0 on both ladders | 40% | **met** (+0.11, +0.08) |
+| R20-3b | data's D inside joint + surge's range on both ladders | 25% | **failed** (above on both) |
+| R20-4 | joint + surge: gapped persistence at 13 weeks ≥ +0.08 on both ladders | 50% | **failed** (+0.067, +0.073) |
+| R20-5 | control_num + surge: highest-tenths secant below the base's on both ladders | 60% | **met** |
+| R20-6 | Facebook + surge: mean D_FB > 0 | 55% | **met** (+0.046) |
+| R20-7 | Facebook + surge: mean top-54 turnover ≥ 0.28 | 40% | **met** (0.305) |
+| R20-8 | every surge arm: boundary 0.9–1.15 and K/2 turnover within ±0.03 of its base | 70% | **failed** (submissions control_num K/2 +0.033; submissions joint boundary 1.23, already 1.22 in its base) |
+
+**Reading, by the registered rule.** Joint + surge gives D > 0, but the data's D lies above its range and gapped persistence falls below the floor. The "surges sufficient" case is therefore **not** met.
+
+What holds:
+- **Calibrated only to the skew of single changes,** fading surges reproduce the gains half of the asymmetry on both Reddit ladders and the whole of Facebook's asymmetry.
+  - On Reddit, the persistence of the largest rises falls from +0.17 to −0.04 (submissions) and from +0.04 to −0.05 (comments), against the data's +0.02 and +0.03.
+  - On Facebook, p_rise and p_fall come within 0.01 of the data's.
+- **They do not reproduce the persistence of the largest declines** (Reddit p_fall +0.07 and +0.03 against +0.24 and +0.16). They also lower the year-apart persistence that the fixed differences supply.
+- **On Reddit the decline side still needs a lasting component; on Facebook nothing in the surge world produces its 8-week persistence.**
+- **Surges raise turnover at the very top:**
+  - top-10 turnover overshoots on comments and Facebook;
+  - on submissions without growth differences it overshoots at every set to K/64;
+  - on Facebook they raise the head's share.
+- **The Reddit calibrations sit at the grid's longest half-life** (52 weeks), and their fit is poorer than Facebook's. That is the subject of R20-A1.
+
+### R20-A1. Surge half-lives beyond the registered grid on Reddit (POST HOC; PLAN.md amendment R20-A1, committed fc1bd35 before its run; `r20_surge.py calibx/evalx/summx`; `r20_calibx__*.json`, `r20_worldx__*.json`, `r20_summaryx__*.json`)
+
+With h ∈ {78, 104, 156} added, every Reddit optimum moves to a longer half-life and fits better:
+
+| panel, base | registered optimum (λ, μ, h; objective) | extended optimum | D, joint or control + surge | p_fall / p_rise | gapped persistence, 13 weeks |
+|---|---|---|---|---|---|
+| submissions, control_num | 0.005, 1.0, 52; 106.5 | 0.01, 0.5, **156** (edge); 60.4 | +0.000 [−0.030, +0.025] | −0.14 / −0.14 | −0.10 |
+| submissions, joint | 0.01, 0.5, 52; 86.0 | 0.01, 0.5, **104**; 48.7 | **+0.119 [0.092, 0.150]** | +0.08 / −0.04 | +0.073 |
+| comments, control_num | 0.01, 0.5, 52; 441.6 | 0.002, 1.0, **156** (edge); 162.9 | −0.012 [−0.026, +0.007] | −0.13 / −0.11 | −0.11 |
+| comments, joint | 0.002, 1.0, 52; 206.3 | 0.002, 1.0, **156** (edge); 37.5 | **+0.056 [0.041, 0.071]** | +0.03 / −0.03 | +0.079 |
+| data | | | +0.22 / +0.13 | +0.24 / +0.02 (subs), +0.16 / +0.03 (comm.) | +0.17 / +0.15 |
+
+Top-10 turnover in joint + surge is 0.30 on submissions and 0.42 on comments, against the data's 0.30 and 0.27.
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R20-A1-1 | extended optimum h ≥ 78 on both submissions bases | 60% | **met** (156, 104) |
+| R20-A1-2 | joint + surge: mean D > 0 on submissions at the extended optimum | 50% | **met** (+0.119) |
+| R20-A1-3 | joint + surge: gapped persistence at 13 weeks ≥ +0.08 on submissions | 45% | **failed** (+0.073) |
+
+**Reading.**
+- **The Reddit surges that match the skew of single changes fade over two to three years,** not weeks. Three of the four optima are still at the extended edge.
+- **On the joint base they still turn D positive,** by ending the persistence of the largest gains (p_rise −0.03 to −0.04, against the data's +0.02 and +0.03). They leave the persistence of the largest declines far below the data's (p_fall +0.03 to +0.08, against +0.16 and +0.24). They lower year-apart persistence to +0.07–0.08.
+- **On the matched control alone, long-lived surges no longer move D.**
+- **R20's reading is unchanged:** fading boosts account for the gains half of Reddit's asymmetry, and not for the declines' persistence.
+
+### R20-A2. Facebook's surge on the matched start (POST HOC; PLAN.md amendment R20-A2, committed c96e2e6 before its run; `r20_surge.py ... fbcontrolm`; `r20_calib__facebook_a__fbcontrolm.json`, `r20_summary__facebook_a__fbcontrolm.json`)
+
+**Recalibrated on R18-D's matched control,** the surge moves to λ 0.005, μ 0.5 and h 52 (objective 10.4), against λ 0.002, μ 1.0 and h 26 on the data's start (7.8). The shape of single changes over 86 weeks identifies the surge's size and half-life only weakly.
+
+| statistic | data | matched start | matched start + surge |
+|---|---|---|---|
+| D_FB | +0.052 | −0.007 | +0.010 [−0.030, +0.046] |
+| p_fall / p_rise | −0.112 / −0.164 | −0.125 / −0.118 | −0.117 / −0.127 |
+| turnover, top 10 / 54 / 219 / 1,750 | 0.35 / 0.315 / 0.26 / 0.21 | 0.35 / 0.275 / 0.30 / 0.23 | 0.38 / **0.317 [0.268, 0.380]** / 0.31 / 0.23 |
+| persistence, gap 8 | −0.031 | −0.090 | −0.097 [−0.119, −0.077] |
+| head share (median) | 0.23 | 0.27 | 0.30 |
+| boundary ratio | 0.98 | 1.05 | 1.09 |
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R20-A2-1 | data's top-54 turnover inside the surge arm's range | 55% | **met** |
+| R20-A2-2 | data's D_FB inside the surge arm's range | 60% | **failed** (above: 0.052 against q95 0.046) |
+| R20-A2-3 | data's top-10 turnover below the arm's range | 50% | **failed** (inside) |
+| R20-A2-4 | data's gap-8 persistence above the arm's range | 80% | **met** |
+
+**Reading.**
+- **The two calibrations of Facebook's surge give D_FB of +0.046 and +0.010,** against the data's +0.052. Surges move Facebook's asymmetry toward the data's, but on 86 weeks the result depends on weakly identified parameters. R20's "reproduces Facebook's asymmetry" is therefore qualified to "moves it toward the data's".
+- **The matched start and the surge do not overshoot the head together** (0.317 against 0.315).
+- **Facebook's 8-week persistence is in no surge arm.**

@@ -1,0 +1,10 @@
+c 0.86: first-block ladder [5.72, 3.64, 2.63, 1.53] against [6.0, 4.04, 2.91, 1.68]; sse 0.3287
+c 0.88: first-block ladder [5.65, 3.74, 2.7, 1.55] against [6.0, 4.04, 2.91, 1.68]; sse 0.2636
+c 0.9: first-block ladder [5.85, 3.84, 2.78, 1.62] against [6.0, 4.04, 2.91, 1.68]; sse 0.0816
+c 0.92: first-block ladder [5.92, 3.88, 2.81, 1.63] against [6.0, 4.04, 2.91, 1.68]; sse 0.0440
+c 0.94: first-block ladder [6.04, 3.97, 2.9, 1.68] against [6.0, 4.04, 2.91, 1.68]; sse 0.0062
+c 0.96: first-block ladder [6.0, 4.01, 2.93, 1.71] against [6.0, 4.04, 2.91, 1.68]; sse 0.0023
+c 0.98: first-block ladder [6.14, 4.18, 3.01, 1.76] against [6.0, 4.04, 2.91, 1.68]; sse 0.0605
+c 1.0: first-block ladder [6.3, 4.23, 3.07, 1.79] against [6.0, 4.04, 2.91, 1.68]; sse 0.1743
+chosen c 0.96
+peak RSS 0.77 GB (job tree, sampled: 765 MB); swap 1503M -> 1503M; killed 0
