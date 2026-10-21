@@ -209,7 +209,8 @@ def mode_worlds(variant, s0, s1):
 
 def _band(v):
     v = np.array([x for x in v if x is not None and np.isfinite(x)], float)
-    return dict(mean=float(v.mean()), q05=float(np.quantile(v, 0.05)), q95=float(np.quantile(v, 0.95)), n=int(v.size)) if v.size else None
+    return dict(mean=float(v.mean()), median=float(np.median(v)), q05=float(np.quantile(v, 0.05)), q95=float(np.quantile(v, 0.95)),
+                n=int(v.size)) if v.size else None
 
 
 def mode_summ():
@@ -229,6 +230,7 @@ def mode_summ():
         s["D_FB"] = _band([w["D_FB"]["D"] for w in W])
         s["p_fall"] = _band([w["D_FB"]["p_fall"] for w in W])
         s["p_rise"] = _band([w["D_FB"]["p_rise"] for w in W])
+        # a level sum: one extreme simulated week can swamp it in a run (r18c_headshare_diag.py), so cite the median
         s["head_share"] = _band([w["head_share"] for w in W])
         out["worlds"][variant] = s
     (HERE / "r18_summary.json").write_text(json.dumps(out, indent=1, default=float))

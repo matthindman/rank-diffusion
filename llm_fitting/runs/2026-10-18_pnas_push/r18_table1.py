@@ -4,7 +4,7 @@ same code within its platform (Facebook: `r18_facebook.fb_stats`; Reddit submiss
 as `r17_table1.py`), and each world's value is followed by where the data's value falls relative to the world's 5-95%
 range of runs (in, above, below; edge: within 0.005 of a bound).
 
-  Facebook: r18_data__facebook_a.json, r18_summary.json (worlds calib, control, flat)
+  Facebook: r18_data__facebook_a.json, r18_summary.json (worlds calibb0.019, controlb0.019, flatb0.019; R18-C)
   Reddit submissions: r17_table1.json (worlds rdm, control, sb_flat, joint, decline)
 
     python r18_table1.py          writes r18_table1.json and prints the LaTeX rows
@@ -35,7 +35,8 @@ def cell(x, b, signed):
 def main():
     fb = json.loads((HERE / "r18_summary.json").read_text())
     fd, fw = fb["data"], fb["worlds"]
-    fwc = {"calibrated": fw["calib"], "control": fw["control"], "flat": fw["flat"], "joint": None, "decline": None}
+    # R18-C: every Facebook column at the two-step size exponent 0.019 (the structure-function 0.097 is biased on 86 weeks)
+    fwc = {"calibrated": fw["calibb0.019"], "control": fw["controlb0.019"], "flat": fw["flatb0.019"], "joint": None, "decline": None}
     rd = json.loads((HERE / "r17_table1.json").read_text())
     rdd, rw = rd["data"], rd["worlds"]
     rwc = {"calibrated": rw["rdm"], "control": rw["control"], "flat": rw["sb_flat"], "joint": rw["joint"], "decline": rw["decline"]}
@@ -64,8 +65,40 @@ def main():
             lines.append(f"{lab} & " + " & ".join(cells) + r" \\")
         out[key] = lines
         rows += lines
+    out["si_b0.019"] = si_rows(fd, fw, ("calibb0.019", "controlb0.019", "flatb0.019"))
+    out["si_b0.097"] = si_rows(fd, fw, ("calib", "control", "flat"))
     (HERE / "r18_table1.json").write_text(json.dumps(out, indent=1))
     print("\n".join(rows))
+    print("\n".join(out["si_b0.019"]))
+
+
+def si_rows(fd, fw, arms):
+    """The SI table's rows (SI "The same model on Facebook"): mean [5-95% over runs] for each arm; the data's
+    persistence and D with the bootstrap bands of R18-A1. The head share, a level sum that one extreme simulated week can
+    swamp (r18c_headshare_diag.py), is given as the median over runs."""
+    boot = json.loads((HERE / "r18_boot__facebook_a.json").read_text())
+
+    def band(b, signed):
+        return f"{fmt(b['mean'], signed)} [{fmt(b['q05'], signed)}, {fmt(b['q95'], signed)}]"
+
+    def dband(x, lohi, signed=True):
+        return f"{fmt(x, signed)} [{fmt(lohi[0], signed)}, {fmt(lohi[-1], signed)}]"
+
+    spec = [(f"turnover, top {k}" + (f" ({lab})" if lab else ""), fmt(fd["turnover"][kk], False), lambda w, kk=kk: band(w["turnover"][kk], False))
+            for k, kk, lab in (("10", "10", ""), ("54", "54", "$K/64$"), ("219", "219", "$K/16$"), ("875", "875", "$K/4$"), ("1,750", "1750", "$K/2$"))]
+    spec += [("rank 1 changes hands, share of weeks", fmt(fd["occupant_change"]["1"], False), lambda w: band(w["occupant_change"]["1"], False)),
+             ("rank 10 changes hands, share of weeks", fmt(fd["occupant_change"]["10"], False), lambda w: band(w["occupant_change"]["10"], False)),
+             ("level of rank 54 above rank $K$, first block", fmt(fd["ladder"][0]["54"], False), lambda w: band(w["ladder_first"]["54"], False)),
+             ("its change, first to last block", fmt(fd["ladder_change"]["54"], True), lambda w: band(w["ladder_change"]["54"], True)),
+             ("crossings / predicted, $K/16$--$K$", fmt(fd["boundary_pooled"], False), lambda w: band(w["boundary_pooled"], False))]
+    spec += [(f"persistence, gap {g} weeks", dband(fd["gapped"][g], [boot["gapped_band"][g][0], boot["gapped_band"][g][2]]), lambda w, g=g: band(w["gapped"][g], True))
+             for g in ("0", "4", "8")]
+    spec += [("asymmetry $D$ (half-year changes)", dband(fd["D_FB"]["D"], [boot["D_FB_band"][0], boot["D_FB_band"][2]]), lambda w: band(w["D_FB"], True)),
+             (r"\quad $p_{\rm fall}$ / $p_{\rm rise}$", f"{fmt(fd['D_FB']['p_fall'], True)} / {fmt(fd['D_FB']['p_rise'], True)}",
+              lambda w: f"{fmt(w['p_fall']['mean'], True)} / {fmt(w['p_rise']['mean'], True)}"),
+             ("head share, last half-year (median of runs)", fmt(fd["head_share"], False),
+              lambda w: band(dict(w["head_share"], mean=w["head_share"]["median"]), False))]
+    return [f"{lab} & {x} & " + " & ".join(get(fw[a]) for a in arms) + r"\\" for lab, x, get in spec]
 
 
 if __name__ == "__main__":

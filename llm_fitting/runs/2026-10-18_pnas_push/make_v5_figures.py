@@ -329,7 +329,7 @@ def fig3v5():
     a.set_ylim(0, 0.32)
     a.set_xlabel("size of the top set, k")
     a.set_ylabel("share replaced, 2021 to 2022")
-    a.set_title("A year ahead, replacement is reproduced", fontsize=6.3)
+    a.set_title("A year ahead: better than carrying forward\non submissions, not on comments", fontsize=6.3)
     a.legend(loc="upper right", frameon=False, fontsize=4.2)
     tag(a, "C")
     fig.tight_layout(w_pad=1.0)
@@ -466,9 +466,9 @@ def fig4v5():
                 a.errorbar([int(gap) + 1.6 + 0.9 * i_], [g[gap]["mean"]], yerr=[[g[gap]["mean"] - g[gap]["q05"]], [g[gap]["q95"] - g[gap]["mean"]]],
                            fmt=HET_MK[kind], color=COL[pn], ms=2.6, lw=0.6, label=(HET_LAB[kind] if (not shown and gap == "13") else None))
                 shown = True
-    f18 = HERE / "r18_summary.json"                                      # R18: Facebook's own model, matched control
+    f18 = HERE / "r18_summary.json"                                      # R18-C: Facebook's own model, matched control, beta 0.019 (Table 1)
     if f18.exists():
-        g18 = load(f18)["worlds"]["control"]["gapped"]
+        g18 = load(f18)["worlds"]["controlb0.019"]["gapped"]
         for gap in ("0", "4", "8"):
             b = g18[gap]
             a.errorbar([int(gap) + 0.9], [b["mean"]], yerr=[[b["mean"] - b["q05"]], [b["q95"] - b["mean"]]], fmt="x", color=COL["facebook_a"],
@@ -526,8 +526,8 @@ def fig4v5():
     if f18.exists() and b18.exists():
         s18, bb = load(f18), load(b18)
         fbrows = [("Facebook data", s18["data"]["D_FB"]["D"], bb["D_FB_band"][0], bb["D_FB_band"][2], "data"),
-                  ("Facebook model", s18["worlds"]["control"]["D_FB"]["mean"], s18["worlds"]["control"]["D_FB"]["q05"],
-                   s18["worlds"]["control"]["D_FB"]["q95"], "world")]
+                  ("Facebook model", s18["worlds"]["controlb0.019"]["D_FB"]["mean"], s18["worlds"]["controlb0.019"]["D_FB"]["q05"],
+                   s18["worlds"]["controlb0.019"]["D_FB"]["q95"], "world")]
     labels = [r[1] for r in rows if r[0] == "reddit_submissions_long"] + [r[0] for r in fbrows]
     n = len(labels)
     for k, pn in enumerate(PANELS2):

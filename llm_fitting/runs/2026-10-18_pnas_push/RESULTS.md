@@ -1842,3 +1842,46 @@ The matched control at β = 0.019 (Facebook's two-step lasting estimate) and β 
 Reading:
 - The biased size exponent explains the model's oversized head share, but not its slow head turnover: Facebook's leaders turn over faster than the common model implies.
 - The Facebook persistence excess and D's position do not depend on the size law.
+
+### R18-C. Every Facebook column at the two-step size exponent (amendment R18-C, committed 4638f85 before its run; `out_r18c_*.txt`, `r18_world__facebook_a__{calibb,flatb}0.019__s*.json`, `r18_summary.json`, `r18_table1.py`)
+
+The calibrated model and the constant-slope start at β = 0.019, 20 runs each, beside R18-B's matched control at 0.019. Head share as the median over runs (see the correction below); everything else is the mean.
+
+| statistic | data | calibrated, β 0.019 | matched control, β 0.019 | constant-slope start, β 0.019 |
+|---|---|---|---|---|
+| turnover top 10 / 54 / 219 / 875 / 1,750 | 0.35 / 0.31 / 0.26 / 0.24 / 0.21 | 0.34 / 0.25 / 0.28 / 0.23 / 0.21 | 0.33 / 0.255 / 0.30 / 0.23 / 0.22 | 0.23 / 0.31 / 0.34 / 0.31 / 0.29 |
+| rank-1 weekly change | 0.52 | 0.51 | 0.55 | 0.44 |
+| rank 54 above rank K, first block | 4.04 | 4.32 | 4.31 | 3.35 |
+| crossing ratio | 0.98 | 0.99 | 1.01 | 1.09 |
+| persistence, gaps 0 / 4 / 8 | −0.114 / −0.067 / −0.031 | −0.110 / −0.084 / −0.074 | −0.123 / −0.101 / −0.091 | −0.130 / −0.107 / −0.099 |
+| 5–95% at gaps 0 / 4 / 8 | | [−0.133, −0.090] / [−0.111, −0.064] / [−0.095, −0.051] | [−0.147, −0.105] / [−0.126, −0.077] / [−0.123, −0.068] | [−0.153, −0.112] / [−0.128, −0.089] / [−0.125, −0.081] |
+| D_FB | +0.052 [−0.008, +0.101] | −0.010 [−0.051, +0.037] | −0.003 [−0.039, +0.035] | −0.019 [−0.044, +0.022] |
+| head share (median of runs) | 0.23 | 0.32 | 0.28 | 0.24 |
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R18-C1 | `calibb0.019`: head share within ±0.05 of 0.23 | 55% | **failed** (mean 0.30, median 0.32) |
+| R18-C2 | `flatb0.019`: top-54 turnover no greater than top-1,750 | 60% | **failed** (0.31 against 0.29) |
+| R18-C3 | in both arms, the data's gap-4 persistence and D_FB lie above the arm's range | 65% | **failed** (gap 4 inside the calibrated arm's range; D above both arms' ranges) |
+
+Reading:
+- **Persistence.** Facebook's persistence excess is robust only at the 8-week gap, where the data lie above all seven Facebook arms' ranges (upper bounds −0.051 to −0.081). At 4 weeks the calibrated model at 0.019 contains the data; at 0 weeks most arms do.
+- **D_FB** lies above all seven arms' ranges (upper bounds +0.015 to +0.045), but its own bootstrap interval includes 0.
+- **The head.** Its turnover is too slow in every arm from the data's ladder (0.21–0.255 against 0.31). In each of those arms the top 219 turn over faster than the top 54, the reverse of the data. Every one of them starts with a head more spread than the data's (4.30–4.32 against 4.04).
+- **Constant slope.** The constant-slope start at 0.019 does not remove the head's excess over the top 1,750; at 0.097 it does.
+- Table 1's Facebook block now uses the three arms at 0.019.
+
+**Correction to R18-B (post hoc, found while building R18-C's table).**
+- **What was found.** The head share in `fb_stats` sums activity in levels (expm1 of log activity) over the last block. In a few runs one extreme simulated week swamps that sum.
+- **Where.** The matched control at 0.019 has two runs at 0.010 and 0.023. Every other arm except the 0.097 matched control has one run at 0.000–0.019; the constant-slope start at 0.019 has another at 0.10.
+- **The cause.** `r18c_headshare_diag.py` rebuilt controlb0.019 seed 0 exactly. The unit at block rank 87 has a week at 27.2 log units, against the leader's ~17, and holds 96% of the top-K sum. This is a heavy-tailed passing swing.
+- **Other statistics are unaffected.** They are rank or log statistics and are ordinary in those runs.
+- **R18-B2.** It was met as registered, on the mean head share (0.25). The median (0.28) misses ±0.05 by 0.002. The R18-B reading "the biased size exponent explains the model's oversized head share" is **withdrawn**: the size law lowers the matched control's median head share from 0.30 to 0.28.
+- **Medians now recorded.** `r18_facebook._band` now also records the median. `r18_summary.json` was regenerated from the same world files and is identical apart from the added medians.
+
+```
+R18_DIR=<scratchpad>/r18 NEED_GB=2 zsh r12_safe_run.sh <log> python -u r18_facebook.py worlds calibb0.019 0 19   # and flatb0.019; R12_CACHE unset
+python r18_facebook.py summ
+python r18_table1.py                      # Table 1 rows and the two SI tables (r18_table1.json)
+R18_DIR=<scratchpad>/r18 python r18c_headshare_diag.py controlb0.019 0
+```

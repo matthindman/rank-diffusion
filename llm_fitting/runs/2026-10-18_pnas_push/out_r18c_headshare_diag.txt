@@ -1,0 +1,7 @@
+controlb0.019 seed 0: head share 0.010; median weekly log activity of the top K 11.33
+  block rank 87: share of top-K sum 0.964; block mean 14.07; max week 27.16 (week 76); weeks present 26/26; second-largest week 20.25
+  block rank 2: share of top-K sum 0.001; block mean 16.74; max week 17.75 (week 82); weeks present 26/26; second-largest week 17.36
+  block rank 1: share of top-K sum 0.001; block mean 16.78; max week 17.32 (week 63); weeks present 26/26; second-largest week 17.12
+  block rank 3: share of top-K sum 0.000; block mean 16.18; max week 16.78 (week 68); weeks present 26/26; second-largest week 16.65
+  block rank 4: share of top-K sum 0.000; block mean 15.73; max week 16.34 (week 85); weeks present 26/26; second-largest week 16.22
+peak RSS 0.53 GB (job tree, sampled: 143 MB); swap 1503M -> 1503M; killed 0
