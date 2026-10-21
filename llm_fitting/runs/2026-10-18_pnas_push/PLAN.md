@@ -1427,3 +1427,103 @@ Table 1's Facebook block will then be built from the three arms at β = 0.019, w
 | R18-C1 | `calibb0.019`: the head share is within ±0.05 of the data's (0.23) | 55% |
 | R18-C2 | `flatb0.019`: top-54 turnover is no greater than top-1,750 turnover (a constant slope removes the head's excess) | 60% |
 | R18-C3 | in both arms the data's persistence at gap 4 and its D_FB lie above the arm's 5–95% range | 65% |
+
+## Addenda R18-D, R19 and R20 (2026-10-21, after the round-9 Opus track, written before any of their runs)
+
+**The owner, 2026-10-21:** "3. do the light fb rerun. 4. do the fading surge model." "Yes, worth doing Reddit sims on FB settings." And, on the sealed data: "still wait to open the data: we will not do so until we've squeezed every last ounce of juice from what we have."
+
+All three studies are exploratory, on DEVELOPMENT data (`facebook_a`, `reddit_submissions_long`, `reddit_comments_ext`), with nothing sealed. They are not gate evaluations.
+
+They share three rules:
+- Every statistic is computed by one code path on data and worlds.
+- Level-sum statistics (head shares) are summarized by the median over runs (§2z-du); everything else by the mean and the 5–95% range over runs.
+- Data values already read are named where they enter an expectation, so that only the worlds' side is predicted blind.
+
+### Amendment R18-D: Facebook's worlds from a starting ladder matched to the data's
+
+**Why.** In every Facebook arm started from the data's ladder, the first-block ladder is about 6–7% steeper than the data's at every reported rank (rank 54 at 4.30–4.32 log units above rank K against 4.04; 219 at 3.07 against 2.91; 875 at 1.79 against 1.68; R18-C). Those arms also turn the head over too slowly. The round-9 Opus review (iteration 3) asked whether the shortfall is the starting state.
+
+**Design.**
+- The starting lasting levels L0 and the ladder held by the drift are both compressed around their own rank-K level by one scalar c: v' = v_K + c (v − v_K).
+- **Calibrating c (`r18_facebook.py matchcal`).** Grid c ∈ {0.86, 0.88, …, 1.00}. For each c, the matched control at β 0.019 is run on seeds 100–104, and the error is the sum of squared differences between the simulated mean first-block ladder (ranks 1, 54, 219 and 875, above rank K, `fb_stats` section 3) and the data's. The c with the smallest error is used. The calibration seeds are not evaluation seeds.
+- **The first-block ladder becomes a calibrated statistic,** not a test.
+- **Arms:** the matched control `controlb0.019m<c>` and the calibrated model `calibb0.019m<c>`, at β 0.019, seeds 0–19.
+
+| | expectation | prior |
+|---|---|---|
+| R18-D0 | the chosen c lies in 0.90–0.97 | 70% |
+| R18-D1 | matched control from the matched start: the data's top-54 turnover (0.315) lies inside the 5–95% range | 50% |
+| R18-D2 | the same arm's mean top-54 turnover is at least its mean top-219 turnover | 35% |
+| R18-D3 | its median head share lies within ±0.05 of the data's 0.23 | 55% |
+| R18-D4 | crossing ratio 0.9–1.15 and rank-1 weekly change 0.40–0.70 in both arms | 80% |
+| R18-D5 | in both arms the data's gap-8 persistence (−0.031) and D_FB (+0.052) lie above the arm's 5–95% range | 60% |
+
+**Reading, fixed now.** If D1 holds, the Facebook head shortfall is attributed to the simulated starting state, and the paper's Facebook model statements are revised to the matched start. If D1 fails, the paper reports that the head turns over faster than the model even from a matched start.
+
+### Addendum R19: Reddit at Facebook's settings and dates, against Reddit's own homogeneous worlds
+
+**Why.** The paper compares persistence across platforms only in raw correlations, against different nulls (Opus, iterations 2 and 3).
+
+**Design.**
+- **Window.** The Reddit universe frame (and each world's frame) is cut to the 86 weeks starting at the week nearest 2020-12-28, Facebook's first week. Periods are renumbered from 0.
+- **Statistics.** `r18_facebook.fb_stats` itself, unchanged, is applied to the cut frame:
+  - turnover between 26-week blocks;
+  - the crossing ratio with 13-week blocks;
+  - the ladder;
+  - persistence at gaps 0/4/8 with 4-week windows, half-year changes and the cohort from the window's first 13 weeks;
+  - D_FB with three origins;
+  - the head share.
+- **Worlds.** The Reddit model is fitted on the whole panel, as R12 and R17 (`r12_hetgrowth.fit_model`; L0 from weeks < 30). The matched control `control_num` and the calibrated model `control` are each simulated over the whole panel, 20 seeds, and cut to the same window.
+- **Data bands.** 200 bootstrap draws, as in R18-A1.
+- **Data values already read** (`momentum_decomposition`, D10, a different code path): raw persistence at Facebook's settings of +0.019/+0.054/+0.080 (submissions) and −0.037/+0.024/+0.077 (comments).
+- **Facebook's comparator** is its Table-1 matched control (β 0.019). Its excess is +0.009/+0.034/+0.060 at gaps 0/4/8.
+
+| | expectation | prior |
+|---|---|---|
+| R19-1 | on both ladders the matched control's persistence at Facebook's settings is negative at every gap (−0.03 to −0.15) | 80% |
+| R19-2 | on both ladders the data's persistence lies above the matched control's 5–95% range at every gap | 75% |
+| R19-3 | on both ladders Reddit's excess over its own matched control exceeds Facebook's at every gap | 65% |
+| R19-4 | on both ladders D_FB is positive in the data and above the matched control's 5–95% range | 50% |
+
+### Addendum R20: the fading-surge world
+
+**Mechanism.** A positively skewed transient component is added to observed log activity:
+- s_it = ρ s_i,t−1 + J_it, where J_it = E_it B_it, B_it ~ Bernoulli(λ) and E_it ~ Exponential(mean μ);
+- ρ = 0.5^(1/h), with h the half-life in weeks;
+- s is reset to 0 when a slot is reborn as a new unit, and the initial occupants get a 104-week burn-in;
+- s is not scaled by the unit's amplitude.
+
+The simulator's rank-dependent parameters and exits read only the lasting level (`rankdiff_rdm._State.step`: ranks from L). Adding s to the simulated observed matrix is therefore exactly an observation-level component. It is applied to each simulated panel after simulation, with its own random stream (seed + 7,000,000).
+
+**Three parameters (λ, μ, h), calibrated without targeting persistence, D or any joint statistic of two changes.**
+- **Moments.** The marginal shape of single changes. For horizons H ∈ {4, 13, 26, 52} weeks on Reddit and {4, 13, 26} on Facebook, x is the change of 4-week window means H weeks apart, for origins every 13 weeks (Reddit) or 4 weeks (Facebook), demeaned within the three strata of permanent rank and pooled over origins. Two moments per horizon:
+  - the Kelly skewness (q90 + q10 − 2 q50)/(q90 − q10);
+  - the tail asymmetry (m_top + m_bottom)/(m_top − m_bottom), with m the mean of the top and bottom tenths.
+- **Objective.** The sum of squared differences from the data's moments, each divided by its bootstrap SD (40 draws of units within strata).
+- **Grid.** λ ∈ {0.002, 0.005, 0.01, 0.02}, μ ∈ {0.5, 1.0, 2.0}, h ∈ {4, 13, 26, 52}; seeds 200–201, with common random numbers across grid points. The minimum is used.
+- **Calibrated separately on each base world:**
+  - Reddit, both ladders: the matched control `control_num`, and the jointly estimated fixed differences at R17's optimum (`joint`, `r17_round8.JOINT`);
+  - Facebook: the matched control at β 0.019.
+- **Not re-estimated.** The base's parameters are not re-estimated with surges present (a limitation), since its passing parts were estimated on data that would already contain any surges.
+
+**Evaluation.** 20 seeds (0–19) per base. Each seed's base world and the same world with surges are scored by the same code, so differences are paired:
+- Reddit: R17's `asym_stat` (D, p_fall, p_rise, the decile curve and its secant slopes) and `null_worlds.stats` (turnover at the top 10, K/64 and K/2, the boundary ratio, gapped persistence at 13 and 26 weeks);
+- Facebook: `fb_stats`;
+- both: the calibration moments.
+
+| | expectation | prior |
+|---|---|---|
+| R20-1 | on each Reddit ladder and base the calibrated surge brings the 52-week tail asymmetry within 0.05 of the data's | 55% |
+| R20-2 | control_num + surge: D rises over the paired base by at least +0.05 on both ladders | 65% |
+| R20-3 | joint + surge: mean D is positive on both ladders | 40% |
+| R20-3b | joint + surge: the data's D lies inside its 5–95% range on both ladders | 25% |
+| R20-4 | joint + surge: gapped persistence at 13 weeks stays at least +0.08 on both ladders | 50% |
+| R20-5 | control_num + surge: the secant slope between the two highest tenths falls below the paired base's on both ladders | 60% |
+| R20-6 | Facebook matched control + surge: mean D_FB > 0 | 55% |
+| R20-7 | Facebook matched control + surge: mean top-54 turnover ≥ 0.28 | 40% |
+| R20-8 | must not worsen: in every surge arm the boundary (crossing) ratio stays within 0.9–1.15, and turnover at K/2 within ±0.03 of its paired base | 70% |
+
+**Reading, fixed now.**
+- **Surges sufficient.** If joint + surge gives D > 0 with the data's D inside its range (R20-3b) while gapped persistence holds (R20-4), then fading surges plus fixed growth differences reproduce the asymmetry without a lasting decline state. The paper would say both readings fit, and that the sealed test must discriminate.
+- **Surges not sufficient.** If D stays ≤ 0, or persistence collapses, fading surges of the calibrated size do not explain the asymmetry, and the decline-state reading is the better-supported one.
+- Either way the result is reported. Nothing here changes a default; the surge exists only in this script.

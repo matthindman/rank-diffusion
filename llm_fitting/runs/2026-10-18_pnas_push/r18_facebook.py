@@ -9,6 +9,8 @@ changes for persistence and the asymmetry).
     python r18_facebook.py worlds <calib|control|flat|controlb<beta>> <s0> <s1>
     python r18_facebook.py summ
     python r18_facebook.py boot                         R18-A1 (post hoc): bootstrap bands for persistence and D_FB
+    python r18_facebook.py matchcal                     R18-D: the compression c of the starting ladder (seeds 100-104)
+    python r18_facebook.py worlds <controlb<beta>m<c>|calibb<beta>m<c>> <s0> <s1>    R18-D arms from the matched start
 
 Run without $R12_CACHE (Facebook has no lean cache; its panel is small).  $R18_DIR is a scratch folder for the pickle.
 """
@@ -170,7 +172,19 @@ def mode_data():
     print("D_FB", round(out["D_FB"]["D"], 3), flush=True)
 
 
+def _compress(v, c, k):
+    """R18-D: v_K + c (v - v_K) on the finite entries, v_K the k-th largest."""
+    v = np.asarray(v, float).copy()
+    f = np.isfinite(v)
+    vk = np.sort(v[f])[::-1][k - 1]
+    v[f] = vk + c * (v[f] - vk)
+    return v
+
+
 def _world_q(variant, p, ladder, L0, K):
+    if "m" in variant:                                   # R18-D: starting levels and held ladder compressed by c
+        variant, c = variant.rsplit("m", 1)
+        L0, ladder = _compress(L0, float(c), K), _compress(ladder, float(c), K)
     if variant == "calib":
         return h.het_params(p, ladder, "control"), L0
     if variant.startswith("controlb"):                   # R18-B: the matched control at a given size exponent beta
@@ -207,6 +221,40 @@ def mode_worlds(variant, s0, s1):
         gc.collect()
 
 
+def _first_ladder(fr, K, T):
+    """fb_stats section 3, first block only: the ladder levels above rank K."""
+    X = m1.matrices(fr, K)[0]
+    nb = T // BLOCK
+    M = ba.block_means(X, BLOCK, start=T - nb * BLOCK, min_frac=PRES)
+    L = M[0][_order(M[0])]
+    return {str(k): float(L[k - 1] - L[K - 1]) for k in KS_LAD}
+
+
+def mode_matchcal(beta=0.019, grid=(0.86, 0.88, 0.90, 0.92, 0.94, 0.96, 0.98, 1.00), seeds=range(100, 105)):
+    """R18-D: c minimising the squared error of the matched control's mean first-block ladder against the data's."""
+    with open(_fit_path(), "rb") as f:
+        fit = pickle.load(f)
+    K, T = fit["K"], fit["T"]
+    dat = json.loads((HERE / "r18_data__facebook_a.json").read_text())["ladder"][0]
+    rows = []
+    for c in grid:
+        q, L0 = _world_q(f"controlb{beta}m{c}", fit["p"], fit["ladder"], fit["L0"], K)
+        lads = []
+        for seed in seeds:
+            fr, _, _ = h.sim_frame(q, L0, T, seed, K)
+            lads.append(_first_ladder(fr, K, T))
+            del fr
+            gc.collect()
+        mean = {k: float(np.mean([d[k] for d in lads])) for k in dat}
+        sse = float(sum((mean[k] - dat[k]) ** 2 for k in dat))
+        rows.append(dict(c=c, ladder=mean, sse=sse))
+        print(f"c {c}: first-block ladder {[round(mean[k], 2) for k in dat]} against {[round(dat[k], 2) for k in dat]}; sse {sse:.4f}", flush=True)
+    best = min(rows, key=lambda r: r["sse"])
+    out = dict(beta=beta, seeds=list(seeds), data=dat, rows=rows, c=best["c"])
+    (HERE / "r18d_matchcal.json").write_text(json.dumps(out, indent=1))
+    print("chosen c", best["c"], flush=True)
+
+
 def _band(v):
     v = np.array([x for x in v if x is not None and np.isfinite(x)], float)
     return dict(mean=float(v.mean()), median=float(np.median(v)), q05=float(np.quantile(v, 0.05)), q95=float(np.quantile(v, 0.95)),
@@ -216,7 +264,11 @@ def _band(v):
 def mode_summ():
     d = json.loads((HERE / "r18_data__facebook_a.json").read_text())
     out = dict(data=d, worlds={})
-    for variant in ("calib", "control", "flat", "controlb0.019", "controlb0.052", "calibb0.019", "flatb0.019"):
+    variants = ["calib", "control", "flat", "controlb0.019", "controlb0.052", "calibb0.019", "flatb0.019"]
+    if (HERE / "r18d_matchcal.json").exists():         # R18-D arms at the calibrated compression
+        c = json.loads((HERE / "r18d_matchcal.json").read_text())["c"]
+        variants += [f"controlb0.019m{c}", f"calibb0.019m{c}"]
+    for variant in variants:
         W = [json.loads(f.read_text()) for f in sorted(HERE.glob(f"r18_world__facebook_a__{variant}__s*.json"))]
         if not W:
             continue
@@ -322,5 +374,7 @@ if __name__ == "__main__":
         mode_summ()
     elif mode == "boot":
         mode_boot()
+    elif mode == "matchcal":
+        mode_matchcal()
     else:
         sys.exit(__doc__)
