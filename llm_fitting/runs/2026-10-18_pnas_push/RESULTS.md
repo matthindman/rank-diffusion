@@ -1818,3 +1818,27 @@ Excess of the data over the matched control's mean (bootstrap of pages; the worl
 - **What this withdraws.** The v9.0 sentence "changes reverse at every gap, as in homogeneous growth" was a comparison with Reddit-calibrated worlds and is withdrawn.
 - **Table 1** becomes a two-platform common-model table (`r18_table1.py`).
 - **Not run.** Heterogeneous growth on Facebook: its calibration needs year-apart changes.
+
+### R18-B. Facebook's size law (amendment R18-B, committed 5631fad before its run; `out_r18b_*.txt`, `r18_world__facebook_a__controlb*__s*.json`, `r18_summary.json`)
+
+The matched control at β = 0.019 (Facebook's two-step lasting estimate) and β = 0.052 (the fit's 0.097 less its recovered bias of 0.045), 20 runs each, against the R18 matched control (β 0.097):
+
+| statistic | data | control, β 0.097 | β 0.019 | β 0.052 |
+|---|---|---|---|---|
+| turnover top 54 / 219 / 875 / 1,750 | 0.31 / 0.26 / 0.24 / 0.21 | 0.23 / 0.27 / 0.22 / 0.21 | 0.255 [0.212, 0.306] / 0.30 / 0.23 / 0.22 | 0.25 / 0.28 / 0.23 / 0.22 |
+| head share | 0.23 | 0.30 | 0.25 | 0.28 |
+| crossing ratio | 0.98 | 0.97 | 1.01 | 1.01 |
+| persistence, gaps 0 / 4 / 8 | −0.11 / −0.07 / −0.03 | −0.13 / −0.11 / −0.10 | −0.12 / −0.10 / −0.09 | −0.12 / −0.09 / −0.08 |
+| D_FB | +0.05 | −0.01 [−0.08, +0.03] | −0.00 [−0.04, +0.04] | −0.00 [−0.06, +0.03] |
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R18-B1 | β 0.019: top-54 ≥ 0.26 and data inside at ≥ 2 of 4 cut-offs | 45% | **failed** (0.255; inside at 875 only, 1,750 at the edge) |
+| R18-B2 | β 0.019: head share within ±0.05 of 0.23 | 50% | **met** (0.25) |
+| R18-B3 | crossing ratio 0.9–1.15 in both arms | 80% | **met** |
+| R18-B4 | data persistence above the arms' range at gaps 4 and 8 | 70% | **met** |
+| R18-B5 | data D_FB above both arms' 95th percentile | 55% | **met** (0.052 against 0.035 and 0.033) |
+
+Reading:
+- The biased size exponent explains the model's oversized head share, but not its slow head turnover: Facebook's leaders turn over faster than the common model implies.
+- The Facebook persistence excess and D's position do not depend on the size law.

@@ -1,0 +1,11 @@
+controlb0.019 seed 0: turnover [0.3, 0.204, 0.295, 0.245, 0.223]; rank-1 change 0.34; boundary 1.0066874130392176; gapped [-0.109, -0.09, -0.081]; D_FB -0.021; head share 0.010
+controlb0.019 seed 1: turnover [0.4, 0.315, 0.299, 0.229, 0.226]; rank-1 change 0.67; boundary 1.0253689273666577; gapped [-0.118, -0.103, -0.096]; D_FB -0.015; head share 0.023
+controlb0.019 seed 2: turnover [0.3, 0.25, 0.311, 0.234, 0.22]; rank-1 change 0.47; boundary 1.0339059411693974; gapped [-0.097, -0.076, -0.069]; D_FB -0.026; head share 0.301
+controlb0.019 seed 3: turnover [0.2, 0.269, 0.272, 0.239, 0.217]; rank-1 change 0.42; boundary 1.0668638482905335; gapped [-0.123, -0.11, -0.101]; D_FB -0.023; head share 0.265
+controlb0.019 seed 4: turnover [0.4, 0.231, 0.308, 0.231, 0.221]; rank-1 change 0.69; boundary 1.046022933026855; gapped [-0.143, -0.125, -0.133]; D_FB +0.034; head share 0.309
+controlb0.019 seed 5: turnover [0.25, 0.287, 0.322, 0.235, 0.211]; rank-1 change 0.71; boundary 0.9257135536401884; gapped [-0.108, -0.077, -0.072]; D_FB +0.045; head share 0.288
+controlb0.019 seed 6: turnover [0.35, 0.269, 0.281, 0.234, 0.215]; rank-1 change 0.54; boundary 1.1288337918074698; gapped [-0.131, -0.1, -0.08]; D_FB +0.009; head share 0.254
+controlb0.019 seed 7: turnover [0.25, 0.25, 0.281, 0.237, 0.221]; rank-1 change 0.28; boundary 0.9324524272835549; gapped [-0.147, -0.118, -0.101]; D_FB -0.028; head share 0.310
+controlb0.019 seed 8: turnover [0.25, 0.25, 0.304, 0.246, 0.22]; rank-1 change 0.74; boundary 1.0070115317742077; gapped [-0.125, -0.111, -0.101]; D_FB -0.000; head share 0.289
+controlb0.019 seed 9: turnover [0.35, 0.25, 0.329, 0.23, 0.221]; rank-1 change 0.51; boundary 1.0098653669536937; gapped [-0.152, -0.134, -0.122]; D_FB +0.013; head share 0.232
+peak RSS 0.79 GB (job tree, sampled: 736 MB); swap 1511M -> 1511M; killed 0
