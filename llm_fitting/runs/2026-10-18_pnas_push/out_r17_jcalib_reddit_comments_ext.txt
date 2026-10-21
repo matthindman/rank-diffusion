@@ -1,0 +1,3 @@
+reddit_comments_ext joint_at_argmin: min objective median 11.8 [6.4, 22.2] (data 439.3); chosen s [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6]
+reddit_comments_ext homogeneous_slow_swing: min objective median 20.2 [8.4, 28.0] (data 439.3); chosen s [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+peak RSS 3.77 GB (job tree, sampled: 3736 MB); swap 1527M -> 1527M; killed 0

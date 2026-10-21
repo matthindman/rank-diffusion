@@ -1,0 +1,11 @@
+reddit_submissions_long joint seed 0: head step, observed [-0.01, -0.05, -0.1, -0.17, -0.23, -0.24, -0.26, -0.35, -0.45, -0.51]; lasting [-0.09, -0.21, -0.28, -0.27, -0.35, -0.49, -0.63, -0.81, -0.88, -1.0]
+reddit_submissions_long joint seed 1: head step, observed [-0.01, -0.05, -0.1, -0.17, -0.24, -0.26, -0.29, -0.39, -0.49, -0.65]; lasting [-0.09, -0.22, -0.27, -0.28, -0.39, -0.49, -0.64, -0.79, -0.94, -1.13]
+reddit_submissions_long joint seed 2: head step, observed [-0.01, -0.04, -0.11, -0.19, -0.25, -0.27, -0.29, -0.37, -0.55, -0.67]; lasting [-0.09, -0.23, -0.27, -0.26, -0.32, -0.54, -0.73, -0.81, -0.97, -1.09]
+reddit_submissions_long joint seed 3: head step, observed [-0.01, -0.04, -0.1, -0.16, -0.23, -0.25, -0.27, -0.4, -0.5, -0.54]; lasting [-0.09, -0.23, -0.28, -0.27, -0.37, -0.5, -0.62, -0.77, -0.85, -0.97]
+reddit_submissions_long joint seed 4: head step, observed [-0.01, -0.05, -0.1, -0.18, -0.23, -0.27, -0.25, -0.32, -0.42, -0.57]; lasting [-0.09, -0.23, -0.27, -0.28, -0.36, -0.49, -0.61, -0.75, -0.92, -1.06]
+reddit_submissions_long joint seed 5: head step, observed [-0.01, -0.04, -0.1, -0.17, -0.24, -0.31, -0.36, -0.41, -0.56, -0.64]; lasting [-0.09, -0.22, -0.29, -0.33, -0.35, -0.49, -0.63, -0.78, -0.89, -0.99]
+reddit_submissions_long joint seed 6: head step, observed [-0.01, -0.04, -0.1, -0.16, -0.23, -0.29, -0.32, -0.42, -0.53, -0.66]; lasting [-0.09, -0.23, -0.29, -0.3, -0.4, -0.53, -0.66, -0.81, -0.94, -1.13]
+reddit_submissions_long joint seed 7: head step, observed [-0.01, -0.05, -0.1, -0.17, -0.23, -0.28, -0.26, -0.29, -0.41, -0.48]; lasting [-0.09, -0.23, -0.28, -0.31, -0.32, -0.47, -0.61, -0.73, -0.92, -1.04]
+reddit_submissions_long joint seed 8: head step, observed [-0.01, -0.05, -0.11, -0.18, -0.25, -0.29, -0.3, -0.4, -0.53, -0.69]; lasting [-0.09, -0.23, -0.28, -0.3, -0.39, -0.5, -0.65, -0.88, -1.02, -1.13]
+reddit_submissions_long joint seed 9: head step, observed [-0.01, -0.05, -0.11, -0.18, -0.25, -0.29, -0.29, -0.42, -0.6, -0.76]; lasting [-0.09, -0.23, -0.28, -0.3, -0.38, -0.5, -0.65, -0.85, -1.08, -1.28]
+peak RSS 2.06 GB (job tree, sampled: 2036 MB); swap 1527M -> 1527M; killed 0

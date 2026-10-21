@@ -1,0 +1,20 @@
+reddit_submissions_long joint_decline {'s': 0.4, 'head': 0.25, 'km': 0.35, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.3}: objective 446.7
+reddit_submissions_long joint_decline {'s': 0.4, 'head': 0.25, 'km': 0.5, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.3}: objective 279.0
+reddit_submissions_long joint_decline {'s': 0.6, 'head': 0.25, 'km': 0.35, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.3}: objective 240.1
+reddit_submissions_long joint_decline {'s': 0.6, 'head': 0.25, 'km': 0.5, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.3}: objective 82.7
+reddit_submissions_long joint_decline {'s': 0.8, 'head': 0.25, 'km': 0.35, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.3}: objective 125.3
+reddit_submissions_long joint_decline {'s': 0.8, 'head': 0.25, 'km': 0.5, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.3}: objective 57.1
+reddit_submissions_long joint_decline {'s': 0.4, 'head': 0.25, 'km': 0.35, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.5}: objective 313.6
+reddit_submissions_long joint_decline {'s': 0.4, 'head': 0.25, 'km': 0.5, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.5}: objective 132.6
+reddit_submissions_long joint_decline {'s': 0.6, 'head': 0.25, 'km': 0.35, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.5}: objective 179.7
+reddit_submissions_long joint_decline {'s': 0.6, 'head': 0.25, 'km': 0.5, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.5}: objective 30.5
+reddit_submissions_long joint_decline {'s': 0.8, 'head': 0.25, 'km': 0.35, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.5}: objective 107.0
+reddit_submissions_long joint_decline {'s': 0.8, 'head': 0.25, 'km': 0.5, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.5}: objective 133.1
+reddit_submissions_long joint_decline {'s': 0.4, 'head': 0.25, 'km': 0.35, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.7}: objective 205.7
+reddit_submissions_long joint_decline {'s': 0.4, 'head': 0.25, 'km': 0.5, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.7}: objective 57.1
+reddit_submissions_long joint_decline {'s': 0.6, 'head': 0.25, 'km': 0.35, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.7}: objective 128.4
+reddit_submissions_long joint_decline {'s': 0.6, 'head': 0.25, 'km': 0.5, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.7}: objective 45.9
+reddit_submissions_long joint_decline {'s': 0.8, 'head': 0.25, 'km': 0.35, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.7}: objective 109.4
+reddit_submissions_long joint_decline {'s': 0.8, 'head': 0.25, 'km': 0.5, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.7}: objective 277.6
+best {'s': 0.6, 'head': 0.25, 'km': 0.5, 'm': 0.6, 'pi': 0.25, 'hl': 208, 'sd': 0.5} 30.5 against the joint 29.2
+peak RSS 1.93 GB (job tree, sampled: 1935 MB); swap 1527M -> 1527M; killed 0

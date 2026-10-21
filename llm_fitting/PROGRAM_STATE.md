@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-20** (the paragraphs on §2z-da … §2z-dq were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-21** (the paragraphs on §2z-da … §2z-ds were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -416,6 +416,8 @@ spine, "size does not protect", and the model and momentum. The outline
     shape responds to a step in decline after about a year, with a time
     constant of 0.7–1.0 times the membership e-folding time, robust to the
     lasting variance. Durability is the balance, not a slow transition.
+    _[Revised in §2z-ds: over ten years the ratio is 1.5; "no large
+    separation" stands.]_
   - **Capture.** None of the head's fall sits at the archive's file
     boundaries, including July 2021. The audit detects a 1% within-file
     gradient, and banned or collapsed communities do not matter.
@@ -428,7 +430,34 @@ spine, "size does not protect", and the model and momentum. The outline
     _[Done: §2z-dr. All three say send out. The asymmetry restated: declines
     persist about twice as strongly as gains, relative to homogeneous growth.
     Tier 1–4 plan in `runs/2026-10-21_external_critiques_round8/SYNTHESIS_R8.md`;
-    owner to choose.]_
+    owner to choose. The owner chose Tiers 1–3 (2026-10-21): §2z-ds.]_
+- **R17, round-8 Tiers 1–3, with manuscript v8 (§2z-ds, 2026-10-21;
+  exploratory, registered expectations; owner: "do all 3 tiers").**
+  - **The asymmetry is the departure, now banded.** D = p_fall − p_rise
+    (bottom and top tenths of year-apart changes, stratum-demeaned, gap 13):
+    +0.22 [0.18, 0.25] on submissions and +0.13 [0.12, 0.15] on comments,
+    positive in every split; homogeneous growth gives −0.07 and −0.05, so
+    declines persist about three times as strongly as gains. On submissions
+    it lives below the head. Symmetric fixed differences give D < 0; a
+    skewed decline state gives the sign (+0.03, +0.13). On item counts
+    D is +0.10 on both ladders.
+  - **Fixed differences are rejected once calibrated.** The joint grid past
+    its edges moves the optimum a little (objectives 29 and 439). Under
+    correct specification the 95th percentile is 18 and 22, so the form is
+    rejected on both ladders, mildly on submissions. The estimator does not
+    invent heterogeneity from a slow swing (20/20 fitted with none).
+    Trading part of the spread for a decline state fits as well and keeps
+    D negative (−0.05, −0.02): no calibrated form gives the asymmetry.
+  - **Time scales revised.** Over ten years the head's lasting shape follows
+    a step in its decline with τ 6.6–6.9 yr, 1.5 × membership (R16-F's
+    0.7–1.0 withdrawn: five blocks were too short). A step in volatility
+    barely moves it (the GLLM contrast). No large separation of time scales.
+  - **Table 1 by one code path.** The submissions crossing ratio is 1.04 on
+    the universe frame and 0.80 on the full panel (registered), so the
+    shortfall depends on communities outside the frame.
+  - **Bridge protocol draft v3.2** adds P8, the asymmetry on item counts.
+    Not adopted; bridge sealed.
+  - **Next:** owner's choice: another review round, or GPT-6 Pro on v8.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it

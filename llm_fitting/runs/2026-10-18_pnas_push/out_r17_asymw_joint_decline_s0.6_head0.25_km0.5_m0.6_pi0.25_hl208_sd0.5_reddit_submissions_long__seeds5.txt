@@ -1,0 +1,6 @@
+reddit_submissions_long joint_decline_s0.6_head0.25_km0.5_m0.6_pi0.25_hl208_sd0.5 seed 5: D -0.045 (p_fall +0.079, p_rise +0.123)
+reddit_submissions_long joint_decline_s0.6_head0.25_km0.5_m0.6_pi0.25_hl208_sd0.5 seed 6: D -0.071 (p_fall +0.049, p_rise +0.120)
+reddit_submissions_long joint_decline_s0.6_head0.25_km0.5_m0.6_pi0.25_hl208_sd0.5 seed 7: D -0.041 (p_fall +0.082, p_rise +0.122)
+reddit_submissions_long joint_decline_s0.6_head0.25_km0.5_m0.6_pi0.25_hl208_sd0.5 seed 8: D -0.039 (p_fall +0.070, p_rise +0.109)
+reddit_submissions_long joint_decline_s0.6_head0.25_km0.5_m0.6_pi0.25_hl208_sd0.5 seed 9: D -0.041 (p_fall +0.071, p_rise +0.111)
+peak RSS 2.54 GB (job tree, sampled: 2562 MB); swap 1519M -> 1519M; killed 0

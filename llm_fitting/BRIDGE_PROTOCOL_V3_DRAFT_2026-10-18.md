@@ -1,4 +1,4 @@
-# The Reddit bridge, 2023-01 … 2024-06: protocol v3.1, redesigned around discriminating tests — DRAFT, NOT ADOPTED
+# The Reddit bridge, 2023-01 … 2024-06: protocol v3.2, redesigned around discriminating tests — DRAFT, NOT ADOPTED
 
 _Claude Opus 5.5 (Anthropic), 2026-10-18. Written after the owner's decision
 of 2026-10-18 ("4; yes": redesign the sealed-bridge protocol around the tests
@@ -116,6 +116,24 @@ exponent, and the moving-home model's gate.
 
 **Stage-order addition.** P5–P7 are computed after P1–P4 and before any
 secondary test. Nothing else is computed from the bridge first.
+
+## Amendment v3.2 (2026-10-21): the asymmetry of persistence added at the owner's instruction
+
+**Authority.** The owner, in the conversation of 2026-10-21, after referee round 8 (MODEL_STATUS §2z-dr): "do add assymetry to the protocal for the sealed data."
+- The test was designed knowing the development results in §2z-ds (R17-A; R17-B3, which computed this construction on development weeks translated back two years), and the thresholds say where.
+- No file under a sealed folder has been opened.
+- **Code:** `runs/2026-10-18_pnas_push/r17_round8.py` (`tail_ratios`, `asym_stat`, `asym_items`), frozen at the commit that adopts this protocol.
+- Adoption and first contact remain the owner's decisions.
+
+| | test | rule (fixed now) | why it discriminates |
+|---|---|---|---|
+| **P8** | Declines persist more strongly than gains, out of sample | **Pairs.** Change 1 = mean log activity over 2022 Q3 (2022-07-04 … 2022-09-25) minus 2021 Q3 (2021-07-05 … 2021-09-26), 13-week windows, from development. Change 2 = mean over 2024-04-01 … 2024-06-02 minus 2023-04-03 … 2023-06-04, 9-week windows, from the bridge. The second change lies wholly in the Arctic Shift era and ends before the blackout of 12 June 2023. The two changes share no weeks and are 27 weeks apart. **Cohort and strata:** the top K (5,000 submissions, 12,500 comments, the development universes' K) by absence-penalised mean rank over 2021 Q1–Q2 (2021-01-04 … 2021-06-27) among all communities in the development panels, with three strata of that rank (K/16, K/4, K); x and y are demeaned within strata. Presence ≥ 0.9 in every window. **Measure, primary:** weekly item counts (submissions on the submission ladder, comments on the comment ladder), log(1 + count). Scores were re-collected differently from November 2023 (§2z-ah); counts do not depend on when a score was read. **Secondary:** karma, as the paper. **Statistic:** D = p_fall − p_rise, where p_fall = mean(y \| x ≤ q10) / mean(x \| x ≤ q10) and p_rise = mean(y \| x ≥ q90) / mean(x \| x ≥ q90) (R17-A), with a 5–95% bootstrap over communities within strata (200 draws). **PASS (declines persist more strongly than gains in new data):** D > 0 with the interval excluding 0 on both ladders, on item counts. **Null-relative, reported beside it:** where D lies against the matched homogeneous worlds of R17-A, where both kinds of change reverse: their 95th percentile is −0.05 on submissions and −0.02 on comments (R17-A's construction, karma). Because the null lies below 0, the PASS rule is the stricter of the two. **Reading, fixed now,** on each ladder: D ≥ +0.08 strong; +0.03 to +0.08 weak; below +0.03 none, consistent with an episode of 2019–22. **Development values in this construction** (R17-B3, translated back two years; §2z-ds): item counts +0.03 [−0.03, +0.10] on submissions and +0.15 [+0.11, +0.20] on comments; karma +0.24 [+0.16, +0.31] and +0.20 [+0.15, +0.25]. In R17-A's construction: item counts +0.10 [+0.07, +0.13] and +0.10 [+0.08, +0.12]; karma +0.22 and +0.13. **Power, disclosed:** on development data this rule passes on comments and fails on submissions, where one pair of changes on 5,000 communities leaves an interval from −0.03 to +0.10. P8 is therefore expected to pass on comments, and on submissions to be informative only if the effect there is larger than on development. **Owner's choice before adoption:** whether karma, which passes on both ladders on development, should be primary despite the score re-collection (below). | **What it separates.** A sign-dependent persistence of community activity, which carries into new years, from three alternatives that predict D near 0 or below: symmetric heterogeneity, the 2020–21 platform episodes, and mean reversion. In the development worlds, symmetric fixed differences give D < 0 (R17-A). **Weak points, disclosed.** The windows differ in length (13 and 9 weeks) and the gap (27 weeks) is longer than R17-A's (13), so D's size is comparable only roughly. The sign is the test. The first change is in the Pushshift era and the second in Arctic Shift's, and x and y are not compared across a source change. Karma's change 2 spans the November 2023 change in score re-collection (2023 Q2 before it, 2024 Q2 after); demeaning within strata removes a common shift but not one that differs by community. The development cohort analogue was drawn from a universe selected on 2019–22, so it conditioned on later presence more than P8 will. |
+
+**Verdict added.** **Declines persist more strongly than gains, out of sample:** P8 passes on both ladders. A pass on comments alone is reported as such, with the submissions value and its reading.
+
+**Stage order.** P8 is computed after P5–P7 and before any secondary test.
+
+**Not changed.** P1–P7. In particular, P5's second change (2024 Q1 − 2023 Q1) still spans the source switch and the November 2023 change in score re-collection. The amendment the SI notes for P5 is still owed.
 
 ## Secondary tests
 

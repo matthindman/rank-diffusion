@@ -1,0 +1,6 @@
+reddit_comments_ext control_num_ seed 5: D -0.039 (p_fall -0.132, p_rise -0.092)
+reddit_comments_ext control_num_ seed 6: D -0.045 (p_fall -0.143, p_rise -0.098)
+reddit_comments_ext control_num_ seed 7: D -0.048 (p_fall -0.156, p_rise -0.109)
+reddit_comments_ext control_num_ seed 8: D -0.058 (p_fall -0.138, p_rise -0.079)
+reddit_comments_ext control_num_ seed 9: D -0.048 (p_fall -0.130, p_rise -0.082)
+peak RSS 5.15 GB (job tree, sampled: 5065 MB); swap 1527M -> 1527M; killed 0

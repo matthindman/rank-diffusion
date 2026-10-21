@@ -139,23 +139,25 @@ def fig2v5():
         sel = k < K
         yr = 52.0
         move = L["S"] ** 2 / L["sigma2"] / yr                                   # lasting movement across one e-fold of rank
-        relax_bal = 2 * L["S_star"] ** 2 * np.log(K / k) / L["sigma2"] / yr     # linearized relaxation toward the balance
         rows = kin[pn]
         kk = sorted({r["k"] for r in rows})
         f = np.array([np.mean([r["obs"] for r in rows if r["k"] == q]) for q in kk])
         memb = -1.0 / np.log(1.0 - f)                                             # e-folding time of membership, years
-        a.plot(k[sel], relax_bal[sel], "-", color=COL[pn], lw=1.2)
         a.plot(k[sel], move[sel], ":", color=COL[pn], lw=1.2)
         a.plot(kk, memb, MK[pn], color=COL[pn], ms=3, mfc="white", lw=0)
-        sc = HERE / "r16_durability_scores.json"                                   # R16-F: the model's own response time
-        if sc.exists():
-            dsc = load(sc)[pn]
+        kh = K // 64
+        s17 = HERE / "r17_durability_scores.json"                                  # R17-C: the lasting shape's response, homogeneous world
+        s16 = HERE / "r16_durability_scores.json"                                  # R16-F: lag-aware fit to the observed shape
+        if s17.exists() and f"{pn}__control_num" in load(s17):
+            d17 = load(s17)[f"{pn}__control_num"]["head_step"]
+            tau, (lo, hi) = d17["fit_lasting"]["tau"], d17["tau_lasting_band"]
+            a.errorbar([kh * 1.08], [tau], yerr=[[tau - lo], [hi - tau]], fmt="*", color=COL[pn], ms=5.5, mec="k", mew=0.3, elinewidth=0.6, capsize=1.2)
+        elif s16.exists():
+            dsc = load(s16)[pn]
             taus = [dsc[m_]["tau_lag"] for m_ in ("0.7", "1.0", "1.4")]
-            kh = K // 64
             a.errorbar([kh * 1.08], [taus[1]], yerr=[[taus[1] - min(taus)], [max(taus) - taus[1]]], fmt="*", color=COL[pn], ms=5.5,
                        mec="k", mew=0.3, elinewidth=0.6, capsize=1.2)
-    a.plot([], [], "-", color="k", label="shape relaxes (linearized)")
-    a.plot([], [], ":", color="k", label="lasting move, one e-fold (model)")
+    a.plot([], [], ":", color="k", label="lasting move, one e-fold (measured)")
     a.plot([], [], "*", color="k", ms=5, label="shape responds (calibrated model)")
     a.plot([], [], "o", color="k", mfc="white", ms=3, label="membership turns over (data)")
     a.set_xscale("log")
@@ -166,7 +168,7 @@ def fig2v5():
     a.minorticks_off()
     a.set_xlabel("size of the top set, k")
     a.set_ylabel("years")
-    a.set_title("Movement and relaxation times", fontsize=6.3)
+    a.set_title("Response and turnover times", fontsize=6.3)
     a.legend(loc="upper left", frameon=False, fontsize=4.4)
     tag(a, "A")
     # B: measured crossings against sigma^2/2S
@@ -216,12 +218,10 @@ def fig2v5():
     tag(a, "C")
     # D: geometry under identical dynamics (R9)
     a = ax[3]
-    for pn in PANELS2:
-        rows = kin[pn]
-        ks = sorted({rr["k"] for rr in rows})
-        ys = [np.mean([rr["obs"] for rr in rows if rr["k"] == q]) for q in ks]
-        a.plot([10, 25] + ks, [1 - np.mean(rob[pn]["retention"]["10"]), 1 - np.mean(rob[pn]["retention"]["25"])] + ys, "-",
-               marker=MK[pn], color=COL[pn], ms=3, lw=1.1, label=LAB[pn])
+    for pn in PANELS2:                  # the data by the worlds' code on the universe frame (R17-B; round 8, H9)
+        tt = load(HERE / f"r17_table_data__{pn}.json")["turnover"]
+        ks = sorted(int(q) for q in tt)
+        a.plot(ks, [tt[str(q)] for q in ks], "-", marker=MK[pn], color=COL[pn], ms=3, lw=1.1, label=LAB[pn])
     for w, lab, col, ls in WORLDS7[:4]:
         if w not in S7:
             continue
@@ -417,48 +417,41 @@ def fig4v5():
                            fmt=HET_MK[kind], color=COL[pn], ms=2.6, lw=0.6, label=(HET_LAB[kind] if (not shown and gap == "13") else None))
                 shown = True
     a.axhline(0, color=GREY, lw=0.4)
-    a.set_xlabel("gap between the two changes (weeks)")
+    a.set_xlabel("gap between the changes (weeks)")
     a.set_ylabel("rank correlation of changes")
     a.set_title("Changes persist on Reddit", fontsize=6.3)
     a.legend(loc="upper right", frameon=False, fontsize=4.0, ncol=1, handlelength=1.4, labelspacing=0.3)
     a.set_ylim(-0.16, 0.66)
     tag(a, "C")
-    # D: the slide by prior change: the bottom fifth of prior change against the rest, data and worlds
+    # D (round 8, R17-A): the next year's change against this year's, by decile of this year's change (stratum-demeaned),
+    # data and the matched homogeneous, jointly estimated and decline-state worlds; the slopes through the tails are
+    # p_fall and p_rise, and D = p_fall - p_rise
     a = ax[3]
-    sp = load(HERE / "slide_by_persistence__data.json")
-    worlds = {("reddit_submissions_long", "driftless"): "slide_by_persistence__reddit_submissions_long__driftless.json",
-              ("reddit_comments_ext", "driftless"): "slide_by_persistence__reddit_comments_ext__driftless.json",
-              ("reddit_submissions_long", "model"): "slide_by_persistence__reddit_submissions_long__model.json"}
-    x = 0
-    ticks, labs = [], []
+    WTAG = {"control": "control_num_", "joint": R16_TAGS, "decline": R16_TAGS}
+    sty = {"control": dict(ls="--", color="#777777"), "joint": dict(ls=":", color="#222222"), "decline": dict(ls="-.", color="#999999")}
+    labw = {"control": "homogeneous", "joint": "fixed diff. (joint)", "decline": "decline state"}
     for pn in PANELS2:
-        sm = sp[pn]["summary"]
-        a.bar(x, 1000 * sm["mean_Q1"], 0.8, color=COL[pn])
-        a.bar(x + 0.85, 1000 * sm["mean_rest"], 0.8, color=COL[pn], alpha=0.45)
-        ticks += [x + 0.42]
-        labs += ["data"]
-        a.text(x + 0.42 + (1.1 if pn == "reddit_comments_ext" else 2.2), 9.6, {"reddit_comments_ext": "comments", "reddit_submissions_long": "submissions"}[pn],
-               ha="center", fontsize=5, color=COL[pn])
-        x += 2.2
-        for (p2, kind), fn in worlds.items():
-            if p2 != pn:
+        f = HERE / f"r17_asym_data__{pn}.json"
+        if not f.exists():
+            continue
+        dd = load(f)
+        cur = np.array(dd["primary"]["curve"])
+        a.plot(cur[:, 0], cur[:, 1], "-", marker=MK[pn], color=COL[pn], ms=2.6, lw=1.1,
+               label={"reddit_comments_ext": "comments", "reddit_submissions_long": "submissions"}[pn])
+        for kind in ("control", "joint", "decline"):
+            tg = "control_num_" if kind == "control" else R16_TAGS[pn][kind]
+            fw = HERE / f"r17_asym_worlds__{pn}__{tg}.json"
+            if not fw.exists() or pn != "reddit_submissions_long":
                 continue
-            wm = load(HERE / fn)["summary"]
-            a.bar(x, 1000 * wm["mean_Q1"], 0.8, color=COL[pn], hatch="////", edgecolor="white", lw=0)
-            a.bar(x + 0.85, 1000 * wm["mean_rest"], 0.8, color=COL[pn], alpha=0.45, hatch="////", edgecolor="white", lw=0)
-            ticks += [x + 0.42]
-            labs += [kind]
-            x += 2.2
-        x += 0.6
-    a.axhline(0, color=GREY, lw=0.5)
-    a.set_xticks(ticks)
-    a.set_xticklabels(labs, fontsize=4.6, rotation=30)
-    a.set_ylabel("slide of members (per 1,000 wk)")
-    a.set_title("Decliners keep declining", fontsize=6.3)
-    from matplotlib.patches import Patch
-    a.set_ylim(top=a.get_ylim()[1] * 1.35)
-    a.legend(handles=[Patch(color="#555555", label="bottom fifth of prior change"), Patch(color="#555555", alpha=0.45, label="the rest")],
-             loc="upper left", frameon=False, fontsize=4.4, ncol=2, columnspacing=0.8)
+            ww = load(fw)
+            cw = np.array(ww["curve"])
+            a.plot(cw[:, 0], cw[:, 1], lw=0.9, label=labw[kind], **sty[kind])
+    a.axhline(0, color=GREY, lw=0.4)
+    a.axvline(0, color=GREY, lw=0.4)
+    a.set_xlabel("this year's change")
+    a.set_ylabel("next year's change")
+    a.set_title("Declines persist, gains less", fontsize=6.3)
+    a.legend(loc="lower right", frameon=False, fontsize=4.2, handlelength=1.8, labelspacing=0.25)
     tag(a, "D")
     fig.tight_layout(w_pad=0.8)
     save(fig, "fig4_v5")

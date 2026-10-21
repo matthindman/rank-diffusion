@@ -1,0 +1,115 @@
+{
+ "panel": "reddit_submissions_long",
+ "block": [
+  "2020-12-28",
+  "2021-12-26"
+ ],
+ "events": {
+  "2021-02-15": {
+   "head_share_before": 0.2059623268230724,
+   "head_share_after": 0.15773377171722938,
+   "log_step": -0.26678464986080225,
+   "largest_falls": [
+    {
+     "community": "wallstreetbets",
+     "share_change": -0.033296278944069294,
+     "share_before": 0.0444259448889946
+    },
+    {
+     "community": "dogecoin",
+     "share_change": -0.016628669680545362,
+     "share_before": 0.022856277583678412
+    },
+    {
+     "community": "ksi",
+     "share_change": -0.0009473794623991224,
+     "share_before": 0.0046462616877356476
+    },
+    {
+     "community": "Genshin_Impact",
+     "share_change": -0.0008600801504759221,
+     "share_before": 0.0035119039799319774
+    },
+    {
+     "community": "apexlegends",
+     "share_change": -0.0004247616991505548,
+     "share_before": 0.00316840226760913
+    },
+    {
+     "community": "worldnews",
+     "share_change": -0.00041301689958200523,
+     "share_before": 0.002277012558417071
+    },
+    {
+     "community": "news",
+     "share_change": -0.00033368468616539,
+     "share_before": 0.004044442262603187
+    },
+    {
+     "community": "pics",
+     "share_change": -0.00019243121728894797,
+     "share_before": 0.003040487982625783
+    }
+   ],
+   "share_of_step_top3": 1.0548175862902944
+  },
+  "2021-05-15": {
+   "head_share_before": 0.16460523227544704,
+   "head_share_after": 0.1308753473697035,
+   "log_step": -0.229304752162471,
+   "largest_falls": [
+    {
+     "community": "dogecoin",
+     "share_change": -0.018751515952701976,
+     "share_before": 0.02812937051748713
+    },
+    {
+     "community": "AskReddit",
+     "share_change": -0.0027115680027916082,
+     "share_before": 0.023815799519781657
+    },
+    {
+     "community": "apexlegends",
+     "share_change": -0.002167294306845248,
+     "share_before": 0.004732976962289331
+    },
+    {
+     "community": "memes",
+     "share_change": -0.0018818436858763221,
+     "share_before": 0.014582319731711153
+    },
+    {
+     "community": "news",
+     "share_change": -0.0007089402902007002,
+     "share_before": 0.004046270390043082
+    },
+    {
+     "community": "PewdiepieSubmissions",
+     "share_change": -0.0005064974888343398,
+     "share_before": 0.002014130915086366
+    },
+    {
+     "community": "worldnews",
+     "share_change": -0.00048220680554978204,
+     "share_before": 0.002173975487819888
+    },
+    {
+     "community": "dankmemes",
+     "share_change": -0.0004605387445509859,
+     "share_before": 0.003637877924884064
+    }
+   ],
+   "share_of_step_top3": 0.7005769017111302
+  }
+ },
+ "named": [
+  "AskReddit",
+  "apexlegends",
+  "dogecoin",
+  "ksi",
+  "wallstreetbets"
+ ],
+ "block_head_item_share": 0.14420674299563876,
+ "block_head_item_share_without_named": 0.10464564214958519
+}
+peak RSS 2.12 GB (job tree, sampled: 2011 MB); swap 1543M -> 1543M; killed 0

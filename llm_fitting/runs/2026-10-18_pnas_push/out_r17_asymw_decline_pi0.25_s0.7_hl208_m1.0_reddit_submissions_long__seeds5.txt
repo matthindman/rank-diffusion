@@ -1,0 +1,6 @@
+reddit_submissions_long decline_pi0.25_s0.7_hl208_m1.0 seed 5: D +0.018 (p_fall +0.027, p_rise +0.009)
+reddit_submissions_long decline_pi0.25_s0.7_hl208_m1.0 seed 6: D +0.045 (p_fall +0.038, p_rise -0.007)
+reddit_submissions_long decline_pi0.25_s0.7_hl208_m1.0 seed 7: D +0.054 (p_fall +0.059, p_rise +0.005)
+reddit_submissions_long decline_pi0.25_s0.7_hl208_m1.0 seed 8: D +0.060 (p_fall +0.022, p_rise -0.038)
+reddit_submissions_long decline_pi0.25_s0.7_hl208_m1.0 seed 9: D +0.025 (p_fall +0.026, p_rise +0.001)
+peak RSS 2.59 GB (job tree, sampled: 2548 MB); swap 1527M -> 1527M; killed 0

@@ -1,0 +1,6 @@
+reddit_comments_ext joint_s0.6_head0.25_km0.5_m0.7 seed 5: D -0.034 (p_fall +0.003, p_rise +0.037)
+reddit_comments_ext joint_s0.6_head0.25_km0.5_m0.7 seed 6: D -0.053 (p_fall -0.013, p_rise +0.040)
+reddit_comments_ext joint_s0.6_head0.25_km0.5_m0.7 seed 7: D -0.028 (p_fall +0.016, p_rise +0.045)
+reddit_comments_ext joint_s0.6_head0.25_km0.5_m0.7 seed 8: D -0.049 (p_fall -0.005, p_rise +0.044)
+reddit_comments_ext joint_s0.6_head0.25_km0.5_m0.7 seed 9: D -0.054 (p_fall +0.003, p_rise +0.057)
+peak RSS 5.37 GB (job tree, sampled: 4759 MB); swap 1527M -> 1527M; killed 0

@@ -1,0 +1,2 @@
+reddit_comments_ext: items D (R17-A) +0.095 [0.077, 0.097, 0.116]; protocol construction: items +0.152 [0.11, 0.158, 0.203], karma +0.195 [0.151, 0.201, 0.251]
+peak RSS 4.07 GB (job tree, sampled: 3939 MB); swap 1519M -> 1519M; killed 0

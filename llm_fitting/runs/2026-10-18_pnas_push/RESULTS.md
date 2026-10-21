@@ -1596,6 +1596,8 @@ What the audit cannot test is a removal that grows smoothly with calendar time a
 - **R16-F2: PASS.** The SI's linearized 9 years at the comments head is 3.7 times the registered τ (2.2) and 2.6 times the lag-aware τ (3.4).
 - **R16-F3: PASS.** Across m 0.7–1.4 the ratio varies by less than ±12% under either fit. The lasting-variance uncertainty moves the two times together.
 
+_[SUPERSEDED 2026-10-21 by R17-C: five annual blocks were too short. Over ten years the lasting shape's time constant is 6.9 and 6.6 years, 1.5 times the membership e-folding, and the 0.7–1.0 ratio below is withdrawn. "No large separation" stands; "about the time scale of membership" does not. The three-fifths offset was already withdrawn (round 8, H13).]_
+
 **Reading.**
 - **No separation of time scales.** In the actual calibrated model, with its curved ladder, drift by rank and entry and exit, the head's shape responds to a change in the leaders' decline on the time scale on which members turn over: 0.7–1.0 times the membership e-folding, after a lag of about a year from the passing swing.
 - **How much is offset.** Over five years the shape falls by 0.33–0.48 for a cumulative extra decline of 1.0, so crossings offset about three fifths of it.
@@ -1636,3 +1638,145 @@ What the audit cannot test is a removal that grows smoothly with calendar time a
 **Reading.**
 - **The trade-off.** On comments a larger decline state moves the asymmetry toward the data's sign (+0.023 at sd 0.7), at a large cost to the moments that the persistence fits. With the fixed spread held at its joint value, strong symmetric differences swamp the decline state's asymmetry.
 - **Not answered.** Whether a joint calibration with the fixed spread free, and with asymmetric moments targeted, could reproduce both. That would make the asymmetry fitted, not tested.
+
+### Correction (2026-10-21, referee round 8)
+
+- **R16-F3's reading.** It said the ratio "varies by less than ±12% under either fit". On comments the lag-aware ratios are 1.00, 0.80 and 0.69, which is +25% and −14% around the central value (H5). The registered criterion (±30%) still passes. The multipliers 0.7–1.4 scale lasting volatility, so they scale its variance by 0.49–1.96 (H4).
+- **R16-F's "three fifths offset".** It describes the observed shape, which includes the swing's lag; it is not a decomposition into crossings (H13). Withdrawn.
+- **R16-E, the placebo dates.** The mid-month dates had inherited the first-of-month eligibility filter, so two of them (15 December 2020 and 2021) crossed roster boundaries (H6). Fixed and rerun: 44 placebos. Boundary/placebo mean-absolute-step ratios are 0.74, 1.10 and 0.69 on submissions and 0.83, 0.83 and 0.98 on comments. R16-E1 … E3 still pass.
+- **R16-A, the decline state's persistence.** In the paper's own statistic (`null_worlds.stats`) the decline state gives +0.075 and +0.049, against the data's +0.174 and +0.154. That is 43% and 32%, not "a fifth or less" (H1).
+
+## R17. Referee round 8, Tiers 2 and 3 (expectations in PLAN.md addendum R17, committed 6006230 before any run; `r17_round8.py`, `run_r17.sh`; scores by `r17_durability_fit.py`, Table 1 by `r17_table1.py`)
+
+### R17-A. The asymmetry as one statistic (`r17_asym_data__*.json`, `r17_asym_worlds__*.json`)
+
+D = p_fall − p_rise (definition in PLAN.md R17-A); 5–95% bands over 200 bootstrap draws of communities within strata (strata: 100 draws).
+
+| | submissions | comments |
+|---|---|---|
+| **D, data** | **+0.222 [0.182, 0.250]** | **+0.132 [0.115, 0.153]** |
+| p_fall | +0.240 [0.204, 0.272] | +0.158 |
+| p_rise | +0.018 [−0.002, 0.037] | +0.026 [0.014, 0.038] |
+| by origin (0, 13, …, 65) | +0.148, +0.116, +0.233, +0.262, +0.298, +0.277 | +0.091, +0.024, +0.127, +0.167, +0.167, +0.218 |
+| early / late origins | +0.166 / +0.279 | +0.081 / +0.184 |
+| before July 2021 (gap 4, one origin) | +0.137 | +0.088 |
+| without terminal collapses | +0.212 (152 dropped) | +0.130 (2,259 dropped) |
+| absent weeks at the week's floor | +0.226 | +0.126 |
+| by stratum (K/16, K/4, K) | −0.004 [−0.102, 0.091], +0.207 [0.131, 0.269], +0.239 [0.193, 0.276] | +0.117 [0.043, 0.179], +0.152, +0.130 |
+| Spearman split (fallers, risers) | +0.141, +0.069 | +0.113, +0.042 |
+| **matched control (20)** | −0.069 [−0.096, −0.050]; p_fall −0.167, p_rise −0.098 | −0.045 [−0.059, −0.022]; −0.140, −0.095 |
+| **joint fixed differences (20)** | −0.074 [−0.107, −0.052]; +0.096, +0.170 | −0.035 [−0.053, −0.023]; +0.008, +0.044 |
+| **decline state π_D 0.25 (10)** | +0.030 [0.005, 0.057]; +0.034, +0.004 | +0.125 [0.102, 0.146]; +0.080, −0.045 |
+
+Relative to the matched control, declines persist by +0.41 and +0.30, gains by +0.12 and +0.12 (ratio 3.5 and 2.5: "about three times").
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R17-1 | the data's D > 0 on both ladders, band excluding 0 | 80% | **met** (+0.222 [0.182, 0.250]; +0.132 [0.115, 0.153]) |
+| R17-2 | the data's D above the matched control's 95th percentile on both | 80% | **met** (control q95 −0.050, −0.022) |
+| R17-3 | the joint world's mean D ≤ 0.02 on both | 65% | **met** (−0.074, −0.035) |
+| R17-4 | the decline world's mean D > 0 on both | 60% | **met** (+0.030, +0.125) |
+| R17-5 | D > 0 in early and late origins, without collapses and with absences at the floor, on both | 55% | **met** (smallest +0.081, comments early) |
+| R17-6 | submissions top K/16 has the smallest D of its strata | 50% | **met** (−0.004) |
+
+
+### R17-B. Smaller checks (`r17_table_data__*.json`, `r17_events__reddit_submissions_long.json`, `r17_table1.json`)
+
+- **Table 1 by one code path.** On submissions by `null_worlds.stats` on the universe frame: turnover 0.30 (top 10), 0.18 (top 78), 0.15 (top 2,500); gapped 13 +0.174; pooled boundary ratio 1.040; rate-law c/s̄ 0.547 (mean c 0.00331, mean s̄ 0.00605 a week; 30 cells). Comments: boundary 1.069, c/s̄ 0.870, gapped +0.154. The registered estimator gives 0.802 (submissions) and 1.069 (comments). Same estimator and settings (mts_boundary_law.analyse, 26-week blocks); the registered run reads the full panel (`mrd.load_panel`, every community ever in a week's top 4K tracked) and the worlds' code reads `restrict_universe` (the 4K best by whole-window permanent rank, ranked among themselves). Post hoc check of that reading: `r17_boundary_frame.py` (below).
+- **R17-7** (crossings over the slide by this code within ±0.10 of 0.72): **failed**, 0.547. The table's earlier 0.64 was c/(s̄ − e), a different quantity.
+- **The two 2021 mid-month steps.** 15 February 2021: head item share 0.206 → 0.158 (log −0.267); r/wallstreetbets −3.3 points and r/dogecoin −1.7 carry the step. 15 May 2021: log −0.23; r/dogecoin −1.9 points, with r/AskReddit and r/apexlegends 70% of it. Block head share without the five named: 0.105 rather than 0.144 (2020: 0.209). **R17-8** (the three largest contributors carry at least half of each step): **met**.
+
+### R17-C. R16-F extended (`r17_durability__*.json`; scores `r17_durability_scores.json` by `r17_durability_fit.py`, written before the outputs were read)
+
+520 weeks, 10 seeds, m 1.0; arm minus control on common seeds; K/64 (top 78 submissions, top 195 comments).
+
+| | submissions, control | comments, control |
+|---|---|---|
+| head step, lasting shape, years 1 / 5 / 10 | −0.088 / −0.552 / −0.872 | −0.092 / −0.592 / −0.935 |
+| head step, observed shape, years 1 / 5 / 10 | −0.014 / −0.368 / −0.747 | −0.026 / −0.442 / −0.774 |
+| lasting fit: τ [5–95% over seeds], A | 6.91 [3.77, 24.97], −1.18 | 6.55 [5.29, 8.82], −1.20 |
+| observed fit (lag free): τ, lag | 5.41, 1.48 yr | 9.22, 0.40 yr |
+| membership e-folding (year-1 retention 0.803, 0.791) | 4.55 | 4.26 |
+| ratio, lasting τ / membership | 1.52 | 1.54 |
+| K/16, head step, observed, years 5 / 10 | −0.129 / −0.271 | −0.154 / −0.329 |
+| volatility ×1.2 (σ0; drift held), observed, years 1 / 5 / 10 | +0.001 / +0.056 / +0.241 | −0.002 / −0.033 / +0.033 |
+| volatility ×1.2, lasting, years 5 / 10 | +0.180 / +0.335 | −0.012 / +0.010 |
+| volatility fit | τ 46.5 [0.95, 100] (bound), A +1.75: not identified | A −0.01: no response to fit |
+
+Joint world (R16-B optimum): year-1 observed head-step response −0.008 (submissions) and −0.015 (comments). The share of the block-0 head still in the head falls to 0.00 (submissions) and 0.05 (comments) by year 8, against 0.42 and 0.49 in the control. Ten years of fixed Gaussian growth differences, which the R12 calibrations run for no longer than the panel, carry the fastest types into the head: the instability R12-A1 warned of (Fernholz, Ichiba and Karatzas 2013). **Fits beyond year 4 in the joint world are not interpreted** (τ at the 100-year bound).
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R17-9 | homogeneous, head step: lasting τ within 0.6–1.5 × membership on both ladders | 55% | **failed narrowly** (1.52, 1.54) |
+| R17-10 | homogeneous, volatility step: τ of the response at most 2 × membership on both | 50% | **failed** (submissions slow and unidentified; comments no response in 10 years) |
+| R17-11 | joint, head step: year-1 observed response smaller than homogeneous on both | 70% | **met** (−0.008 vs −0.014; −0.015 vs −0.026) |
+
+Reading. The five-block R16-F fits (lag-aware 3.4–3.7 yr, ratio 0.80–0.82) were too short; the ten-year lasting response gives τ ≈ 6.6–6.9 yr, 1.5 × membership. Half the long-run response comes within about five years, so there is no large separation of time scales. A change in volatility moves the head's shape much more slowly than a change in its decline, the GLLM (2016) contrast. Not run: the "uniform step in the slide at every rank" listed in SYNTHESIS_R8 Tier 2; the registration replaced it with the volatility step.
+
+### R17-D. Tier 3 (`r17_jgrid2__*.json`, `r17_jcalib__*.json`, `r17_jdgrid2__*.json`, `r17_asym_worlds__*.json`)
+
+**The joint grid past its edges** (union with R16-B's 81 points; 3 seeds a point; 24 moments):
+
+| | submissions | comments |
+|---|---|---|
+| R16-B optimum | s 0.8, head 0.25, km 0.5, m 0.8: 38.8 | s 0.6, head 0.25, km 0.5, m 0.7: 487.2 |
+| overall optimum | **s 0.8, head 0.25, km 0.5, m 0.6: 29.2** | **s 0.6, head 0, km 0.35, m 0.7: 439.3** |
+| neighbours | head 0 / 0.1: 29.8 / 29.4; km 0.35: 158.6–159.0 (m 0.6); s 1.0: 263–300 | km 0.25: 622–641; km 0.5: 464–510 |
+| edges at the optimum | m at its smallest (0.6); s, km interior; head flat over 0–0.25 | head at 0 (a natural bound); km interior; s, m fixed at the R16-B values (not re-gridded here) |
+
+**Calibration under correct specification** (20 pseudo-data panels, seeds 2000–2019, each calibrated by the union of the saved grid moments with the data's bootstrap sd):
+
+| | submissions | comments |
+|---|---|---|
+| (i) joint world at the optimum: minimum objective, median [5–95%] | 7.8 [4.2, 18.3]; chosen s 0.8 in 20/20 | 11.8 [6.4, 22.2]; chosen s 0.6 in 20/20 |
+| data | 29.2 (beyond the 95th percentile) | 439.3 (20× the 95th percentile) |
+| (ii) homogeneous, slow swing (km 0.5, s 0): chosen s | 0 in 20/20 (objective 8.5 [3.6, 15.8]) | 0 in 20/20 (20.2 [8.4, 28.0]) |
+
+**R16-G redone with the spreads traded** (decline state π_D 0.25, half-life 208; head and m at the overall optimum; 18 points):
+
+| | submissions | comments |
+|---|---|---|
+| best | s 0.6, km 0.5, sd 0.5: **30.5** (joint 29.2) | s 0.6, km 0.35, sd 0.3: **430.6** (joint 439.3) |
+| its Spearman asymmetry (grid, 3 seeds) | −0.055 (joint optimum −0.059) | −0.029 (joint optimum −0.032); points with sd 0.5–0.7 and s 0.4 give +0.006 to +0.060 at objectives 456–549 (6–27% above the best) |
+
+**Asymmetry worlds at the new optima** (D, mean [5–95%] over runs; p_fall, p_rise):
+
+| | submissions | comments |
+|---|---|---|
+| joint, overall optimum (20) | −0.074 [−0.105, −0.036]; +0.087, +0.161 | −0.028 [−0.047, −0.000]; +0.009, +0.037 |
+| joint + decline state, R16-G redone (10) | −0.046 [−0.069, −0.026]; +0.072, +0.118 | −0.022 [−0.038, +0.000]; +0.038, +0.060 |
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R17-12 | the overall joint optimum interior in km on at least one ladder | 35% | **met** (km 0.5 on submissions between 0.35 and 1.0; 0.35 on comments between 0.25 and 0.5) |
+| R17-13 | (i) submissions: data's minimum within the 95th percentile of the correct-specification minima (not rejected) | 45% | **failed** (29.2 against 18.3) |
+| R17-14 | (i) comments: beyond the 95th percentile (rejected) | 85% | **met** (439.3 against 22.2) |
+| R17-15 | (ii) slow-swing homogeneous fitted with s ≤ 0.2 in at least 15 of 20 on both | 55% | **met** (s 0 in 20/20 on both) |
+| R17-16 | R16-G redone: best point has sd > 0 and an objective below the overall joint optimum's on at least one ladder | 40% | **met on comments only** (430.6 < 439.3; within three-run noise); submissions 30.5 > 29.2 |
+| R17-17 | its worlds' mean D > 0.02 on at least one ladder | 35% | **failed** (−0.046, −0.022) |
+
+Reading. The extended grid moves the optimum a little and the swing becomes interior on both ladders; on submissions the lasting multiplier moves to its new edge (0.6). Calibrated against its own reference, the jointly estimated form is rejected on both ladders, mildly on submissions; v7's "fits on submissions" (which used R12's nine-moment reference) is withdrawn. The estimator does not manufacture heterogeneity from the slower swing. With the spreads traded, a decline state fits about as well as fixed differences alone, but its worlds keep D negative: no calibrated combination gives the asymmetry.
+
+### R17-B3. D on item counts (amendment R17-B3, committed 438d56a before the run; `r17_asym_items__*.json`)
+
+| | submissions | comments |
+|---|---|---|
+| R17-A construction, item counts: D [5–95%] | +0.098 [0.065, 0.129] (p_fall +0.159, p_rise +0.061) | +0.095 [0.077, 0.116] (+0.116, +0.021) |
+| by origin | +0.158, +0.061, +0.101, +0.105, +0.078, +0.087 | +0.058, −0.023, +0.086, +0.103, +0.145, +0.199 |
+| by stratum | +0.008, +0.139, +0.097 | +0.132, +0.127, +0.093 |
+| protocol construction (translated two years), item counts | +0.034 [−0.026, 0.099] (p_fall +0.148, p_rise +0.113; n 4,973) | +0.152 [0.110, 0.203] (+0.159, +0.007; n 11,722) |
+| protocol construction, karma | +0.235 [0.156, 0.308] | +0.195 [0.151, 0.251] |
+
+**R17-18** (items D > 0 with the band excluding 0 on both ladders in both constructions; prior 75%): **failed** in one cell of four (submissions, protocol construction). These values fix P8's reading in the bridge protocol draft (amendment v3.2); P8's power on submissions is disclosed there as low.
+
+### R17-B, post hoc: the frame of the crossing ratio (`r17_boundary_frame.py`; `r17_boundary_frame__*.json`)
+
+The registered estimator (`mts_boundary_law.analyse`, defaults) on the universe frame: pooled K/16…K 1.041 on submissions (full panel 0.802) and 1.069 on comments (full panel 1.069). By cut-off, submissions 312: 0.914 (0.718), 625: 0.784 (0.609), 1250: 1.121 (0.968), 2500: 1.212 (0.899), 5000: 1.253 (0.872). The worlds' code gives the same as the estimator on the same frame (1.040), so the whole difference is the frame. The submissions shortfall at ranks 300–600 is smaller on the universe frame (0.91, 0.78) and depends on communities outside it.
+
+### R17, execution
+
+- 09:50: the watchdog held the comments decline-state grid (3.3 GB reclaimable, 6 GB needed; a browser was open). The waiting queue was stopped before the job started; health check and the R17-B3 commit ran in the gap; restarted 10:16 (`run_r17.sh` resumed from markers, `run_r17b.sh` chained). No job killed; swap 1.52 GB throughout.
+- Order as registered: A on the data, B, A's worlds, C, the D grids and calibration and G grids, the D worlds; then B3 (after its commit) and the post hoc frame check.
+- The joint world in R17-C is unstable beyond about year 4 (fixed differences run past the panel length); its later years are not interpreted.
+- Not run: SYNTHESIS_R8's "uniform step in the slide at every rank" (replaced in the registration by the volatility step).
+- Same-code data values now used in the SI world tables and Fig. 2D (turnover and crossing ratio by the worlds' code on the universe frame).

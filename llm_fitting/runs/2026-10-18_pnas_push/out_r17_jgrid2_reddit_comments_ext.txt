@@ -1,0 +1,14 @@
+reddit_comments_ext joint {'s': 0.6, 'head': 0.0, 'km': 0.25, 'm': 0.7}: objective 635.5
+reddit_comments_ext joint {'s': 0.6, 'head': 0.0, 'km': 0.35, 'm': 0.7}: objective 439.3
+reddit_comments_ext joint {'s': 0.6, 'head': 0.0, 'km': 0.5, 'm': 0.7}: objective 464.3
+reddit_comments_ext joint {'s': 0.6, 'head': 0.1, 'km': 0.25, 'm': 0.7}: objective 641.2
+reddit_comments_ext joint {'s': 0.6, 'head': 0.1, 'km': 0.35, 'm': 0.7}: objective 440.2
+reddit_comments_ext joint {'s': 0.6, 'head': 0.1, 'km': 0.5, 'm': 0.7}: objective 510.3
+reddit_comments_ext joint {'s': 0.6, 'head': 0.25, 'km': 0.25, 'm': 0.7}: objective 622.5
+reddit_comments_ext joint {'s': 0.6, 'head': 0.25, 'km': 0.35, 'm': 0.7}: objective 471.8
+reddit_comments_ext joint {'s': 0.6, 'head': 0.25, 'km': 0.5, 'm': 0.7}: objective 487.2
+reddit_comments_ext joint {'s': 0.0, 'head': 1.0, 'km': 0.25, 'm': 0.7}: objective 1533.0
+reddit_comments_ext joint {'s': 0.0, 'head': 1.0, 'km': 0.35, 'm': 0.7}: objective 1718.5
+reddit_comments_ext joint {'s': 0.0, 'head': 1.0, 'km': 0.5, 'm': 0.7}: objective 2437.4
+best overall {'s': 0.6, 'head': 0.0, 'km': 0.35, 'm': 0.7} 439.3
+peak RSS 5.02 GB (job tree, sampled: 5025 MB); swap 1527M -> 1527M; killed 0

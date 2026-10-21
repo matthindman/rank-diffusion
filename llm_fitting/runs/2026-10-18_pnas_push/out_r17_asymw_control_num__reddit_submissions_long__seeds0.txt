@@ -1,0 +1,6 @@
+reddit_submissions_long control_num_ seed 0: D -0.067 (p_fall -0.170, p_rise -0.103)
+reddit_submissions_long control_num_ seed 1: D -0.059 (p_fall -0.165, p_rise -0.106)
+reddit_submissions_long control_num_ seed 2: D -0.082 (p_fall -0.168, p_rise -0.085)
+reddit_submissions_long control_num_ seed 3: D -0.089 (p_fall -0.181, p_rise -0.092)
+reddit_submissions_long control_num_ seed 4: D -0.096 (p_fall -0.173, p_rise -0.077)
+peak RSS 2.69 GB (job tree, sampled: 2722 MB); swap 1543M -> 1543M; killed 0

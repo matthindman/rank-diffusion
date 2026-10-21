@@ -1,0 +1,2 @@
+reddit_submissions_long: D +0.222 [+0.182, +0.250] (p_fall +0.240, p_rise +0.018); early +0.166, late +0.279; before Jul 2021 (gap 4) +0.137 (1 origins); no collapses +0.212; exits at floor +0.226; by stratum [-0.004, 0.207, 0.239]
+peak RSS 1.59 GB (job tree, sampled: 1464 MB); swap 1543M -> 1543M; killed 0

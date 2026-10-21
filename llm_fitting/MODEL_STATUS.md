@@ -13758,6 +13758,7 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started 
   - **Turnover** falls below the data's, and the boundary ratio rises to 1.22.
 - **Out of period:** 0.510 and 0.561, against the controls' 0.533 and 0.574.
 - **Scores.** R16-B1 and B3 PASS. B2 FAIL (edges). B4 FAIL on comments by 0.002. B5 FAIL: it fits on submissions.
+  _[2026-10-21, §2z-ds (R17-D): "it fits" used R12's nine-moment reference; against its own calibrated 24-moment reference the form is rejected on submissions too (29.2 against a 95th percentile of 18.3). B5's score stands as recorded.]_
 - **Withdrawn.** R12's "at most three fifths of the persistence"; it came from freezing the passing parts.
 
 **D, the size exponent with each panel's own passing parts** (`fit_model` in full, 10 panels per truth).
@@ -13770,6 +13771,7 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started 
 - **Response.** A step of 0.2 a year in the head's decline reaches the observed shape after about a year, through the passing swing, then responds over five years. With m 1.0 the response is −0.01 … −0.37 on submissions and −0.03 … −0.44 on comments.
 - **The registered fit** cannot follow the S-shape: τ is 1.3–2.5 years and the ratio to membership e-folding 0.32–0.59. R16-F1 FAIL.
 - **The post hoc lag-aware fit** gives τ of 3.0–4.5 years against membership e-folding of 4.1–5.0. The ratio is 0.69–1.00 on both ladders and at every m.
+  _[SUPERSEDED 2026-10-21 by §2z-ds (R17-C): five blocks were too short; over ten years the lasting shape's τ is 6.9 and 6.6 years, 1.5 × membership.]_
 - **Scores.** R16-F2 PASS (the SI's linearized 9 years overstates τ 2.6-fold) and R16-F3 PASS.
 - **Reading.** No separation of time scales.
 
@@ -13795,7 +13797,7 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started 
 **Results 5, rewritten.**
 - Jointly estimated fixed differences account for the level of persistence.
 - What no symmetric form produces is the asymmetry. The decline state gets its sign, not its size.
-- No form forecasts the 2022 shares (50–55% and 55–62% against 36% and 50.5%).
+- No form forecasts the 2022 shares (50–55% and 55–62% against 36% and 50.5%). _[Correction, §2z-ds: 55–65% on comments (round 8, H16).]_
 
 **Abstract and Introduction.** The heterogeneity sentence is restated. The abstract is 243 words.
 
@@ -13887,3 +13889,66 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; manuscript v7
 - no manuscript change since 1652645;
 - no new run;
 - GPT-6 Pro not yet run.
+
+## 2z-ds. 2026-10-21 — EXPLORATORY MEASUREMENT R17 (round-8 Tiers 1–3; expectations in PLAN.md addendum R17, committed at 6006230 before any run; amendment R17-B3 committed at 438d56a before its run) and MANUSCRIPT v8. The asymmetry is now one banded statistic: D = +0.22 [0.18, 0.25] on submissions and +0.13 [0.12, 0.15] on comments, against −0.07 and −0.05 in homogeneous growth; relative to that null, declines persist about three times as strongly as gains. The jointly estimated fixed differences are rejected on both ladders once their own objective is calibrated (29 against a 95th percentile of 18 on submissions; 439 against 22 on comments), although the estimator does not invent heterogeneity from a slow swing. Over ten years the model's head responds to a step in its decline with a time constant of 6.6–6.9 years, 1.5 times membership turnover, and barely responds to a step in volatility. Table 1 rebuilt by one code path. Bridge protocol draft amended (v3.2, P8: the asymmetry on item counts; NOT adopted). Nothing adopted; no gate evaluation; bridge sealed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started from 40c3f70 (§2z-dr); skills at that commit. The owner, 2026-10-21: "do all 3 tiers. title suggestion is better but not yet perfect PNAS style. Page limit needs to be no more than 7 … don't worry about data and acknowledgement details. do add assymetry to the protocal for the sealed data."_
+
+**What ran.** `r17_round8.py` via `run_r17.sh` and `run_r17b.sh` (each job alone under `r12_safe_run.sh`, from the lean universe cache; swap unchanged at 1.52 GB throughout); scores by `r17_durability_fit.py`; Table 1 by `r17_table1.py`; the frame check `r17_boundary_frame.py` (post hoc). Tier 1 code fixes before the addendum: the capture placebo filter (H6; daily audit rerun) and `r16_durability_fit.py` deposited (H12). All results and scores: `runs/2026-10-18_pnas_push/RESULTS.md` R17-A … R17-D.
+
+**Execution note.** At 09:50 the watchdog held the comments decline-state grid for memory (3.3 GB reclaimable against 6 GB needed; a browser was open). The waiting queue was stopped before the job started, the health check was run and the R17-B3 registration committed in the gap, and the queue was restarted at 10:16 when memory was free. No job was killed and no output was interpreted from an incomplete run.
+
+**Results** (numbers from RESULTS R17; 5–95% bands; development data only):
+- **R17-A, the asymmetry as one statistic.** D = p_fall − p_rise (bottom and top tenths of year-apart changes of 13-week means, gap 13, stratum-demeaned; 200 bootstrap draws over communities within strata).
+  - Data: **+0.222 [0.182, 0.250]** on submissions (p_fall +0.240, p_rise +0.018) and **+0.132 [0.115, 0.153]** on comments (+0.158, +0.026).
+  - Positive at every origin, in early and late origins, before July 2021 (gap 4), without terminal collapses and with absent weeks at the floor.
+  - By stratum: submissions −0.004, +0.207, +0.239 (the head has none); comments +0.117, +0.152, +0.130.
+  - Worlds by the same code: matched homogeneous −0.069 and −0.045 (both changes reverse: p_fall −0.17 and −0.14, p_rise −0.10 and −0.10); jointly estimated fixed differences −0.074 and −0.035; decline state π_D 0.25 +0.030 and +0.125.
+  - Relative to the homogeneous null, declines persist by +0.41 and +0.30 and gains by +0.12 and +0.12: about three times as strongly.
+- **R17-B.**
+  - Table 1 by one code path: on submissions, turnover 0.30 (top 10), 0.18 (top 78), 0.15 (top 2,500); pooled crossing ratio 1.04; c/s̄ 0.55.
+  - Post hoc frame check: the registered boundary estimator gives 1.041 on the universe frame against 0.802 on the full panel (comments 1.069 on both), so the submissions shortfall depends on communities outside the universe frame.
+  - The 2021 mid-month steps are r/wallstreetbets and r/dogecoin (15 February) and r/dogecoin with r/AskReddit and r/apexlegends (15 May). Surge communities that entered the head at their peak slowed the fall rather than drove it.
+- **R17-B3, item counts.**
+  - R17-A's construction: +0.098 [0.065, 0.129] and +0.095 [0.077, 0.116]. The asymmetry is in participation too, on submissions at half its karma value.
+  - The bridge protocol's construction translated two years back: +0.034 [−0.026, 0.099] (submissions) and +0.152 [0.110, 0.203] (comments) on counts; +0.235 and +0.195 on karma.
+- **R17-C, the ten-year response** (homogeneous world, 10 seeds).
+  - Step in the head's decline (0.2 a year): the lasting shape's τ is 6.9 [3.8, 25.0] years on submissions and 6.6 [5.3, 8.8] on comments, 1.5 times the membership e-folding (4.6 and 4.3). Half the response comes within about five years.
+  - Step of ×1.2 in lasting volatility at every rank: the head's observed shape moves +0.06 and −0.03 in five years (+0.24 and +0.03 in ten).
+  - The joint world's first-year response is smaller (−0.008 against −0.014; −0.015 against −0.026). That world is unstable past about year 4 when run beyond the panel's length, and is not interpreted there.
+- **R17-D, Tier 3.**
+  - The joint grid past its edges: optimum s 0.8, head 0.25, km 0.5, m 0.6 on submissions (29.2, from 38.8), and s 0.6, head 0, km 0.35, m 0.7 on comments (439.3, from 487.2). The swing is interior on both; m sits at its new edge on submissions.
+  - Correct-specification calibration of the 24-moment objective (20 pseudo-panels): median 7.8 [4.2, 18.3] and 11.8 [6.4, 22.2]. **The joint form is rejected on both ladders.**
+  - A homogeneous world with the slow swing is fitted with s 0 in 20/20 on both: no false positive.
+  - R16-G redone with the spreads traded: best 30.5 (submissions; joint 29.2) and 430.6 (comments; joint 439.3). D in its worlds is −0.046 and −0.022, and at the new joint optima −0.074 and −0.028.
+  - **No calibrated combination gives the asymmetry.**
+
+**Expectations** (PLAN.md R17 and R17-B3; 18):
+- Met: R17-1, 2, 3, 4, 5, 6, 8, 11, 12, 14, 15, and 16 (comments only, within noise).
+- Failed: R17-7 (same-code c/s̄ 0.55, not within ±0.10 of 0.72); R17-9 (ratio 1.52 and 1.54, against 0.6–1.5, narrowly); R17-10 (the volatility response is slow or absent); R17-13 (the joint form is rejected on submissions); R17-17 (D −0.05 and −0.02); R17-18 (submissions, protocol construction, item counts).
+
+**Verdict.**
+- Exploratory; no change adopted; no gate evaluation.
+- The asymmetry stands as the departure from homogeneous growth that no calibrated form reproduces.
+- Persistence as such is reproduced by fixed differences, but that form is rejected in full.
+- The durability reading becomes "no large separation of time scales (1.5 × membership)", with drift changes fast and volatility changes slow.
+
+**Commands** (from the repository root, `R12_CACHE` = the lean cache):
+- `zsh llm_fitting/runs/2026-10-18_pnas_push/run_r17.sh`, then `run_r17b.sh`;
+- `python llm_fitting/runs/2026-10-18_pnas_push/r17_durability_fit.py`;
+- `python llm_fitting/runs/2026-10-18_pnas_push/r17_table1.py`;
+- `python llm_fitting/runs/2026-10-18_pnas_push/make_v5_figures.py`.
+
+**Corrections to the record.**
+- §2z-dq's "55–62%" (the 2022 comments head-share projections) should read 55–65% (round 8, H16).
+- §2z-dq and RESULTS R16-F: "the head's shape responds … on the time scale of membership turnover" (ratio 0.7–1.0) is superseded by R17-C (ratio 1.5 over ten years). "No large separation of time scales" stands.
+- §2z-dq and the v7 SI: "the joint form fits on submissions" is withdrawn (R17-D: rejected against its own calibrated reference).
+- R9's "the data's top ten lie at or above every world's 95th percentile" compared full-panel data with universe-frame worlds. By one code path the data's top ten (0.30) lie in the upper tail of the data-ladder worlds (95th percentiles 0.27–0.33) (R17-B).
+
+**Manuscript v8** (`paper/pnas_draft.tex`, `paper/pnas_si.tex`; PDFs copied to `paper/`): all of Tier 1 (H1–H18, K1–K10 as SYNTHESIS_R8 §3 lists them); the asymmetry made the fifth Results section with D defined in Methods, Fig. 3D as decile curves and a banded SI table; Table 1 by one code path with a D row; the 2021 events named; R17-C in Results 2, the abstract and the Discussion (the linearized factors moved to the SI); R17-D in Results 5 and the SI; Fig. 3 of v7 moved to the SI (Fig. S1); the registration paragraph replaced by a table. Title: "Random growth and persistent decline shape the hierarchy of online attention". Main text 7 pages (owner's limit); abstract 249 words; significance 119.
+
+**Bridge protocol.** `BRIDGE_PROTOCOL_V3_DRAFT_2026-10-18.md` gains amendment v3.2: P8, the asymmetry D on item counts out of sample (2024 Q2 − 2023 Q2 against 2022 Q3 − 2021 Q3), PASS if D > 0 with the band excluding 0 on both ladders, reading fixed from R17-B3's development values. Still a draft; adoption and first contact are the owner's.
+
+**Not done.** No gate evaluation. No contact with sealed data (bridge and Wikipedia unopened). Not run: the "uniform step in the slide at every rank" of SYNTHESIS_R8 Tier 2 (the registration used a volatility step instead); the SI's reordering by claim and estimand (round 8, C) beyond the registration table; the six round-7 references still uncited. GPT-6 Pro not run.
+
+**Ledgers.** EXPOSURE_LEDGER: one row (R17: lean universe cache; T9 daily panels for the 2021 events and the item counts). GATE_LEDGER: no row.
