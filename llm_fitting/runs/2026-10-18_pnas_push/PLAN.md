@@ -1387,3 +1387,26 @@ A crash before any output is fixed and disclosed here; a killed run is not inter
 | | expectation | prior |
 |---|---|---|
 | R18-A1 | the data's 5–95% band for D_FB excludes the matched control's mean (−0.010), and the band for persistence at gap 8 excludes the control's mean (−0.098) | 50% |
+
+### Amendment R18-B (2026-10-21, after R18 and the round-9 Opus review, before its run): Facebook's size law
+**Why.**
+- The independent Opus referee (round 9, Opus track, iteration 1) points out that R18's Facebook worlds use the structure-function size exponent β = 0.097 (`r18_fit_summary.json`). The record shows this is biased up by about 0.045 at 86 weeks (§2z-dd recovery).
+- Facebook's two-step lasting estimate is 0.019 (§2z-dg A7-3), and the paper reports 0.02.
+- With 0.097, the head's lasting volatility is lower than the body's. That could explain R18's failures at the head: top-54 turnover 0.23 against 0.31 (R18-1), and head share 0.30 against 0.23 (R18-8).
+- A common model "adapted to its particulars" should not carry a parameter known to be biased on that panel.
+
+**Design** (`r18_facebook.py worlds controlb<beta>`): the matched control (drift re-solved numerically with the new β) at:
+- β = 0.019, the two-step instrument;
+- β = 0.052, the structure-function value less its recovered bias.
+
+Each arm has 20 seeds (0–19), the same starting levels and statistics, and the same code. The parameter comes from an independent instrument (the two-step estimate) or a recovery correction, not from fitting a score.
+
+**Expectations** (before the run; R18 outputs and the referee's reasoning had been read):
+
+| | expectation | prior |
+|---|---|---|
+| R18-B1 | at β = 0.019 the mean top-54 turnover is ≥ 0.26, and the data's turnover lies inside the arm's 5–95% range at 2 or more of the 4 cut-offs (54, 219, 875, 1,750) | 45% |
+| R18-B2 | at β = 0.019 the head share is within ±0.05 of the data's (0.23) | 50% |
+| R18-B3 | the crossing ratio stays 0.9–1.15 in both arms | 80% |
+| R18-B4 | in both arms the data's persistence lies above the arm's range at gaps 4 and 8, so the excess does not vanish with the size law | 70% |
+| R18-B5 | in both arms the data's D_FB lies above the arm's 95th percentile | 55% |

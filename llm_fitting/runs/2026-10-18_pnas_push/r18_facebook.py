@@ -6,7 +6,7 @@ changes for persistence and the asymmetry).
 
     python r18_facebook.py fit                          fit the model on facebook_a; pickle to $R18_DIR, summary JSON here
     python r18_facebook.py data                         fb_stats on the data's universe frame
-    python r18_facebook.py worlds <calib|control|flat> <s0> <s1>
+    python r18_facebook.py worlds <calib|control|flat|controlb<beta>> <s0> <s1>
     python r18_facebook.py summ
     python r18_facebook.py boot                         R18-A1 (post hoc): bootstrap bands for persistence and D_FB
 
@@ -173,6 +173,8 @@ def mode_data():
 def _world_q(variant, p, ladder, L0, K):
     if variant == "calib":
         return h.het_params(p, ladder, "control"), L0
+    if variant.startswith("controlb"):                   # R18-B: the matched control at a given size exponent beta
+        return h.het_params(replace(p, beta=float(variant[len("controlb"):])), ladder, "control_num"), L0
     q = h.het_params(p, ladder, "control_num")
     if variant == "flat":                                   # R9: constant-slope top K, same levels at ranks 1 and K
         o = np.argsort(np.where(np.isfinite(L0), -L0, np.inf), kind="stable")
@@ -208,7 +210,7 @@ def _band(v):
 def mode_summ():
     d = json.loads((HERE / "r18_data__facebook_a.json").read_text())
     out = dict(data=d, worlds={})
-    for variant in ("calib", "control", "flat"):
+    for variant in ("calib", "control", "flat", "controlb0.019", "controlb0.052"):
         W = [json.loads(f.read_text()) for f in sorted(HERE.glob(f"r18_world__facebook_a__{variant}__s*.json"))]
         if not W:
             continue
