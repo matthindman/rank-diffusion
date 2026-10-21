@@ -1292,3 +1292,24 @@ Each panel is calibrated by the union of the joint grids' saved moments.
 6. the D worlds.
 
 A crash before any output is fixed and disclosed here; a killed run is not interpreted.
+
+### Amendment R17-B3 (2026-10-21, before its run; R17-A's data and matched-control values on karma had been read)
+
+**Why.** The owner asked that the asymmetry be added to the protocol for the sealed 2023–24 data. In those data, scores were re-collected differently from November 2023 (§2z-ah). The protocol's asymmetry test therefore uses item counts, which do not depend on when a score was read. The development value of D on item counts is needed as the prediction, and it has not been computed.
+
+**Design** (`r17_round8.py asym_items <panel>`):
+- weekly submissions and comments per community, from the T9 daily panels, streamed and filtered to the lean universe's members; log(1 + count);
+- R17-A's statistic D, its bands and its by-stratum values, on the same universe, strata and origins as R17-A;
+- and the protocol's own construction on development weeks only (below).
+
+**The protocol's construction.** Change 1 is the 2021 Q3 → 2022 Q3 change of 13-week window means. Change 2 is two 9-week windows a year apart.
+- **On development weeks** it is translated back two years: change 1 = 2019 Q3 → 2020 Q3 (2019-07-01 and 2020-07-06, 13 weeks each), change 2 = 2022-04-04 … 2022-06-05 minus 2021-04-05 … 2021-06-06.
+- **Cohort:** the top K by absence-penalised permanent rank over 2019 Q1–Q2 (2019-01-07 … 2019-06-30), drawn from the development universe. That universe was selected on the whole 2019–22 window, so the analogue conditions on later presence more than the protocol will; this is disclosed, not corrected.
+
+These two changes share no weeks, and change 2 begins 27 weeks after change 1's last week, as in the protocol. The result is a calibration of the protocol's statistic on development data, not a test. (Corrected before any run: the first draft of this paragraph shifted change 1 by one year and change 2 by two, so that change 2's first window fell between change 1's windows.)
+
+**Expectation:**
+
+| | expectation | prior |
+|---|---|---|
+| R17-18 | D on item counts > 0 with the band excluding 0 on both ladders, in R17-A's construction and in the protocol's | 75% |

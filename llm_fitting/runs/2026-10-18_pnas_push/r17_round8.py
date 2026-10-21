@@ -149,6 +149,89 @@ def mode_asym_data(pn):
           f"exits at floor {out['exits_at_floor']['D']:+.3f}; by stratum {[round(out['by_stratum'][str(j)]['D'], 3) for j in range(3)]}", flush=True)
 
 
+def _item_matrix(pn, df, K):
+    """Weekly item counts (submissions or comments) for the universe's members, from the T9 daily panel, streamed;
+    log(1 + count), aligned to the universe frame's periods and entity order (m1.matrices)."""
+    import pandas as pd
+    import pyarrow as pa
+    import pyarrow.compute as pc
+    import pyarrow.parquet as pq
+    import r16_capture as cap
+    X, R, floors, _, ids = m1.matrices(df, K)
+    ids = np.asarray(ids).astype(str)
+    weeks = df.groupby("period")["ts"].first().sort_index()
+    path, ccol, _ = cap.DAILY[pn]
+    pf = pq.ParquetFile(h.ROOT / path)
+    parts = []
+    for i in range(pf.num_row_groups):
+        tb = pf.read_row_group(i, columns=["date", "endpoint_id", ccol])
+        tb = tb.filter(pc.is_in(tb["endpoint_id"], value_set=pa.array(sorted(set(ids)))))
+        if tb.num_rows:
+            g = tb.to_pandas()
+            g["date"] = pd.to_datetime(g["date"])
+            g = g[g["date"] < weeks.iloc[-1] + pd.Timedelta(days=7)]        # no day after the panel's last week
+            g["period"] = np.searchsorted(weeks.to_numpy(), g["date"].to_numpy(), side="right") - 1
+            parts.append(g.groupby(["period", "endpoint_id"])[ccol].sum().reset_index())
+        del tb
+    G = pd.concat(parts).groupby(["period", "endpoint_id"])[ccol].sum().reset_index()
+    G = G[(G["period"] >= 0) & (G["period"] < X.shape[0])]
+    piv = G.pivot(index="period", columns="endpoint_id", values=ccol).reindex(index=range(X.shape[0]), columns=ids)
+    Xi = np.log1p(piv.to_numpy(float))
+    Xi = np.where(np.isfinite(X), np.nan_to_num(Xi, nan=0.0), np.nan)      # present weeks as in the karma panel
+    return Xi, X, R, floors, ids, weeks
+
+
+def mode_asym_items(pn):
+    """R17-B3: D on item counts, in R17-A's construction and in the bridge protocol's construction translated back two
+    years onto development weeks (change 1 = 2019 Q3 -> 2020 Q3, 13-week windows; change 2 = 9-week windows
+    2021-04-05 -> 2022-04-04, 27 weeks after change 1's last week; cohort the top K by permanent rank over 2019 H1)."""
+    df, K = h.load(pn)
+    Xi, X, R, floors, ids, weeks = _item_matrix(pn, df, K)
+    del df
+    gc.collect()
+    lab = h.strata(R, floors, K)
+    out = dict(panel=pn, K=K)
+    out["items_r17a"] = asym_stat(Xi, lab)
+    out["items_r17a_band"] = boot(Xi, lab, lambda Xb, lb: asym_stat(Xb, lb))
+    out["items_by_stratum"] = {str(j): asym_stat(Xi, lab, strata=[j]) for j in range(3)}
+    wk = lambda d: int(np.searchsorted(weeks.to_numpy(), np.datetime64(d)))
+    import balance_accounting as ba
+
+    def proto(Xm):
+        c0, c1 = wk("2019-01-07"), wk("2019-07-01")
+        pr, _ = ba.perm_rank(R, c0, c1, floors)
+        o = np.argsort(pr, kind="stable")
+        labp = np.full(R.shape[1], -1)
+        for j, (lo, hi) in enumerate(((0, K // 16), (K // 16, K // 4), (K // 4, K))):
+            labp[o[lo:hi]] = j
+        w = lambda a, n: h.wmean(Xm, a, a + n)
+        x = w(wk("2020-07-06"), 13) - w(wk("2019-07-01"), 13)
+        y = w(wk("2022-04-04"), 9) - w(wk("2021-04-05"), 9)
+        ok = (labp >= 0) & np.isfinite(x) & np.isfinite(y)
+        xd, yd = x.copy(), y.copy()
+        for j in range(3):
+            s = ok & (labp == j)
+            xd[s] -= x[s].mean()
+            yd[s] -= y[s].mean()
+        f, r = tail_ratios(xd, yd, ok)
+        return dict(D=f - r, p_fall=f, p_rise=r, n=int(ok.sum())), labp, xd, yd, ok
+
+    for name, Xm in (("items", Xi), ("karma", X)):
+        res, labp, xd, yd, ok = proto(Xm)
+        rng = np.random.default_rng(18)
+        vals = []
+        for _ in range(NB):
+            cols = np.concatenate([rng.choice(np.flatnonzero(ok & (labp == j)), (ok & (labp == j)).sum(), replace=True) for j in range(3)])
+            f, r = tail_ratios(xd[cols], yd[cols], np.ones(cols.size, bool))
+            vals.append(f - r)
+        res["band"] = np.quantile(vals, [0.05, 0.5, 0.95]).tolist()
+        out[f"protocol_{name}"] = res
+    _dump(HERE / f"r17_asym_items__{pn}.json", out)
+    print(f"{pn}: items D (R17-A) {out['items_r17a']['D']:+.3f} {np.round(out['items_r17a_band']['D'], 3).tolist()}; "
+          f"protocol construction: items {out['protocol_items']['D']:+.3f} {np.round(out['protocol_items']['band'], 3).tolist()}, "
+          f"karma {out['protocol_karma']['D']:+.3f} {np.round(out['protocol_karma']['band'], 3).tolist()}", flush=True)
+
+
 def mode_asym_worlds(pn, variant, s0, s1, prm):
     df, K, T, p, base, ladder, L0 = t3._setup(pn)
     del df
@@ -369,6 +452,8 @@ def main():
     mode, pn = sys.argv[1], sys.argv[2]
     if mode == "asym_data":
         return mode_asym_data(pn)
+    if mode == "asym_items":
+        return mode_asym_items(pn)
     if mode == "asym_worlds":
         return mode_asym_worlds(pn, sys.argv[3], int(sys.argv[4]), int(sys.argv[5]), json.loads(sys.argv[6]))
     if mode == "asym_summ":
