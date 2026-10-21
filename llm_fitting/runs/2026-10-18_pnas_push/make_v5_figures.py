@@ -371,12 +371,47 @@ R17_TAGS = {"reddit_submissions_long": {"joint17": "joint_s0.8_head0.25_km0.5_m0
                                     "traded": "joint_decline_s0.6_head0.0_km0.35_m0.7_pi0.25_hl208_sd0.3"}}
 
 
+def _fig_forecast(a):
+    """The head's arithmetic share against the forecasts (the v8.2 Fig. 3D, now SI Fig. S3)."""
+    for j, pn in enumerate(PANELS2):
+        hc = load(HERE / f"head_components__{pn}.json")
+        yrs = [rr["year"] for rr in hc["rows"]]
+        a.plot(yrs, [100 * rr["reselected"]["share_karma"] for rr in hc["rows"]], "-", marker=MK[pn], color=COL[pn], ms=3, lw=1.1,
+               label=f"{LAB[pn]} (top {hc['k']})")
+        o = load(HERE / f"structure_oop__{pn}__home_movinghome_vp.json")
+        m, (lo, hi) = o["arms"]["movinghome_vp"]["share_3"], o["arms"]["movinghome_vp"]["share_3_q"]
+        x = 2022.15 + 0.12 * j
+        a.errorbar([x], [100 * m], yerr=[[100 * (m - lo)], [100 * (hi - m)]], fmt="D", color=COL[pn], mfc="white", ms=3.2, capsize=1.5, lw=0.8)
+        a.plot([2022, x], [100 * o["data"]["share_3"]] * 2, ":", color=COL[pn], lw=0.6)
+        for i_, kind in enumerate(("joint", "decline", "factor")):
+            g = _het_oop(pn, kind)
+            if g is not None:
+                m_, (lo_, hi_) = g
+                a.errorbar([x + 0.07 * (i_ + 1)], [100 * m_], yerr=[[100 * (m_ - lo_)], [100 * (hi_ - m_)]], fmt=HET_MK[kind], color=COL[pn], ms=2.6, lw=0.6)
+    a.plot([], [], "D", color="k", mfc="white", ms=3, label="homogeneous, fit 2019-20")
+    for kind in ("joint", "decline", "factor"):
+        a.plot([], [], HET_MK[kind], color="k", ms=2.6, label=HET_LAB[kind])
+    a.set_xticks([2019, 2020, 2021, 2022]); a.set_xticklabels(["2019", "'20", "'21", "'22"], fontsize=5.5)
+    a.set_xlim(2018.8, 2022.6)
+    a.set_ylim(20, 100)
+    a.set_ylabel("head's share of the top K (%)")
+    a.set_title("No forecast of the falls", fontsize=6.3)
+    a.legend(loc="upper left", frameon=False, fontsize=4.2)
+
+
+def figS3v5():
+    fig, a = plt.subplots(1, 1, figsize=(W2 / 3.0, 2.4))
+    _fig_forecast(a)
+    fig.tight_layout()
+    save(fig, "figS3_v5")
+
+
 def fig4v5():
     """Main-text Fig. 3 (v8.2, round 9): the asymmetry leads. A persistence across gaps; B the decile curves; C the
     asymmetry D with its bands for the data, by stratum and on item counts, beside every calibrated world; D the head's
     share against the homogeneous forecast."""
     S7 = r7()
-    fig, ax = plt.subplots(1, 4, figsize=(W2, 2.45), gridspec_kw=dict(width_ratios=[1, 0.95, 1.25, 0.95]))
+    fig, ax = plt.subplots(1, 3, figsize=(W2, 2.55), gridspec_kw=dict(width_ratios=[1, 1, 1.3]))
     # A: persistence across gaps: data, Facebook, and the simulated worlds
     a = ax[0]
     gm = load(R / "2026-10-18_momentum" / "gapped_momentum.json")
@@ -410,7 +445,7 @@ def fig4v5():
     a.set_xlabel("gap between the changes (weeks)")
     a.set_ylabel("rank correlation of changes")
     a.set_title("Changes persist on Reddit", fontsize=6.3)
-    a.legend(loc="upper center", frameon=False, fontsize=3.8, ncol=2, handlelength=1.1, labelspacing=0.2, columnspacing=0.5)
+    a.legend(loc="upper center", frameon=False, fontsize=4.4, ncol=2, handlelength=1.1, labelspacing=0.2, columnspacing=0.5)
     a.set_ylim(-0.17, 0.43)
     a.set_yticks([-0.1, 0, 0.1, 0.2])
     tag(a, "A")
@@ -434,7 +469,7 @@ def fig4v5():
     a.set_xlabel("initial year-long change, by decile")
     a.set_ylabel("later year-long change")
     a.set_title("Declines continue", fontsize=6.3)
-    a.legend(loc="lower right", frameon=False, fontsize=4.2, handlelength=1.8, labelspacing=0.25)
+    a.legend(loc="lower right", frameon=False, fontsize=5.0, handlelength=1.8, labelspacing=0.25)
     tag(a, "B")
     # C: D with its bands. Data: 5-95% over 200 bootstrap draws of communities within strata (strata: 100 draws).
     # Worlds: mean and 5-95% range over runs.
@@ -465,45 +500,18 @@ def fig4v5():
     a.axvline(0, color=GREY, lw=0.5)
     a.axhline(n - 5.5, color=GREY, lw=0.3, ls=":")
     a.set_yticks(range(n))
-    a.set_yticklabels(labels[::-1], fontsize=4.6)
+    a.set_yticklabels(labels[::-1], fontsize=5.6)
     a.set_xlabel("asymmetry D = p_fall − p_rise")
     a.set_title("Asymmetry in data and worlds", fontsize=6.3)
     a.plot([], [], "s", color=COL["reddit_submissions_long"], ms=2.6, label="submissions")
     a.plot([], [], "o", color=COL["reddit_comments_ext"], ms=2.6, label="comments")
-    a.legend(loc="center right", bbox_to_anchor=(1.0, 0.33), frameon=False, fontsize=4.2, handlelength=1.0)
+    a.legend(loc="center right", bbox_to_anchor=(1.0, 0.33), frameon=False, fontsize=5.2, handlelength=1.0)
     tag(a, "C")
-    # D: the head's arithmetic share, 2019-2022, against the calibrated homogeneous forecast for 2022 (fit 2019-20)
-    a = ax[3]
-    for j, pn in enumerate(PANELS2):
-        hc = load(HERE / f"head_components__{pn}.json")
-        yrs = [rr["year"] for rr in hc["rows"]]
-        a.plot(yrs, [100 * rr["reselected"]["share_karma"] for rr in hc["rows"]], "-", marker=MK[pn], color=COL[pn], ms=3, lw=1.1,
-               label=f"{LAB[pn]} (top {hc['k']})")
-        o = load(HERE / f"structure_oop__{pn}__home_movinghome_vp.json")
-        m, (lo, hi) = o["arms"]["movinghome_vp"]["share_3"], o["arms"]["movinghome_vp"]["share_3_q"]
-        x = 2022.15 + 0.12 * j
-        a.errorbar([x], [100 * m], yerr=[[100 * (m - lo)], [100 * (hi - m)]], fmt="D", color=COL[pn], mfc="white", ms=3.2, capsize=1.5, lw=0.8)
-        a.plot([2022, x], [100 * o["data"]["share_3"]] * 2, ":", color=COL[pn], lw=0.6)
-        for i_, kind in enumerate(("joint", "decline", "factor")):
-            g = _het_oop(pn, kind)
-            if g is not None:
-                m_, (lo_, hi_) = g
-                a.errorbar([x + 0.07 * (i_ + 1)], [100 * m_], yerr=[[100 * (m_ - lo_)], [100 * (hi_ - m_)]], fmt=HET_MK[kind], color=COL[pn], ms=2.6, lw=0.6)
-    a.plot([], [], "D", color="k", mfc="white", ms=3, label="homogeneous, fit 2019-20")
-    for kind in ("joint", "decline", "factor"):
-        a.plot([], [], HET_MK[kind], color="k", ms=2.6, label=HET_LAB[kind])
-    a.set_xticks([2019, 2020, 2021, 2022]); a.set_xticklabels(["2019", "'20", "'21", "'22"], fontsize=5.5)
-    a.set_xlim(2018.8, 2022.6)
-    a.set_ylim(20, 100)
-    a.set_ylabel("head's share of the top K (%)")
-    a.set_title("No forecast of the falls", fontsize=6.3)
-    a.legend(loc="upper left", frameon=False, fontsize=4.2)
-    tag(a, "D")
-    fig.tight_layout(w_pad=0.6)
+    fig.tight_layout(w_pad=0.8)
     save(fig, "fig4_v5")
 
 
 if __name__ == "__main__":
-    for f in sys.argv[1:] or ["fig1v5", "fig2v5", "fig3v5", "fig4v5", "figS2v5"]:
+    for f in sys.argv[1:] or ["fig1v5", "fig2v5", "fig3v5", "fig4v5", "figS2v5", "figS3v5"]:
         globals()[f]()
         print("drew", f)
