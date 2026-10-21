@@ -15,6 +15,9 @@ Bases: on Reddit the matched control (`control_num`) and the jointly estimated f
     python r20_surge.py calib <panel> <control_num|joint|fbcontrol>
     python r20_surge.py eval <panel> <base> <s0> <s1>           base and base + surge, paired, per seed
     python r20_surge.py summ <panel> <base>
+    python r20_surge.py calibx <panel> <base>                   R20-A1 (post hoc): half-lives 78, 104, 156 added
+    python r20_surge.py evalx <panel> <base> <s0> <s1>          at the extended optimum (r20_worldx files)
+    python r20_surge.py summx <panel> <base>
 
 Reddit runs need $R12_CACHE; Facebook runs need it unset and $R18_DIR (the R18 fit).
 """
@@ -37,6 +40,7 @@ import r17_round8 as r17  # noqa: E402
 import r18_facebook as fb  # noqa: E402
 
 GRID = dict(lam=(0.002, 0.005, 0.01, 0.02), mu=(0.5, 1.0, 2.0), hl=(4, 13, 26, 52))
+HL_X = (78, 104, 156)                                     # R20-A1 (post hoc): beyond the registered grid
 CAL_SEEDS, BURN, WW = (200, 201), 104, 4
 OFFSET = 7_000_000
 
@@ -146,7 +150,7 @@ def moments_of(fr, K, pn):
     return shape_moments(X, h.strata(R, floors, K), horizons(pn), step_of(pn))
 
 
-def mode_calib(pn, base):
+def mode_calib(pn, base, ext=False):
     q, L0, K, T = setup(pn, base)
     dm = json.loads((HERE / f"r20_moments__{pn}.json").read_text())
     target, sd = np.array(dm["moments"]), np.array(dm["boot_sd"])
@@ -156,17 +160,19 @@ def mode_calib(pn, base):
         sims.append((Xs, ids, *draws(T, Xs.shape[1], seed)))
     base_m = np.mean([moments_of(frame_of(Xs, ids, K, T), K, pn) for Xs, ids, _, _ in sims], 0)
     rows = []
-    for lam, mu, hl in itertools.product(GRID["lam"], GRID["mu"], GRID["hl"]):
+    for lam, mu, hl in itertools.product(GRID["lam"], GRID["mu"], HL_X if ext else GRID["hl"]):
         ms = [moments_of(frame_of(Xs + surge(ids, lam, mu, hl, U, E), ids, K, T), K, pn) for Xs, ids, U, E in sims]
         v = np.mean(ms, 0)
         obj = float(np.sum(((v - target) / sd) ** 2))
         rows.append(dict(lam=lam, mu=mu, hl=hl, obj=obj, moments=v.tolist()))
         print(f"{pn} {base} lam {lam} mu {mu} hl {hl}: objective {obj:.1f}", flush=True)
         gc.collect()
+    if ext:                                             # R20-A1: the registered rows plus the new half-lives
+        rows = json.loads((HERE / f"r20_calib__{pn}__{base}.json").read_text())["rows"] + rows
     best = min(rows, key=lambda r: r["obj"])
     out = dict(panel=pn, base=base, names=dm["names"], target=target.tolist(), sd=sd.tolist(), base_moments=base_m.tolist(),
                base_obj=float(np.sum(((base_m - target) / sd) ** 2)), rows=rows, best=best)
-    (HERE / f"r20_calib__{pn}__{base}.json").write_text(json.dumps(out, indent=1))
+    (HERE / f"r20_calib{'x' if ext else ''}__{pn}__{base}.json").write_text(json.dumps(out, indent=1))
     print("best", json.dumps(best), "base objective", round(out["base_obj"], 1), flush=True)
 
 
@@ -190,9 +196,10 @@ def score(fr, K, T, pn):
     return out
 
 
-def mode_eval(pn, base, s0, s1):
+def mode_eval(pn, base, s0, s1, ext=False):
+    x = "x" if ext else ""
     q, L0, K, T = setup(pn, base)
-    best = json.loads((HERE / f"r20_calib__{pn}__{base}.json").read_text())["best"]
+    best = json.loads((HERE / f"r20_calib{x}__{pn}__{base}.json").read_text())["best"]
     for seed in range(s0, s1 + 1):
         Xs, ids = simulate(q, L0, T, seed)
         U, E = draws(T, Xs.shape[1], seed)
@@ -201,7 +208,7 @@ def mode_eval(pn, base, s0, s1):
         res = dict(panel=pn, base=base, seed=seed, surge=dict(lam=best["lam"], mu=best["mu"], hl=best["hl"]),
                    base_world=score(frame_of(Xs, ids, K, T), K, T, pn), surge_world=score(frame_of(Xs + S, ids, K, T), K, T, pn))
         res = json.loads(json.dumps(res, default=float))       # string keys, as the saved file has them
-        (HERE / f"r20_world__{pn}__{base}__s{seed}.json").write_text(json.dumps(res, indent=1))
+        (HERE / f"r20_world{x}__{pn}__{base}__s{seed}.json").write_text(json.dumps(res, indent=1))
         b, s = res["base_world"], res["surge_world"]
         if pn == "facebook_a":
             print(f"{pn} {base} seed {seed}: D_FB {b['D_FB']['D']:+.3f} -> {s['D_FB']['D']:+.3f}; top-54 turnover "
@@ -213,8 +220,9 @@ def mode_eval(pn, base, s0, s1):
         gc.collect()
 
 
-def mode_summ(pn, base):
-    W = [json.loads(f.read_text()) for f in sorted(HERE.glob(f"r20_world__{pn}__{base}__s*.json"))]
+def mode_summ(pn, base, ext=False):
+    x = "x" if ext else ""
+    W = [json.loads(f.read_text()) for f in sorted(HERE.glob(f"r20_world{x}__{pn}__{base}__s*.json"))]
     band = lambda v: dict(mean=float(np.mean(v)), median=float(np.median(v)), q05=float(np.quantile(v, 0.05)),
                           q95=float(np.quantile(v, 0.95)), n=len(v))
     if pn == "facebook_a":
@@ -240,7 +248,7 @@ def mode_summ(pn, base):
                           surge=np.mean([w["surge_world"]["moments"] for w in W], 0).tolist())
     if pn != "facebook_a":
         out["curve"] = dict(base=np.mean([w["base_world"]["curve"] for w in W], 0).tolist(), surge=np.mean([w["surge_world"]["curve"] for w in W], 0).tolist())
-    (HERE / f"r20_summary__{pn}__{base}.json").write_text(json.dumps(out, indent=1))
+    (HERE / f"r20_summary{x}__{pn}__{base}.json").write_text(json.dumps(out, indent=1))
     for k in out["paired"]:
         print(f"{pn} {base} {k}: base {out['base_world'][k]['mean']:+.3f}  surge {out['surge_world'][k]['mean']:+.3f} "
               f"[{out['surge_world'][k]['q05']:+.3f}, {out['surge_world'][k]['q95']:+.3f}]  paired {out['paired'][k]['mean']:+.3f}", flush=True)
@@ -256,5 +264,11 @@ if __name__ == "__main__":
         mode_eval(pn, sys.argv[3], int(sys.argv[4]), int(sys.argv[5]))
     elif mode == "summ":
         mode_summ(pn, sys.argv[3])
+    elif mode == "calibx":
+        mode_calib(pn, sys.argv[3], ext=True)
+    elif mode == "evalx":
+        mode_eval(pn, sys.argv[3], int(sys.argv[4]), int(sys.argv[5]), ext=True)
+    elif mode == "summx":
+        mode_summ(pn, sys.argv[3], ext=True)
     else:
         sys.exit(__doc__)

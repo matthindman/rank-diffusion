@@ -1527,3 +1527,17 @@ The simulator's rank-dependent parameters and exits read only the lasting level 
 - **Surges sufficient.** If joint + surge gives D > 0 with the data's D inside its range (R20-3b) while gapped persistence holds (R20-4), then fading surges plus fixed growth differences reproduce the asymmetry without a lasting decline state. The paper would say both readings fit, and that the sealed test must discriminate.
 - **Surges not sufficient.** If D stays ≤ 0, or persistence collapses, fading surges of the calibrated size do not explain the asymmetry, and the decline-state reading is the better-supported one.
 - Either way the result is reported. Nothing here changes a default; the surge exists only in this script.
+
+### Amendment R20-A1 (2026-10-21, POST HOC: written after R20's Facebook and submissions outputs were read, before its own run): half-lives beyond the registered grid on Reddit
+
+**Why.** On submissions the calibration's optimum lies at the grid's longest half-life on both bases: λ 0.005, μ 1.0, h 52 on `control_num`, and λ 0.01, μ 0.5, h 52 on `joint`. The 52-week tail asymmetry stays below the data's (0.069 and 0.041 against 0.092). The optimum may lie beyond the grid. On Facebook the optimum is interior (h 26).
+
+**Design.** The same calibration, objective and seeds, with h ∈ {78, 104, 156} added (λ and μ grids unchanged), on both Reddit ladders and both bases (`r20_surge.py calibx`). If the extended optimum differs from R20's, its 20 evaluation seeds are run (`r20_surge.py evalx`) and reported beside R20's; R20's registered scores stand as scored.
+
+| | expectation | prior |
+|---|---|---|
+| R20-A1-1 | the extended optimum has h ≥ 78 on both bases of submissions | 60% |
+| R20-A1-2 | at the extended optimum, joint + surge still gives mean D > 0 on submissions | 50% |
+| R20-A1-3 | at the extended optimum, joint + surge keeps gapped persistence at 13 weeks ≥ +0.08 on submissions | 45% |
+
+The comments ladder's R20 outputs had not been read when this was written.
