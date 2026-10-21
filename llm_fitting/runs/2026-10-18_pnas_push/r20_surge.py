@@ -9,7 +9,8 @@ adding s to the simulated observed matrix after simulation is exactly an observa
 0 when a slot is reborn as a new unit; the first occupants get a 104-week burn-in; its random stream is seed + 7,000,000.
 
 Bases: on Reddit the matched control (`control_num`) and the jointly estimated fixed differences at R17's optimum
-(`joint`); on Facebook the matched control at beta 0.019 (`fbcontrol`).
+(`joint`); on Facebook the matched control at beta 0.019 (`fbcontrol`) and, for R20-A2, the same from R18-D's
+matched start (`fbcontrolm`).
 
     python r20_surge.py moments <panel>                         data shape moments and bootstrap SDs
     python r20_surge.py calib <panel> <control_num|joint|fbcontrol>
@@ -103,10 +104,13 @@ def mode_moments(pn):
 # --------------------------------------------------------------------------- worlds
 def setup(pn, base):
     """(q, L0, K, T) of the base world."""
-    if base == "fbcontrol":
+    if base in ("fbcontrol", "fbcontrolm"):
         with open(fb._fit_path(), "rb") as f:
             fit = pickle.load(f)
-        q, L0 = fb._world_q("controlb0.019", fit["p"], fit["ladder"], fit["L0"], fit["K"])
+        v = "controlb0.019"
+        if base == "fbcontrolm":                         # R20-A2: from R18-D's matched start
+            v += f"m{json.loads((HERE / 'r18d_matchcal.json').read_text())['c']}"
+        q, L0 = fb._world_q(v, fit["p"], fit["ladder"], fit["L0"], fit["K"])
         return q, L0, fit["K"], fit["T"]
     df, K, T, p, _, ladder, L0 = t3._setup(pn)
     del df

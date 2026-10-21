@@ -1541,3 +1541,16 @@ The simulator's rank-dependent parameters and exits read only the lasting level 
 | R20-A1-3 | at the extended optimum, joint + surge keeps gapped persistence at 13 weeks ≥ +0.08 on submissions | 45% |
 
 The comments ladder's R20 outputs had not been read when this was written.
+
+### Amendment R20-A2 (2026-10-22, POST HOC: written after R18-D's and R20's Facebook outputs were read, before its own run): Facebook's surge on the matched start
+
+**Why.** Two changes each bring Facebook's head turnover into range: the matched starting ladder (R18-D: top-54 turnover 0.275, data 0.315 inside [0.240, 0.325]) and fading surges on the unmatched start (R20: 0.305). A Facebook model that uses both must be shown not to overshoot before the paper describes either as an account of the head.
+
+**Design.** The R20 surge, calibrated afresh by R20's rule (same moments, grid, seeds and objective), on the matched control at β 0.019 from the matched start (c 0.96; `r20_surge.py` base `fbcontrolm`), then 20 paired evaluation seeds.
+
+| | expectation | prior |
+|---|---|---|
+| R20-A2-1 | the data's top-54 turnover (0.315) lies inside the surge arm's 5–95% range | 55% |
+| R20-A2-2 | the data's D_FB (+0.052) lies inside the surge arm's range | 60% |
+| R20-A2-3 | the data's top-10 turnover (0.35) lies below the surge arm's range (the surge overshoots the very top) | 50% |
+| R20-A2-4 | the data's gap-8 persistence (−0.031) still lies above the surge arm's range | 80% |
