@@ -1410,3 +1410,20 @@ Each arm has 20 seeds (0–19), the same starting levels and statistics, and the
 | R18-B3 | the crossing ratio stays 0.9–1.15 in both arms | 80% |
 | R18-B4 | in both arms the data's persistence lies above the arm's range at gaps 4 and 8, so the excess does not vanish with the size law | 70% |
 | R18-B5 | in both arms the data's D_FB lies above the arm's 95th percentile | 55% |
+
+### Amendment R18-C (2026-10-21, after R18-B and the round-9 Opus review, iteration 2, before its run): every Facebook column at the two-step size exponent
+**Why.** The paper now calls the structure-function exponent 0.097 biased on 86 weeks (R18-B). Table 1's Facebook block should therefore use worlds at the two-step 0.019 in every column, not only in the matched control.
+
+**Design.** Two arms at β = 0.019, each with 20 seeds, the same code and the same starting levels:
+- the calibrated model (`calibb0.019`, closed-form hold drift at that β);
+- the constant-slope start (`flatb0.019`, the matched control from a constant-slope top K).
+
+Table 1's Facebook block will then be built from the three arms at β = 0.019, with the β = 0.097 arms reported in the SI.
+
+**Expectations** (before the run):
+
+| | expectation | prior |
+|---|---|---|
+| R18-C1 | `calibb0.019`: the head share is within ±0.05 of the data's (0.23) | 55% |
+| R18-C2 | `flatb0.019`: top-54 turnover is no greater than top-1,750 turnover (a constant slope removes the head's excess) | 60% |
+| R18-C3 | in both arms the data's persistence at gap 4 and its D_FB lie above the arm's 5–95% range | 65% |
