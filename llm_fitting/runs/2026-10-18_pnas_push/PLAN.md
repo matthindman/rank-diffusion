@@ -1313,3 +1313,57 @@ These two changes share no weeks, and change 2 begins 27 weeks after change 1's 
 | | expectation | prior |
 |---|---|---|
 | R17-18 | D on item counts > 0 with the band excluding 0 on both ladders, in R17-A's construction and in the protocol's | 75% |
+
+## Addendum R18 (2026-10-21, written before any run): the common model on Facebook
+
+**Why.** The owner, 2026-10-21: "I want to make sure that we are constructing a common or nearly-common model across these different platforms. Make sure that we have updated the Facebook analysis to adopt the same-ish model that the Reddit data is using, adapted to its particulars." The paper's simulated worlds are all calibrated on Reddit. Facebook's moving-home fit (§2z-dd, structure suite) predates the corrected moving home (`movinghome_vp`), the drift re-solved numerically (the matched control, R12 amendment A4) and the worlds of R7, R9, R12 and R17. Code: `r18_facebook.py`. Queue: `run_r18.sh`. Every job runs alone under the swap watchdog.
+
+**Seen when this was written.**
+- Every Facebook result in the record (§2z-ct, §2z-dd, §2z-df, §2z-dg, §2z-ap).
+- The paper's Facebook numbers. Facebook persistence at its settings is −0.114, −0.067 and −0.031; the earlier moving-home fit gave one-block retention of 0.81, 0.79, 0.81 and 0.83 against the data's 0.72, 0.73, 0.78 and 0.83, and a head share of 0.282 against 0.251.
+
+No statistic below has been computed on a Facebook world of the current model.
+
+**The model, adapted to Facebook.**
+- **Panel:** `facebook_a`, Era A, 86 weeks, K = 3,500, buffer 4K, the registered loader (no cache).
+- **Estimator:** the paper's estimator for its model (`r12_hetgrowth.fit_model`: EST_BASE with `mix_hetero`, as for comments; `estimate_rdm`, variant "hold").
+- **Simulation:** with `movinghome_vp`, from the filtered levels of weeks 0–12. This is Facebook's first 13-week block, the cohort window of its persistence statistic; Reddit uses weeks 0–29 of 212. T = 86.
+
+**Worlds** (20 seeds each, 0–19):
+- **(a) calibrated model**, the closed-form hold drift (`het_params(..., "control")`), as Reddit's "calibrated model";
+- **(b) matched control**, the drift re-solved numerically (`"control_num"`), as Reddit's matched control;
+- **(c) geometry control:** (b) with the top K of the starting ladder replaced by a ladder of constant slope with the same levels at ranks 1 and K, as R9.
+
+**Statistics.** One code path (`fb_stats`) on the data's universe frame and on every world frame, at Facebook's settings:
+1. **Turnover:** the share of the top k replaced between consecutive 26-week block means (k = 10, 54, 219, 875, 1,750), averaged over the two pairs.
+2. **The top occupant:** the weekly change rate of the occupant of ranks 1 and 10.
+3. **Ladder levels:** block-mean levels at ranks 1, 54, 219 and 875 above rank K, per block, and their first-to-last change.
+4. **Crossing ratio:** `mts_boundary_law.analyse` with 13-week blocks (as registered for Facebook, §2z-ct; 20 bootstrap draws), pooled geometrically over K/16 … K.
+5. **Persistence:** the gapped statistic at Facebook's settings (`gapped_momentum.py`: cohort from weeks 0–12; 4-week windows; 26-week changes; gaps 0, 4 and 8; origins every 4 weeks).
+6. **Asymmetry D_FB:** R17-A's tail-ratio statistic in Facebook's construction:
+   - x and y are 26-week changes of 4-week window means, the second starting 4 weeks after the first ends;
+   - both are demeaned within the three strata of whole-window permanent rank;
+   - p_fall and p_rise are taken in the bottom and top tenths of x;
+   - D is averaged over origins 13, 17 and 21.
+7. **Head share:** the arithmetic share of the top K/64 in the top K over the last block's weeks, with sets chosen on the block mean.
+
+**Expectations:**
+
+| | expectation | prior |
+|---|---|---|
+| R18-1 | the data's turnover at k = 54, 219, 875 and 1,750 lies inside the matched control's 5–95% range at 3 or more of the 4 cut-offs | 40% |
+| R18-2 | in (b) the top 54 turn over faster than the top 1,750; in (c) that difference is at most half of (b)'s | 60% |
+| R18-3 | the rank-1 weekly change rate in (b) is within ±0.15 of the data's | 40% |
+| R18-4 | the crossing ratio in (b) is 0.9–1.15 (mean over runs), and the data's universe-frame value lies inside (b)'s 5–95% range | 55% |
+| R18-5 | the data's persistence lies inside (b)'s 5–95% range at 2 or more of the 3 gaps | 55% |
+| R18-6 | the data's D_FB lies inside (b)'s 5–95% range, and \|D_FB\| < 0.10 | 55% |
+| R18-7 | in (b) the first-to-last change of the level at rank 54 above rank K is within ±0.3 (mean over runs) | 70% |
+| R18-8 | the head share in (b) is within ±0.05 of the data's | 50% |
+
+**Order:**
+1. the fit (saved);
+2. the data's statistics;
+3. the worlds (a), (b) and (c);
+4. the summary.
+
+A crash before any output is fixed and disclosed here; a killed run is not interpreted. Not done: heterogeneous growth on Facebook. Its calibration statistics need year-apart changes, which 86 weeks cannot provide.
