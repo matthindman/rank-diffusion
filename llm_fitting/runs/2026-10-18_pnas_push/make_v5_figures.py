@@ -87,7 +87,7 @@ def fig1v5():
     a.set_xscale("log")
     a.set_ylim(0, 0.45)
     a.set_xlabel("size of the top set, k")
-    a.set_ylabel("share replaced in a year")
+    a.set_ylabel("share replaced (a year; Facebook, half)")
     a.set_title("Members turn over", fontsize=6.3)
     a.legend(loc="upper right", frameon=False, fontsize=4.8)
     tag(a, "C")
@@ -126,13 +126,8 @@ def fig1v5():
     save(fig, "fig1_v5")
 
 
-def fig2v5():
-    kin = load(HERE / "turnover_kinematics.json")
-    rob = load(HERE / "exponent_robustness.json")
-    S7 = r7()
-    fig, ax = plt.subplots(1, 4, figsize=(W2, 2.25))
-    # A: time scales by rank, model-implied, against observed membership turnover
-    a = ax[0]
+def _fig_timescales(a, kin):
+    """Time scales by top set (the v8 Fig. 2A, now SI Fig. S4)."""
     for pn in PANELS2:
         L = _law(pn)
         k, K = L["k"], L["K"]
@@ -170,6 +165,36 @@ def fig2v5():
     a.set_ylabel("years")
     a.set_title("Response and turnover times", fontsize=6.3)
     a.legend(loc="upper left", frameon=False, fontsize=4.4)
+
+
+def figS4v5():
+    fig, a = plt.subplots(1, 1, figsize=(W2 / 3.0, 2.4))
+    _fig_timescales(a, load(HERE / "turnover_kinematics.json"))
+    fig.tight_layout()
+    save(fig, "figS4_v5")
+
+
+def fig2v5():
+    kin = load(HERE / "turnover_kinematics.json")
+    rob = load(HERE / "exponent_robustness.json")
+    S7 = r7()
+    fig, ax = plt.subplots(1, 4, figsize=(W2, 2.25))
+    # A (v9.1, round 9 iteration 4): the share of each top set replaced, observed against the turnover formula (SI Eq. S2),
+    # every cell of the three ladders (Facebook: 26-week pairs; Reddit: 52-week pairs)
+    a = ax[0]
+    for pn in ("facebook_a", "reddit_comments_ext", "reddit_submissions_long"):
+        rows = kin[pn]
+        a.plot([r["obs"] for r in rows], [r["pred_exp"] for r in rows], MK[pn], color=COL[pn], ms=3, mfc="white" if pn != "facebook_a" else COL[pn],
+               lw=0, label={"facebook_a": "Facebook (half-year)", "reddit_comments_ext": "Reddit comments", "reddit_submissions_long": "Reddit submissions"}[pn])
+    lim = [0.05, 0.45]
+    a.plot(lim, lim, color=GREY, lw=0.8)
+    a.fill_between(lim, [0.82 * x for x in lim], [1.18 * x for x in lim], color=GREY, alpha=0.12, lw=0)
+    a.set_xlim(*lim)
+    a.set_ylim(*lim)
+    a.set_xlabel("share replaced, observed")
+    a.set_ylabel("share replaced, reconstructed")
+    a.set_title("Turnover reconstructed, 48 cells", fontsize=6.3)
+    a.legend(loc="upper left", frameon=False, fontsize=4.6)
     tag(a, "A")
     # B: measured crossings against sigma^2/2S
     a = ax[1]
@@ -441,10 +466,17 @@ def fig4v5():
                 a.errorbar([int(gap) + 1.6 + 0.9 * i_], [g[gap]["mean"]], yerr=[[g[gap]["mean"] - g[gap]["q05"]], [g[gap]["q95"] - g[gap]["mean"]]],
                            fmt=HET_MK[kind], color=COL[pn], ms=2.6, lw=0.6, label=(HET_LAB[kind] if (not shown and gap == "13") else None))
                 shown = True
+    f18 = HERE / "r18_summary.json"                                      # R18: Facebook's own model, matched control
+    if f18.exists():
+        g18 = load(f18)["worlds"]["control"]["gapped"]
+        for gap in ("0", "4", "8"):
+            b = g18[gap]
+            a.errorbar([int(gap) + 0.9], [b["mean"]], yerr=[[b["mean"] - b["q05"]], [b["q95"] - b["mean"]]], fmt="x", color=COL["facebook_a"],
+                       ms=2.8, mew=0.8, elinewidth=0.5, label="Facebook's model worlds" if gap == "0" else None)
     a.axhline(0, color=GREY, lw=0.4)
     a.set_xlabel("gap between the changes (weeks)")
     a.set_ylabel("rank correlation of changes")
-    a.set_title("Changes persist on Reddit", fontsize=6.3)
+    a.set_title("Changes persist beyond random growth", fontsize=6.3)
     a.legend(loc="upper center", frameon=False, fontsize=4.4, ncol=2, handlelength=1.1, labelspacing=0.2, columnspacing=0.5)
     a.set_ylim(-0.17, 0.43)
     a.set_yticks([-0.1, 0, 0.1, 0.2])
@@ -489,7 +521,14 @@ def fig4v5():
                         ("fixed + decline", R17_TAGS[pn]["traded"]), ("decline state", R16_TAGS[pn]["decline"])):
             w = load(HERE / f"r17_asym_worlds__{pn}__{tg}.json")["D"]
             rows.append((pn, lab, w["mean"], w["q05"], w["q95"], "world"))
-    labels = [r[1] for r in rows if r[0] == "reddit_submissions_long"]
+    f18, b18 = HERE / "r18_summary.json", HERE / "r18_boot__facebook_a.json"
+    fbrows = []
+    if f18.exists() and b18.exists():
+        s18, bb = load(f18), load(b18)
+        fbrows = [("Facebook data", s18["data"]["D_FB"]["D"], bb["D_FB_band"][0], bb["D_FB_band"][2], "data"),
+                  ("Facebook model", s18["worlds"]["control"]["D_FB"]["mean"], s18["worlds"]["control"]["D_FB"]["q05"],
+                   s18["worlds"]["control"]["D_FB"]["q95"], "world")]
+    labels = [r[1] for r in rows if r[0] == "reddit_submissions_long"] + [r[0] for r in fbrows]
     n = len(labels)
     for k, pn in enumerate(PANELS2):
         rr = [r for r in rows if r[0] == pn]
@@ -497,8 +536,14 @@ def fig4v5():
             y = n - 1 - i + (0.18 if k == 0 else -0.18)
             a.errorbar([m], [y], xerr=[[m - lo], [hi - m]], fmt=MK[pn] if kind == "data" else "o", color=COL[pn],
                        mfc=COL[pn] if kind == "data" else "white", ms=2.6, lw=0.8, capsize=0)
+    for i, (lab, m, lo, hi, kind) in enumerate(fbrows):
+        y = n - 1 - (len(labels) - len(fbrows) + i)
+        a.errorbar([m], [y], xerr=[[m - lo], [hi - m]], fmt="^", color=COL["facebook_a"], mfc=COL["facebook_a"] if kind == "data" else "white",
+                   ms=2.8, lw=0.8, capsize=0)
     a.axvline(0, color=GREY, lw=0.5)
     a.axhline(n - 5.5, color=GREY, lw=0.3, ls=":")
+    if fbrows:
+        a.axhline(len(fbrows) - 0.5, color=GREY, lw=0.3, ls=":")
     a.set_yticks(range(n))
     a.set_yticklabels(labels[::-1], fontsize=5.6)
     a.set_xlabel("asymmetry D = p_fall − p_rise")
@@ -512,6 +557,6 @@ def fig4v5():
 
 
 if __name__ == "__main__":
-    for f in sys.argv[1:] or ["fig1v5", "fig2v5", "fig3v5", "fig4v5", "figS2v5", "figS3v5"]:
+    for f in sys.argv[1:] or ["fig1v5", "fig2v5", "fig3v5", "fig4v5", "figS2v5", "figS3v5", "figS4v5"]:
         globals()[f]()
         print("drew", f)

@@ -10459,7 +10459,7 @@ years:
 | comments, top 195 / 1,562 / 12,500 | 0.79 / 0.82 / 0.84 | 0.66 / 0.71 / 0.74 | 0.59 / 0.64 / 0.67 |
 | submissions, top 78 / 625 / 5,000 | 0.79 / 0.80 / 0.82 | 0.66 / 0.68 / 0.71 | 0.58 / 0.59 / 0.63 |
 
-On Facebook pages, 0.69–0.82 of each top set remains after a year.
+On Facebook pages, 0.69–0.82 of each top set remains after a year. _[Correction, §2z-dt: the blocks are half-years (26 weeks), and the range is 0.65–0.82 (`puzzle__facebook_a.json`: 0.685/0.704, 0.754/0.650, 0.819/0.755).]_
 
 **Rank changes in a year among the top K:**
 - the median change of log rank is 0.19–0.21 on comments and 0.24 on
@@ -13952,3 +13952,106 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started 
 **Not done.** No gate evaluation. No contact with sealed data (bridge and Wikipedia unopened). Not run: the "uniform step in the slide at every rank" of SYNTHESIS_R8 Tier 2 (the registration used a volatility step instead); the SI's reordering by claim and estimand (round 8, C) beyond the registration table; the six round-7 references still uncited. GPT-6 Pro not run.
 
 **Ledgers.** EXPOSURE_LEDGER: one row (R17: lean universe cache; T9 daily panels for the 2021 events and the item counts). GATE_LEDGER: no row.
+
+## 2z-dt. 2026-10-21 — REVIEW AND REVISION, OWNER-DIRECTED REFRAME, and EXPLORATORY MEASUREMENT R18. Three things happened in sequence:
+1. **Referee round 9** with gpt-6-astra, four iterations, on manuscripts v8.1 → v9.1: scores 6, 7, 7.5 and 7/10, the last after the reframe.
+2. **The owner's reframe.** The paper is now a general study of attention dynamics on digital platforms, with Facebook pages central: "DO NOT just make this about reddit".
+3. **R18, the common model on Facebook** (expectations in PLAN.md addendum R18, committed 1b49d2f before any run). The paper's model, fitted to Facebook, reproduces the crossing law, the leading page's churn (0.55 against 0.52), the stable ladder and the role of geometry. It turns the head over too slowly and gives it too large a share. Against its own homogeneous worlds, Facebook's changes reverse less than the model allows (+0.04 and +0.07 at gaps of 4 and 8 weeks), and its D has Reddit's sign (+0.05 [−0.01, +0.10] against −0.01): **persistence beyond random growth on both platforms**. Four of eight expectations met.
+
+Nothing adopted; no gate evaluation; bridge sealed.
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started from 9ffe63a (§2z-ds). Owner instructions, 2026-10-21:_
+- _"Do one more careful pass through the draft before sending it out. Then send it just to Codex Astra … fixing the largest issues it raises that don't require new long-duration data analysis runs if and ONLY IF you agree with the core critiques themselves. Do this up to three times … Consider … bringing the Instagram data back in."_
+- _"You can continue with Astra up to 5 iterations, but ONLY if you feel the back and forth has not reached strong diminishing returns."_
+- _"I don't like the title nor in general focusing this just or primarily on Reddit: the real novelty here is the Facebook page data … we expect eventually to have YouTube data here as well. we may need even add wikipedia view data. so DO NOT just make this about reddit: we want to make this a more general paper on understanding the dynamics of attention on digital platforms."_
+- _"once you've made that change, go back to astra one time. Don't lose the bigger-picture frame, but do make any easy edits you receive."_
+- _"I want to make sure that we are constructing a common or nearly-common model across these different platforms. Make sure that we have updated the Facebook analysis to adopt the same-ish model that the Reddit data is using, adapted to its particulars."_
+- _"Once you judge you've maxed out Astra … repeat with an independent opus 5.5 session" (the Opus track is recorded in the next entry)._
+
+**Folder.** `runs/2026-10-21_external_critiques_round9/`. It holds:
+- the prompt templates `CRITIQUE_PROMPT_R9.md` and `CRITIQUE_PROMPT_R9_opus.md`;
+- the instantiated prompts `PROMPT_R9_iter{1..4}.md`;
+- the four reviews, verbatim with provenance headers: `REVIEW_iter{1..4}_gpt-6-astra.md` (Codex CLI 0.163.0, reasoning xhigh, read-only);
+- `RESPONSE_iter{1..4}.md`: every critique, the check made against code or saved outputs, and the action taken or not, with the reason.
+
+**Astra track.**
+
+| iteration | commit | verdict | accepted (checked) |
+|---|---|---|---|
+| 1 | 320ea0d, v8.1 | send out, without enthusiasm, 6/10 | the asymmetry over-connected to the falls; "three times" null-relative only; the membership proxy and unidentified volatility response; mixed R16/R17 optima; a late comments cell omitted; r/ksi; stale SI lines; Instagram net negative in the main text |
+| 2 | c259c4b, v8.2 | send out with enthusiasm, narrowly, 7/10 | rank-relative wording; a block-index mismatch (retention array starts at block 1: 60%/61%, not 55%/57%); Discussion claims beyond the simulated step; the variance algebra; legibility |
+| 3 | faa984a, v8.3 | send out with enthusiasm, 7.5/10 | retention arm named; one-year-equivalent membership time; +0.075; one comparative attribution |
+
+- **Stopped at three.** The referee found "nothing I can identify with confidence" that would reach 8 within the constraints; the owner allowed more only without strong diminishing returns.
+- **Iteration 4** on d75b68e (v9.0, after the reframe): send out, 7/10. Accepted:
+  - claims scoped to Facebook and Reddit, with Instagram supporting only the crossing calculation;
+  - the crossing law described as a gain in mean log activity, and the turnover formula as a contemporaneous reconstruction;
+  - Facebook made visible: Fig. 2A became the 48-cell reconstruction, Facebook's 12 cells included;
+  - "an overlapping period", the comments timing, "exploratory" for the §2z-ap ladder, the scope of the "evaluated" models, 6.5, and the figure labels.
+
+**The reframe (v9.0, d75b68e; v9.1).**
+- **Title:** "Random growth accounts for turnover among the leaders of online attention".
+- **Results:**
+  1. on Facebook and Reddit the leaders turn over while the hierarchy holds its shape. The leading Facebook page changes in 52% of weeks; the page at rank 54 stood 4.0, 3.9 and 4.0 log units above rank 3,500 in three half-years, a post hoc reading of `puzzle__facebook_a.json`.
+  2. random growth accounts for the turnover:
+     - the crossing ratio is 0.98 on Facebook, 1.07 and 0.80 (1.04 on the universe frame) on Reddit, and 1.00 on Instagram through the censoring model;
+     - the turnover reconstruction holds in all 48 cells, Facebook 0.82–1.10;
+     - the slope is flattest at the top on every ladder;
+     - the size exponent is 0.02 on Facebook's interactions, 0.19 on its posts.
+  3. where a hierarchy moved (Reddit; Facebook's slide is unreadable in 86 weeks);
+  4. the model, fitted to each platform, with the cross-platform movement gate of its earlier version (§2z-ap: Facebook 0.103 ± 0.044 against 0.145 ± 0.031, below the baseline in 4/5 splits);
+  5. changes persist beyond random growth, and on Reddit declines more than gains.
+- **Methods and SI.** Facebook first in Methods and SI; flagged-day handling stated as declared (§2z-bv); the SI gains the Facebook ladder over time and the cross-platform gate table.
+
+**R18, the common model on Facebook** (full table and scores in RESULTS R18; SI "The same model on Facebook").
+- **Fit:** the paper's estimator (`r12_hetgrowth.fit_model`) on `facebook_a`; σ0 0.131, structure-function β 0.097, biased up at 86 weeks. Simulated with `movinghome_vp` from the filtered levels of weeks 0–12.
+- **Worlds:** calibrated, matched control and constant-slope start, 20 runs each.
+- **Statistics:** one code path at Facebook's settings (`fb_stats`).
+- **Data against the matched control:**
+
+| statistic | data | matched control |
+|---|---|---|
+| top-54 turnover (half-year) | 0.31 | 0.23 [0.20, 0.28] |
+| top-1,750 turnover | 0.21 | 0.21 |
+| rank-1 weekly change | 0.52 | 0.55 [0.40, 0.70] |
+| crossing ratio | 0.976 | 0.97 [0.85, 1.15] |
+| persistence, gaps 0 / 4 / 8 | −0.114 / −0.067 / −0.031 | −0.134 / −0.106 / −0.098 |
+| D_FB | +0.052 [−0.008, +0.101] (bootstrap of pages, R18-A1, post hoc) | −0.010 [−0.078, +0.025] |
+| head share | 0.23 | 0.30 |
+
+- **Geometry:** the constant-slope start removes the top's faster turnover.
+- **Expectations:** R18-2, 3, 4 and 7 met; R18-1, 5, 6 and 8 failed; R18-A1 met, narrowly for D.
+- **What it changes in the paper:**
+  - Table 1 becomes a two-platform table of the same worlds (`r18_table1.py`);
+  - Fig. 3A–C show Facebook against its own model;
+  - the abstract, introduction, Results 4–5 and Discussion now say both platforms depart from homogeneous growth toward persistence, weakly over Facebook's half-years and clearly over Reddit's four years;
+  - "on Facebook changes reverse, as homogeneous growth predicts" (v9.0) is withdrawn: it compared Facebook with Reddit-calibrated worlds.
+
+**Other changes in the paper** (v8.1 → v9.1):
+- Fig. 3 is rebuilt around D with bands. The forecast is now SI Fig. S2, the items panel S3, and the time scales S4.
+- Time scales are stated in finite-horizon terms.
+- The SI tables are set legibly, and the registration list is a table.
+- Instagram is a Methods line and a Results sentence with its scope; the SI paragraph is expanded.
+- Main text 7 pages; abstract 238 words; significance 107.
+
+**Corrections to the record.**
+- §2z-cu's "0.69–0.82 of each top set remains after a year" (Facebook) is per half-year, and its range omits 0.650: the half-year retention is 0.65–0.82. Found by the Facebook inventory of this session.
+- §2z-dq's 55–62% should read 55–65% (already noted in §2z-ds).
+
+**For the owner** (the referees' list, ranked):
+1. a longer, instrument-consistent Facebook history;
+2. prospective confirmation on the sealed Reddit extension, after protocol adoption and authorization;
+3. a sufficiently long YouTube panel;
+4. Wikipedia pageviews (sealed; a different measurement);
+5. calendar-matched Facebook–Reddit comparisons and pre-period membership on existing data;
+6. fuller joint-model calibration, only for broader rejection claims.
+
+**Not done:**
+- no gate evaluation;
+- no sealed data touched;
+- Fig. 1D not replaced by the occupant-change profile;
+- the six round-7 references still uncited;
+- the title is not confirmed by the owner;
+- nothing pushed.
+
+**Ledgers.** EXPOSURE_LEDGER: one row (R18, `facebook_a`). GATE_LEDGER: no row.

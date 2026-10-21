@@ -1,0 +1,6 @@
+calib seed 15: turnover [0.45, 0.25, 0.285, 0.221, 0.205]; rank-1 change 0.69; boundary 0.8948488940622933; gapped [-0.149, -0.126, -0.115]; D_FB -0.092; head share 0.268
+calib seed 16: turnover [0.45, 0.222, 0.288, 0.224, 0.21]; rank-1 change 0.48; boundary 0.9037018255484607; gapped [-0.136, -0.114, -0.102]; D_FB +0.005; head share 0.280
+calib seed 17: turnover [0.35, 0.222, 0.263, 0.225, 0.22]; rank-1 change 0.61; boundary 0.8661715692806627; gapped [-0.141, -0.118, -0.096]; D_FB +0.044; head share 0.280
+calib seed 18: turnover [0.2, 0.176, 0.276, 0.234, 0.219]; rank-1 change 0.65; boundary 1.0509121384806897; gapped [-0.146, -0.123, -0.122]; D_FB -0.036; head share 0.314
+calib seed 19: turnover [0.3, 0.204, 0.269, 0.214, 0.207]; rank-1 change 0.46; boundary 0.9376144821282233; gapped [-0.12, -0.102, -0.088]; D_FB -0.030; head share 0.282
+peak RSS 0.69 GB (job tree, sampled: 639 MB); swap 1519M -> 1519M; killed 0

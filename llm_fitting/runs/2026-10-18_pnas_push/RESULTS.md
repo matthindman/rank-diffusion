@@ -1780,3 +1780,41 @@ The registered estimator (`mts_boundary_law.analyse`, defaults) on the universe 
 - The joint world in R17-C is unstable beyond about year 4 (fixed differences run past the panel length); its later years are not interpreted.
 - Not run: SYNTHESIS_R8's "uniform step in the slide at every rank" (replaced in the registration by the volatility step).
 - Same-code data values now used in the SI world tables and Fig. 2D (turnover and crossing ratio by the worlds' code on the universe frame).
+
+## R18. The common model on Facebook (expectations in PLAN.md addendum R18, committed 1b49d2f before any run; amendment R18-A1 committed 2cfdc63 after the R18 outputs and before its run; `r18_facebook.py`, `run_r18.sh`; outputs `r18_*.json`, `out_r18_*.txt`)
+
+**Fit** (`r18_fit_summary.json`): `facebook_a`, K 3,500, T 86; σ0 0.131 a week, β 0.097 (structure function; biased up about 0.045 at 86 weeks, §2z-dd); filtered starting levels from weeks 0–12 for 13,702 pages. Twenty runs each of the calibrated model (closed-form hold drift), the matched control (drift re-solved numerically) and the matched control from a constant-slope top K.
+
+**Data and worlds by one code path** (`fb_stats`; data on the universe frame; world entries mean [5–95% over runs]; data bootstrap from R18-A1, 200 draws of pages):
+
+| statistic | data | calibrated | matched control | constant-slope start |
+|---|---|---|---|---|
+| turnover, top 10 / 54 / 219 / 875 / 1,750 (half-year) | 0.35 / 0.31 / 0.26 / 0.24 / 0.21 | 0.32 / 0.21 / 0.28 / 0.22 / 0.21 | 0.31 / 0.23 / 0.27 / 0.22 / 0.21 | 0.26 / 0.26 / 0.32 / 0.30 / 0.28 |
+| rank 1 / rank 10 changes hands (share of weeks) | 0.52 / 0.94 | 0.61 / 0.94 | 0.55 [0.40, 0.70] / 0.93 | 0.46 / 0.92 |
+| level of rank 54 above K, first block; change to last | 4.04; −0.03 | 4.30; +0.03 | 4.30; +0.05 [−0.14, +0.19] | 3.38; +0.18 |
+| crossings / predicted, K/16–K (13-week blocks) | 0.976 | 0.98 [0.88, 1.09] | 0.97 [0.85, 1.15] | 1.06 [0.92, 1.36] |
+| persistence, gaps 0 / 4 / 8 (4-week windows, 26-week changes) | −0.114 [−0.136, −0.092] / −0.067 [−0.090, −0.043] / −0.031 [−0.055, −0.003] | −0.13 / −0.11 / −0.09 | −0.134 [−0.159, −0.115] / −0.106 [−0.123, −0.080] / −0.098 [−0.123, −0.075] | −0.14 / −0.11 / −0.10 |
+| D_FB (three origins) | +0.052 [−0.008, +0.101]; p_fall −0.11, p_rise −0.16 | −0.02 [−0.08, +0.04] | −0.010 [−0.078, +0.025]; −0.13, −0.12 | −0.03 [−0.07, +0.01] |
+| head share, last half-year | 0.23 | 0.27 | 0.30 [0.26, 0.34] | 0.24 |
+
+Excess of the data over the matched control's mean (bootstrap of pages; the worlds' own spread not included): persistence +0.020 [−0.002, +0.042], +0.040 [+0.016, +0.063], +0.070 [+0.043, +0.095] at gaps 0, 4, 8; D_FB +0.064 [+0.002, +0.111].
+
+| | expectation | prior | result |
+|---|---|---|---|
+| R18-1 | data turnover inside (b)'s range at ≥ 3 of 4 cut-offs (54, 219, 875, 1,750) | 40% | **failed** (inside at 219 only; 54 and 875 above, 1,750 at the edge below) |
+| R18-2 | (b): top 54 faster than top 1,750; (c): that difference at most half of (b)'s | 60% | **met** (+0.022 in b; −0.020 in c) |
+| R18-3 | rank-1 change in (b) within ±0.15 of the data's | 40% | **met** (0.55 against 0.52) |
+| R18-4 | (b)'s crossing ratio 0.9–1.15 and the data inside its range | 55% | **met** (0.97; data 0.976 inside) |
+| R18-5 | data persistence inside (b)'s range at ≥ 2 of 3 gaps | 55% | **failed** (above at every gap; at gap 0 by 0.001) |
+| R18-6 | data D_FB inside (b)'s range and \|D_FB\| < 0.10 | 55% | **failed** in its first part (above the range); \|D\| < 0.10 holds |
+| R18-7 | (b)'s change of the rank-54 level within ±0.3 | 70% | **met** (+0.05) |
+| R18-8 | head share in (b) within ±0.05 of the data's | 50% | **failed** (0.30 against 0.23) |
+| R18-A1 (post hoc) | data bands exclude (b)'s mean for D_FB and for persistence at gap 8 | 50% | **met** (D narrowly: −0.008 > −0.010) |
+
+**Reading.**
+- **What the same model reproduces on Facebook.** The crossing law, the leading page's weekly churn, the stable ladder, and the role of geometry: a constant-slope start removes the top's faster turnover.
+- **Where it fails.** As the earlier fit did (§2z-dd), it turns the head over too slowly (0.23 against 0.31) and gives it too large a share.
+- **The main change for the paper.** Against Facebook's own homogeneous worlds, Facebook's changes reverse less than the model allows, by +0.04 and +0.07 at gaps 4 and 8: persistence beyond homogeneous growth, in the direction of Reddit's. Its D has Reddit's sign, marginally.
+- **What this withdraws.** The v9.0 sentence "changes reverse at every gap, as in homogeneous growth" was a comparison with Reddit-calibrated worlds and is withdrawn.
+- **Table 1** becomes a two-platform common-model table (`r18_table1.py`).
+- **Not run.** Heterogeneous growth on Facebook: its calibration needs year-apart changes.

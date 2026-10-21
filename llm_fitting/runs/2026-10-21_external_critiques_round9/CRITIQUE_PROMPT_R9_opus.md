@@ -17,10 +17,16 @@ __DELTA__
   - the decline state with the spreads traded.
 - **The sealed-data protocol draft** (`llm_fitting/BRIDGE_PROTOCOL_V3_DRAFT_2026-10-18.md`, amendment v3.2) gains P8, the asymmetry on item counts. It is a draft, not adopted.
 
-**v8.1 (a careful pass before this round).**
-- **Frame caveat.** The main text states that the submissions crossing ratio is 0.80 on the full panel and 1.04 on the universe frame that the simulations use.
-- **Instagram** enters the crossing ratio as a fourth ladder, through the registered censoring model (§2z-c, §2z-cx), in one sentence and a Methods line.
-- **Smaller fixes:** wording in the abstract, Results 4, Results 5 and the Discussion; detail moved to the SI to keep the main text at 7 pages.
+**v8.1–v9.x (a careful pass, revisions after another referee's comments, and a change of frame).**
+- **The frame, decided by the owner and binding.** The paper is a general study of the dynamics of attention on digital platforms, with Facebook pages as the central novel dataset. In the owner's words: "the real novelty here is the Facebook page data, which people care about a lot more and which have not been systematically studied. We want to make this a general as possible -- and we expect eventually to have YouTube data here as well. we may need even add wikipedia view data. so DO NOT just make this about reddit." Do not recommend narrowing the paper to one platform. Within the general frame, say where each claim is supported on which platform and how to scope it honestly.
+- **Title:** "Random growth accounts for turnover among the leaders of online attention".
+- **Results:**
+  1. leaders turn over while hierarchies hold their shape;
+  2. random growth accounts for turnover on Facebook, Reddit and Instagram;
+  3. where a hierarchy moved, it moved with its leaders' decline (Reddit);
+  4. the model and held-out movement across platforms;
+  5. over longer horizons declines persist more than gains (Reddit, with Facebook's short-horizon contrast).
+- **Fig. 3** is built around the asymmetry D. The time scales are stated in finite-horizon terms. The submissions crossing ratio is 0.80 on the full panel and 1.04 on the universe frame. **Instagram** enters the crossing law, through the registered censoring model.
 
 **Owner decisions still binding** (§2z-dm):
 - the GLLM frame;
@@ -103,6 +109,6 @@ __DELTA__
    - Does the title (PNAS style) and abstract lead with what the evidence best supports?
    - Is the main contribution clear in the first page?
    - Give concrete rewrites (title options, abstract sentences, significance statement) within the word limits.
-6. **Instagram.** Is the one-sentence inclusion a net positive or a net negative for the paper, and why?
+6. **Instagram.** Instagram enters as a third platform for the crossing law, through a censoring model. Is that a net positive or a net negative, and why?
 7. **Structure and prose.** The two or three paragraphs that most need rewriting, with rewrites that keep the main text within 7 pages (say what to cut if you add).
 8. **For the owner.** What needs new data or long runs, ranked by value.

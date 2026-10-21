@@ -1,0 +1,20 @@
+{
+ "facebook": [
+  "\\multicolumn{7}{l}{\\textit{Facebook pages (half-year changes; $K$ = 3,500)}}\\\\",
+  "turnover, top $K/64$ & 0.31 & 0.21 above & 0.23 above & 0.26 above & --- & --- \\\\",
+  "turnover, top $K/2$ & 0.21 & 0.21 edge & 0.21 edge & 0.28 below & --- & --- \\\\",
+  "turnover, top 10 & 0.35 & 0.32 in & 0.31 in & 0.26 in & --- & --- \\\\",
+  "crossings / predicted & 0.98 & 0.98 in & 0.97 in & 1.06 in & --- & --- \\\\",
+  "persistence, gap of one window & $-$0.07 & $-$0.11 above & $-$0.11 above & $-$0.11 above & --- & --- \\\\",
+  "asymmetry $D$ & $+$0.05 & $-$0.02 above & $-$0.01 above & $-$0.03 above & --- & --- \\\\"
+ ],
+ "reddit_submissions": [
+  "\\multicolumn{7}{l}{\\textit{Reddit submissions (year-long changes; $K$ = 5,000)}}\\\\",
+  "turnover, top $K/64$ & 0.18 & 0.20 edge & 0.19 in & 0.19 in & 0.16 edge & 0.22 edge \\\\",
+  "turnover, top $K/2$ & 0.15 & 0.14 above & 0.14 above & 0.18 below & 0.14 above & 0.16 below \\\\",
+  "turnover, top 10 & 0.30 & 0.23 edge & 0.27 in & 0.16 above & 0.18 above & 0.26 in \\\\",
+  "crossings / predicted & 1.04 & 1.11 in & 1.12 below & 1.09 edge & 1.22 below & 0.95 above \\\\",
+  "persistence, gap of one window & $+$0.17 & $-$0.10 above & $-$0.10 above & $-$0.08 above & $+$0.15 above & $+$0.07 above \\\\",
+  "asymmetry $D$ & $+$0.22 & --- & $-$0.07 above & --- & $-$0.07 above & $+$0.03 above \\\\"
+ ]
+}

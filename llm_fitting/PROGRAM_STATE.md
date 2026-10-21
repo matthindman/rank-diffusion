@@ -458,6 +458,16 @@ spine, "size does not protect", and the model and momentum. The outline
   - **Bridge protocol draft v3.2** adds P8, the asymmetry on item counts.
     Not adopted; bridge sealed.
   - **Next:** owner's choice: another review round, or GPT-6 Pro on v8.
+- **Round 9, the reframe and R18 (§2z-dt, 2026-10-21).**
+  - **Astra, three iterations:** 6 → 7 → 7.5/10 on the Reddit-led v8.x.
+  - **The owner's reframe:** a general paper on attention dynamics on digital platforms, Facebook pages central, YouTube and Wikipedia to come. Title "Random growth accounts for turnover among the leaders of online attention" (owner to confirm).
+  - **Astra on v9.0:** 7/10, with easy edits made.
+  - **R18, the paper's model fitted to Facebook.**
+    - It reproduces the crossing law, the leading page's churn, the stable ladder and the role of geometry.
+    - It turns the head over too slowly and gives it too large a share.
+    - Against its own homogeneous worlds, Facebook's changes reverse less than the model allows (+0.04 and +0.07 at gaps 4 and 8), and its D has Reddit's sign (+0.05 [−0.01, +0.10]). Both platforms depart toward persistence.
+    - Table 1 is now a two-platform table of the same worlds.
+  - **Next:** the independent Opus 5.5 review track (§2z-du).
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it
