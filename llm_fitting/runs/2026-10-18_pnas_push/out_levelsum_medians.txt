@@ -1,0 +1,27 @@
+r12_oop__reddit_comments_ext__control                median 0.569 [0.557, 0.599]  mean 0.597  far 1
+r12_oop__reddit_comments_ext__control_num            median 0.559 [0.549, 0.586]  mean 0.574  far 1
+r12_oop__reddit_comments_ext__decay                  median 0.563 [0.549, 0.583]  mean 0.594  far 1
+r12_oop__reddit_comments_ext__factor                 median 0.520 [0.500, 0.549]  mean 0.551  far 2
+r12_oop__reddit_comments_ext__fixed                  median 0.569 [0.557, 0.601]  mean 0.613  far 2
+r12_oop__reddit_submissions_long__control            median 0.512 [0.500, 0.528]  mean 0.537  far 2
+r12_oop__reddit_submissions_long__control_num        median 0.485 [0.469, 0.508]  mean 0.533  far 2
+r12_oop__reddit_submissions_long__decay              median 0.504 [0.473, 0.523]  mean 0.526  far 1
+r12_oop__reddit_submissions_long__factor             median 0.499 [0.483, 0.515]  mean 0.540  far 2
+r12_oop__reddit_submissions_long__fixed              median 0.488 [0.475, 0.532]  mean 0.504  far 0
+r16_oop__reddit_comments_ext__decline                median 0.547 [0.535, 0.565]  mean 0.566  far 1
+r16_oop__reddit_comments_ext__decline_hist           median 0.571 [0.559, 0.596]  mean 0.619  far 4
+r16_oop__reddit_comments_ext__joint                  median 0.560 [0.557, 0.571]  mean 0.561  far 0
+r16_oop__reddit_comments_ext__joint_decline_hist     median 0.579 [0.565, 0.592]  mean 0.650  far 4
+r16_oop__reddit_submissions_long__decline            median 0.491 [0.467, 0.546]  mean 0.546  far 3
+r16_oop__reddit_submissions_long__decline_hist       median 0.489 [0.462, 0.519]  mean 0.519  far 2
+r16_oop__reddit_submissions_long__joint              median 0.499 [0.481, 0.510]  mean 0.510  far 1
+r16_oop__reddit_submissions_long__joint_decline_hist median 0.515 [0.499, 0.522]  mean 0.508  far 0
+reddit_submissions_long__fixed_minus_control_num     median +0.003 [-0.013, +0.035]  mean -0.029
+reddit_submissions_long__decay_minus_control_num     median -0.002 [-0.026, +0.045]  mean -0.007
+reddit_submissions_long__factor_minus_control_num    median +0.014 [-0.012, +0.037]  mean +0.007
+reddit_comments_ext__fixed_minus_control_num         median +0.010 [-0.020, +0.048]  mean +0.039
+reddit_comments_ext__decay_minus_control_num         median +0.009 [-0.016, +0.049]  mean +0.020
+reddit_comments_ext__factor_minus_control_num        median -0.043 [-0.077, -0.007]  mean -0.024
+gomez within k78 sb_data    median -0.042 [-0.094, +0.027] mean -0.053; steady median -0.043
+gomez within k78 rdm        median -0.065 [-0.122, -0.036] mean -0.120; steady median -0.059
+gomez within k78 firm_data  median -0.085 [-0.167, -0.062] mean -0.154; steady median -0.064

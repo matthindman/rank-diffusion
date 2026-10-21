@@ -358,7 +358,13 @@ def _het_oop(pn, kind):
     if not f.exists():
         return None
     g = load(f)
-    return (g["share_3"], g["share_3_q"]) if "share_3" in g else (g["share"], g["share_q"])
+    return _med_q(g["shares"])
+
+
+def _med_q(v):
+    """Median and quartiles over runs: the head share is a level sum that one extreme simulated week can swamp in a run."""
+    v = np.asarray(v, float)
+    return float(np.median(v)), (float(np.quantile(v, 0.25)), float(np.quantile(v, 0.75)))
 
 
 def _fig_items(a):
@@ -404,7 +410,7 @@ def _fig_forecast(a):
         a.plot(yrs, [100 * rr["reselected"]["share_karma"] for rr in hc["rows"]], "-", marker=MK[pn], color=COL[pn], ms=3, lw=1.1,
                label=f"{LAB[pn]} (top {hc['k']})")
         o = load(HERE / f"structure_oop__{pn}__home_movinghome_vp.json")
-        m, (lo, hi) = o["arms"]["movinghome_vp"]["share_3"], o["arms"]["movinghome_vp"]["share_3_q"]
+        m, (lo, hi) = _med_q(load(HERE / f"r12_oop__{pn}__control.json")["shares"])   # the same runs as the movinghome_vp arm
         x = 2022.15 + 0.12 * j
         a.errorbar([x], [100 * m], yerr=[[100 * (m - lo)], [100 * (hi - m)]], fmt="D", color=COL[pn], mfc="white", ms=3.2, capsize=1.5, lw=0.8)
         a.plot([2022, x], [100 * o["data"]["share_3"]] * 2, ":", color=COL[pn], lw=0.6)

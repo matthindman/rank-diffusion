@@ -12869,6 +12869,7 @@ corrected in RESULTS.
     R7-4 fails.
   - c < s̄ in 100% of seeds in every non-Gibrat world (R7-5 passes).
   - The Gomez noise baseline is −0.053, matching 2019–20's −0.06
+  _[SUPERSEDED 2026-10-21 by §2z-du: a mean over runs moved by runs with a swamping simulated week; the median is −0.042, so the baseline is about 4% a year.]_
     (R7-6 passes). The prior-year cohort's within term is −0.25 and −0.31
     (R7-6b passes).
 - **R8, head share split exactly.** The submissions head's share of posts
@@ -13270,6 +13271,7 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-20. Work started 
   - What changed after 2020 was the slide itself: the members' Gomez term went from −0.06 to −0.24 and −0.26 a year.
   - Durability scales as about 8(S*/S)²: several times on comments, about 2 at the submissions head.
   - Out of period, the calibrated homogeneous model forecasts the 2022 head share at 0.537 (5–95% 0.476–0.718) on submissions, against 0.356 observed. On comments it is 0.597 (0.547–0.670), against 0.505. Both observed values are below the bands.
+  _[SUPERSEDED 2026-10-21 by §2z-du: means and 5–95% ranges moved by runs with a swamping simulated week; medians 0.512 (0.500–0.528) and 0.569 (0.557–0.599). Both observed values remain below.]_
 - **R13 (PLAN.md addendum, committed aeda027 before any run):**
   - **R13a** (5-year values from the corrected R11 runs) and **R13e** (turnover-profile exponent) were run on saved outputs (`r13_saved_outputs.py`).
     - **R13-3 PASS:** b is 0.88 on the data's ladder against 0.99 on a constant-slope ladder (size-blind), and 0.91 against 1.04 (firm-like). The data give 0.95 on submissions and 0.92 on comments.
@@ -13304,6 +13306,7 @@ _[STATUS SUPERSEDED 2026-10-20 by §2z-dn: T9 mounted; R13c–d and the register
 - **Uses memo** (`MEMO_USES_APPLICATIONS_opus-5.5.md`; references checked by its sub-agents), integrated:
   - **Discussion.** Two paragraphs:
     - **uses:** a benchmark against random growth from the platform's own ladder; a selection baseline (−5% of share a year, R7); an accounting of a change in concentration; response as a rate, a sixth to a third of an effect within five years;
+    _[SUPERSEDED 2026-10-21 by §2z-du: the selection baseline is about 4% a year by the median over runs.]_
     - **non-uses**, each tied to one of the paper's own failures: individual forecasting, mechanism from shape, long continuations, intervention effects.
   - **SI section** "What these models are for": a uses table, an avoidances table, and applications including the lock-in record (§§2z-cy, cz, da: Brier 13–21% below constant turnover, but a logistic on log rank wins on every ladder).
   - **Horizon rule.** Main-text durations in decades are replaced by rates (about a tenth of the gap closed a year at the comments head; a quarter to a third at the submissions head). Bands are labelled "across runs, parameters fixed".
@@ -13406,6 +13409,7 @@ The objective is still falling and the fit is poor, about 6 SD per moment (submi
 | observed | 0.356 | |
 
 - Paired against the matched control, fixed is −0.029 (−0.42 to +0.10): about a sixth of the gap, not distinguishable from none.
+  _[SUPERSEDED 2026-10-21 by §2z-du: level sums are summarized by medians; paired median +0.003 (quartiles −0.013 to +0.035), so fixed differences do not close the gap. The table above gives means; medians in RESULTS, "Correction: level-sum statistics".]_
 - The drift method alone moves the mean by 0.004.
 - The platform path fell in 2021–22 (−0.0035 a week, against +0.0136 before), but the head's 2019–20 loading is near the top set's mean.
 
@@ -13502,6 +13506,7 @@ _[Completed 2026-10-20 18:12 (`run_r12_lean4.sh`): s 0.45 on comments now has al
 - **Every queued job ran** (`run_r12_lean4.sh`, one at a time from the lean cache under the watchdog; no kills; swap fell from 4.9 to 2.7 GB after the owner freed memory).
 - **Comments matched control:** out of period 0.574 (0.515–0.618), against the closed-form 0.597; observed 0.505.
   - Fixed differences give 0.613, a paired +0.039 (−0.05 to +0.41), away from the observed share.
+  _[SUPERSEDED 2026-10-21 by §2z-du: by medians the paired change is +0.010 (−0.020 to +0.048); the reading "away from the observed share" is withdrawn.]_
   - Factor exposure gives 0.551, a paired −0.024 (−0.13 to +0.18).
   - Worlds: persistence −0.107 at 13 weeks; R10 contrast −0.0029.
 - **R12-6, comments, against the matched control (turnover only):** fixed PASS, decay PASS, factor FAIL.
@@ -14055,3 +14060,121 @@ _Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started 
 - nothing pushed.
 
 **Ledgers.** EXPOSURE_LEDGER: one row (R18, `facebook_a`). GATE_LEDGER: no row.
+
+## 2z-du. 2026-10-21 — REVIEW AND REVISION (round 9, Opus 5.5 track, three iterations on manuscripts v9.1 → v9.3) and EXPLORATORY MEASUREMENTS R18-B and R18-C, with a CORRECTION. Scores 6, 6.5 and 6.5/10 ("7 with the three fixes", which v9.4 makes; the referee's ceiling within the constraints). The common model fitted to Facebook turns its head over too slowly at either size exponent (top-54 turnover 0.21–0.255 against 0.31), with the top 219 turning over faster than the top 54 in every world (the reverse of the data), and from a starting head more spread than the data's (4.30–4.32 against 4.04 log units). The size law does not fix the head's share once a level-sum artifact is removed (median 0.28 against 0.23); R18-B's reading is withdrawn. Facebook's persistence excess is robust only at its 8-week gap. The extreme simulated weeks are a simulator property that reaches every level-sum statistic, Reddit's included: medians replace means, two readings are withdrawn, and the retrospective exposure form comes close to the comments head's 2022 share. Nothing adopted; no gate evaluation; bridge sealed
+
+_Provenance: Claude Opus 5.5 (Anthropic), Claude Code, 2026-10-21; work started from 72ec0c2 (§2z-dt). Owner instructions:_
+- _"Once you judge you've maxed out Astra using the current data and restraints, up to 3 iterations, repeat with an independent opus 5.5 session."_
+- _"I want to make sure that we are constructing a common or nearly-common model across these different platforms. Make sure that we have updated the Facebook analysis to adopt the same-ish model that the Reddit data is using, adapted to its particulars."_
+
+**A stopped run.** An Opus referee started on v8.4 (before the owner's reframe) was stopped when the reframe made v8.4 obsolete. Its output was not used, and its prompt file was removed before the §2z-dt commit.
+
+**Folder.** `runs/2026-10-21_external_critiques_round9/` holds:
+- the template `CRITIQUE_PROMPT_R9_opus.md`;
+- the prompts `PROMPT_R9_opus_iter{1,2,3}.md`;
+- the reviews `REVIEW_opus_iter{1,2,3}_opus-5.5.md`, verbatim with provenance headers. The reviewer was one independent Claude Opus 5.5 sub-agent, continued across iterations with its own context. It had no access to the orchestrating session or to the Astra reports. It worked read-only and ran nothing heavier than JSON readers;
+- the responses `RESPONSE_opus_iter{1,2,3}.md`.
+
+**Opus track.**
+
+| iteration | manuscript (commit) | verdict | accepted (checked) |
+|---|---|---|---|
+| 1 | v9.1 (72ec0c2) | send out, without enthusiasm, 6/10 | Title claim rests on an identity; Facebook's head failure; β 0.097 biased → R18-B, new title; asymmetry is a tail fact with a surge rival; Facebook persistence fragile; "symmetric" heterogeneity only; what is common across platforms; E1–E22 |
+| 2 | v9.2 (091e950) | send out, 6.5/10 | N1 "similar in both directions" wrong beyond the 2nd/9th tenths → secant slopes; N2 Facebook ordering false below the top ten; N3 Table 1 at the biased exponent → R18-C; N4 the starting head; N5 0.255; N6 Fig. S1C; N7 SI residue; N8 density (partly); two framing moves |
+| 3 | v9.3 (632779b) | send out, 6.5/10 (7 with its three fixes) | B1 the extreme weeks reach Reddit's level sums → medians throughout, two readings withdrawn; B2 the Facebook head tracks the starting head (constant-slope arm); B3 "thinner" tails withdrawn (the difference is skew); B4 "a weak, post hoc sign"; B5 density; "do not continue" for Reddit's extreme gains |
+
+**R18-B** (PLAN amendment R18-B, committed 5631fad before its run). The matched control at β = 0.019 (Facebook's two-step lasting estimate) and at β = 0.052 (0.097 less its recovered bias), 20 runs each. Table and scores in RESULTS R18-B:
+- B1 failed: top-54 turnover 0.255.
+- B2 met as registered, on the mean head share (0.25); see the correction below.
+- B3, B4 and B5 met.
+
+**R18-C** (PLAN amendment R18-C, committed 4638f85 before its run). The calibrated model and the constant-slope start at β = 0.019, 20 runs each. Table 1's Facebook block now uses the three arms at 0.019; the SI gives full tables at both exponents, generated by `r18_table1.py`.
+- C1 failed: the calibrated model's head share is 0.30 (mean) and 0.32 (median).
+- C2 failed: the constant-slope start turns the top 54 over at 0.31 against 0.29 at the top 1,750. At 0.097 it removed the head's excess (0.26 against 0.28).
+- C3 failed: the data's gap-4 persistence (−0.067) lies inside the calibrated arm's range [−0.111, −0.064]. D_FB (+0.052) lies above both arms' ranges.
+
+**What holds on Facebook under the common model** (all seven arms, 20 runs each; `r18_summary.json`):
+
+| statistic | data | worlds from the data's ladder | verdict |
+|---|---|---|---|
+| crossing ratio | 0.98 | 0.97–1.01 | reproduced |
+| rank-1 weekly change | 0.52 | 0.51–0.61 | reproduced |
+| stable ladder | rank 54 at 4.04, 3.88, 4.00 | changes −0.04 to +0.15 | reproduced |
+| top-54 turnover (half-year) | 0.31 | 0.21–0.255 | too slow at either exponent |
+| ordering of the head | top 10 > 54 > 219 | 219 > 54 in every arm | not reproduced |
+| starting head (rank 54 above K) | 4.04 | 4.30–4.32 | more spread; the rerun from the data's head was not made |
+| head share (median of runs) | 0.23 | 0.28–0.32 | too large |
+| persistence at gap 8 | −0.031 [−0.055, −0.003] | means −0.07 to −0.10; upper bounds −0.051 to −0.081 | data above every arm |
+| persistence at gaps 0 / 4 | −0.114 / −0.067 | — | inside some arms' ranges (all of the 0.019 calibrated arm's) |
+| D_FB | +0.052 [−0.008, +0.101] | upper bounds +0.015 to +0.045 | above every arm; own interval includes 0 |
+
+**CORRECTION (post hoc, found while building R18-C's SI table).**
+- **What is fragile.** `r18_facebook.fb_stats` computes the head share from expm1 of log activity summed over the last 26-week block.
+- **Where it broke.** In the matched control at 0.019, two runs give 0.010 and 0.023. Every other arm except the 0.097 matched control has one run at 0.000–0.019; the constant-slope start at 0.019 has another at 0.10.
+- **The cause.** `r18c_headshare_diag.py` rebuilt controlb0.019 seed 0 exactly (`out_r18c_headshare_diag.txt`). The unit at block rank 87 has one simulated week at 27.2 log units, against the leader's ~17, and that week holds 96% of the top-K level sum. This is a heavy-tailed passing swing.
+- **Other statistics are unaffected.** Every other statistic in `fb_stats` is a rank or log statistic, and each is ordinary in the degenerate runs.
+- **Changes made.**
+  - `_band` now also records the median, and the head share is cited as the median over runs. `r18_summary.json` was regenerated: identical apart from the added medians.
+  - R18-B2 misses by 0.002 on the median. The R18-B reading "the biased size exponent explains the model's oversized head share" is **withdrawn**, as is the iteration-1 response's "head share 0.25 (fixed)": the size law lowers the matched control's median from 0.30 to 0.28.
+  - RESULTS R18-B is corrected by RESULTS R18-C, not edited.
+- **It reaches Reddit (iteration 3, B1; checked by `levelsum_medians.py`, `out_levelsum_medians.txt`, RESULTS "Correction: level-sum statistics").**
+  - **The out-of-period forecasts.** Most arms have 1–4 of 20 runs more than 0.15 from the median, up to a share of 1.00.
+  - **R7's model world.** The `prior_within` Gomez mean in `null_worlds_r7_summary.json` is 231,412.
+  - **Medians replace the quoted means.** The 2022 head share is 0.512 (0.500–0.528) on submissions and 0.569 (0.557–0.599) on comments, where 0.537 and 0.597 were quoted. The size-blind selection baseline is −0.042, where −0.053 was quoted.
+  - **Withdrawn:** fixed differences "close about a sixth of the gap" (submissions; paired median +0.003) and "move the forecast away from the observed share" (comments; +0.010).
+  - **New with medians.** The exposure form on comments gives 0.520 (0.500–0.549) against the observed 0.505, a paired −0.043. It is retrospective (the realized platform path, whole-panel loadings), and the paper now says so.
+  - **Unchanged:** the registered scores, which used the registered statistics. R12-3 and R12-3b concern submissions and fail either way.
+  - **The cause.** The referee attributed it to "φ up to 0.99"; this was not used. Facebook's fit has φ 0.2–0.3 and t with 4.3 degrees of freedom. The spike comes from the swing's t innovations scaled by the unit's amplitude.
+  - **Changing the swing's tails** would be a model change, so it is the owner's.
+  - Bracketed SUPERSEDED notes were added at §2z-dj, §2z-dm (two) and §2z-dn (two).
+
+**Manuscript v9.2 → v9.3** (main text 7 pages, abstract 237 words, significance 118):
+- The asymmetry is described by secant slopes of the decile curves:
+  - ordinary changes persist at 0.15 and 0.16 per unit, against −0.12 and −0.08 in the null;
+  - the largest declines continue where the null reverses them hardest;
+  - beyond the ninth tenth a larger gain brings no larger later gain;
+  - "extreme declines behave as lasting, extreme gains as transient".
+- The Discussion offers one hypothesis in two sentences: gains in attention often arrive as transient surges, while losses last.
+- Facebook's size fact leads its paragraph: post counts 0.19, interactions 0.02.
+- Abstract and introduction: "on Facebook the head turns over faster than in its calibrated model".
+- Results 4: Facebook's numbers at 0.019, the head share 0.28 (median), the starting-head caveat.
+- Results 5: Facebook's persistence above every world only at 8 weeks.
+- Fig. 3 shows Facebook's 0.019 matched control; Fig. S1C is retitled.
+- **v9.4** (iteration 3):
+  - level-sum statistics as medians, with Fig. S2 redrawn;
+  - "about 4%";
+  - "no form forecasts the submissions fall; on comments only the retrospective exposure form comes close";
+  - the Facebook shortfall "tracks the starting head";
+  - "symmetric, where the data's are skewed toward rises";
+  - "a weak, post hoc sign";
+  - the asymmetry paragraph cut from 302 to 287 words.
+  - Main text 7 pages; abstract 239 words; significance 118.
+
+**For the owner** (ranked by the referees; none run):
+1. **Sealed confirmation.** The 2023–24 Reddit test, after the protocol is amended and adopted: P8 with co-registered secant slopes and tail-skew statistics, so that a pass can tell "losses last" from "surges fade"; a decision on karma against counts on submissions; and persistence at 13- and 26-week gaps as a primary. This is the only step the referee sees moving the paper above about 7.5.
+2. **The Facebook starting-ladder rerun.** The matched and calibrated arms at β 0.019, started from a head matched to the data's first block. This is light, and it decides whether the geometric account of the head holds in simulation on the central dataset.
+3. **The surge world.** A positively skewed transient component, calibrated without targeting D. It decides "losses last" against "surges fade", and may explain Facebook's fast head and its p_rise below p_fall.
+4. **The swing's tails.** Truncate them or re-estimate the t degrees of freedom, so that level statistics are trustworthy without medians. This is a model change.
+5. **Reddit's homogeneous worlds at Facebook's settings.** These would give a like-for-like persistence comparison.
+6. **A longer, instrument-consistent Facebook history,** from the eras already held, if they can be bridged.
+7. **Comments in Table 1** (low value).
+
+**Not done:**
+- the Facebook starting-ladder rerun;
+- the surge world;
+- Reddit worlds at Facebook's settings;
+- comments in Table 1;
+- the title is still unconfirmed by the owner;
+- nothing pushed.
+
+**Ledgers.**
+- EXPOSURE_LEDGER: one row (R18-B, R18-C and the diagnostic, `facebook_a` through the saved R18 fit).
+- GATE_LEDGER: no row.
+
+Commands:
+```
+R18_DIR=<scratchpad>/r18 NEED_GB=2 zsh r12_safe_run.sh <log> python -u r18_facebook.py worlds controlb0.019 0 19   # and controlb0.052, calibb0.019, flatb0.019; R12_CACHE unset
+python r18_facebook.py summ; python r18_table1.py; python levelsum_medians.py; python make_v5_figures.py fig3v5 fig4v5 figS3v5
+R18_DIR=<scratchpad>/r18 python r18c_headshare_diag.py controlb0.019 0
+```
+Health check PASS at 632779b and before the v9.4 commit (583 research, 8 package, legacy 14/15, churn 0.013).

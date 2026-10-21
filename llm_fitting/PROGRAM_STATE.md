@@ -1,6 +1,6 @@
 # Program state — one-page orientation
 
-**As of 2026-10-21** (the paragraphs on §2z-da … §2z-ds were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
+**As of 2026-10-21** (the paragraphs on §2z-da … §2z-du were added and earlier sentences corrected; the rest dates from 2026-10-13 to 10-15). This page is a digest for starting a session quickly.
 It goes stale; MODEL_STATUS.md is the record and wins every disagreement.
 A session that finds this page out of date says so and corrects it in the
 same commit as its own record entry. It is rewritten whenever the owner
@@ -463,11 +463,28 @@ spine, "size does not protect", and the model and momentum. The outline
   - **The owner's reframe:** a general paper on attention dynamics on digital platforms, Facebook pages central, YouTube and Wikipedia to come. Title "Random growth accounts for turnover among the leaders of online attention" (owner to confirm).
   - **Astra on v9.0:** 7/10, with easy edits made.
   - **R18, the paper's model fitted to Facebook.**
-    - It reproduces the crossing law, the leading page's churn, the stable ladder and the role of geometry.
+    - It reproduces the crossing law, the leading page's churn and the stable ladder.
     - It turns the head over too slowly and gives it too large a share.
-    - Against its own homogeneous worlds, Facebook's changes reverse less than the model allows (+0.04 and +0.07 at gaps 4 and 8), and its D has Reddit's sign (+0.05 [−0.01, +0.10]). Both platforms depart toward persistence.
     - Table 1 is now a two-platform table of the same worlds.
-  - **Next:** the independent Opus 5.5 review track (§2z-du).
+    - _[Revised in §2z-du: at the two-step size exponent and with medians, the head share is still too large (0.28) and the head still too slow (0.255); the Facebook persistence excess holds only at the 8-week gap.]_
+- **Round 9, Opus 5.5 track; R18-B, R18-C; the level-sum correction (§2z-du, 2026-10-21).**
+  - **Opus scores:** 6 → 6.5 → 6.5/10 on v9.1–v9.3, "7 with the three fixes", which v9.4 makes. The referee puts the ceiling within the current data and constraints at about 7.
+  - **Facebook under the common model** (seven arms, two size exponents). The model reproduces the crossing ratio, the leading page's churn and a stable ladder. Its head turns over too slowly (0.21–0.255 against 0.31) and holds too large a share (medians 0.28–0.32 against 0.23). The shortfall tracks a starting head more spread than the data's (4.30–4.32 against 4.04). A run from the data's own head was not made.
+  - **Facebook persistence:** above every world only at the 8-week gap. D_FB lies above every world's range, but its own interval includes 0.
+  - **Extreme simulated weeks.** The passing swing's t innovations, scaled by the unit's amplitude, give 1–4 of 20 runs a week far above anything observed. Every level-sum statistic is now summarized by its median over runs.
+    - Reddit forecasts: 0.512 and 0.569 by median, against 0.537 and 0.597 by mean.
+    - The selection baseline is about 4%, not 5%.
+    - Two readings about fixed differences are withdrawn.
+    - The retrospective exposure form comes close to the comments head's 2022 share.
+  - **Asymmetry:** described by secant slopes, "extreme declines behave as lasting, extreme gains as transient". The Discussion offers the hypothesis that gains arrive as transient surges and losses last.
+  - **Next (owner):**
+    1. sealed confirmation, after amending P8 (secant slopes, tail skew, karma or counts, gapped persistence as a primary);
+    2. the Facebook starting-ladder rerun;
+    3. the surge world;
+    4. the swing's tails (a model change);
+    5. Reddit worlds at Facebook's settings;
+    6. a longer Facebook history;
+    7. title confirmation.
 
 **Round-2 referees and the averaging null (§2z-df, 2026-10-18).** Three
 models re-reviewed frame c; all say it is closer, and an editor would send it

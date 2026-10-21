@@ -1885,3 +1885,34 @@ python r18_facebook.py summ
 python r18_table1.py                      # Table 1 rows and the two SI tables (r18_table1.json)
 R18_DIR=<scratchpad>/r18 python r18c_headshare_diag.py controlb0.019 0
 ```
+
+### Correction: level-sum statistics in the worlds (post hoc, 2026-10-21, after the round-9 Opus iteration-3 review; `levelsum_medians.py`, `levelsum_medians.json`, `out_levelsum_medians.txt`)
+
+The extreme simulated weeks found in R18-C (`r18c_headshare_diag.py`) are a property of the simulator, not of Facebook. The passing swing has Student-t innovations scaled by the unit's amplitude (Facebook's fit: φ 0.2–0.3, 4.3 degrees of freedom).
+
+Every statistic that sums activity in levels inherits the problem, because one swamping week moves the mean over runs and the 5–95% range. This covers head shares and Gomez's terms. In most out-of-period arms, 1–4 of 20 runs lie more than 0.15 from the median, up to a share of 1.00. Statistics computed from ranks or log activity are not detectably affected: in the affected runs each lies within the other runs' range.
+
+Medians and quartiles over runs (means as previously reported in brackets):
+
+| statistic | submissions | comments |
+|---|---|---|
+| 2022 head share, homogeneous model (A6; `r12_oop control`) | 0.512 [0.500, 0.528] (0.537) | 0.569 [0.557, 0.599] (0.597) |
+| matched control (`control_num`) | 0.485 [0.469, 0.508] (0.533) | 0.559 [0.549, 0.586] (0.574) |
+| fixed differences, paired against the control | +0.003 [−0.013, +0.035] (−0.029) | +0.010 [−0.020, +0.048] (+0.039) |
+| exposure, paired against the control | +0.014 [−0.012, +0.037] | −0.043 [−0.077, −0.007] (−0.024) |
+| exposure, level | 0.499 [0.483, 0.515] (0.540) | 0.520 [0.500, 0.549] (0.551) |
+| decline state, stationary / from training histories | 0.491 / 0.489 (0.546 / 0.519) | 0.547 / 0.571 (0.566 / 0.619) |
+| joint fixed differences (R16) | 0.499 (0.510) | 0.560 (0.561) |
+| observed | 0.356 | 0.505 |
+| size-blind Gomez within term, top 78 (R7) | −0.042 [−0.094, +0.027] (−0.053); steady pairs −0.043 | |
+
+Readings:
+- **Withdrawn.** "Fixed differences close about a sixth of the gap on submissions" (R12; the SI's "Out of period") and "move the forecast away from the observed share on comments". Both readings came from the means.
+- **New.** With medians, the exposure form on comments comes close to the observed share (0.520 against 0.505). It is retrospective (the realized platform path, whole-panel loadings), and it is not a forecast. "No form forecasts either fall" becomes "no form forecasts the submissions fall; on comments only the retrospective exposure form comes close".
+- **The selection baseline** is about 4% a year, not 5%.
+- **Unchanged.** Registered scores stay as scored, on the statistics named when registered. R12-3 and R12-3b concern submissions and fail either way. R16-B4 compared means (0.002); by medians the joint form, the R12 fixed form and the matched control agree within 0.01 on comments.
+
+```
+python levelsum_medians.py > out_levelsum_medians.txt
+python make_v5_figures.py figS3v5      # Fig. S2: medians and quartiles from the per-run shares
+```
