@@ -336,38 +336,8 @@ def _het_oop(pn, kind):
     return (g["share_3"], g["share_3_q"]) if "share_3" in g else (g["share"], g["share_q"])
 
 
-def fig4v5():
-    S7 = r7()
-    fig, ax = plt.subplots(1, 4, figsize=(W2, 2.3), gridspec_kw=dict(width_ratios=[1, 0.95, 1.1, 0.95]))
-    # A: the head's arithmetic share, 2019-2022, against the calibrated homogeneous forecast for 2022 (fit 2019-20)
-    a = ax[0]
-    for j, pn in enumerate(PANELS2):
-        hc = load(HERE / f"head_components__{pn}.json")
-        yrs = [rr["year"] for rr in hc["rows"]]
-        a.plot(yrs, [100 * rr["reselected"]["share_karma"] for rr in hc["rows"]], "-", marker=MK[pn], color=COL[pn], ms=3, lw=1.1,
-               label=f"{LAB[pn]} (top {hc['k']})")
-        o = load(HERE / f"structure_oop__{pn}__home_movinghome_vp.json")
-        m, (lo, hi) = o["arms"]["movinghome_vp"]["share_3"], o["arms"]["movinghome_vp"]["share_3_q"]
-        x = 2022.15 + 0.12 * j
-        a.errorbar([x], [100 * m], yerr=[[100 * (m - lo)], [100 * (hi - m)]], fmt="D", color=COL[pn], mfc="white", ms=3.2, capsize=1.5, lw=0.8)
-        a.plot([2022, x], [100 * o["data"]["share_3"]] * 2, ":", color=COL[pn], lw=0.6)
-        for i_, kind in enumerate(("joint", "decline", "factor")):          # heterogeneous worlds (R12, R16)
-            g = _het_oop(pn, kind)
-            if g is not None:
-                m_, (lo_, hi_) = g
-                a.errorbar([x + 0.07 * (i_ + 1)], [100 * m_], yerr=[[100 * (m_ - lo_)], [100 * (hi_ - m_)]], fmt=HET_MK[kind], color=COL[pn], ms=2.6, lw=0.6)
-    a.plot([], [], "D", color="k", mfc="white", ms=3, label="homogeneous, fit 2019-20")
-    for kind in ("joint", "decline", "factor"):
-        a.plot([], [], HET_MK[kind], color="k", ms=2.6, label=HET_LAB[kind])
-    a.set_xticks([2019, 2020, 2021, 2022]); a.set_xticklabels(["2019", "'20", "'21", "'22"], fontsize=5.5)
-    a.set_xlim(2018.8, 2022.6)
-    a.set_ylim(20, 100)
-    a.set_ylabel("head's share of the top K (%)")
-    a.set_title("Faster than forecast", fontsize=6.3)
-    a.legend(loc="upper left", frameon=False, fontsize=4.2)
-    tag(a, "A")
-    # B: the head's share split exactly into items and activity per item
-    a = ax[1]
+def _fig_items(a):
+    """The head's share split exactly into items and activity per item (R8; the v7 Fig. 3B, now SI Fig. S2)."""
     for pn in ("reddit_submissions_long", "reddit_comments_ext"):
         hc = load(HERE / f"head_components__{pn}.json")
         yrs = [rr["year"] for rr in hc["rows"]]
@@ -384,11 +354,31 @@ def fig4v5():
     a.set_xticks([2019, 2020, 2021, 2022])
     a.set_xticklabels(["2019", "2020", "2021", "2022"], fontsize=5)
     a.set_ylabel("relative to 2019")
-    a.set_title("It fell in posting", fontsize=6.3)
+    a.set_title("The head's fall was in posting", fontsize=6.3)
     a.legend(loc="lower left", frameon=False, fontsize=4.6)
-    tag(a, "B")
-    # C: persistence across gaps: data, factor-adjusted, Facebook, and the simulated worlds
-    a = ax[2]
+
+
+def figS2v5():
+    fig, a = plt.subplots(1, 1, figsize=(W2 / 3.2, 2.3))
+    _fig_items(a)
+    fig.tight_layout()
+    save(fig, "figS2_v5")
+
+
+R17_TAGS = {"reddit_submissions_long": {"joint17": "joint_s0.8_head0.25_km0.5_m0.6",
+                                        "traded": "joint_decline_s0.6_head0.25_km0.5_m0.6_pi0.25_hl208_sd0.5"},
+            "reddit_comments_ext": {"joint17": "joint_s0.6_head0.0_km0.35_m0.7",
+                                    "traded": "joint_decline_s0.6_head0.0_km0.35_m0.7_pi0.25_hl208_sd0.3"}}
+
+
+def fig4v5():
+    """Main-text Fig. 3 (v8.2, round 9): the asymmetry leads. A persistence across gaps; B the decile curves; C the
+    asymmetry D with its bands for the data, by stratum and on item counts, beside every calibrated world; D the head's
+    share against the homogeneous forecast."""
+    S7 = r7()
+    fig, ax = plt.subplots(1, 4, figsize=(W2, 2.45), gridspec_kw=dict(width_ratios=[1, 0.95, 1.25, 0.95]))
+    # A: persistence across gaps: data, Facebook, and the simulated worlds
+    a = ax[0]
     gm = load(R / "2026-10-18_momentum" / "gapped_momentum.json")
     for pn in COL:
         dd = gm[pn]["gapped"]
@@ -407,7 +397,7 @@ def fig4v5():
         for pn in PANELS2:
             if kind == "factor":
                 f = HERE / f"r12_worlds__{pn}__factor.json"
-                g = load(f)["gapped_stats"] if f.exists() else None       # the same statistic as the homogeneous worlds
+                g = load(f)["gapped_stats"] if f.exists() else None
             else:
                 g = _r16_gapped(pn, kind)
             if g is None:
@@ -420,44 +410,100 @@ def fig4v5():
     a.set_xlabel("gap between the changes (weeks)")
     a.set_ylabel("rank correlation of changes")
     a.set_title("Changes persist on Reddit", fontsize=6.3)
-    a.legend(loc="upper right", frameon=False, fontsize=4.0, ncol=1, handlelength=1.4, labelspacing=0.3)
-    a.set_ylim(-0.16, 0.66)
-    tag(a, "C")
-    # D (round 8, R17-A): the next year's change against this year's, by decile of this year's change (stratum-demeaned),
-    # data and the matched homogeneous, jointly estimated and decline-state worlds; the slopes through the tails are
-    # p_fall and p_rise, and D = p_fall - p_rise
-    a = ax[3]
-    WTAG = {"control": "control_num_", "joint": R16_TAGS, "decline": R16_TAGS}
+    a.legend(loc="upper center", frameon=False, fontsize=3.8, ncol=2, handlelength=1.1, labelspacing=0.2, columnspacing=0.5)
+    a.set_ylim(-0.17, 0.43)
+    a.set_yticks([-0.1, 0, 0.1, 0.2])
+    tag(a, "A")
+    # B: the later change against the initial one, by decile of the initial change (stratum-demeaned)
+    a = ax[1]
     sty = {"control": dict(ls="--", color="#777777"), "joint": dict(ls=":", color="#222222"), "decline": dict(ls="-.", color="#999999")}
     labw = {"control": "homogeneous", "joint": "fixed diff. (joint)", "decline": "decline state"}
     for pn in PANELS2:
-        f = HERE / f"r17_asym_data__{pn}.json"
-        if not f.exists():
-            continue
-        dd = load(f)
+        dd = load(HERE / f"r17_asym_data__{pn}.json")
         cur = np.array(dd["primary"]["curve"])
         a.plot(cur[:, 0], cur[:, 1], "-", marker=MK[pn], color=COL[pn], ms=2.6, lw=1.1,
                label={"reddit_comments_ext": "comments", "reddit_submissions_long": "submissions"}[pn])
+        if pn != "reddit_submissions_long":
+            continue
         for kind in ("control", "joint", "decline"):
             tg = "control_num_" if kind == "control" else R16_TAGS[pn][kind]
-            fw = HERE / f"r17_asym_worlds__{pn}__{tg}.json"
-            if not fw.exists() or pn != "reddit_submissions_long":
-                continue
-            ww = load(fw)
-            cw = np.array(ww["curve"])
+            cw = np.array(load(HERE / f"r17_asym_worlds__{pn}__{tg}.json")["curve"])
             a.plot(cw[:, 0], cw[:, 1], lw=0.9, label=labw[kind], **sty[kind])
     a.axhline(0, color=GREY, lw=0.4)
     a.axvline(0, color=GREY, lw=0.4)
-    a.set_xlabel("this year's change")
-    a.set_ylabel("next year's change")
-    a.set_title("Declines persist, gains less", fontsize=6.3)
+    a.set_xlabel("initial year-long change, by decile")
+    a.set_ylabel("later year-long change")
+    a.set_title("Declines continue", fontsize=6.3)
     a.legend(loc="lower right", frameon=False, fontsize=4.2, handlelength=1.8, labelspacing=0.25)
+    tag(a, "B")
+    # C: D with its bands. Data: 5-95% over 200 bootstrap draws of communities within strata (strata: 100 draws).
+    # Worlds: mean and 5-95% range over runs.
+    a = ax[2]
+    rows = []
+    for pn in PANELS2:
+        dd = load(HERE / f"r17_asym_data__{pn}.json")
+        it = load(HERE / f"r17_asym_items__{pn}.json")
+        b = dd["primary_band"]["D"]
+        rows.append((pn, "data, karma", dd["primary"]["D"], b[0], b[2], "data"))
+        for j, lab in enumerate(("top K/16", "K/16 to K/4", "K/4 to K")):
+            bs = dd["by_stratum_band"][str(j)]["D"]
+            rows.append((pn, f"  {lab}", dd["by_stratum"][str(j)]["D"], bs[0], bs[2], "data"))
+        bi = it["items_r17a_band"]["D"]
+        rows.append((pn, "data, item counts", it["items_r17a"]["D"], bi[0], bi[2], "data"))
+        for lab, tg in (("homogeneous", "control_num_"), ("fixed diff. (R16)", R16_TAGS[pn]["joint"]), ("fixed diff. (R17)", R17_TAGS[pn]["joint17"]),
+                        ("fixed + decline", R17_TAGS[pn]["traded"]), ("decline state", R16_TAGS[pn]["decline"])):
+            w = load(HERE / f"r17_asym_worlds__{pn}__{tg}.json")["D"]
+            rows.append((pn, lab, w["mean"], w["q05"], w["q95"], "world"))
+    labels = [r[1] for r in rows if r[0] == "reddit_submissions_long"]
+    n = len(labels)
+    for k, pn in enumerate(PANELS2):
+        rr = [r for r in rows if r[0] == pn]
+        for i, (_, lab, m, lo, hi, kind) in enumerate(rr):
+            y = n - 1 - i + (0.18 if k == 0 else -0.18)
+            a.errorbar([m], [y], xerr=[[m - lo], [hi - m]], fmt=MK[pn] if kind == "data" else "o", color=COL[pn],
+                       mfc=COL[pn] if kind == "data" else "white", ms=2.6, lw=0.8, capsize=0)
+    a.axvline(0, color=GREY, lw=0.5)
+    a.axhline(n - 5.5, color=GREY, lw=0.3, ls=":")
+    a.set_yticks(range(n))
+    a.set_yticklabels(labels[::-1], fontsize=4.6)
+    a.set_xlabel("asymmetry D = p_fall − p_rise")
+    a.set_title("Asymmetry in data and worlds", fontsize=6.3)
+    a.plot([], [], "s", color=COL["reddit_submissions_long"], ms=2.6, label="submissions")
+    a.plot([], [], "o", color=COL["reddit_comments_ext"], ms=2.6, label="comments")
+    a.legend(loc="center right", bbox_to_anchor=(1.0, 0.33), frameon=False, fontsize=4.2, handlelength=1.0)
+    tag(a, "C")
+    # D: the head's arithmetic share, 2019-2022, against the calibrated homogeneous forecast for 2022 (fit 2019-20)
+    a = ax[3]
+    for j, pn in enumerate(PANELS2):
+        hc = load(HERE / f"head_components__{pn}.json")
+        yrs = [rr["year"] for rr in hc["rows"]]
+        a.plot(yrs, [100 * rr["reselected"]["share_karma"] for rr in hc["rows"]], "-", marker=MK[pn], color=COL[pn], ms=3, lw=1.1,
+               label=f"{LAB[pn]} (top {hc['k']})")
+        o = load(HERE / f"structure_oop__{pn}__home_movinghome_vp.json")
+        m, (lo, hi) = o["arms"]["movinghome_vp"]["share_3"], o["arms"]["movinghome_vp"]["share_3_q"]
+        x = 2022.15 + 0.12 * j
+        a.errorbar([x], [100 * m], yerr=[[100 * (m - lo)], [100 * (hi - m)]], fmt="D", color=COL[pn], mfc="white", ms=3.2, capsize=1.5, lw=0.8)
+        a.plot([2022, x], [100 * o["data"]["share_3"]] * 2, ":", color=COL[pn], lw=0.6)
+        for i_, kind in enumerate(("joint", "decline", "factor")):
+            g = _het_oop(pn, kind)
+            if g is not None:
+                m_, (lo_, hi_) = g
+                a.errorbar([x + 0.07 * (i_ + 1)], [100 * m_], yerr=[[100 * (m_ - lo_)], [100 * (hi_ - m_)]], fmt=HET_MK[kind], color=COL[pn], ms=2.6, lw=0.6)
+    a.plot([], [], "D", color="k", mfc="white", ms=3, label="homogeneous, fit 2019-20")
+    for kind in ("joint", "decline", "factor"):
+        a.plot([], [], HET_MK[kind], color="k", ms=2.6, label=HET_LAB[kind])
+    a.set_xticks([2019, 2020, 2021, 2022]); a.set_xticklabels(["2019", "'20", "'21", "'22"], fontsize=5.5)
+    a.set_xlim(2018.8, 2022.6)
+    a.set_ylim(20, 100)
+    a.set_ylabel("head's share of the top K (%)")
+    a.set_title("No forecast of the falls", fontsize=6.3)
+    a.legend(loc="upper left", frameon=False, fontsize=4.2)
     tag(a, "D")
-    fig.tight_layout(w_pad=0.8)
+    fig.tight_layout(w_pad=0.6)
     save(fig, "fig4_v5")
 
 
 if __name__ == "__main__":
-    for f in sys.argv[1:] or ["fig1v5", "fig2v5", "fig3v5", "fig4v5"]:
+    for f in sys.argv[1:] or ["fig1v5", "fig2v5", "fig3v5", "fig4v5", "figS2v5"]:
         globals()[f]()
         print("drew", f)
