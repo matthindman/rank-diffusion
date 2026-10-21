@@ -19,10 +19,10 @@ run() {
   if [ $rc -ne 0 ] || ! grep -q "killed 0" $R/$log; then echo "STOP: $log failed (exit $rc) or was killed"; exit 1; fi
   touch "$mk"
 }
-run fit 3 out_r18_fit.txt $R/r18_facebook.py fit
-run data 3 out_r18_data.txt $R/r18_facebook.py data
+run fit 2 out_r18_fit.txt $R/r18_facebook.py fit
+run data 2 out_r18_data.txt $R/r18_facebook.py data
 for v in calib control flat; do
-  for s0 in 0 5 10 15; do run worlds_${v}_${s0} 3 out_r18_worlds_${v}__seeds${s0}.txt $R/r18_facebook.py worlds $v $s0 $((s0 + 4)); done
+  for s0 in 0 5 10 15; do run worlds_${v}_${s0} 2 out_r18_worlds_${v}__seeds${s0}.txt $R/r18_facebook.py worlds $v $s0 $((s0 + 4)); done
 done
 run summ 2 out_r18_summ.txt $R/r18_facebook.py summ
 echo "== $(date +%T) R18 complete"

@@ -1367,3 +1367,23 @@ No statistic below has been computed on a Facebook world of the current model.
 4. the summary.
 
 A crash before any output is fixed and disclosed here; a killed run is not interpreted. Not done: heterogeneous growth on Facebook. Its calibration statistics need year-apart changes, which 86 weeks cannot provide.
+
+### Amendment R18-A1 (2026-10-21, POST HOC: written after R18's outputs were read, before its own run): bootstrap bands for Facebook's persistence and asymmetry
+
+**Why.**
+- R18 compares the data's Facebook statistics with the spread of the model's runs only.
+- The data's persistence (−0.114, −0.067 and −0.031 at gaps 0, 4 and 8) and D_FB (+0.052) lie above the matched control's runs: −0.134, −0.106 and −0.098, and D −0.010 [−0.078, +0.025].
+- Whether that excess survives the data's own sampling uncertainty is not known.
+
+**Design** (`r18_facebook.py boot`):
+- 200 bootstrap draws of pages.
+  - Persistence: pages are drawn from the persistence cohort (the top K over weeks 0–12), and the gapped statistic is recomputed on each draw at gaps 0, 4 and 8.
+  - D_FB: pages are drawn within the three strata of whole-window permanent rank, and D_FB is recomputed with the strata re-demeaned at every origin.
+- Report the 5–95% band of each statistic.
+- Report the band of the excess over the matched control's mean (data minus that mean, at the same draws).
+
+**Expectation** (post hoc; scored, not used to choose anything):
+
+| | expectation | prior |
+|---|---|---|
+| R18-A1 | the data's 5–95% band for D_FB excludes the matched control's mean (−0.010), and the band for persistence at gap 8 excludes the control's mean (−0.098) | 50% |

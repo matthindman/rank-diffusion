@@ -8,6 +8,7 @@ changes for persistence and the asymmetry).
     python r18_facebook.py data                         fb_stats on the data's universe frame
     python r18_facebook.py worlds <calib|control|flat> <s0> <s1>
     python r18_facebook.py summ
+    python r18_facebook.py boot                         R18-A1 (post hoc): bootstrap bands for persistence and D_FB
 
 Run without $R12_CACHE (Facebook has no lean cache; its panel is small).  $R18_DIR is a scratch folder for the pickle.
 """
@@ -227,6 +228,79 @@ def mode_summ():
     print(json.dumps(out["worlds"], default=float)[:3000], flush=True)
 
 
+def mode_boot(n=200):
+    """R18-A1 (post hoc): bootstrap bands for the data's persistence (pages drawn from the cohort) and D_FB (pages drawn
+    within strata of whole-window permanent rank)."""
+    assert not os.environ.get("R12_CACHE"), "run without R12_CACHE"
+    df, K = h.load(PN)
+    T = int(df["period"].max()) + 1
+    X, R, floors, _, _ = m1.matrices(df, K)
+    del df
+    gc.collect()
+    rng = np.random.default_rng(1818)
+    m = wmean(X, 0, SEL)
+    coh = _order(m)[:K]
+    pairs_g = {}
+    for g in GAPS:
+        lst, a = [], SEL
+        while a + 2 * H + 2 * W + g <= T:
+            x = wmean(X, a + H, a + H + W) - wmean(X, a, a + W)
+            b0 = a + H + W + g
+            y = wmean(X, b0 + H, b0 + H + W) - wmean(X, b0, b0 + W)
+            lst.append((x, y))
+            a += STEP
+        pairs_g[g] = lst
+    lab = h.strata(R, floors, K)
+    pairs_d, a = [], SEL
+    while a + 2 * H + 2 * W + G_D <= T:
+        x = wmean(X, a + H, a + H + W) - wmean(X, a, a + W)
+        b0 = a + H + W + G_D
+        y = wmean(X, b0 + H, b0 + H + W) - wmean(X, b0, b0 + W)
+        pairs_d.append((x, y))
+        a += STEP
+    members = [np.flatnonzero(lab == j) for j in range(3)]
+
+    def gapped_of(idx):
+        out = {}
+        for g, lst in pairs_g.items():
+            vals = []
+            for x, y in lst:
+                xs, ys = x[idx], y[idx]
+                ok = np.isfinite(xs) & np.isfinite(ys)
+                vals.append(float(spearmanr(xs[ok], ys[ok]).correlation))
+            out[str(g)] = float(np.mean(vals))
+        return out
+
+    def d_of(groups):
+        Ds = []
+        for x, y in pairs_d:
+            xs, ys = [], []
+            for gi in groups:
+                xg, yg = x[gi], y[gi]
+                ok = np.isfinite(xg) & np.isfinite(yg)
+                xs.append(xg[ok] - xg[ok].mean())
+                ys.append(yg[ok] - yg[ok].mean())
+            xd, yd = np.concatenate(xs), np.concatenate(ys)
+            f, r = r17.tail_ratios(xd, yd, np.ones(xd.size, bool))
+            Ds.append(f - r)
+        return float(np.mean(Ds))
+
+    point = dict(gapped=gapped_of(coh), D_FB=d_of(members))
+    draws_g, draws_d = [], []
+    for _ in range(n):
+        draws_g.append(gapped_of(rng.choice(coh, coh.size, replace=True)))
+        draws_d.append(d_of([rng.choice(mm, mm.size, replace=True) for mm in members]))
+    summ = json.loads((HERE / "r18_summary.json").read_text())["worlds"]["control"]
+    q = lambda v: [float(np.quantile(v, 0.05)), float(np.quantile(v, 0.5)), float(np.quantile(v, 0.95))]
+    out = dict(panel=PN, n=n, point=point,
+               gapped_band={g: q([d[g] for d in draws_g]) for g in point["gapped"]},
+               D_FB_band=q(draws_d),
+               excess_over_control=dict(gapped={g: q([d[g] - summ["gapped"][g]["mean"] for d in draws_g]) for g in point["gapped"]},
+                                        D_FB=q([v - summ["D_FB"]["mean"] for v in draws_d])))
+    (HERE / "r18_boot__facebook_a.json").write_text(json.dumps(out, indent=1))
+    print(json.dumps(out, indent=1), flush=True)
+
+
 if __name__ == "__main__":
     mode = sys.argv[1]
     if mode == "fit":
@@ -237,5 +311,7 @@ if __name__ == "__main__":
         mode_worlds(sys.argv[2], int(sys.argv[3]), int(sys.argv[4]))
     elif mode == "summ":
         mode_summ()
+    elif mode == "boot":
+        mode_boot()
     else:
         sys.exit(__doc__)
