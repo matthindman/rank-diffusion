@@ -1,0 +1,75 @@
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:939: RuntimeWarning: Mean of empty slice
+  m0 = np.nanmean(X[:b0_len], axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:940: RuntimeWarning: Mean of empty slice
+  m_all = np.nanmean(X, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:295: RuntimeWarning: Mean of empty slice
+  v1 = np.nanmean(d1 * d1, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:296: RuntimeWarning: Mean of empty slice
+  v2 = np.nanmean(d2 * d2, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:1658: RuntimeWarning: Mean of empty slice
+  mean_X_i = np.nanmean(X_tr, axis=0)
+  T0= 21 emp: dRank1=14.00 dRank4=19.50 dRank13=31.00 RACF1=0.36
+      base    : dRank1=11.00 dRank4=18.00 dRank13=26.00 RACF1=0.50  coll1=0.450 coll5=0.882
+      sL0x0.7 : dRank1=11.00 dRank4=17.00 dRank13=22.00 RACF1=0.46  coll1=0.438 coll5=0.857
+      gauss   : dRank1=11.00 dRank4=17.00 dRank13=25.00 RACF1=0.48  coll1=0.485 coll5=0.878
+      vhat1   : dRank1=12.00 dRank4=19.00 dRank13=26.00 RACF1=0.47  coll1=0.467 coll5=0.897
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:939: RuntimeWarning: Mean of empty slice
+  m0 = np.nanmean(X[:b0_len], axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:940: RuntimeWarning: Mean of empty slice
+  m_all = np.nanmean(X, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:295: RuntimeWarning: Mean of empty slice
+  v1 = np.nanmean(d1 * d1, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:296: RuntimeWarning: Mean of empty slice
+  v2 = np.nanmean(d2 * d2, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:1658: RuntimeWarning: Mean of empty slice
+  mean_X_i = np.nanmean(X_tr, axis=0)
+  T0= 32 emp: dRank1=14.00 dRank4=20.00 dRank13=40.00 RACF1=0.42
+      base    : dRank1=12.00 dRank4=19.00 dRank13=29.00 RACF1=0.45  coll1=0.545 coll5=0.872
+      sL0x0.7 : dRank1=12.00 dRank4=17.00 dRank13=24.00 RACF1=0.40  coll1=0.552 coll5=0.887
+      gauss   : dRank1=12.00 dRank4=19.00 dRank13=29.00 RACF1=0.44  coll1=0.495 coll5=0.870
+      vhat1   : dRank1=13.00 dRank4=20.00 dRank13=29.50 RACF1=0.44  coll1=0.508 coll5=0.902
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:939: RuntimeWarning: Mean of empty slice
+  m0 = np.nanmean(X[:b0_len], axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:940: RuntimeWarning: Mean of empty slice
+  m_all = np.nanmean(X, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:295: RuntimeWarning: Mean of empty slice
+  v1 = np.nanmean(d1 * d1, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:296: RuntimeWarning: Mean of empty slice
+  v2 = np.nanmean(d2 * d2, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:1658: RuntimeWarning: Mean of empty slice
+  mean_X_i = np.nanmean(X_tr, axis=0)
+  T0= 43 emp: dRank1=13.00 dRank4=19.00 dRank13=26.00 RACF1=0.40
+      base    : dRank1=13.00 dRank4=19.00 dRank13=28.00 RACF1=0.40  coll1=0.622 coll5=0.940
+      sL0x0.7 : dRank1=13.00 dRank4=17.00 dRank13=23.00 RACF1=0.34  coll1=0.710 coll5=0.940
+      gauss   : dRank1=13.00 dRank4=18.00 dRank13=28.00 RACF1=0.41  coll1=0.623 coll5=0.900
+      vhat1   : dRank1=15.00 dRank4=20.00 dRank13=29.00 RACF1=0.36  coll1=0.645 coll5=0.895
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:939: RuntimeWarning: Mean of empty slice
+  m0 = np.nanmean(X[:b0_len], axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:940: RuntimeWarning: Mean of empty slice
+  m_all = np.nanmean(X, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:295: RuntimeWarning: Mean of empty slice
+  v1 = np.nanmean(d1 * d1, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:296: RuntimeWarning: Mean of empty slice
+  v2 = np.nanmean(d2 * d2, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:1658: RuntimeWarning: Mean of empty slice
+  mean_X_i = np.nanmean(X_tr, axis=0)
+  T0= 54 emp: dRank1=13.00 dRank4=18.00 dRank13=25.00 RACF1=0.34
+      base    : dRank1=12.00 dRank4=16.00 dRank13=26.00 RACF1=0.38  coll1=0.380 coll5=0.863
+      sL0x0.7 : dRank1=12.00 dRank4=15.00 dRank13=22.00 RACF1=0.31  coll1=0.375 coll5=0.825
+      gauss   : dRank1=13.00 dRank4=17.00 dRank13=26.00 RACF1=0.37  coll1=0.395 coll5=0.885
+      vhat1   : dRank1=14.00 dRank4=18.00 dRank13=27.00 RACF1=0.34  coll1=0.403 coll5=0.880
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:939: RuntimeWarning: Mean of empty slice
+  m0 = np.nanmean(X[:b0_len], axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:940: RuntimeWarning: Mean of empty slice
+  m_all = np.nanmean(X, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:295: RuntimeWarning: Mean of empty slice
+  v1 = np.nanmean(d1 * d1, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:296: RuntimeWarning: Mean of empty slice
+  v2 = np.nanmean(d2 * d2, axis=0)
+/Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/fable_v2/common_rankdiff_fable.py:1658: RuntimeWarning: Mean of empty slice
+  mean_X_i = np.nanmean(X_tr, axis=0)
+  T0= 65 emp: dRank1=14.00 dRank4=21.00 dRank13=26.00 RACF1=0.39
+      base    : dRank1=13.00 dRank4=18.00 dRank13=28.00 RACF1=0.39  coll1=0.580 coll5=0.922
+      sL0x0.7 : dRank1=12.00 dRank4=17.00 dRank13=25.00 RACF1=0.36  coll1=0.610 coll5=0.942
+      gauss   : dRank1=13.00 dRank4=18.00 dRank13=27.00 RACF1=0.39  coll1=0.590 coll5=0.905
+      vhat1   : dRank1=14.00 dRank4=19.00 dRank13=29.00 RACF1=0.38  coll1=0.517 coll5=0.897

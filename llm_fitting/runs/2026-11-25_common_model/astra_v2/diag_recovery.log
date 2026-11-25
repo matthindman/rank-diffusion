@@ -1,0 +1,11 @@
+T 52 {'symmetric': 1, 'slow_positive': 0, 'fast_positive': 0, 'opposite_plus_skewed_lasting': 24}
+T 86 {'symmetric': 4, 'slow_positive': 0, 'fast_positive': 0, 'opposite_plus_skewed_lasting': 24}
+T 212 {'symmetric': 1, 'slow_positive': 0, 'fast_positive': 0, 'opposite_plus_skewed_lasting': 24}
+facebook_a [(36, 0.0175, 0.0189, False), (42, 0.0194, 0.0176, False), (48, 0.0125, 0.0177, False), (53, 0.0286, 0.0168, True), (59, 0.0631, 0.0188, True), (86, 0.0777, 0.015, True)]
+instagram_hm [(22, 0.027, 0.0172, False), (26, 0.0152, 0.014, False), (30, -0.0019, 0.014, False), (34, 0.0159, 0.0109, False), (38, 0.0259, 0.0099, True), (52, 0.0408, 0.0067, True)]
+reddit_comments_ext [(78, -0.0162, 0.0114, False), (98, 0.0202, 0.0111, True), (119, 0.0179, 0.0105, True), (140, 0.0279, 0.0104, True), (160, 0.0301, 0.0109, True), (213, 0.0377, 0.0096, True)]
+reddit_submissions_long [(78, 0.3867, 0.1679, True), (98, 0.6788, 0.1772, True), (118, 0.665, 0.1586, True), (139, 0.6671, 0.1345, True), (159, 0.7579, 0.1426, True), (212, 1.0268, 0.1461, True)]
+30 False [np.float64(0.28522865477751885), np.float64(0.36141800488376924)]
+30 True [np.float64(0.5116979046765173), np.float64(0.38414733352499814)]
+100 False [np.float64(0.18144228107676197), np.float64(0.22502984498979672)]
+100 True [np.float64(0.37914040653371645), np.float64(0.2332521780113123)]

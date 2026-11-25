@@ -1,0 +1,8 @@
+waiting for a heavy-job slot; held by:
+  pid 8622 since 2026-11-25 18:20:42 in /Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/astra_v2 :: caffeinate -dims /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u ../benchmark_candidate.py --module common_rankdiff_astra.py --out-dir . --mode both
+  pid 9004 since 2026-11-25 18:22:50 in /Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/astra_v2 :: caffeinate -dims /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u diag_ablation.py
+  pid 10880 since 2026-11-25 18:35:22 in /Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/astra_v2 :: caffeinate -dims /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u diag_calendar_blocks.py
+facebook_a gamma [0. 0. 0. 0. 0.] paired CRPS deltas [0. 0. 0. 0.]
+instagram_hm gamma [0. 0. 0. 0. 0.] paired CRPS deltas [0. 0. 0.]
+reddit_comments_ext gamma [0. 1. 1. 1. 1.] paired CRPS deltas [0.000312 0.000323 0.000747 0.002675 0.01234 ]
+reddit_submissions_long gamma [0.    0.984 0.976 0.99  0.917] paired CRPS deltas [0.000335 0.00062  0.000815 0.001937 0.003753]

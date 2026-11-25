@@ -1,0 +1,19 @@
+The mandatory benchmark is in its Comments gate stage, with the gold phase (about 35 minutes) still to come; the λ-sensitivity previews are running alongside it. Everything that can be prepared ahead of the results is in place: the report's §2–4 and §6 are drafted, the table generator is tested, the experiment log is current through the command table, and the memory note is saved. I'll fill §1 and §5 as soon as the benchmark's completion notice arrives.
+
+Everything is complete; the last file simply mirrors my previous chat message, so this closing message will land there as the final record.
+
+## Round 5 result: partial accept, as a development option for your decision
+
+**Verdict.** I recommend S2+J (12 scalars) as the new core candidate and keeping Round 4's S3 as the asymmetry comparator. Nothing is adopted; no file outside `fable_v2/` was written. Full write-up in `fable_v2/FABLE_REPORT.md`, every step in `fable_v2/EXPERIMENT_LOG.md`.
+
+**What was found.** The mean-square variogram that identifies the lasting step is dominated by rare permanent jumps, which carry 30–55% of lasting variance in the body of every ladder and almost none at the Facebook head. Loading that variance onto a diffusive step makes every typical entity move 15–40% too much. That one fact explains the Submissions gate overshoot, the Reddit and Facebook over-dispersion, and the compensation Astra's median filter was doing. Matching typical movement alone (Track A) fixes individual forecasts but halves departure rates and worsens the Facebook and Comments gate, because rank displacement is a collective statistic driven by neighbours' jumps. The candidate pairs a robust IQR-matched core (φ from the full mean-square profile, scales from the robust profile over 13 lags) with an explicit rare-jump process whose variance is the gap between the two variograms.
+
+| Gate v1 S2 (Round 4 → candidate) | Facebook | Instagram | Comments | Submissions |
+|---|---|---|---|---|
+| mean rel. error | 0.084 → 0.093 (tie; 5/5 wins vs persistence) | 0.282 → 0.344 | **0.134 → 0.096** (5/5 wins) | **0.263 → 0.196** |
+
+Instagram's loss is a floor artifact: its rank displacements are now within one rank of empirical, but RACF1 is scored against an empirical value of 0.019 at the 0.02 moment floor. Comments is calibrated for the first time (cov90 0.88–0.90, PIT SD 0.28–0.29) with X CRPS, logR CRPS and head share-shift MAE improving at nearly every horizon. Facebook gains X CRPS at all horizons and gets departures right but becomes under-dispersed (cov90 0.87) and overshoots top-10 turnover. S3 on the robust core reproduces Reddit's out-of-moment ρ and D exactly and fixes the Instagram head, but its gate and Comments forecasts are worse, so Round 4 S3 should stay.
+
+**Honest limitations.** The jump rate λ_J = 0.01/week is a cross-platform constant fixed from the D1 diagnostic, not a per-panel estimate; five identification schemes were unstable. The jump variance is understated when λ_J·13 is not small, and the inherited rank law places jumps at the Facebook head where the data have none. A sensitivity check shows λ_J = 0.02 gives better head structure; I did not switch because that would select the constant on Goal 1 scores. The S3 surge size law remains unsolved (κ₅ re-pooling does not fix it). A cheaper filter statistic (L1 mean) measured as more efficient than the median was recorded, not adopted.
+
+**Verification.** 23/23 tests pass, including bit-identity of the variance path against the Round 4 module; the harness reproduced Astra's archives to every digit; the mandatory `--mode both` benchmark ran unmodified. Decisions for you: whether the robust scale moment replaces the mean-square moment as the core's identifying moment, whether a fixed cross-platform jump rate is acceptable, and whether S3 stays on the variance fit.

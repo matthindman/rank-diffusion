@@ -1,0 +1,6 @@
+Exchangeable Gaussian oracle {'cov90': 0.89855, 'pit_mean': 0.4993076925495583, 'pit_sd': 0.2895077735645165, 'pit_ks': 0.004180673937416085}
+facebook_a five paired splits, fixed baselines, identical S2 structure, all forecasts finite; scalars 11 11
+instagram_hm five paired splits, fixed baselines, identical S2 structure, all forecasts finite; scalars 11 11
+reddit_comments_ext five paired splits, fixed baselines, identical S2 structure, all forecasts finite; scalars 11 12
+reddit_submissions_long five paired splits, fixed baselines, identical S2 structure, all forecasts finite; scalars 11 12
+All archive and cohort checks passed.

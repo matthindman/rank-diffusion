@@ -1,0 +1,8 @@
+waiting for a heavy-job slot; held by:
+  pid 8622 since 2026-11-25 18:20:42 in /Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/astra_v2 :: caffeinate -dims /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u ../benchmark_candidate.py --module common_rankdiff_astra.py --out-dir . --mode both
+  pid 9004 since 2026-11-25 18:22:50 in /Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/astra_v2 :: caffeinate -dims /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u diag_ablation.py
+  pid 10639 since 2026-11-25 18:30:05 in /Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/astra_v2 :: caffeinate -dims /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -u diag_calendar_oop.py
+reddit_comments_ext round3
+reddit_comments_ext candidate
+reddit_submissions_long round3
+reddit_submissions_long candidate

@@ -99,6 +99,10 @@ class CommonParams:
     decline_exit: float = 0.0    # weekly hazard of leaving decline state (0 = absorbing to exit)
     decline_delta: float = 0.0   # weekly drift rate inside decline state
 
+    # Round 5 S2+J (inert when jump_lam == 0): rare permanent Laplace jumps on the lasting level
+    jump_lam: float = 0.0        # weekly probability of a lasting jump (JUMP_LAM_FIXED when active)
+    jump_c: float = 0.0          # per-jump variance at the s_sc normalization: Var(J | z) = jump_c * s_sc(z)^2
+
     diag: dict | None = None
 
     def n_free_scalars(self) -> int:
@@ -112,6 +116,8 @@ class CommonParams:
             extra += 1 + (1 if self.decline_skew != 0 else 0)  # sigma_d (hl_d=156 fixed) [+ skew]
         if self.decline_delta > 0:
             extra += 2 + (1 if self.decline_exit > 0 else 0)
+        if self.jump_lam > 0 and self.jump_c > 0:
+            extra += 1  # jump_c from the lasting-variance gap moment (rate fixed cross-platform, rank law inherited)
         return base + extra
 
 
@@ -181,9 +187,37 @@ def _top_k_center(X: np.ndarray, R: np.ndarray, K: int) -> np.ndarray:
     return c[:, None]
 
 
-def _structure_function(X: np.ndarray, band_of: np.ndarray, nb: int, H: int) -> np.ndarray:
+IQR_TO_SD = 1.349  # Gaussian IQR / SD; cancels out of the robust moment condition (see _model_increment_ratio)
+# The robust scale of an h-week increment measures TYPICAL movement only while rare regime jumps stay
+# rare over the horizon (lambda_J * h << 1). D1 (Round 5) found the empirical var / robust-var ratio
+# flat through h = 13 on all four panels and falling 15-30% by h = 52 as jumps enter the central half
+# of the distribution. The robust moment is therefore declared on h = 1..13 (one quarter); longer lags
+# keep informing the mean-square fit that is stored beside it in diag for the jump-share accounting.
+ROBUST_H_MAX = 13
+# Round 5 S2+J: rare permanent lasting jumps on the core (asymmetry=False) model. The weekly rate is a
+# cross-platform CONSTANT fixed from the D1 diagnostic (the var/robust-var ratio of h-increments is flat
+# through h = 13 and has fallen 15-30% by h = 52 on all four panels, i.e. lambda*52 ~ 0.3-0.7), in the
+# same way DRIFT_HL_FIXED is fixed from the multi-gap decay diagnostic; profiling it per panel on the
+# long-horizon IQR profile was tried and is not reliably identified (grid-edge solutions, EXPERIMENT_LOG).
+# The per-jump variance is identified by the lasting-variance gap between the mean-square and the robust
+# core fits (one counted scalar); the rank law is inherited from the passing slope b_xi (0 scalars).
+# Jumps are instantiated only when the gap carries at least JUMP_MIN_SHARE of total weekly lasting variance
+# (planted jump-free panels with degenerate 3-8-entity head bands show noise gaps of 0.15-0.17; the four
+# development panels carry 0.39-0.98; a planted 64%-share panel measures 0.24). An additional "must improve
+# the all-horizon IQR-profile fit by 25%" rule was tried and rejected: it fires on jump-free small-band panels
+# and misses planted jumps (EXPERIMENT_LOG); the fit of that profile is kept in diag for the record only.
+JUMP_LAM_FIXED = 0.01
+JUMP_MIN_SHARE = 0.20
+
+
+def _structure_function(X: np.ndarray, band_of: np.ndarray, nb: int, H: int, robust: bool = False) -> np.ndarray:
     """D_b(h) = E[Var_b(X_{t+h} - X_t)] by permanent-rank band, removing within-band common
-    time/tier shifts with exact Bessel correction n_t / (n_t - 1)."""
+    time/tier shifts with exact Bessel correction n_t / (n_t - 1).
+
+    robust=True returns the ROBUST scale of the same within-band demeaned increments,
+    (IQR / 1.349)^2 x n/(n-1), i.e. the variance a Gaussian with that interquartile range would
+    have. It is the declared moment of the Round 5 core fit: the typical (central) h-week movement,
+    insensitive to the rare regime jumps that dominate the mean square (Round 5 D1 diagnostic)."""
     T = X.shape[0]
     D = np.full((nb, H), np.nan)
     band_idx = [np.flatnonzero(band_of == b) for b in range(nb)]
@@ -205,11 +239,34 @@ def _structure_function(X: np.ndarray, band_of: np.ndarray, nb: int, H: int) -> 
             with np.errstate(all="ignore"):
                 mu = np.nanmean(d_ok, axis=1, keepdims=True)
             dm = d_ok - mu
-            ss = float(np.nansum(dm * dm))
             df = float(np.sum(cnt_ok - 1.0))
-            if df >= 35.0:
+            if df < 35.0:
+                continue
+            if robust:
+                v = dm[np.isfinite(dm)]
+                q25, q75 = np.quantile(v, [0.25, 0.75])
+                D[b, h - 1] = ((q75 - q25) / IQR_TO_SD) ** 2 * (float(np.sum(cnt_ok)) / df)
+            else:
+                ss = float(np.nansum(dm * dm))
                 D[b, h - 1] = ss / df
     return D
+
+
+def _empirical_innov_pool_quantiles(Xc: np.ndarray, pr_ord: np.ndarray, pres: np.ndarray, K: int) -> np.ndarray | None:
+    """Deterministic 4096-point quantile grid (0.05%..99.95%) of per-entity standardized 1-week
+    increments of present top-K entities (unstandardized overall; None when < 500 values)."""
+    dX1 = np.diff(Xc, axis=0)
+    dX1 = dX1 - np.nanmean(dX1, axis=1, keepdims=True)
+    in_k_ent = (pr_ord <= K) & (pres >= 0.5)
+    dx_in = dX1[:, in_k_ent]
+    sd_i = np.nanstd(dx_in, axis=0)
+    ok_u = np.isfinite(sd_i) & (sd_i > 1e-4)
+    u = dx_in[:, ok_u] / sd_i[ok_u][None, :]
+    uf = u[np.isfinite(u)]
+    if uf.size >= 500:
+        qs = np.linspace(0.0005, 0.9995, 4096)
+        return np.quantile(uf, qs)
+    return None
 
 
 def _split_half_vol_spread(Xc: np.ndarray, pr_ord: np.ndarray, K: int, N: int, step: int = 1) -> float:
@@ -267,12 +324,15 @@ def _smooth_ladder_slope(ladder_desc: np.ndarray, grid_r: np.ndarray) -> tuple[n
 
 
 def _closed_form_atlas_drift(sigma_L0: float, beta: float, L_K: float, u_lo: float, u_hi: float,
-                             ladder_desc: np.ndarray, N: int) -> tuple[np.ndarray, np.ndarray]:
-    """Closed-form Atlas balance drift g(k) = -d(k s_k)/dk with s_k = sigma_L^2(k) / (2 S_k)."""
+                             ladder_desc: np.ndarray, N: int, jump_var_fn=None) -> tuple[np.ndarray, np.ndarray]:
+    """Closed-form Atlas balance drift g(k) = -d(k s_k)/dk with s_k = sigma_L^2(k) / (2 S_k)
+    (sigma_L^2 is the TOTAL weekly lasting variance: diffusive core plus jump variance when active)."""
     k = np.unique(np.round(np.geomspace(1, N, 64)).astype(int)).astype(float)
     S, lev = _smooth_ladder_slope(ladder_desc, k)
     u = np.clip(lev - L_K, u_lo, u_hi)
     sig2 = (sigma_L0 * np.exp(-beta * u)) ** 2
+    if jump_var_fn is not None:
+        sig2 = sig2 + jump_var_fn(np.log(np.clip((k - 0.5) / N, Z_CLIP, 1.0)))
     s_k = sig2 / (2.0 * S)
     F = k * s_k
     km = 0.5 * (k[1:] + k[:-1])
@@ -460,6 +520,18 @@ def _surge_scale_of(b_xi: float, z: np.ndarray, z_K: float) -> np.ndarray:
     # Analytical RMS over top-K (integral_0^1 u^(2*b) du = 1/(1+2b))
     rms = math.sqrt(1.0 / (1.0 + 2.0 * b_pos))
     return raw / rms
+
+
+def _jump_sd_of(p: CommonParams, z: np.ndarray) -> np.ndarray:
+    """Per-jump SD by log-rank z: sqrt(jump_c) x the inherited rank attenuation s_sc(z) (0 extra scalars)."""
+    if p.jump_lam <= 0.0 or p.jump_c <= 0.0:
+        return np.zeros(np.shape(z), dtype=float)
+    return math.sqrt(p.jump_c) * _surge_scale_of(p.b_xi, np.asarray(z, dtype=float), p.z_K)
+
+
+def _draw_laplace_unit(rng: np.random.Generator, n: int) -> np.ndarray:
+    """Unit-variance Laplace (two-sided exponential) draws: sign x Exp(1) / sqrt(2)."""
+    return (rng.standard_exponential(n) * np.where(rng.random(n) < 0.5, -1.0, 1.0)) / math.sqrt(2.0)
 
 
 def _estimate_stage3_surge(
@@ -658,11 +730,14 @@ def _fit_structure_profiles(
     spec_b_pinned: bool,
     so_band_fixed: np.ndarray | None,
     D_subtract: np.ndarray | None = None,
+    phi_grid: np.ndarray | None = None,
 ) -> tuple[float, float, np.ndarray, np.ndarray, np.ndarray]:
-    """Profile NNLS over pooled phi for D_b(h) (minus optional Stage 3 variance D_subtract(h))."""
+    """Profile NNLS over pooled phi for D_b(h) (minus optional Stage 3 variance D_subtract(h)).
+    phi_grid restricts the profiled persistence (Round 5 robust fit pins phi to the full-horizon
+    mean-square value, where the AR(1) saturation is identified; the short robust horizon is not)."""
     w_h = np.ones_like(hs)
     best = None
-    for phi in PHI_GRID:
+    for phi in (PHI_GRID if phi_grid is None else np.asarray(phi_grid, dtype=float)):
         col_xi = 2.0 * (1.0 - phi ** hs)
         col_L = hs
         sse = 0.0
@@ -697,6 +772,109 @@ def _fit_structure_profiles(
     return best
 
 
+def _model_increment_ratio(
+    sL2_b: np.ndarray,
+    vxi_b: np.ndarray,
+    so2_b: np.ndarray,
+    phi: float,
+    s_vol: float,
+    pool: np.ndarray,
+    innov_mode: str,
+    H: int,
+    surge: tuple[float, float, float, np.ndarray] | None = None,
+    drift: tuple[float, float] | None = None,
+    jump: tuple[float, np.ndarray] | None = None,
+    n_mc: int = 16384,
+    seed: int = 4242,
+) -> np.ndarray:
+    """Model-implied ratio  (IQR/1.349)^2 / Var  of the h-week increment X_{t+h} - X_t, h = 1..H,
+    for a representative entity in each permanent-rank band, under the model's OWN innovation law:
+    bounded empirical pool (or Gaussian), lognormal entity amplitude v_i (drawn exactly as the
+    simulator draws it), stationary passing AR(1), observation noise, and the Stage 3 surge and
+    drift states when active. Common random numbers across bands; deterministic seed.
+
+    Used by the Round 5 robust scale-moment fit: the moment condition is
+        model IQR_b(h) = empirical IQR_b(h)
+    which, divided through by the model variance, becomes the linear NNLS target
+        Var_model,b(h) = D_rob,b(h) / ratio_b(h).
+    The constant 1.349 cancels; no scalar is fitted here."""
+    nb = len(sL2_b)
+    rng = np.random.default_rng(seed)
+
+    def draw(n: int) -> np.ndarray:
+        if innov_mode == "empirical":
+            return pool[rng.integers(0, pool.size, size=n)]
+        return rng.standard_normal(n)
+
+    if s_vol > 0:
+        z_v = np.clip(rng.standard_normal(n_mc), -2.5, 2.5)
+        v = np.exp(s_vol * z_v)
+        v = v / np.mean(v)
+    else:
+        v = np.ones(n_mc)
+    sqv = np.sqrt(v)
+    etaL = np.stack([draw(n_mc) for _ in range(H)])
+    etaX = np.stack([draw(n_mc) for _ in range(H + 1)])
+    etaE = np.stack([draw(n_mc) for _ in range(H + 1)])
+    xi0 = rng.standard_normal(n_mc)
+    c_xi = math.sqrt(max(1.0 - phi * phi, 1e-6))
+
+    extra = np.zeros((H, n_mc), dtype=np.float64)
+    if drift is not None and drift[0] > 0.0:
+        d_var, rho_d = drift
+        sd_d = math.sqrt(d_var)
+        d = sd_d * rng.standard_normal(n_mc)
+        innov_sd = math.sqrt(d_var * max(1.0 - rho_d * rho_d, 0.0))
+        acc = np.zeros(n_mc)
+        for t in range(H):
+            acc = acc + d
+            extra[t] += acc
+            d = rho_d * d + innov_sd * rng.standard_normal(n_mc)
+    surge_path = None
+    if surge is not None and surge[0] > 0.0 and surge[1] > 0.0 and 0.0 < surge[2] < 1.0:
+        lam_s, mu_s, rho_s, _ = surge
+        s = np.zeros(n_mc)
+        for _ in range(int(math.ceil(math.log(0.001) / math.log(rho_s)))):
+            s = rho_s * s + (rng.random(n_mc) < lam_s) * mu_s * np.minimum(rng.standard_exponential(n_mc), SURGE_EXP_CAP)
+        surge_path = np.empty((H, n_mc))
+        s0 = s.copy()
+        for t in range(H):
+            s = rho_s * s + (rng.random(n_mc) < lam_s) * mu_s * np.minimum(rng.standard_exponential(n_mc), SURGE_EXP_CAP)
+            surge_path[t] = s - s0
+
+    jump_cum = None
+    if jump is not None and jump[0] > 0.0:
+        hits = rng.random((H, n_mc)) < float(jump[0])
+        jl = np.where(rng.random((H, n_mc)) < 0.5, -1.0, 1.0) * rng.standard_exponential((H, n_mc)) / math.sqrt(2.0)
+        jump_cum = np.cumsum(hits * jl, axis=0)
+
+    out = np.full((nb, H), np.nan)
+    for b in range(nb):
+        if not (np.isfinite(sL2_b[b]) and np.isfinite(vxi_b[b]) and np.isfinite(so2_b[b])):
+            continue
+        sL = math.sqrt(max(float(sL2_b[b]), 0.0))
+        sx = math.sqrt(max(float(vxi_b[b]), 0.0))
+        so = math.sqrt(max(float(so2_b[b]), 0.0))
+        xi_prev = sx * sqv * xi0
+        xi_cum = np.empty((H, n_mc))
+        for t in range(H):
+            xi_t = phi * xi_prev + sx * c_xi * sqv * etaX[t + 1]
+            xi_cum[t] = xi_t - sx * sqv * xi0
+            xi_prev = xi_t
+        dX = np.cumsum(sL * etaL, axis=0) + xi_cum + so * sqv * (etaE[1:] - etaE[0][None, :]) + extra
+        if surge_path is not None:
+            dX = dX + float(surge[3][b]) * surge_path
+        if jump_cum is not None:
+            dX = dX + float(jump[1][b]) * jump_cum
+        var = np.var(dX, axis=1)
+        q25, q75 = np.quantile(dX, [0.25, 0.75], axis=1)
+        iqrv = ((q75 - q25) / IQR_TO_SD) ** 2
+        with np.errstate(all="ignore"):
+            r = np.where(var > 1e-14, iqrv / var, 1.0)
+        out[b] = r
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # Estimation (strictly from declared moments; zero tuning to scores)
 # --------------------------------------------------------------------------- #
@@ -711,6 +889,7 @@ def estimate_common(
     min_pres_band: float = 0.5,
     fit_gamma_L: bool = False,
     asymmetry: bool = False,
+    scale_moment: str = "variance",
 ) -> CommonParams:
     """Estimate the 11-scalar Common Rank-Diffusion model (or opt-in Stage 3 with asymmetry=True).
 
@@ -724,7 +903,15 @@ def estimate_common(
     refine_drift : whether to run smooth all-rank fixed-point refinement of g(r)
     innov_mode : "empirical" (bounded empirical standardized residuals) or "gaussian"
     asymmetry : opt-in Stage 3 (fading positive surges + persistent entity drift, variance-conserving)
+    scale_moment : "variance" (default; Round 4 = Round 3 + Astra robust _volatility_posterior)
+        uses the mean-square within-band variogram fit (recommended for both S2 and S3).
+        "robust" (opt-in Round 5 S2+J; intended for asymmetry=False) fits (sigma_L, V_xi, sigma_obs)
+        so that the model's h=1..13 IQR equals the data's with phi pinned from the full-horizon
+        mean-square variogram, plus rare permanent Laplace jumps (JUMP_LAM_FIXED=0.01/wk) carrying
+        the lasting-variance gap (+1 scalar jump_c when gap_share > JUMP_MIN_SHARE).
     """
+    if scale_moment not in ("robust", "variance"):
+        raise ValueError(f"scale_moment must be 'robust' or 'variance', got {scale_moment!r}")
     X = np.asarray(X, dtype=np.float64)
     R = np.asarray(R, dtype=np.float64)
     T, N = X.shape
@@ -780,65 +967,207 @@ def estimate_common(
     else:
         so_band_fixed = None
 
-    # 2. Profile NNLS over pooled phi:
-    #    D_b(h) = 2*so_b^2 + 2*V_xi_b*(1 - phi^h) + sL2_b * h [+ Stage 3 D_s(h) + D_d(h)]
-    #    When Spec-B is provided, enforce it as its exact mathematical lower bound:
-    #    so_b^2 = so_floor_b^2 + so_excess_b^2 (so_excess_b^2 >= 0 captures 1-week bursts
-    #    without forcing phi to collapse!). Uniform lag weights w_h = 1 fit short, medium & long cleanly.
-    sse_best, phi_hat, so2_b, vxi_b, sL2_b = _fit_structure_profiles(
-        D, hs, nb, spec_b_pinned, so_band_fixed, D_subtract=None
-    )
-
     in_k = np.arange(nb) < nb - 1
     dz_b = band_z - z_K
     w_oct = np.minimum(band_n, 100.0)
 
-    # Optional Stage 3 (opt-in): fading positive surges + persistent entity drift,
-    # strictly moment-identified and 100% variance-conserving via D_subtract!
-    surge_lam = 0.0
-    surge_mu = 0.0
-    surge_rho = 0.0
-    decline_var = 0.0
-    decline_rho = 0.0
-    stage3_diag = None
+    # 1b. Entity volatility spread (split-half) and the raw bounded empirical innovation pool are
+    #     inputs of the robust scale-moment fit below, so they are built first (same formulas as before).
+    s_short = _split_half_vol_spread(Xc, pr_ord, K, N, step=1)
+    s_vol = float(np.clip(s_short, 0.0, 1.5))
+    q_pool = _empirical_innov_pool_quantiles(Xc, pr_ord, pres, K)
+    if q_pool is not None:
+        pool_mc = (q_pool - np.mean(q_pool)) / max(float(np.std(q_pool)), 1e-6)
+    else:
+        pool_mc = np.linspace(-3.0, 3.0, 1024)
+        pool_mc = pool_mc / np.std(pool_mc)
+
+    # Stage 3 surge (opt-in) is identified from marginal kappa_3 / kappa_5 and the mean-square budget
+    # guard; it does not depend on the core's scale moment, so it is estimated once here.
+    surge_pre = None
     if asymmetry:
         with np.errstate(all="ignore"):
             D_med = np.nanmedian(D[in_k], axis=0)
-        surge_lam, surge_mu, surge_rho, s3_surge = _estimate_stage3_surge(
-            Xc, pr_ord, pres, K, D_med
+        surge_pre = _estimate_stage3_surge(Xc, pr_ord, pres, K, D_med)
+
+    def _fit_core(D_target: np.ndarray, phi_grid: np.ndarray | None = None, D_extra: np.ndarray | None = None) -> dict:
+        """Profile NNLS over pooled phi on a (variance-equivalent) target variogram:
+           D_b(h) = 2*so_b^2 + 2*V_xi_b*(1 - phi^h) + sL2_b * h [+ Stage 3 D_s(h) + D_d(h)]
+        When Spec-B is provided, enforce it as its exact mathematical lower bound:
+        so_b^2 = so_floor_b^2 + so_excess_b^2 (so_excess_b^2 >= 0 captures 1-week bursts
+        without forcing phi to collapse!). Uniform lag weights w_h = 1 fit short, medium & long cleanly.
+        Optional Stage 3 (fading positive surges + persistent entity drift) is strictly
+        moment-identified and 100% variance-conserving via D_subtract."""
+        sse_c, phi_c, so2_c, vxi_c, sL2_c = _fit_structure_profiles(
+            D_target, hs, nb, spec_b_pinned, so_band_fixed, D_subtract=D_extra, phi_grid=phi_grid
         )
-        Vs = _surge_variance(surge_lam, surge_mu, surge_rho)
-
-        # Two-pass self-consistent estimation of (decline_var, phi, V_xi, sigma_L)
+        s_lam = s_mu = s_rho = 0.0
+        d_var = d_rho = 0.0
+        s3diag = None
         b_xi_ref = 0.0
-        for _pass in range(2):
-            ok_xi0 = in_k & np.isfinite(vxi_b) & (vxi_b > 1e-7)
-            if ok_xi0.sum() >= 2:
-                a_xi0, b_xi0 = _wls_line(dz_b[ok_xi0], 0.5 * np.log(vxi_b[ok_xi0]), w_oct[ok_xi0])
-                b_xi_ref = b_xi0
-                sel_k = (pr_ord <= K) & (pres >= 0.5)
-                z_sel = np.log(np.clip((pr_ord[sel_k] - 0.5) / N, Z_CLIP, 1.0))
-                Vxi_mean = float(np.mean(np.exp(2.0 * np.clip(a_xi0 + b_xi0 * (z_sel - z_K), -6.0, 3.0))))
-            else:
-                Vxi_mean = 0.0
+        if asymmetry:
+            s_lam, s_mu, s_rho, s3_surge = surge_pre
+            Vs = _surge_variance(s_lam, s_mu, s_rho)
+            # Two-pass self-consistent estimation of (decline_var, phi, V_xi, sigma_L)
+            for _pass in range(2):
+                ok_xi0 = in_k & np.isfinite(vxi_c) & (vxi_c > 1e-7)
+                if ok_xi0.sum() >= 2:
+                    a_xi0, b_xi0 = _wls_line(dz_b[ok_xi0], 0.5 * np.log(vxi_c[ok_xi0]), w_oct[ok_xi0])
+                    b_xi_ref = b_xi0
+                    sel_k = (pr_ord <= K) & (pres >= 0.5)
+                    z_sel = np.log(np.clip((pr_ord[sel_k] - 0.5) / N, Z_CLIP, 1.0))
+                    Vxi_mean = float(np.mean(np.exp(2.0 * np.clip(a_xi0 + b_xi0 * (z_sel - z_K), -6.0, 3.0))))
+                else:
+                    Vxi_mean = 0.0
 
-            decline_var, decline_rho, s3_drift = _estimate_stage3_drift(
-                Xc, pr_ord, pres, K, phi_hat, Vxi_mean, Vs, surge_rho
-            )
-            D_sub = np.zeros((nb, hs.size), dtype=float)
-            if Vs > 0.0 and surge_rho > 0.0:
-                s_sc_b = _surge_scale_of(b_xi_ref, band_z, z_K)
-                D_sub = D_sub + (s_sc_b[:, None] ** 2) * (2.0 * Vs * (1.0 - surge_rho ** hs))[None, :]
-            if decline_var > 0.0 and decline_rho > 0.0:
-                D_sub = D_sub + (decline_var * _f_vel(hs, decline_rho))[None, :]
-
-            if np.any(D_sub > 0.0):
-                sse_best, phi_hat, so2_b, vxi_b, sL2_b = _fit_structure_profiles(
-                    D, hs, nb, spec_b_pinned, so_band_fixed, D_subtract=D_sub
+                d_var, d_rho, s3_drift = _estimate_stage3_drift(
+                    Xc, pr_ord, pres, K, phi_c, Vxi_mean, Vs, s_rho
                 )
-            else:
-                break
-        stage3_diag = {"surge": s3_surge, "drift": s3_drift}
+                D_sub = np.zeros((nb, hs.size), dtype=float) if D_extra is None else D_extra.copy()
+                if Vs > 0.0 and s_rho > 0.0:
+                    s_sc_b = _surge_scale_of(b_xi_ref, band_z, z_K)
+                    D_sub = D_sub + (s_sc_b[:, None] ** 2) * (2.0 * Vs * (1.0 - s_rho ** hs))[None, :]
+                if d_var > 0.0 and d_rho > 0.0:
+                    D_sub = D_sub + (d_var * _f_vel(hs, d_rho))[None, :]
+
+                if np.any(D_sub > 0.0):
+                    sse_c, phi_c, so2_c, vxi_c, sL2_c = _fit_structure_profiles(
+                        D_target, hs, nb, spec_b_pinned, so_band_fixed, D_subtract=D_sub, phi_grid=phi_grid
+                    )
+                else:
+                    break
+            s3diag = {"surge": s3_surge, "drift": s3_drift}
+        return dict(sse=sse_c, phi=phi_c, so2_b=so2_c, vxi_b=vxi_c, sL2_b=sL2_c,
+                    surge_lam=s_lam, surge_mu=s_mu, surge_rho=s_rho,
+                    decline_var=d_var, decline_rho=d_rho, stage3_diag=s3diag, b_xi_ref=b_xi_ref)
+
+    # 2. Core fit. First on the mean-square variogram over h = 1..H (the Round 3/4 moment; final when
+    #    scale_moment == "variance"; it identifies the passing persistence phi from the visible AR(1)
+    #    saturation). Then -- Round 5 default -- three fixed-point steps on the ROBUST variogram over
+    #    h = 1..ROBUST_H_MAX with phi pinned: the model's IQR of h-week increments is required to equal
+    #    the data's in every band, with the model's own non-Gaussian increment law supplying the
+    #    IQR/variance ratio at the current parameters. Rare regime jumps (which the bounded pool
+    #    cannot and should not reproduce) thereby stop inflating the diffusive lasting step and the
+    #    passing/observation scales. phi is pinned because 13 lags cannot separate an AR(1) from a
+    #    random walk (the short-lag ridge recorded in pitfalls.md); the scale components can.
+    fit = _fit_core(D)
+    fit_var = fit
+    D_rob = None
+    ratio_last = None
+    jump_lam = 0.0
+    jump_c = 0.0
+    jump_diag = None
+    if scale_moment == "robust":
+        D_rob_all = _structure_function(Xc, band_of, nb, H, robust=True)
+        D_rob = D_rob_all.copy()
+        D_rob[:, ROBUST_H_MAX:] = np.nan  # declared horizon set of the robust SCALE fit (see ROBUST_H_MAX)
+        phi_pin = np.array([fit_var["phi"]])
+
+        def _b_xi_of(vxi_c: np.ndarray) -> float:
+            ok_b = in_k & np.isfinite(vxi_c) & (vxi_c > 1e-7)
+            if ok_b.sum() >= 2:
+                return _wls_line(dz_b[ok_b], 0.5 * np.log(vxi_c[ok_b]), w_oct[ok_b])[1]
+            return 0.0
+
+        def _robust_fit_for(lam_j: float, lam_c: float, fit_start: dict, n_it: int) -> tuple[dict, float, np.ndarray, float]:
+            """Fixed point of the robust scale fit (h <= ROBUST_H_MAX, phi pinned) for a given jump rate lam_j.
+            The weekly jump variance lam_c (at the s_sc normalization; per-jump variance c = lam_c / lam_j) is
+            the band-weighted mean of (mean-square lasting variance - robust core), re-evaluated each step
+            with damping once the jumps are inside the model's increment law (so the core is jump-clean).
+            Returns (fit, c, ratio, long-horizon robust SSE)."""
+            fit_j = fit_start
+            c_j = (lam_c / lam_j) if (lam_j > 0.0 and lam_c > 0.0) else 0.0
+            ratio_j = None
+            D_extra = None
+            for _it in range(n_it):
+                s_sc_b = _surge_scale_of(_b_xi_of(fit_j["vxi_b"]), band_z, z_K)
+                jump_arg = None
+                D_extra = None
+                if c_j > 0.0:
+                    jump_arg = (lam_j, math.sqrt(c_j) * s_sc_b)
+                    D_extra = (lam_c * (s_sc_b[:, None] ** 2)) * hs[None, :]
+                surge_arg = None
+                if fit_j["surge_lam"] > 0.0:
+                    surge_arg = (fit_j["surge_lam"], fit_j["surge_mu"], fit_j["surge_rho"],
+                                 _surge_scale_of(fit_j["b_xi_ref"], band_z, z_K))
+                drift_arg = (fit_j["decline_var"], fit_j["decline_rho"]) if fit_j["decline_var"] > 0.0 else None
+                ratio_j = _model_increment_ratio(
+                    fit_j["sL2_b"], fit_j["vxi_b"], fit_j["so2_b"], fit_j["phi"], s_vol, pool_mc, innov_mode, H,
+                    surge=surge_arg, drift=drift_arg, jump=jump_arg,
+                )
+                with np.errstate(all="ignore"):
+                    D_target = np.where(np.isfinite(ratio_j) & (ratio_j > 1e-6) & np.isfinite(D_rob),
+                                        D_rob / ratio_j, np.nan)
+                fit_j = _fit_core(D_target, phi_grid=phi_pin, D_extra=D_extra)
+            # Identification of lam_j: the model's IQR profile against the data's over ALL h = 1..H (per-band
+            # normalized). The short horizons are matched by construction, so the criterion is carried by
+            # h > ROBUST_H_MAX: how far the IQR has absorbed jumps by h = 26..52 is set by lambda h.
+            # The weekly jump variance lam_c is fixed ONCE from the jump-free robust core (iterating it
+            # against the jump-aware core erodes the diffusive core band by band; recorded in EXPERIMENT_LOG).
+            s_sc_b = _surge_scale_of(_b_xi_of(fit_j["vxi_b"]), band_z, z_K)
+            jump_arg = (lam_j, math.sqrt(c_j) * s_sc_b) if c_j > 0.0 else None
+            D_extra = (lam_c * (s_sc_b[:, None] ** 2)) * hs[None, :] if c_j > 0.0 else None
+            surge_arg = None
+            if fit_j["surge_lam"] > 0.0:
+                surge_arg = (fit_j["surge_lam"], fit_j["surge_mu"], fit_j["surge_rho"],
+                             _surge_scale_of(fit_j["b_xi_ref"], band_z, z_K))
+            drift_arg = (fit_j["decline_var"], fit_j["decline_rho"]) if fit_j["decline_var"] > 0.0 else None
+            ratio_j = _model_increment_ratio(
+                fit_j["sL2_b"], fit_j["vxi_b"], fit_j["so2_b"], fit_j["phi"], s_vol, pool_mc, innov_mode, H,
+                surge=surge_arg, drift=drift_arg, jump=jump_arg,
+            )
+            var_model = (2.0 * fit_j["so2_b"][:, None] + 2.0 * fit_j["vxi_b"][:, None] * (1.0 - fit_j["phi"] ** hs)[None, :]
+                         + fit_j["sL2_b"][:, None] * hs[None, :])
+            if D_extra is not None:
+                var_model = var_model + D_extra
+            if surge_arg is not None:
+                Vs_j = _surge_variance(fit_j["surge_lam"], fit_j["surge_mu"], fit_j["surge_rho"])
+                var_model = var_model + (surge_arg[3][:, None] ** 2) * (2.0 * Vs_j * (1.0 - fit_j["surge_rho"] ** hs))[None, :]
+            if drift_arg is not None:
+                var_model = var_model + (fit_j["decline_var"] * _f_vel(hs, fit_j["decline_rho"]))[None, :]
+            iqr_model = ratio_j * var_model
+            sse = 0.0
+            for b in range(nb - 1):
+                okh = np.isfinite(D_rob_all[b]) & np.isfinite(iqr_model[b])
+                if okh.sum() >= 4:
+                    sse += float(np.sum((D_rob_all[b, okh] - iqr_model[b, okh]) ** 2) / max(float(np.sum(D_rob_all[b, okh] ** 2)), 1e-12))
+            return fit_j, c_j, ratio_j, sse
+
+        # (i) jump-free robust core
+        fit0, _, ratio0, sse0 = _robust_fit_for(0.0, 0.0, fit_var, 3)
+        # (ii) the lasting-variance gap between the mean-square fit and the jump-free robust core, computed ONCE
+        s_sc0 = _surge_scale_of(_b_xi_of(fit0["vxi_b"]), band_z, z_K)
+        gap0 = np.where(np.isfinite(fit_var["sL2_b"]) & np.isfinite(fit0["sL2_b"]),
+                        np.maximum(fit_var["sL2_b"] - fit0["sL2_b"], 0.0), np.nan)
+        ok0 = in_k & np.isfinite(gap0) & np.isfinite(fit_var["sL2_b"])
+        lam_c0 = float(np.sum(w_oct[ok0] * gap0[ok0]) / max(float(np.sum(w_oct[ok0] * s_sc0[ok0] ** 2)), 1e-12)) if ok0.any() else 0.0
+        # share of the TOTAL weekly lasting variance (core + surge + drift) carried by the gap
+        tot_last = fit_var["sL2_b"].copy()
+        if fit_var["surge_lam"] > 0.0:
+            Vs0 = _surge_variance(fit_var["surge_lam"], fit_var["surge_mu"], fit_var["surge_rho"])
+            tot_last = tot_last + (_surge_scale_of(fit_var["b_xi_ref"], band_z, z_K) ** 2) * 2.0 * Vs0 * (1.0 - fit_var["surge_rho"])
+        if fit_var["decline_var"] > 0.0:
+            tot_last = tot_last + fit_var["decline_var"]
+        gap_share = float(np.sum(w_oct[ok0] * gap0[ok0]) / max(float(np.sum(w_oct[ok0] * tot_last[ok0])), 1e-12)) if ok0.any() else 0.0
+        sse_profile = {0.0: sse0}
+        fit, ratio_last = fit0, ratio0
+        # Symmetric jumps belong to the core model; the Stage 3 comparator's tail process is its surge.
+        if (not asymmetry) and gap_share > JUMP_MIN_SHARE and lam_c0 > 0.0:
+            fit_j, c_j, ratio_j, sse_j = _robust_fit_for(JUMP_LAM_FIXED, lam_c0, fit0, 2)
+            sse_profile[JUMP_LAM_FIXED] = sse_j
+            if c_j > 0.0:
+                jump_lam, fit, jump_c, ratio_last = JUMP_LAM_FIXED, fit_j, c_j, ratio_j
+                jump_diag = dict(active=True, gap_share=gap_share, gap_band=gap0.tolist(), lam_c=lam_c0,
+                                 sse_profile=sse_profile, jump_var_per_week_at_K=jump_lam * jump_c,
+                                 jump_sd_at_K=math.sqrt(jump_c))
+        if jump_diag is None:
+            jump_diag = dict(active=False, gap_share=gap_share, gap_band=gap0.tolist(), lam_c=lam_c0, sse_profile=sse_profile)
+
+    sse_best, phi_hat = fit["sse"], fit["phi"]
+    so2_b, vxi_b, sL2_b = fit["so2_b"], fit["vxi_b"], fit["sL2_b"]
+    surge_lam, surge_mu, surge_rho = fit["surge_lam"], fit["surge_mu"], fit["surge_rho"]
+    decline_var, decline_rho = fit["decline_var"], fit["decline_rho"]
+    stage3_diag = fit["stage3_diag"]
 
     # 3. Fit 2-parameter smooth laws across inside-K bands (b = 0..nb-2)
     #    Each band is one octave of log-rank; cap band weights at 100 so the bottom
@@ -881,11 +1210,9 @@ def estimate_common(
             med_g0 = float(np.nanmedian(D[in_k, 0])) if np.any(np.isfinite(D[in_k, 0])) else 0.05
             a_obs, b_obs = 0.5 * math.log(max(0.05 * med_g0, 1e-6)), 0.0
 
-    # 4. Split-half entity volatility spread s_vol (bias-free at s = 0!)
+    # 4. Split-half entity volatility spread s_vol (bias-free at s = 0!) -- computed in step 1b.
     #    Default gamma_L = 0.0 (passing/burst volatility heterogeneity only; Stage 2 ablation
     #    proved gamma_L = 0 beats gamma_L > 0 across all horizons while saving 1 free scalar!).
-    s_short = _split_half_vol_spread(Xc, pr_ord, K, N, step=1)
-    s_vol = float(np.clip(s_short, 0.0, 1.5))
     s_long = 0.0
     if fit_gamma_L and s_vol > 0.05:
         blk_v = 4 if T >= 48 else 2
@@ -937,18 +1264,9 @@ def estimate_common(
         a_abs, b_abs = -8.0, 0.0
 
     # 6. Empirical standardized innovation pool (bounded by observed 0.05%–99.95%, zero-mean unit-var)
-    dX1 = np.diff(Xc, axis=0)
-    dX1 = dX1 - np.nanmean(dX1, axis=1, keepdims=True)
-    in_k_ent = (pr_ord <= K) & (pres >= 0.5)
-    dx_in = dX1[:, in_k_ent]
-    sd_i = np.nanstd(dx_in, axis=0)
-    ok_u = np.isfinite(sd_i) & (sd_i > 1e-4)
-    u = dx_in[:, ok_u] / sd_i[ok_u][None, :]
-    uf = u[np.isfinite(u)]
-    if uf.size >= 500:
+    if q_pool is not None:
         # Deterministic quantile grid -> compact & exact!
-        qs = np.linspace(0.0005, 0.9995, 4096)
-        pool = np.quantile(uf, qs)
+        pool = q_pool
         if asymmetry and surge_lam > 0.0:
             # Symmetrize core innovation pool when surges are active (eliminates skew double-counting!)
             pool = np.concatenate([pool, -pool])
@@ -966,15 +1284,27 @@ def estimate_common(
     u_lo = float(np.nanmin(band_level[in_k]) - L_K) if np.any(np.isfinite(band_level[in_k])) else -2.0
     u_hi = float(np.nanmax(band_level[in_k]) - L_K) if np.any(np.isfinite(band_level[in_k])) else 6.0
 
-    # 7. Closed-form Atlas drift + optional smooth all-rank refinement
-    dz, dg = _closed_form_atlas_drift(sigma_L0, beta, L_K, u_lo, u_hi, ladder_obs, N)
+    # 7. Closed-form Atlas drift (total lasting variance incl. jumps) + optional smooth all-rank refinement
+    jump_var_fn = None
+    if jump_lam > 0.0 and jump_c > 0.0:
+        def jump_var_fn(z_arr, _lam=jump_lam, _c=jump_c, _b=b_xi, _zk=z_K):
+            return _lam * _c * _surge_scale_of(_b, z_arr, _zk) ** 2
+    dz, dg = _closed_form_atlas_drift(sigma_L0, beta, L_K, u_lo, u_hi, ladder_obs, N, jump_var_fn=jump_var_fn)
 
     diag = dict(
-        D=D.tolist(), H=H, sse_phi=float(sse_best),
+        D=D.tolist(), H=H, sse_phi=float(sse_best), scale_moment=scale_moment,
         band_z=band_z.tolist(), band_level=band_level.tolist(),
         sL2_band=sL2_b.tolist(), vxi_band=vxi_b.tolist(), so2_band=so2_b.tolist(),
         abs_rates=abs_rates.tolist(), s_short=s_short, s_long=s_long,
+        # Round 5: the mean-square fit kept beside the robust one; their lasting-variance gap is the
+        # share of lasting variance carried by rare jumps that the core deliberately does not model.
+        sL2_band_var=fit_var["sL2_b"].tolist(), vxi_band_var=fit_var["vxi_b"].tolist(),
+        so2_band_var=fit_var["so2_b"].tolist(), phi_var=float(fit_var["phi"]),
     )
+    if D_rob is not None:
+        diag["D_rob"] = D_rob.tolist()
+        diag["iqr_var_ratio_model"] = ratio_last.tolist()
+        diag["jumps"] = jump_diag
     if stage3_diag is not None:
         diag["stage3"] = stage3_diag
 
@@ -988,6 +1318,7 @@ def estimate_common(
         a_obs_floor=a_obs_floor, b_obs_floor=b_obs_floor, innov_mode=innov_mode,
         surge_lam=surge_lam, surge_mu=surge_mu, surge_rho=surge_rho,
         decline_var=decline_var, decline_rho=decline_rho,
+        jump_lam=jump_lam, jump_c=jump_c,
         diag=diag,
     )
 
@@ -1110,6 +1441,12 @@ class CommonState:
         g = np.interp(zp, p.drift_z, p.drift_g)
         self.L = self.L + g + sL * self.sqv_last * self._draw_innov(N)
 
+        if p.jump_lam > 0.0 and p.jump_c > 0.0:
+            hit = rng.random(N) < p.jump_lam
+            nh = int(hit.sum())
+            if nh:
+                self.L[hit] = self.L[hit] + _jump_sd_of(p, zp[hit]) * _draw_laplace_unit(rng, nh)
+
         if self.drift_i is not None:
             self.L = self.L + self.drift_i
             if p.decline_rho < 1.0:
@@ -1196,19 +1533,105 @@ def simulate_common_panel(
 
 
 # --------------------------------------------------------------------------- #
-# Calendar-aligned 2-state Kalman Filter + Empirical-Bayes v_i (Goal 2!)
+# Calendar-aligned 2-state / 4-state Kalman Filter + Robust EB v_i (Goal 2!)
 # --------------------------------------------------------------------------- #
+def _volatility_posterior(
+    p: CommonParams,
+    dx: np.ndarray,
+    z: np.ndarray,
+    sL: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Estimate passing amplitude v_i from the median absolute 1-week increment.
+
+    Adopted from Astra 6.2 (2026-11-25): at fixed permanent rank, integrates over
+    the model's independent innovations (preserving the non-scaling lasting-variance
+    floor sigma_L^2). For each trial log(v) on a 41-point lognormal prior grid,
+    compares the model-implied median |dX_1| against the endpoint's observed median
+    |dX_1| using the asymptotic order-statistic standard error 1 / (2 m f(m) sqrt(n/2)).
+    Zero new free scalars; immune to rare extreme bursts that distort mean(dX^2).
+    """
+    n = np.isfinite(dx).sum(axis=0)
+    valid = n >= 4
+    v_hat = np.ones(z.size, dtype=np.float64)
+    post_sd = np.full(z.size, p.s_vol, dtype=np.float64)
+    if not valid.any():
+        return v_hat, post_sd
+    measured = np.nanmedian(np.abs(dx[:, valid]), axis=0)
+    rng = np.random.default_rng(71329)
+    size = 8192
+
+    def draw() -> np.ndarray:
+        if p.innov_mode == "empirical":
+            return rng.choice(p.innov_pool, size=size)
+        return rng.standard_normal(size)
+
+    xi = rng.standard_normal(size)
+    n_burn_xi = max(1, math.ceil(math.log(0.001) / math.log(p.phi))) if 0.0 < p.phi < 1.0 else 1
+    for _ in range(n_burn_xi):
+        xi = p.phi * xi + math.sqrt(max(1.0 - p.phi ** 2, 0.0)) * draw()
+    xi_delta = (p.phi - 1.0) * xi + math.sqrt(max(1.0 - p.phi ** 2, 0.0)) * draw()
+    obs_delta = draw() - draw()
+    lasting = draw()
+    drift = math.sqrt(p.decline_var) * rng.standard_normal(size)
+    surge_delta = np.zeros(size, dtype=np.float64)
+    if p.surge_lam > 0.0 and 0.0 < p.surge_rho < 1.0:
+        level = np.full(size, _surge_mean(p.surge_lam, p.surge_mu, p.surge_rho), dtype=np.float64)
+        for _ in range(math.ceil(math.log(0.001) / math.log(p.surge_rho))):
+            jump = (rng.random(size) < p.surge_lam) * np.minimum(rng.standard_exponential(size), SURGE_EXP_CAP)
+            level = p.surge_rho * level + p.surge_mu * jump
+        jump = (rng.random(size) < p.surge_lam) * np.minimum(rng.standard_exponential(size), SURGE_EXP_CAP)
+        surge_delta = (p.surge_rho - 1.0) * level + p.surge_mu * jump
+
+    jump_delta = np.zeros(size, dtype=np.float64)
+    if p.jump_lam > 0.0 and p.jump_c > 0.0:
+        jump_delta = (rng.random(size) < p.jump_lam) * _draw_laplace_unit(rng, size)
+
+    order = np.argsort(z)
+    nodes = np.unique(np.linspace(0, z.size - 1, min(25, z.size)).round().astype(int))
+    nodes = np.unique(np.r_[nodes, np.geomspace(1, z.size, min(25, z.size)).round().astype(int) - 1])
+    ix = order[nodes]
+    z_grid = z[ix]
+    z_eval = z[valid]
+    passing_var = 2.0 * (sigma_obs_of(p, z) ** 2) + 2.0 * (1.0 - p.phi) * v_xi_of(p, z)
+    scale = _surge_scale_of(p.b_xi, z, p.z_K)
+    jump_sd = _jump_sd_of(p, z)
+    fixed_var = (p.decline_var + (scale ** 2) * 2.0 * _surge_variance(p.surge_lam, p.surge_mu, p.surge_rho) * (1.0 - p.surge_rho)
+                 + p.jump_lam * jump_sd ** 2)
+
+    grid = np.linspace(-2.5, 2.5, 41) * p.s_vol
+    log_prior = -0.5 * ((grid + 0.5 * (p.s_vol ** 2)) / p.s_vol) ** 2
+    log_weights = np.empty((grid.size, int(valid.sum())), dtype=np.float64)
+    pass_draws = np.sqrt(v_xi_of(p, z_grid))[:, None] * xi_delta + sigma_obs_of(p, z_grid)[:, None] * obs_delta
+    fixed_draws = drift + scale[ix, None] * surge_delta + jump_sd[ix, None] * jump_delta
+    for j, logv in enumerate(grid):
+        v = math.exp(logv)
+        samples = fixed_draws + sL[ix, None] * (v ** (p.gamma_L / 2.0)) * lasting + math.sqrt(v) * pass_draws
+        q45, med, q55 = np.quantile(np.abs(samples), [0.45, 0.5, 0.55], axis=1)
+        variance = np.maximum((sL ** 2) * (v ** p.gamma_L) + passing_var * v + fixed_var, 1e-12)
+        pred = np.interp(z_eval, z_grid, med / np.sqrt(variance[ix])) * np.sqrt(variance[valid])
+        unit_se = np.interp(z_eval, z_grid, (q55 - q45) / np.maximum(0.2 * med, 1e-12))
+        se = np.maximum(unit_se, 1e-4) / np.sqrt(n[valid] / 2.0)
+        residual = np.log(np.maximum(measured, 1e-12) / np.maximum(pred, 1e-12))
+        log_weights[j] = log_prior[j] - np.log(se) - 0.5 * ((residual / se) ** 2)
+    weights = np.exp(log_weights - log_weights.max(axis=0))
+    weights /= weights.sum(axis=0)
+    v_hat[valid] = np.exp(grid) @ weights
+    mean_log = grid @ weights
+    post_sd[valid] = np.sqrt(np.maximum(0.0, (grid ** 2) @ weights - mean_log ** 2))
+    return v_hat, post_sd
+
+
 def filter_endpoints(
     X_tr: np.ndarray,
     R_tr: np.ndarray,
     p: CommonParams,
     floors_tr: np.ndarray | None = None,
 ) -> dict:
-    """Vectorized 2-state Kalman filter for [L_it, xi_it] with Empirical-Bayes entity volatility v_i.
+    """Vectorized 2-state/4-state Kalman filter with robust Empirical-Bayes entity volatility v_i.
 
     Operates strictly on the training matrix X_tr (T0 x N) with ZERO lookahead.
-    Returns posterior means (L_hat, xi_hat), posterior covariances (P11, P12, P22),
-    shrunk entity amplitude v_hat and posterior log-v SD (post_s_v).
+    Returns posterior means (L_hat, xi_hat[, d_hat, s_hat]), posterior covariances
+    (P11, P12, P22[, P4]), shrunk entity amplitude v_hat and posterior log-v SD (post_s_v).
     """
     X_tr = np.asarray(X_tr, dtype=np.float64)
     R_tr = np.asarray(R_tr, dtype=np.float64)
@@ -1228,14 +1651,9 @@ def filter_endpoints(
     pr_ord[np.argsort(rperm, kind="stable")] = np.arange(1, N + 1)
     z_i = np.log(np.clip((pr_ord - 0.5) / N, Z_CLIP, 1.0))
 
-    # 1. Empirical-Bayes entity amplitude v_hat (shrunk toward band prior)
+    # 1. Robust Empirical-Bayes entity amplitude v_hat from median |dX_1|
     dX = np.diff(Xc, axis=0)
     dX = dX - np.nanmean(dX, axis=1, keepdims=True)
-    n_d = np.sum(np.isfinite(dX), axis=0).astype(float)
-    with np.errstate(all="ignore"):
-        var_i = np.nanmean(dX * dX, axis=0)
-
-    # Expected baseline 1-week variance at z_i from the model
     vxi_i = v_xi_of(p, z_i)
     so_i = sigma_obs_of(p, z_i)
     with np.errstate(all="ignore"):
@@ -1246,34 +1664,15 @@ def filter_endpoints(
     has_surge = (p.surge_lam > 0.0) and (p.surge_mu > 0.0) and (p.surge_rho > 0.0)
     has_stage3 = has_drift or has_surge
     Vs = _surge_variance(p.surge_lam, p.surge_mu, p.surge_rho) if has_surge else 0.0
-    base_var1 = 2.0 * (so_i ** 2) + 2.0 * vxi_i * (1.0 - p.phi) + (sL_i ** 2)
-    if has_stage3:
-        s_sc_eb = _surge_scale_of(p.b_xi, z_i, p.z_K) if has_surge else np.ones(N)
-        base_var1 = base_var1 + (s_sc_eb ** 2) * (2.0 * Vs * (1.0 - p.surge_rho)) + (p.decline_var if has_drift else 0.0)
-
     if p.s_vol > 0.02:
-        s2 = p.s_vol ** 2
-        # Sampling variance of log(hat_var_i) ~ 2 / max(n_d, 1) (plus heavy-tail factor 1.5)
-        tau2 = 3.0 / np.maximum(n_d, 1.0)
-        w_eb = np.where(np.isfinite(var_i) & (var_i > 1e-8) & (n_d >= 4), s2 / (s2 + tau2), 0.0)
-        log_ratio = np.where(w_eb > 0, np.log(np.maximum(var_i, 1e-8) / np.maximum(base_var1, 1e-8)), 0.0)
-        # Subtract mean bias on top-K so prior is centered, then apply EXACT E[v_hat] = 1 normalization!
-        inK = pr_ord <= p.K
-        if np.any(inK & (w_eb > 0)):
-            log_ratio = log_ratio - float(np.mean(log_ratio[inK & (w_eb > 0)]))
-        log_v_hat = np.clip(w_eb * log_ratio, -2.2 * p.s_vol, 2.2 * p.s_vol)
-        raw_v = np.exp(log_v_hat)
-        # Normalize so mean(v_hat) == 1.0 on top-K (exact E[v] = 1)
-        norm_scale = float(np.mean(raw_v[inK])) if np.any(inK) else float(np.mean(raw_v))
-        v_hat = raw_v / max(norm_scale, 1e-6)
-        post_s_v = np.sqrt(np.maximum(s2 * (1.0 - w_eb), 0.0))
+        v_hat, post_s_v = _volatility_posterior(p, dX, z_i, sL_i)
     else:
         v_hat = np.ones(N)
         post_s_v = np.zeros(N)
 
     # 2. Vectorized Kalman filter: exact 2-state [L, xi] for Stage 2 (bit-identical!),
     #    exact 4-state [L, xi, d, s_tilde] when Stage 3 asymmetry is active.
-    qL = (sL_i ** 2) * np.power(v_hat, p.gamma_L)
+    qL = (sL_i ** 2) * np.power(v_hat, p.gamma_L) + p.jump_lam * (_jump_sd_of(p, z_i) ** 2)
     q_xi = vxi_i * max(1.0 - p.phi * p.phi, 1e-6) * v_hat
     R_obs = np.maximum((so_i ** 2) * v_hat, 1e-6)
     g_i = np.interp(z_i, p.drift_z, p.drift_g)

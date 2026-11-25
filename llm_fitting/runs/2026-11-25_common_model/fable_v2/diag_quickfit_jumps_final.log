@@ -1,0 +1,56 @@
+
+facebook_a asym=False (3.0s): n_free=12 sL0=0.0776 beta=-0.013 phi=0.84 a_xi=-0.853 b_xi=+0.095 a_obs=-1.147 b_obs=+0.083 s=0.745
+   surge(lam=0.00000,mu=0.00) sd=0.00000 | JUMPS lam=0.0100 c=0.6908 (sd/jump at K=0.831, var/wk at K=0.00691) gap_share=0.472
+   sse profile: {0.0: 0.1095, 0.01: 0.0475}
+   band sL2 var : 0.0092 0.0071 0.0105 0.0123 0.0110 0.0124 0.0165 | rob core: 0.0081 0.0058 0.0051 0.0077 0.0059 0.0071 0.0056
+   band gap     : 0.0001 0.0023 0.0062 0.0045 0.0058 0.0048 0.0112 | model jump var/wk: 0.0025 0.0040 0.0045 0.0052 0.0059 0.0067 0.0077
+   model IQRv/var band0 h=1,4,13,26,52: 0.651 0.758 0.829 0.884
+
+facebook_a asym=True (3.0s): n_free=14 sL0=0.0540 beta=-0.089 phi=0.84 a_xi=-0.777 b_xi=+0.086 a_obs=-1.199 b_obs=+0.083 s=0.745
+   surge(lam=0.00096,mu=1.35) sd=0.00000 | JUMPS lam=0.0000 c=0.0000 (sd/jump at K=0.000, var/wk at K=0.00000) gap_share=0.426
+   sse profile: {0.0: 0.1358}
+   band sL2 var : 0.0082 0.0056 0.0088 0.0104 0.0089 0.0101 0.0139 | rob core: 0.0075 0.0044 0.0041 0.0058 0.0025 0.0055 0.0026
+   band gap     : 0.0007 0.0012 0.0047 0.0046 0.0064 0.0046 0.0113 | model jump var/wk: 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
+   model IQRv/var band0 h=1,4,13,26,52: 0.661 0.759 0.835 0.894
+
+instagram_hm asym=False (2.8s): n_free=12 sL0=0.0699 beta=+0.000 phi=0.93 a_xi=-0.493 b_xi=+0.079 a_obs=-0.282 b_obs=+0.112 s=0.759
+   surge(lam=0.00000,mu=0.00) sd=0.00000 | JUMPS lam=0.0100 c=0.4955 (sd/jump at K=0.704, var/wk at K=0.00495) gap_share=0.977
+   sse profile: {0.0: 0.0222, 0.01: 0.0081}
+   band sL2 var : 0.0001 0.0006 0.0070 0.0030 0.0022 0.0051 0.0096 | rob core: 0.0000 0.0049 0.0000 0.0000 0.0000 0.0000 0.0000
+   band gap     : 0.0001 0.0000 0.0070 0.0030 0.0022 0.0051 0.0096 | model jump var/wk: 0.0020 0.0031 0.0035 0.0039 0.0044 0.0049 0.0054
+   model IQRv/var band0 h=1,4,13,26,52: 0.661 0.667 0.691 0.701
+
+instagram_hm asym=True (2.6s): n_free=14 sL0=0.0836 beta=+0.000 phi=0.89 a_xi=-0.675 b_xi=+0.080 a_obs=-0.295 b_obs=+0.114 s=0.759
+   surge(lam=0.01113,mu=0.78) sd=0.00000 | JUMPS lam=0.0000 c=0.0000 (sd/jump at K=0.000, var/wk at K=0.00000) gap_share=0.197
+   sse profile: {0.0: 0.0114}
+   band sL2 var : 0.0001 0.0006 0.0041 0.0012 0.0018 0.0037 0.0077 | rob core: 0.0000 0.0070 0.0000 0.0000 0.0000 0.0000 0.0000
+   band gap     : 0.0001 0.0000 0.0041 0.0012 0.0018 0.0037 0.0077 | model jump var/wk: 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
+   model IQRv/var band0 h=1,4,13,26,52: 0.663 0.663 0.670 0.683
+
+reddit_comments_ext asym=False (18.8s): n_free=12 sL0=0.0846 beta=+0.091 phi=0.93 a_xi=-1.254 b_xi=+0.043 a_obs=-1.259 b_obs=+0.105 s=0.692
+   surge(lam=0.00000,mu=0.00) sd=0.00000 | JUMPS lam=0.0100 c=0.3417 (sd/jump at K=0.585, var/wk at K=0.00342) gap_share=0.544
+   sse profile: {0.0: 0.1246, 0.01: 0.3847}
+   band sL2 var : 0.0025 0.0051 0.0017 0.0025 0.0043 0.0084 0.0137 | rob core: 0.0016 0.0018 0.0034 0.0040 0.0055 0.0045 0.0046
+   band gap     : 0.0016 0.0033 0.0000 0.0008 0.0015 0.0031 0.0105 | model jump var/wk: 0.0021 0.0027 0.0028 0.0030 0.0032 0.0034 0.0036
+   model IQRv/var band0 h=1,4,13,26,52: 0.664 0.700 0.732 0.762 0.791
+
+reddit_comments_ext asym=True (19.5s): n_free=15 sL0=0.0700 beta=+0.339 phi=0.84 a_xi=-1.347 b_xi=+0.050 a_obs=-1.294 b_obs=+0.108 s=0.692
+   surge(lam=0.00127,mu=1.44) sd=0.00959 | JUMPS lam=0.0000 c=0.0000 (sd/jump at K=0.000, var/wk at K=0.00000) gap_share=0.230
+   sse profile: {0.0: 0.151}
+   band sL2 var : 0.0000 0.0008 0.0000 0.0000 0.0002 0.0030 0.0071 | rob core: 0.0000 0.0000 0.0003 0.0001 0.0007 0.0015 0.0024
+   band gap     : 0.0000 0.0008 0.0000 0.0000 0.0000 0.0015 0.0048 | model jump var/wk: 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
+   model IQRv/var band0 h=1,4,13,26,52: 0.642 0.645 0.652 0.705 0.818
+
+reddit_submissions_long asym=False (8.0s): n_free=12 sL0=0.1174 beta=+0.159 phi=0.93 a_xi=-2.178 b_xi=+0.058 a_obs=-1.827 b_obs=+0.113 s=0.718
+   surge(lam=0.00000,mu=0.00) sd=0.00000 | JUMPS lam=0.0100 c=0.3815 (sd/jump at K=0.618, var/wk at K=0.00382) gap_share=0.387
+   sse profile: {0.0: 0.1048, 0.01: 1.6844}
+   band sL2 var : 0.0052 0.0049 0.0044 0.0057 0.0047 0.0061 0.0094 | rob core: 0.0020 0.0029 0.0029 0.0040 0.0054 0.0070 0.0100
+   band gap     : 0.0025 0.0015 0.0016 0.0023 0.0018 0.0025 0.0035 | model jump var/wk: 0.0020 0.0027 0.0030 0.0032 0.0035 0.0038 0.0041
+   model IQRv/var band0 h=1,4,13,26,52: 0.615 0.624 0.674 0.709 0.759
+
+reddit_submissions_long asym=True (8.3s): n_free=15 sL0=0.0578 beta=+0.218 phi=0.89 a_xi=-1.674 b_xi=+0.097 a_obs=-1.842 b_obs=+0.103 s=0.718
+   surge(lam=0.00139,mu=1.23) sd=0.00921 | JUMPS lam=0.0000 c=0.0000 (sd/jump at K=0.000, var/wk at K=0.00000) gap_share=0.035
+   sse profile: {0.0: 0.3259}
+   band sL2 var : 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0033 | rob core: 0.0000 0.0005 0.0000 0.0005 0.0000 0.0012 0.0025
+   band gap     : 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0009 | model jump var/wk: 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
+   model IQRv/var band0 h=1,4,13,26,52: 0.538 0.533 0.563 0.679 0.829

@@ -1,0 +1,4 @@
+T= 52 clean       : median: 0.2908 | trim10: 0.2252 | mean: 0.1944
+T= 52 contaminated: median: 0.4537 | trim10: 0.3952 | mean: 0.4102
+T=100 clean       : median: 0.2163 | trim10: 0.1670 | mean: 0.1446
+T=100 contaminated: median: 0.3015 | trim10: 0.2523 | mean: 0.2491

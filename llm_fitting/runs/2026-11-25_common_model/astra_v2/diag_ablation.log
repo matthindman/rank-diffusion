@@ -1,0 +1,80 @@
+
+================ EXACT FROZEN GATE v1: facebook_a ================
+  T=86 K=3500 test_len=21 origins=[21, 32, 43, 54, 65] hor=[1, 4, 13]
+    T0= 21 | base=0.144 | S2=0.111 (ci=False, w1=30.9) | S3=0.098 (ci=True, w1=23.8)
+           | S2 moment err: dRank1:0.14 dRank4:0.13 dRank13:0.23 RACF1:0.11 coll1:0.14 coll5:0.02 coll20:0.01
+           | S3 moment err: dRank1:0.07 dRank4:0.03 dRank13:0.13 RACF1:0.05 coll1:0.37 coll5:0.02 coll20:0.02
+    T0= 32 | base=0.179 | S2=0.106 (ci=True, w1=42.8) | S3=0.123 (ci=True, w1=37.9)
+           | S2 moment err: dRank1:0.00 dRank4:0.00 dRank13:0.17 RACF1:0.01 coll1:0.45 coll5:0.08 coll20:0.02
+           | S3 moment err: dRank1:0.07 dRank4:0.10 dRank13:0.12 RACF1:0.13 coll1:0.34 coll5:0.07 coll20:0.03
+    T0= 43 | base=0.094 | S2=0.085 (ci=True, w1=24.1) | S3=0.144 (ci=False, w1=18.9)
+           | S2 moment err: dRank1:0.08 dRank4:0.05 dRank13:0.35 RACF1:0.03 coll1:0.01 coll5:0.07 coll20:0.01
+           | S3 moment err: dRank1:0.15 dRank4:0.16 dRank13:0.46 RACF1:0.11 coll1:0.05 coll5:0.06 coll20:0.02
+    T0= 54 | base=0.145 | S2=0.071 (ci=True, w1=5.9) | S3=0.094 (ci=False, w1=11.9)
+           | S2 moment err: dRank1:0.00 dRank4:0.06 dRank13:0.24 RACF1:0.07 coll1:0.11 coll5:0.00 coll20:0.02
+           | S3 moment err: dRank1:0.15 dRank4:0.11 dRank13:0.20 RACF1:0.03 coll1:0.09 coll5:0.04 coll20:0.03
+    T0= 65 | base=0.175 | S2=0.079 (ci=True, w1=14.4) | S3=0.058 (ci=True, w1=9.4)
+           | S2 moment err: dRank1:0.07 dRank4:0.10 dRank13:0.15 RACF1:0.03 coll1:0.18 coll5:0.00 coll20:0.02
+           | S3 moment err: dRank1:0.00 dRank4:0.05 dRank13:0.15 RACF1:0.07 coll1:0.06 coll5:0.05 coll20:0.02
+  SUMMARY facebook_a: base=0.147±0.030 | S2=0.091±0.016 (cov=80%, wins=5/5) | S3=0.103±0.029 (cov=60%, wins=4/5, vsS2=2/5)
+completed factorial comparison facebook_a
+
+================ EXACT FROZEN GATE v1: instagram_hm ================
+  T=52 K=10000 test_len=13 origins=[13, 20, 26, 32, 39] hor=[1, 4]
+    T0= 13 | base=0.203 | S2=0.223 (ci=False, w1=18.8) | S3=0.223 (ci=False, w1=18.8)
+           | S2 moment err: dRank1:0.43 dRank4:0.38 coll1:0.20 coll5:0.11 coll20:0.01
+           | S3 moment err: dRank1:0.43 dRank4:0.38 coll1:0.20 coll5:0.11 coll20:0.01
+    T0= 20 | base=0.214 | S2=0.056 (ci=True, w1=19.8) | S3=0.098 (ci=True, w1=46.5)
+           | S2 moment err: dRank1:0.07 dRank4:0.05 coll1:0.02 coll5:0.10 coll20:0.03
+           | S3 moment err: dRank1:0.07 dRank4:0.05 coll1:0.29 coll5:0.04 coll20:0.05
+    T0= 26 | base=1.451 | S2=0.425 (ci=True, w1=19.3) | S3=0.510 (ci=True, w1=45.7)
+           | S2 moment err: dRank1:0.00 dRank4:0.10 RACF1:1.02 coll1:1.25 coll5:0.14 coll20:0.04
+           | S3 moment err: dRank1:0.00 dRank4:0.10 RACF1:1.23 coll1:1.58 coll5:0.14 coll20:0.02
+    T0= 32 | base=1.079 | S2=0.692 (ci=True, w1=28.9) | S3=0.830 (ci=True, w1=60.5)
+           | S2 moment err: dRank1:0.06 dRank4:0.17 coll1:3.15 coll5:0.02 coll20:0.06
+           | S3 moment err: dRank1:0.06 dRank4:0.17 coll1:3.80 coll5:0.05 coll20:0.07
+    T0= 39 | base=1.398 | S2=0.124 (ci=True, w1=14.0) | S3=0.140 (ci=True, w1=67.6)
+           | S2 moment err: dRank1:0.06 dRank4:0.06 RACF1:0.44 coll1:0.07 coll5:0.06 coll20:0.05
+           | S3 moment err: dRank1:0.06 dRank4:0.11 RACF1:0.55 coll1:0.02 coll5:0.03 coll20:0.06
+  SUMMARY instagram_hm: base=0.869±0.554 | S2=0.304±0.230 (cov=80%, wins=4/5) | S3=0.360±0.276 (cov=80%, wins=4/5, vsS2=0/5)
+completed factorial comparison instagram_hm
+
+================ EXACT FROZEN GATE v1: reddit_comments_ext ================
+  T=213 K=12500 test_len=53 origins=[53, 80, 106, 133, 160] hor=[1, 4, 13]
+    T0= 53 | base=0.189 | S2=0.159 (ci=True, w1=0.9) | S3=0.115 (ci=True, w1=0.5)
+           | S2 moment err: dRank1:0.17 dRank4:0.12 dRank13:0.09 RACF1:0.04 coll1:0.52 coll5:0.15 coll20:0.02
+           | S3 moment err: dRank1:0.00 dRank4:0.00 dRank13:0.09 RACF1:0.02 coll1:0.45 coll5:0.20 coll20:0.04
+    T0= 80 | base=0.178 | S2=0.194 (ci=True, w1=0.8) | S3=0.120 (ci=True, w1=0.8)
+           | S2 moment err: dRank1:0.00 dRank4:0.12 dRank13:0.27 RACF1:0.23 coll1:0.61 coll5:0.10 coll20:0.02
+           | S3 moment err: dRank1:0.00 dRank4:0.00 dRank13:0.18 RACF1:0.25 coll1:0.36 coll5:0.02 coll20:0.03
+    T0=106 | base=0.199 | S2=0.152 (ci=True, w1=1.1) | S3=0.131 (ci=True, w1=1.4)
+           | S2 moment err: dRank1:0.00 dRank4:0.00 dRank13:0.00 RACF1:0.07 coll1:0.88 coll5:0.12 coll20:0.01
+           | S3 moment err: dRank1:0.00 dRank4:0.11 dRank13:0.08 RACF1:0.07 coll1:0.52 coll5:0.12 coll20:0.01
+    T0=133 | base=0.117 | S2=0.044 (ci=True, w1=0.7) | S3=0.037 (ci=True, w1=0.5)
+           | S2 moment err: dRank1:0.17 dRank4:0.00 dRank13:0.00 RACF1:0.01 coll5:0.03 coll20:0.05
+           | S3 moment err: dRank1:0.00 dRank4:0.00 dRank13:0.08 RACF1:0.05 coll5:0.04 coll20:0.06
+    T0=160 | base=0.108 | S2=0.072 (ci=True, w1=2.2) | S3=0.047 (ci=True, w1=2.7)
+           | S2 moment err: dRank1:0.17 dRank4:0.00 dRank13:0.08 RACF1:0.10 coll5:0.04 coll20:0.05
+           | S3 moment err: dRank1:0.17 dRank4:0.00 dRank13:0.00 RACF1:0.00 coll5:0.06 coll20:0.05
+  SUMMARY reddit_comments_ext: base=0.158±0.038 | S2=0.124±0.057 (cov=100%, wins=4/5) | S3=0.090±0.040 (cov=100%, wins=5/5, vsS2=5/5)
+completed factorial comparison reddit_comments_ext
+
+================ EXACT FROZEN GATE v1: reddit_submissions_long ================
+  T=212 K=5000 test_len=53 origins=[53, 80, 106, 132, 159] hor=[1, 4, 13]
+    T0= 53 | base=0.102 | S2=0.313 (ci=True, w1=4.7) | S3=0.359 (ci=False, w1=5.3)
+           | S2 moment err: dRank1:0.33 dRank4:0.40 dRank13:0.86 RACF1:0.20 coll5:0.04 coll20:0.05
+           | S3 moment err: dRank1:0.67 dRank4:0.40 dRank13:0.86 RACF1:0.14 coll5:0.02 coll20:0.07
+    T0= 80 | base=0.185 | S2=0.177 (ci=True, w1=5.7) | S3=0.337 (ci=False, w1=6.8)
+           | S2 moment err: dRank1:0.00 dRank4:0.25 dRank13:0.50 RACF1:0.20 coll5:0.10 coll20:0.00
+           | S3 moment err: dRank1:0.33 dRank4:0.50 dRank13:0.67 RACF1:0.15 coll5:0.34 coll20:0.04
+    T0=106 | base=0.124 | S2=0.088 (ci=True, w1=0.3) | S3=0.223 (ci=False, w1=2.0)
+           | S2 moment err: dRank1:0.00 dRank4:0.00 dRank13:0.00 RACF1:0.03 coll5:0.47 coll20:0.02
+           | S3 moment err: dRank1:0.25 dRank4:0.20 dRank13:0.25 RACF1:0.05 coll5:0.57 coll20:0.02
+    T0=132 | base=0.201 | S2=0.154 (ci=True, w1=0.5) | S3=0.250 (ci=False, w1=1.5)
+           | S2 moment err: dRank1:0.00 dRank4:0.20 dRank13:0.38 RACF1:0.12 coll1:0.30 coll5:0.01 coll20:0.08
+           | S3 moment err: dRank1:0.25 dRank4:0.20 dRank13:0.25 RACF1:0.03 coll1:0.90 coll5:0.02 coll20:0.10
+    T0=159 | base=0.214 | S2=0.259 (ci=True, w1=4.6) | S3=0.348 (ci=False, w1=6.9)
+           | S2 moment err: dRank1:0.00 dRank4:0.20 dRank13:0.25 RACF1:0.15 coll1:0.90 coll5:0.08 coll20:0.23
+           | S3 moment err: dRank1:0.25 dRank4:0.40 dRank13:0.38 RACF1:0.04 coll1:1.09 coll5:0.02 coll20:0.26
+  SUMMARY reddit_submissions_long: base=0.165±0.044 | S2=0.198±0.079 (cov=100%, wins=3/5) | S3=0.303±0.055 (cov=0%, wins=0/5, vsS2=0/5)
+completed factorial comparison reddit_submissions_long

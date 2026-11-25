@@ -1,0 +1,25 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.6, pytest-9.0.3, pluggy-1.6.0 -- /Library/Frameworks/Python.framework/Versions/3.11/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/hindman/Documents/GitHub/rank-diffusion/llm_fitting/runs/2026-11-25_common_model/astra_v2
+plugins: anyio-4.4.0
+collecting ... collected 16 items
+
+test_common_rankdiff_astra.py::test_zero_temperament_recovery PASSED     [  6%]
+test_common_rankdiff_astra.py::test_full_parameter_recovery PASSED       [ 12%]
+test_common_rankdiff_astra.py::test_calendar_alignment_exact PASSED      [ 18%]
+test_common_rankdiff_astra.py::test_empirical_innovations_bounded_no_blowup PASSED [ 25%]
+test_common_rankdiff_astra.py::test_deconvolution_reduces_first_block_inflation PASSED [ 31%]
+test_common_rankdiff_astra.py::test_stage3_flag_off_bit_identical PASSED [ 37%]
+test_common_rankdiff_astra.py::test_stage3_zero_drift_with_surges_recovery PASSED [ 43%]
+test_common_rankdiff_astra.py::test_stage3_full_asymmetry_recovery PASSED [ 50%]
+test_common_rankdiff_astra.py::test_stage3_kalman_4state_alignment PASSED [ 56%]
+test_common_rankdiff_astra.py::test_spec_b_lower_bound_enforced_everywhere PASSED [ 62%]
+test_common_rankdiff_astra.py::test_capped_surge_moments_match_simulator PASSED [ 68%]
+test_common_rankdiff_astra.py::test_stage3_symmetrized_pool_and_hl52_recovery PASSED [ 75%]
+test_common_rankdiff_astra.py::test_forecast_return_totals_and_no_clamp_L_bias PASSED [ 81%]
+test_common_rankdiff_astra.py::test_within_band_variogram_invariant_to_tier_trends PASSED [ 87%]
+test_common_rankdiff_astra.py::test_robust_volatility_recovers_conditional_scale PASSED [ 93%]
+test_common_rankdiff_astra.py::test_direction_rejects_wrong_sign_and_retains_positive_surge PASSED [100%]
+
+============================== 16 passed in 3.98s ==============================

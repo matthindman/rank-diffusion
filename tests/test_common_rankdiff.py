@@ -300,3 +300,162 @@ def test_within_band_variogram_invariant_to_tier_trends():
     D1 = cr._structure_function(X_trend, band_of, nb=4, H=20)
     assert np.allclose(D0, D1, atol=1e-12, rtol=1e-12), "Within-band variogram not invariant to tier trends!"
 
+
+def test_robust_volatility_recovers_conditional_scale():
+    """Known Gaussian weekly differences combine a homogeneous floor and scaled passing noise."""
+    p, levels = _make_planted_params(
+        N=180, K=90, beta=0.0, b_xi=0.0, b_obs=0.0, s_vol=0.7, gamma_L=0.0, sigma_L0=0.1,
+    )
+    z = np.log((np.arange(p.N) + 0.5) / p.N)
+    lasting = cr.sigma_L_of(p, levels)
+    v = np.tile([0.4, 1.0, 2.2], 60)
+    var = lasting ** 2 + v * (2.0 * cr.sigma_obs_of(p, z) ** 2 + 2.0 * (1.0 - p.phi) * cr.v_xi_of(p, z))
+    rng = np.random.default_rng(1001)
+    dx = rng.normal(size=(450, p.N)) * np.sqrt(var)
+    dx[:, -1] = np.nan
+    estimate, sd = cr._volatility_posterior(p, dx, z, lasting)
+    for group in (0.4, 1.0, 2.2):
+        valid = (v == group) & (np.arange(p.N) < p.N - 1)
+        assert abs(np.median(estimate[valid]) / group - 1.0) < 0.12
+    assert estimate[-1] == 1.0 and sd[-1] == p.s_vol
+    assert np.all(sd[:-1] < p.s_vol)
+    # Extremely large rare symmetric bursts can destroy mean-square scale, but not median posterior
+    contaminated = dx.copy()
+    contaminated[::50, :-1] += 30.0 * rng.choice([-1.0, 1.0], size=contaminated[::50, :-1].shape)
+    estimate_out, _ = cr._volatility_posterior(p, contaminated, z, lasting)
+    assert np.median(np.abs(np.log(estimate_out[:-1] / estimate[:-1]))) < 0.13
+    assert np.nanmean(contaminated ** 2) > 10.0 * np.nanmean(dx ** 2)
+
+
+# --------------------------------------------------------------------------- #
+# Round 5 (Fable 5.2): opt-in robust IQR core + rare permanent Laplace jumps
+# --------------------------------------------------------------------------- #
+def test_default_scale_moment_is_variance_bit_identical():
+    """Default estimate_common() must stay bit-identical to scale_moment='variance' (Round 4)."""
+    p_true, L0 = _make_planted_params(
+        N=1600, K=400, s_vol=0.6, gamma_L=0.0, a_abs=-3.0, b_abs=0.5, innov_mode="empirical"
+    )
+    X, R, _ = cr.simulate_common_panel(p_true, L0, T_sim=120, seed=41, apply_absence=True, burn=20)
+    for asym in (False, True):
+        pd = cr.estimate_common(X, R, K=400, refine_drift=False, asymmetry=asym)
+        pv = cr.estimate_common(X, R, K=400, refine_drift=False, asymmetry=asym, scale_moment="variance")
+        assert pd.diag["scale_moment"] == "variance"
+        assert pd.jump_lam == 0.0 and pd.jump_c == 0.0
+        for k in ("sigma_L0", "beta", "phi", "a_xi", "b_xi", "a_obs", "b_obs", "s_vol", "a_abs", "b_abs",
+                  "lam_exit", "surge_lam", "surge_mu", "surge_rho", "decline_var", "decline_rho"):
+            assert getattr(pd, k) == getattr(pv, k), f"{k} differs under asymmetry={asym}"
+        assert np.array_equal(pd.innov_pool, pv.innov_pool)
+        assert np.array_equal(pd.drift_g, pv.drift_g)
+
+
+def test_robust_matches_variance_on_gaussian_panel():
+    """With Gaussian innovations the IQR-based and mean-square moments coincide."""
+    p_true, L0 = _make_planted_params(
+        N=2400, K=600, sigma_L0=0.09, beta=0.05, phi=0.78,
+        a_xi=-1.05, b_xi=0.10, a_obs=-1.35, b_obs=0.10,
+        s_vol=0.6, gamma_L=0.0, a_abs=-8.0, b_abs=0.0,
+    )
+    X, R, _ = cr.simulate_common_panel(p_true, L0, T_sim=160, seed=9, apply_absence=False, burn=20)
+    pv = cr.estimate_common(X, R, K=600, refine_drift=False, scale_moment="variance")
+    pr = cr.estimate_common(X, R, K=600, refine_drift=False, scale_moment="robust")
+    assert pr.phi == pv.phi
+    assert abs(pr.sigma_L0 - p_true.sigma_L0) / p_true.sigma_L0 < 0.25
+    assert abs(pr.sigma_L0 - pv.sigma_L0) / pv.sigma_L0 < 0.20
+    assert abs(pr.a_xi - pv.a_xi) < 0.25 and abs(pr.a_obs - pv.a_obs) < 0.25
+    assert pr.diag["scale_moment"] == "robust" and "D_rob" in pr.diag
+
+
+def test_robust_fit_separates_planted_rare_lasting_jumps():
+    """Rare permanent jumps inflate the mean-square fit; opt-in scale_moment='robust' detects them."""
+    p_true, L0 = _make_planted_params(
+        N=2400, K=600, sigma_L0=0.08, beta=0.0, phi=0.80,
+        a_xi=-1.1, b_xi=0.0, a_obs=-1.4, b_obs=0.0,
+        s_vol=0.5, gamma_L=0.0, a_abs=-8.0, b_abs=0.0,
+    )
+    T = 160
+    rng = np.random.default_rng(2024)
+    st = cr.CommonState(p_true, L0, rng)
+    Xs = np.empty((T, p_true.N))
+    Rs = np.full((T, p_true.N), np.nan)
+    for _ in range(20):
+        st.step(apply_absence=False)
+    for t in range(T):
+        jump = (rng.random(p_true.N) < 0.008) * 1.2 * rng.standard_normal(p_true.N)
+        st.L = st.L + jump
+        x = st.step(apply_absence=False)
+        Xs[t] = x
+        ok = np.flatnonzero(np.isfinite(x))
+        Rs[t, ok[np.argsort(-x[ok], kind="stable")]] = np.arange(1, ok.size + 1, dtype=float)
+    pv = cr.estimate_common(Xs, Rs, K=600, refine_drift=False, scale_moment="variance")
+    pr = cr.estimate_common(Xs, Rs, K=600, refine_drift=False, scale_moment="robust")
+    assert pv.sigma_L0 > 1.4 * p_true.sigma_L0
+    assert pr.jump_lam > 0.0 and pr.sigma_L0 < pv.sigma_L0
+    total_hat = pr.sigma_L0 ** 2 + pr.jump_lam * pr.jump_c
+    total_true = p_true.sigma_L0 ** 2 + 0.008 * 1.2 ** 2
+    assert abs(total_hat - total_true) / total_true < 0.30
+
+
+def test_model_increment_ratio_gaussian_is_one():
+    """Under Gaussian innovations without heterogeneity the model (IQR/1.349)^2 / Var ratio is ~1."""
+    nb, H = 3, 13
+    r = cr._model_increment_ratio(
+        np.array([0.01, 0.02, 0.03]), np.array([0.1, 0.1, 0.1]), np.array([0.05, 0.05, 0.05]),
+        phi=0.8, s_vol=0.0, pool=np.array([0.0]), innov_mode="gaussian", H=H, n_mc=65536,
+    )
+    assert r.shape == (nb, H)
+    assert np.all(np.abs(r - 1.0) < 0.05)
+
+
+def test_jumps_inactive_on_jump_free_gaussian_panel():
+    """No lasting-variance gap -> opt-in robust fit keeps jumps off and 11 scalars."""
+    p_true, L0 = _make_planted_params(
+        N=8000, K=2000, sigma_L0=0.09, beta=0.05, phi=0.80,
+        a_xi=-1.1, b_xi=0.10, a_obs=-1.4, b_obs=0.10, s_vol=0.6, gamma_L=0.0, a_abs=-8.0, b_abs=0.0,
+    )
+    X, R, _ = cr.simulate_common_panel(p_true, L0, T_sim=160, seed=5, apply_absence=False, burn=20)
+    p_hat = cr.estimate_common(X, R, K=2000, refine_drift=False, scale_moment="robust")
+    assert p_hat.jump_lam == 0.0 and p_hat.jump_c == 0.0
+    assert p_hat.n_free_scalars() == 11
+    assert p_hat.diag["jumps"]["gap_share"] < cr.JUMP_MIN_SHARE
+
+
+def test_jump_recovery_rate_and_variance():
+    """Planted rare Laplace jumps: opt-in scale_moment='robust' recovers core sigma_L0 and jump variance."""
+    p_true, L0 = _make_planted_params(
+        N=8000, K=2000, sigma_L0=0.08, beta=0.0, phi=0.80,
+        a_xi=-1.1, b_xi=0.10, a_obs=-1.4, b_obs=0.0, s_vol=0.5, gamma_L=0.0, a_abs=-8.0, b_abs=0.0,
+    )
+    p_j = cr.CommonParams(**{**p_true.__dict__, "jump_lam": 0.01, "jump_c": 0.5})
+    X, R, _ = cr.simulate_common_panel(p_j, L0, T_sim=200, seed=77, apply_absence=False, burn=20)
+    p_hat = cr.estimate_common(X, R, K=2000, refine_drift=False, scale_moment="robust")
+    assert p_hat.jump_lam == cr.JUMP_LAM_FIXED and p_hat.n_free_scalars() == 12
+    true_var = 0.01 * 0.5
+    est_var = p_hat.jump_lam * p_hat.jump_c
+    assert 0.30 * true_var < est_var < 1.30 * true_var
+    assert abs(p_hat.sigma_L0 - p_true.sigma_L0) / p_true.sigma_L0 < 0.30
+    pv = cr.estimate_common(X, R, K=2000, refine_drift=False, scale_moment="variance")
+    assert pv.jump_lam == 0.0 and pv.sigma_L0 > 1.25 * p_true.sigma_L0
+
+
+def test_jump_simulator_variance_matches_formula():
+    """One lasting step with jumps adds exactly lam * c * s_sc(z)^2 variance on average."""
+    p_true, L0 = _make_planted_params(
+        N=20000, K=5000, sigma_L0=0.0, beta=0.0, phi=0.5, a_xi=-8.0, b_xi=0.12,
+        a_obs=-8.0, b_obs=0.0, s_vol=0.0, gamma_L=0.0, a_abs=-10.0, b_abs=0.0, lam_exit=0.0,
+    )
+    p_j = cr.CommonParams(**{**p_true.__dict__, "drift_g": np.zeros_like(p_true.drift_g), "jump_lam": 0.2, "jump_c": 0.4})
+    rng = np.random.default_rng(3)
+    st = cr.CommonState(p_j, L0, rng)
+    L_before = st.L.copy()
+    _, zp = st._ranks_and_z()
+    st.step_lasting()
+    dL = st.L - L_before
+    expected = 0.2 * (cr._jump_sd_of(p_j, zp) ** 2)
+    order = np.argsort(-L_before)
+    for lo, hi in ((1, 500), (500, 5000), (5000, 20000)):
+        idx = order[lo - 1:hi]
+        ratio = float(np.mean(dL[idx] ** 2)) / float(np.mean(expected[idx]))
+        assert 0.8 < ratio < 1.25
+
+
+
