@@ -1,0 +1,150 @@
+{
+  "facebook_a": {
+    "36": {
+      "active": false,
+      "n_scalars": 14,
+      "allocated_fraction": 0.0,
+      "surge_rate": 0.004397018643347301,
+      "drift_sd": 0.0
+    },
+    "42": {
+      "active": false,
+      "n_scalars": 14,
+      "allocated_fraction": 7.238073565470532e-05,
+      "surge_rate": 0.0031704569965434735,
+      "drift_sd": 0.0
+    },
+    "48": {
+      "active": false,
+      "n_scalars": 14,
+      "allocated_fraction": 0.013622493513685614,
+      "surge_rate": 0.0025084875019389316,
+      "drift_sd": 0.0
+    },
+    "53": {
+      "active": false,
+      "n_scalars": 14,
+      "allocated_fraction": 0.01157324255140484,
+      "surge_rate": 0.002989640477717584,
+      "drift_sd": 0.0
+    },
+    "59": {
+      "active": false,
+      "n_scalars": 14,
+      "allocated_fraction": 0.0,
+      "surge_rate": 0.001896166410005267,
+      "drift_sd": 0.0
+    }
+  },
+  "instagram_hm": {
+    "22": {
+      "active": true,
+      "n_scalars": 13,
+      "allocated_fraction": 0.2009359763628663,
+      "surge_rate": 0.0,
+      "drift_sd": 0.0
+    },
+    "26": {
+      "active": false,
+      "n_scalars": 14,
+      "allocated_fraction": 0.010241266138016217,
+      "surge_rate": 0.006102953181023987,
+      "drift_sd": 0.0
+    },
+    "30": {
+      "active": false,
+      "n_scalars": 14,
+      "allocated_fraction": 0.07211455212874202,
+      "surge_rate": 0.002194439071233644,
+      "drift_sd": 0.0
+    },
+    "34": {
+      "active": false,
+      "n_scalars": 14,
+      "allocated_fraction": 0.050689849887190414,
+      "surge_rate": 0.0028134949421886064,
+      "drift_sd": 0.0
+    },
+    "38": {
+      "active": false,
+      "n_scalars": 11,
+      "allocated_fraction": 0.0805866858470634,
+      "surge_rate": 0.0,
+      "drift_sd": 0.0
+    }
+  },
+  "reddit_comments_ext": {
+    "78": {
+      "active": false,
+      "n_scalars": 15,
+      "allocated_fraction": 0.012215449843260737,
+      "surge_rate": 0.001622090529549656,
+      "drift_sd": 0.010583161511813214
+    },
+    "98": {
+      "active": false,
+      "n_scalars": 15,
+      "allocated_fraction": 0.04633992931351905,
+      "surge_rate": 0.0016150680952201708,
+      "drift_sd": 0.007843915277276887
+    },
+    "119": {
+      "active": false,
+      "n_scalars": 15,
+      "allocated_fraction": 0.015945551838690668,
+      "surge_rate": 0.0014754159353159706,
+      "drift_sd": 0.004283392957779169
+    },
+    "140": {
+      "active": false,
+      "n_scalars": 15,
+      "allocated_fraction": 0.013744374047899416,
+      "surge_rate": 0.0013963286012694865,
+      "drift_sd": 0.007229079458027744
+    },
+    "160": {
+      "active": false,
+      "n_scalars": 15,
+      "allocated_fraction": 0.001519884633855743,
+      "surge_rate": 0.0013509467394596482,
+      "drift_sd": 0.009173127659513771
+    }
+  },
+  "reddit_submissions_long": {
+    "78": {
+      "active": false,
+      "n_scalars": 15,
+      "allocated_fraction": 0.0,
+      "surge_rate": 0.00227955718509319,
+      "drift_sd": 0.00939315930849638
+    },
+    "98": {
+      "active": false,
+      "n_scalars": 15,
+      "allocated_fraction": 0.0,
+      "surge_rate": 0.0020534841786117425,
+      "drift_sd": 0.009616887594850711
+    },
+    "118": {
+      "active": false,
+      "n_scalars": 15,
+      "allocated_fraction": 0.0,
+      "surge_rate": 0.001706526252278532,
+      "drift_sd": 0.01062584632809267
+    },
+    "139": {
+      "active": false,
+      "n_scalars": 15,
+      "allocated_fraction": 0.0,
+      "surge_rate": 0.0013467768249069353,
+      "drift_sd": 0.010842958123128259
+    },
+    "159": {
+      "active": false,
+      "n_scalars": 15,
+      "allocated_fraction": 0.0,
+      "surge_rate": 0.0014513039399056797,
+      "drift_sd": 0.008625491685528605
+    }
+  }
+}

@@ -131,8 +131,9 @@ def test_stage3_flag_off_bit_identical():
     X, R, _ = cr.simulate_common_panel(p_true, L0, T_sim=80, seed=3, apply_absence=False)
     p0 = cr.estimate_common(X, R, K=200, refine_drift=False)
     p1 = cr.estimate_common(X, R, K=200, refine_drift=False, asymmetry=False)
+    pv = cr.estimate_common(X, R, K=200, refine_drift=False, asymmetry=False, scale_moment="variance")
     assert p0.surge_lam == 0.0 and p0.decline_var == 0.0
-    assert p0.n_free_scalars() == 11
+    assert pv.n_free_scalars() == 11 and p0.n_free_scalars() in (11, 12)
     assert p0.sigma_L0 == p1.sigma_L0 and p0.phi == p1.phi and p0.s_vol == p1.s_vol
     f0 = cr.filter_endpoints(X, R, p0)
     assert "P4" not in f0
@@ -328,24 +329,55 @@ def test_robust_volatility_recovers_conditional_scale():
 
 
 # --------------------------------------------------------------------------- #
-# Round 5 (Fable 5.2): opt-in robust IQR core + rare permanent Laplace jumps
+# Round 5 (Fable 5.2) & Round 6 (Meta-Split): opt-in robust & default meta
 # --------------------------------------------------------------------------- #
-def test_default_scale_moment_is_variance_bit_identical():
-    """Default estimate_common() must stay bit-identical to scale_moment='variance' (Round 4)."""
+def test_default_meta_preserves_variance_path_when_no_jumps_and_in_stage3():
+    """Default scale_moment='meta' keeps asymmetry=True bit-identical to 'variance',
+    and keeps (phi, V_xi, sigma_obs) equal to 'variance' when asymmetry=False."""
     p_true, L0 = _make_planted_params(
         N=1600, K=400, s_vol=0.6, gamma_L=0.0, a_abs=-3.0, b_abs=0.5, innov_mode="empirical"
     )
     X, R, _ = cr.simulate_common_panel(p_true, L0, T_sim=120, seed=41, apply_absence=True, burn=20)
-    for asym in (False, True):
-        pd = cr.estimate_common(X, R, K=400, refine_drift=False, asymmetry=asym)
-        pv = cr.estimate_common(X, R, K=400, refine_drift=False, asymmetry=asym, scale_moment="variance")
-        assert pd.diag["scale_moment"] == "variance"
-        assert pd.jump_lam == 0.0 and pd.jump_c == 0.0
-        for k in ("sigma_L0", "beta", "phi", "a_xi", "b_xi", "a_obs", "b_obs", "s_vol", "a_abs", "b_abs",
-                  "lam_exit", "surge_lam", "surge_mu", "surge_rho", "decline_var", "decline_rho"):
-            assert getattr(pd, k) == getattr(pv, k), f"{k} differs under asymmetry={asym}"
-        assert np.array_equal(pd.innov_pool, pv.innov_pool)
-        assert np.array_equal(pd.drift_g, pv.drift_g)
+    # Stage 3 (asymmetry=True) must be bit-identical between default 'meta' and 'variance'
+    pm3 = cr.estimate_common(X, R, K=400, refine_drift=False, asymmetry=True)
+    pv3 = cr.estimate_common(X, R, K=400, refine_drift=False, asymmetry=True, scale_moment="variance")
+    assert pm3.diag["scale_moment"] == "meta"
+    assert pm3.jump_lam == 0.0 and pm3.jump_c == 0.0
+    for k in ("sigma_L0", "beta", "phi", "a_xi", "b_xi", "a_obs", "b_obs", "s_vol", "a_abs", "b_abs",
+              "lam_exit", "surge_lam", "surge_mu", "surge_rho", "decline_var", "decline_rho"):
+        assert getattr(pm3, k) == getattr(pv3, k), f"{k} differs under asymmetry=True"
+    assert np.array_equal(pm3.innov_pool, pv3.innov_pool)
+    assert np.array_equal(pm3.drift_g, pv3.drift_g)
+
+    # Stage 2 (asymmetry=False): meta preserves exact mean-square (phi, a_xi, b_xi, a_obs, b_obs)
+    pm2 = cr.estimate_common(X, R, K=400, refine_drift=False, asymmetry=False)
+    pv2 = cr.estimate_common(X, R, K=400, refine_drift=False, asymmetry=False, scale_moment="variance")
+    for k in ("phi", "a_xi", "b_xi", "a_obs", "b_obs", "s_vol", "a_abs", "b_abs", "lam_exit"):
+        assert getattr(pm2, k) == getattr(pv2, k), f"{k} differs in meta vs variance S2"
+
+
+def test_meta_default_recovers_planted_gaussian_jumps_and_stays_off_when_absent():
+    """Round 6 default scale_moment='meta': inactive on jump-free Gaussian panel (11 sc);
+    detects planted 2%/wk Gaussian jumps (12 sc) while preserving exact passing/obs laws."""
+    p_true, L0 = _make_planted_params(
+        N=8000, K=2000, sigma_L0=0.08, beta=0.0, phi=0.80,
+        a_xi=-1.1, b_xi=0.10, a_obs=-1.4, b_obs=0.0, s_vol=0.5, gamma_L=0.0, a_abs=-8.0, b_abs=0.0,
+    )
+    X0, R0, _ = cr.simulate_common_panel(p_true, L0, T_sim=160, seed=5, apply_absence=False, burn=20)
+    p0 = cr.estimate_common(X0, R0, K=2000, refine_drift=False)
+    assert p0.jump_lam == 0.0 and p0.n_free_scalars() == 11
+
+    p_j = cr.CommonParams(**{**p_true.__dict__, "jump_lam": 0.01, "jump_c": 1.2, "jump_dist": "gaussian"})
+    Xj, Rj, _ = cr.simulate_common_panel(p_j, L0, T_sim=200, seed=77, apply_absence=False, burn=20)
+    pm = cr.estimate_common(Xj, Rj, K=2000, refine_drift=False)
+    pv = cr.estimate_common(Xj, Rj, K=2000, refine_drift=False, scale_moment="variance")
+    assert pm.jump_lam == cr.JUMP_LAM_FIXED and pm.jump_dist == "gaussian" and pm.n_free_scalars() == 12
+    assert pm.a_xi == pv.a_xi and pm.a_obs == pv.a_obs and pm.phi == pv.phi
+    assert pm.sigma_L0 < pv.sigma_L0
+    true_var = 0.01 * 1.2
+    est_var = pm.jump_lam * pm.jump_c
+    assert 0.25 * true_var < est_var < 1.35 * true_var
+
 
 
 def test_robust_matches_variance_on_gaussian_panel():
@@ -425,10 +457,10 @@ def test_jump_recovery_rate_and_variance():
         N=8000, K=2000, sigma_L0=0.08, beta=0.0, phi=0.80,
         a_xi=-1.1, b_xi=0.10, a_obs=-1.4, b_obs=0.0, s_vol=0.5, gamma_L=0.0, a_abs=-8.0, b_abs=0.0,
     )
-    p_j = cr.CommonParams(**{**p_true.__dict__, "jump_lam": 0.01, "jump_c": 0.5})
+    p_j = cr.CommonParams(**{**p_true.__dict__, "jump_lam": 0.01, "jump_c": 0.5, "jump_dist": "laplace"})
     X, R, _ = cr.simulate_common_panel(p_j, L0, T_sim=200, seed=77, apply_absence=False, burn=20)
     p_hat = cr.estimate_common(X, R, K=2000, refine_drift=False, scale_moment="robust")
-    assert p_hat.jump_lam == cr.JUMP_LAM_FIXED and p_hat.n_free_scalars() == 12
+    assert p_hat.jump_lam == cr.JUMP_LAM_ROBUST and p_hat.n_free_scalars() == 12
     true_var = 0.01 * 0.5
     est_var = p_hat.jump_lam * p_hat.jump_c
     assert 0.30 * true_var < est_var < 1.30 * true_var

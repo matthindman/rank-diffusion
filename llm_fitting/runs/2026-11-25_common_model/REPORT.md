@@ -274,3 +274,56 @@ Two independent agent passes ran in isolated workspaces (`astra_v2/` and `fable_
    - **Exact frozen Gate v1 (`fable_v2/`):** `reddit_comments_ext` S2 **`0.096 ± 0.028`** (80% cov, **5/5 wins** — best S2 on record, beating Model A `0.123`); `reddit_submissions_long` S2 **`0.196 ± 0.103`** (60% cov, **3/5 wins**, matching Model A `0.188` with a 12-scalar symmetric core); `facebook_a` S2 `0.093 ± 0.031` (60%, 5/5); `instagram_hm` S2 `0.344 ± 0.216` (100% cov, 5/5; `dRank1/4` improved to `15.0/17.6` vs. `15.4/18.6`, rel err inflated by `RACF1` floor). Also calibrated Comments Goal 2 `cov90` (`0.880–0.896`) and improved `X CRPS` and head share-shift MAE across platforms.
    - **Why opt-in rather than replacing the default:** (i) `S3` on the robust core degraded Gate v1 (`Submissions 0.198 → 0.266`), Comments CRPS, and Comments OOP crossings — `S3` must stay on `scale_moment="variance"`; (ii) inheriting `b_xi` misallocates jumps onto FB's head (`top10 0.35 → 0.45`, `boundary 1.069`), mild under-dispersion on FB/IG `cov90` (`0.865–0.880`), and `JUMP_LAM_FIXED = 0.01/wk` is a cross-platform convention (not per-panel estimated).
    - **Held-out protocol recommendation:** Pre-register three clean arms in `llm_fitting/common_rankdiff.py` before unsealing any new dataset: **`Common-S2`** (11 sc, default `scale_moment="variance"`), **`Common-S2+J`** (12 sc, opt-in `scale_moment="robust"`), and **`Common-S3`** (14–15 sc, opt-in `asymmetry=True, scale_moment="variance"`).
+
+---
+
+## 13. Final Squeeze Toward a Unified Meta-Framework: Antigravity (Round 6), Astra 6.2 (Round 7), and Claude Opus 5.5 (Round 8)
+
+Following commit/push `e720db3` (Rounds 4–5), three final sequential development rounds ran on the four anonymous DEVELOPMENT panels (`facebook_a`, `instagram_hm`, `reddit_comments_ext`, `reddit_submissions_long`), zero sealed contact:
+
+1. **Antigravity Unified Meta-Framework (`round6_meta/`) — Round 6 (ADOPTED AS `scale_moment="meta"` DEFAULT in `llm_fitting/common_rankdiff.py`):**
+   - **Core idea:** Unify the symmetric core (`asymmetry=False`, 12 scalars) and the asymmetric extension (`asymmetry=True`, 14–15 scalars) under one exact meta-equation: preserve mean-square `(phi, V_xi, sigma_obs)` so short-lag forecasts stay calibrated on every platform, and when `asymmetry=False` and the lasting-variance gap share exceeds `0.20`, split ONLY lasting variance into the `h <= 13` robust diffusive core (`clip(sL2_rob, 0.15*sL2_var, sL2_var)`) plus rare permanent **Gaussian** jumps (`JUMP_LAM_FIXED = 0.02/wk`, `jump_dist="gaussian"`, +1 scalar `jump_c`, rank attenuation inherited from `b_xi` and capped at `dz <= 0` via `_jump_scale_of` so the `K..4K` buffer never explodes). When `asymmetry=True` (`S3`), `jump_lam = 0` so `S3` stays bit-identical to Round 4 (surges + persistent drift carry the rare/lifecycle channel without double-counting). Both `scale_moment="variance"` (11 sc pure diffusion) and `"robust"` (12 sc Round 5 Laplace `S2+J`) remain intact as opt-in modes.
+   - **Ablations rejected:** `trim10` volatility filter (hurt IG/Reddit S3 vs. Astra `median`); unbounded free jump slope `b_J` (blew up Submissions `T0=53` and FB `dep_rate`); `0.01/wk` Laplace jumps inside `meta` (FB `boundary = 1.295` / `dep_rate = 0.068`); `b_surge`/`b_d` inside bandwise-subtracted S3 (hurt FB/Submissions).
+   - **Exact frozen Gate v1 (`5 × 20, boot 2000`):**
+     - `facebook_a`: S2 **`0.089 ± 0.037`** (80%, 3/5) / S3 **`0.091 ± 0.016`** (80%, 5/5) [vs. persist `0.147`, Model A `0.103`]
+     - `instagram_hm`: S2 **`0.306 ± 0.232`** (80%, 4/5) / S3 **`0.304 ± 0.230`** (80%, 4/5) [vs. persist `0.869`]
+     - `reddit_comments_ext`: S2 **`0.113 ± 0.035`** (**100% cov, 5/5 wins**) / S3 **`0.124 ± 0.057`** (100% cov, 4/5) [vs. persist `0.158`, Model A `0.123`]
+     - `reddit_submissions_long`: S2 **`0.178 ± 0.066`** (**80% cov, 2/5 — best S2 on record, beats Model A `0.188` and cuts R4 S2 `0.263` by 32%**) / S3 **`0.198 ± 0.079`** (**100% cov, 3/5**) [vs. persist `0.165`].
+   - **Goal 1 & Goal 2:** Boundary ratios snap to **`0.993–1.015`** across all 4 platforms (`FB 1.015, IG 0.993, Comments 1.013, Submissions 0.996`); exact `cov90` `FB 0.882–0.891`, `IG 0.887–0.891`, `Comments 0.900–0.914`, `Submissions 0.923–0.935`; sweeps `X CRPS` and `logR CRPS` vs. Round 4 across all 5 horizons on both Reddit ladders.
+
+2. **OpenAI Astra 6.2 (`astra_v3/ASTRA_R7_REPORT.md`) — Round 7 (AUDITED & REJECTED; KEEP ROUND 6):**
+   - Tested a constrained affine minorant rank-profiled jump budget (`scale_moment="bounded"`, +1 sc → 13 sc S2) designed to shut jumps off at Facebook's head while preserving them on Reddit.
+   - **Result:** Slight FB/IG S2 gains (`0.083 / 0.282`, switching jumps off on all 5 IG origins) came at the cost of regressing **Submissions S2 (`0.178 → 0.209`)**, **Comments S2 (`0.113 → 0.118`, cov `100% → 80%`)**, worsening Comments `X` & `logR` CRPS at all 5 horizons, worsening 10/12 non-FB ladder spans, and missing planted head-concentrated jumps (`0/3`) and jump+surge coexistence (`0/3`). Both Astra and audit independently recommended rejecting Round 7.
+   - **Keepable diagnostic insight:** Stratified endpoint calibration showed Submissions' 52w `cov90 = 0.923–0.935` is an upper-tail location bias (`1.1%` upper-tail misses vs. `5.0%` lower-tail misses at head) tracing to Reddit's one-time 2019→20 secular head compression.
+
+3. **Claude Opus 5.5 (`opus_r8/OPUS_R8_REPORT.md`) — Round 8 (AUDITED & REJECTED; KEEP ROUND 6):**
+   - Verified via bounded tail asymmetry `A(q)` that S3 surges accurately match Reddit's far-tail asymmetry (`0.0041 vs 0.0042`, `0.0019 vs 0.0018`), then proved Reddit's persistent drift `sigma_d` is strongly rank-dependent (2–4× smaller variance at head than boundary) and that R6's drift estimator fires spuriously (`0.003–0.004`) on drift-free panels without an SE gate.
+   - Tested `drift_core=True` (adding SE-gated persistent drift to S2, +2 sc on Reddit) + `drift_rank_law=True` (3-tier WLS `sigma_d(z)`, +1 sc on Reddit). Cleanly bit-identical to Round 6 on FB/IG.
+   - **Result:** S3′ achieved **`0.087 ± 0.056`** (100% cov, 5/5 wins) on `reddit_comments_ext` — the best Comments Gate v1 of any round — and S2′ fixed Reddit persistence (`rho -0.047/-0.041 → +0.088/+0.103`). However, **S2′ regressed both Reddit Gate v1 scores (`Comments 0.113→0.120`, `Submissions 0.178→0.191`)** and 9/10 Reddit `logR CRPS` cells, while **S3′ blew up on `reddit_submissions_long` (`0.198→0.260`, `T0=80: 0.427`)**. Both Opus 5.5 and audit independently recommended rejecting Round 8 and keeping Round 6.
+   - **Keepable structural discovery (D11):** Opus's post-hoc failure audit revealed that Round 6 S3's bandwise-subtracted lasting law is collinear / poorly identified on Reddit (5–6 of 7 inside-$K$ bands clamp to exact zero lasting variance after subtracting surge + drift variance, so a 6% change in drift flips `beta` from `+0.085` to `-0.250`).
+
+4. **Final Development Verdict (Diminishing Returns Reached):**
+   - **Round 6 (`llm_fitting/common_rankdiff.py`, `scale_moment="meta"` default)** stands as the undisputed development champion after 8 rounds (including independent improvement passes by Astra 6.2 twice, Fable 5.2, and Claude Opus 5.5).
+   - **Ready for pre-registered held-out protocol** (Reddit 2023–24 bridge, YouTube, Wikipedia): freeze **`Common-S2` (12 sc, Round 6 `scale_moment="meta"`, robust primary arm)**, paired with **`Common-S3` (14–15 sc, `asymmetry=True`, asymmetry & drift comparator)** and **`Common-S2-var` (11 sc, `scale_moment="variance"`, pure-diffusion ablation reference)**.
+
+---
+
+## 14. Round 9 Final Development Push (Antigravity, `round9_unified/`) — Pareto Frontier Confirmed
+
+At the owner's request for one more push after Round 8, five mathematically grounded candidates were tested in isolation (`round9_unified/`) against the Round 6 champion on the exact frozen Gate v1 (`5 × 20, boot 2000`) and full Gold Benchmark (`20 seeds` Goal 1 + `M = 39` exact Goal 2 + OOP), zero sealed contact:
+
+1. **Diagnostics uncovered two genuine empirical facts:**
+   - Uniform variogram lag weights (`w_h = 1`) overpredict lag-1 variance on every platform (`Submissions +12.8%, Comments +8.5%, FB +5.8%, IG +2.8%`) and bias `sigma_obs^2` by `+40.8%` on a Reddit-like planted jump panel; `w_h = 1/sqrt(h)` beat uniform **5/5** on planted recovery.
+   - Empirical $\kappa_3(\Delta_h X)$ scales 4.3×–13.5× from head to rank $K$, and combining empirical `b_surge` + Opus's 3-tier SE-gated `b_d` + log-octave variogram weights completely eliminated S3's D11 zero-band collapse (`0/7` zero bands on all 10 Reddit gate windows).
+   - Every platform's variogram is two-timescale (a fast 1–2 week news/viral bounce at $\phi_f = 0.35$ plus a 1–3 month wave at $\phi_s = 0.84–0.93$): a `+1`-scalar `w_fast` fit every lag `h = 1..52` to `< 0.6%` simultaneously while zeroing out cleanly (`w_fast = 0.00`) on a single-AR(1) null plant.
+
+2. **Full Triad Evaluation (all five rejected; Round 6 kept untouched):**
+   - **`R9-A` (`inv_sqrt_h`, 0 extra sc):** Gate v1 S2 `0.086 (5/5) / 0.329 / 0.121 / 0.160` (first S2 to beat persistence `0.165` on Submissions), S3 `0.096 / 0.322 / 0.147 / 0.219` — worse IG/Comments S2 and worse S3.
+   - **`R9-B` (`rel_sqrt_h`, $1/(D\sqrt{h})$, 0 extra sc):** **4/4 Gate v1 S2 sweep** (`0.085 (5/5) / 0.301 / 0.107 (5/5, 100%) / 0.152 (100%, beats persistence 0.165)`), and swept Comments Gold CRPS — **but** lost `12/17` S2 `X CRPS` cells on Gold (`Submissions h=52w +0.0187, cov90 0.950`; `IG h=13w +0.0077`) because 2,000:1 lag-1 weighting collapsed `phi → 0.35–0.55` on Submissions training windows.
+   - **`R9-C` (`inv_sqrt_h + S3_rank` [`b_surge + b_d`]):** Fixed D11 (`0/7` zero bands) and cut Submissions S3 SD in half (`0.118 → 0.058`), improving S3 over `R9-A` on Reddit (`0.113 / 0.211`), but trailed Round 6 S3 on 3/4 panels (`0.105 / 0.328 / 0.113 / 0.211` vs `0.091 / 0.304 / 0.124 / 0.198`).
+   - **`R9-D` (`rel`, $1/D$, 0 extra sc):** Gate v1 S2 `0.098 / 0.315 / 0.120 / 0.155`, S3 `0.097 / 0.304 / 0.148 / 0.218`; tightened Goal 1 boundaries (`0.998–1.020`), but lost `15/17` S2 `X CRPS` cells (`worst +0.0042`) and `12/17` `logR CRPS` cells vs. Round 6.
+   - **`R9-E` (`two_timescale`, `+1` sc `w_fast`, $\phi_f = 0.35$, `rel`, exact 3/5-state Kalman):** Gate v1 S2 `0.090 (5/5) / 0.315 / 0.122 / 0.169`, S3 `0.106 / 0.304 / 0.169 / 0.221`. Nailed exact `Turn10` on FB (`0.350`) and Comments (`0.267`) and cut Submissions 52w head share-shift MAE (`-48.2 ppm`), but lost `14/17` S2 `X CRPS` and `kalMAE` cells vs. Round 6.
+
+3. **Conclusion:** Across Rounds 7 (Astra 6.2), 8 (Claude Opus 5.5), and 9 (Antigravity), every extension trades short-lag Gate v1 against long-horizon `X CRPS` or trades Goal 1 polish against Goal 2 forecast scores and parsimony. **Round 6 (`llm_fitting/common_rankdiff.py`, `scale_moment="meta"` default) is firmly confirmed as the Pareto-optimal DEVELOPMENT champion.**
+
+

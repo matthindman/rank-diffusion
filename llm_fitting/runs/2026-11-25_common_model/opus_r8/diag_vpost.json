@@ -1,0 +1,41 @@
+{
+ "reddit_submissions_long": {
+  "n": 200,
+  "med_m_in": 0.09636901704676237,
+  "med_m_out": 0.09198524264253397,
+  "med_m_post": 0.10667202471158665,
+  "med_logratio_post_vs_in": 0.07934936933385411,
+  "mean_logratio_post_vs_in": 0.09321594464919172,
+  "med_logratio_out_vs_in": -0.08451903705112462,
+  "share_lasting_floor_exceeds_measured": 0.095,
+  "median_lasting_share_of_1wk_var": 0.1401398092934556,
+  "v_hat_median": 0.6685110402897498,
+  "s_vol": 0.7231031962021189
+ },
+ "reddit_comments_ext": {
+  "n": 200,
+  "med_m_in": 0.1500280906641938,
+  "med_m_out": 0.14378387203371623,
+  "med_m_post": 0.15777791149002665,
+  "med_logratio_post_vs_in": 0.052814768917804705,
+  "mean_logratio_post_vs_in": 0.054376912479457834,
+  "med_logratio_out_vs_in": -0.06592880019371042,
+  "share_lasting_floor_exceeds_measured": 0.05,
+  "median_lasting_share_of_1wk_var": 0.015440489121831958,
+  "v_hat_median": 0.7072485155162849,
+  "s_vol": 0.7331001815967801
+ },
+ "facebook_a": {
+  "n": 200,
+  "med_m_in": 0.2612104461847242,
+  "med_m_out": 0.2506562179524008,
+  "med_m_post": 0.2833542232103766,
+  "med_logratio_post_vs_in": 0.10609529505692436,
+  "mean_logratio_post_vs_in": 0.08848443767477225,
+  "med_logratio_out_vs_in": 0.05337049114471,
+  "share_lasting_floor_exceeds_measured": 0.09,
+  "median_lasting_share_of_1wk_var": 0.04646039197721392,
+  "v_hat_median": 0.7146662186341547,
+  "s_vol": 0.7780360221430639
+ }
+}

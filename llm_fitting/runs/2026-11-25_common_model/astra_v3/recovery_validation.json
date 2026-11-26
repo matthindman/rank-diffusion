@@ -1,0 +1,134 @@
+[
+  {
+    "plant": "null",
+    "seed": 431,
+    "active": false,
+    "fraction": 0.19693843332178157,
+    "head": 0.0,
+    "body": 0.0,
+    "surge": 0.0,
+    "surge_scale": 0.0,
+    "surge_half_life": 0
+  },
+  {
+    "plant": "null",
+    "seed": 853,
+    "active": false,
+    "fraction": 0.041975065562026646,
+    "head": 0.0,
+    "body": 0.0,
+    "surge": 0.0,
+    "surge_scale": 0.0,
+    "surge_half_life": 0
+  },
+  {
+    "plant": "null",
+    "seed": 1289,
+    "active": false,
+    "fraction": 0.001975819664299631,
+    "head": 0.0,
+    "body": 0.0,
+    "surge": 0.0,
+    "surge_scale": 0.0,
+    "surge_half_life": 0
+  },
+  {
+    "plant": "rising",
+    "seed": 431,
+    "active": true,
+    "fraction": 0.3325411651984663,
+    "head": 0.0,
+    "body": 0.010922039751540597,
+    "surge": 0.0,
+    "surge_scale": 0.0,
+    "surge_half_life": 0
+  },
+  {
+    "plant": "rising",
+    "seed": 853,
+    "active": true,
+    "fraction": 0.3915517219267041,
+    "head": 0.0,
+    "body": 0.010156587223192202,
+    "surge": 0.0,
+    "surge_scale": 0.0,
+    "surge_half_life": 0
+  },
+  {
+    "plant": "rising",
+    "seed": 1289,
+    "active": true,
+    "fraction": 0.25804599794744176,
+    "head": 0.0,
+    "body": 0.008492548430548051,
+    "surge": 0.0,
+    "surge_scale": 0.0,
+    "surge_half_life": 0
+  },
+  {
+    "plant": "falling",
+    "seed": 431,
+    "active": false,
+    "fraction": 0.06651734379616801,
+    "head": 0.0,
+    "body": 0.0,
+    "surge": 0.0,
+    "surge_scale": 0.0,
+    "surge_half_life": 0
+  },
+  {
+    "plant": "falling",
+    "seed": 853,
+    "active": true,
+    "fraction": 0.201279247737338,
+    "head": 0.0034134274399402714,
+    "body": 0.0036939000830189797,
+    "surge": 0.0,
+    "surge_scale": 0.0,
+    "surge_half_life": 0
+  },
+  {
+    "plant": "falling",
+    "seed": 1289,
+    "active": false,
+    "fraction": 0.04839764021220231,
+    "head": 0.0,
+    "body": 0.0,
+    "surge": 0.0,
+    "surge_scale": 0.0,
+    "surge_half_life": 0
+  },
+  {
+    "plant": "both",
+    "seed": 431,
+    "active": false,
+    "fraction": 0.0,
+    "head": 0.0,
+    "body": 0.0,
+    "surge": 0.023057744190357075,
+    "surge_scale": 0.5093244536169724,
+    "surge_half_life": 26.00000000000005
+  },
+  {
+    "plant": "both",
+    "seed": 853,
+    "active": false,
+    "fraction": 0.015373896866042834,
+    "head": 0.0,
+    "body": 0.0,
+    "surge": 0.004916169857937352,
+    "surge_scale": 0.8485213519741139,
+    "surge_half_life": 38.99999999999992
+  },
+  {
+    "plant": "both",
+    "seed": 1289,
+    "active": false,
+    "fraction": 0.0,
+    "head": 0.0,
+    "body": 0.0,
+    "surge": 0.01767033874230108,
+    "surge_scale": 0.5460073620139215,
+    "surge_half_life": 38.99999999999992
+  }
+]

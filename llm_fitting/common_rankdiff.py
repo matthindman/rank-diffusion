@@ -99,9 +99,10 @@ class CommonParams:
     decline_exit: float = 0.0    # weekly hazard of leaving decline state (0 = absorbing to exit)
     decline_delta: float = 0.0   # weekly drift rate inside decline state
 
-    # Round 5 S2+J (inert when jump_lam == 0): rare permanent Laplace jumps on the lasting level
-    jump_lam: float = 0.0        # weekly probability of a lasting jump (JUMP_LAM_FIXED when active)
+    # Round 5-6 rare permanent jumps on the lasting level (inert when jump_lam == 0)
+    jump_lam: float = 0.0        # weekly probability of a lasting jump (0.02 meta, 0.01 robust)
     jump_c: float = 0.0          # per-jump variance at the s_sc normalization: Var(J | z) = jump_c * s_sc(z)^2
+    jump_dist: str = "gaussian"  # "gaussian" (Round 6 meta default) or "laplace" (Round 5 opt-in robust)
 
     diag: dict | None = None
 
@@ -206,7 +207,8 @@ ROBUST_H_MAX = 13
 # development panels carry 0.39-0.98; a planted 64%-share panel measures 0.24). An additional "must improve
 # the all-horizon IQR-profile fit by 25%" rule was tried and rejected: it fires on jump-free small-band panels
 # and misses planted jumps (EXPERIMENT_LOG); the fit of that profile is kept in diag for the record only.
-JUMP_LAM_FIXED = 0.01
+JUMP_LAM_FIXED = 0.02   # Round 6 meta Gaussian-jump rate (2%/wk); Fable opt-in 'robust' uses 0.01
+JUMP_LAM_ROBUST = 0.01
 JUMP_MIN_SHARE = 0.20
 
 
@@ -522,16 +524,34 @@ def _surge_scale_of(b_xi: float, z: np.ndarray, z_K: float) -> np.ndarray:
     return raw / rms
 
 
+def _jump_scale_of(b: float, z: np.ndarray, z_K: float) -> np.ndarray:
+    """Rank-attenuation multiplier for rare lasting jumps, capped at rank K (dz <= 0) so the K..4K buffer never explodes."""
+    b_pos = max(float(b), 0.0)
+    dz = np.clip(np.asarray(z, dtype=float) - z_K, -8.0, 0.0)
+    raw = np.exp(b_pos * dz)
+    rms = math.sqrt(1.0 / (1.0 + 2.0 * b_pos))
+    return raw / rms
+
+
 def _jump_sd_of(p: CommonParams, z: np.ndarray) -> np.ndarray:
-    """Per-jump SD by log-rank z: sqrt(jump_c) x the inherited rank attenuation s_sc(z) (0 extra scalars)."""
+    """Per-jump SD by log-rank z: sqrt(jump_c) x inherited rank attenuation (0 extra scalars)."""
     if p.jump_lam <= 0.0 or p.jump_c <= 0.0:
         return np.zeros(np.shape(z), dtype=float)
-    return math.sqrt(p.jump_c) * _surge_scale_of(p.b_xi, np.asarray(z, dtype=float), p.z_K)
+    if getattr(p, "jump_dist", "gaussian") == "laplace":
+        return math.sqrt(p.jump_c) * _surge_scale_of(p.b_xi, np.asarray(z, dtype=float), p.z_K)
+    return math.sqrt(p.jump_c) * _jump_scale_of(p.b_xi, np.asarray(z, dtype=float), p.z_K)
 
 
 def _draw_laplace_unit(rng: np.random.Generator, n: int) -> np.ndarray:
     """Unit-variance Laplace (two-sided exponential) draws: sign x Exp(1) / sqrt(2)."""
     return (rng.standard_exponential(n) * np.where(rng.random(n) < 0.5, -1.0, 1.0)) / math.sqrt(2.0)
+
+
+def _draw_jump_unit(p: CommonParams, rng: np.random.Generator, n: int) -> np.ndarray:
+    """Unit-variance rare permanent jump draw: Gaussian (Round 6 meta) or Laplace (Round 5 robust)."""
+    if getattr(p, "jump_dist", "gaussian") == "laplace":
+        return _draw_laplace_unit(rng, n)
+    return rng.standard_normal(n)
 
 
 def _estimate_stage3_surge(
@@ -889,9 +909,9 @@ def estimate_common(
     min_pres_band: float = 0.5,
     fit_gamma_L: bool = False,
     asymmetry: bool = False,
-    scale_moment: str = "variance",
+    scale_moment: str = "meta",
 ) -> CommonParams:
-    """Estimate the 11-scalar Common Rank-Diffusion model (or opt-in Stage 3 with asymmetry=True).
+    """Estimate the Common Rank-Diffusion meta-model (11-12 core scalars; 14-15 with asymmetry=True).
 
     Parameters
     ----------
@@ -902,16 +922,21 @@ def estimate_common(
     spec_b : optional (z_sb, sigma_obs_sb) daily replication floor pinning sigma_obs(z)
     refine_drift : whether to run smooth all-rank fixed-point refinement of g(r)
     innov_mode : "empirical" (bounded empirical standardized residuals) or "gaussian"
-    asymmetry : opt-in Stage 3 (fading positive surges + persistent entity drift, variance-conserving)
-    scale_moment : "variance" (default; Round 4 = Round 3 + Astra robust _volatility_posterior)
-        uses the mean-square within-band variogram fit (recommended for both S2 and S3).
-        "robust" (opt-in Round 5 S2+J; intended for asymmetry=False) fits (sigma_L, V_xi, sigma_obs)
-        so that the model's h=1..13 IQR equals the data's with phi pinned from the full-horizon
-        mean-square variogram, plus rare permanent Laplace jumps (JUMP_LAM_FIXED=0.01/wk) carrying
-        the lasting-variance gap (+1 scalar jump_c when gap_share > JUMP_MIN_SHARE).
+    asymmetry : opt-in Stage 3 (fading positive surges + persistent entity drift, variance-conserving;
+        uses surges as its rare-event channel while keeping symmetric jumps off)
+    scale_moment :
+        "meta" (default, Round 6): total-variance-conserving lasting split. Keeps mean-square
+        (phi, V_xi, sigma_obs) intact (preserving short-lag calibration on every platform) and,
+        when asymmetry=False and lasting jump gap share > 20%, splits lasting variance into the
+        robust h<=13 diffusive core + rare permanent Gaussian jumps (JUMP_LAM_FIXED=0.02/wk,
+        +1 scalar jump_c, rank law inherited from b_xi and capped at rank K). When asymmetry=True,
+        uses the clean Round 4 mean-square + surges + persistent drift path.
+        "variance" (Round 4): pure mean-square within-band variogram fit (11 sc S2 / 14-15 sc S3).
+        "robust" (Round 5 Fable S2+J): robust IQR fit for (sigma_L, V_xi, sigma_obs) + Laplace
+        jumps at JUMP_LAM_ROBUST=0.01/wk.
     """
-    if scale_moment not in ("robust", "variance"):
-        raise ValueError(f"scale_moment must be 'robust' or 'variance', got {scale_moment!r}")
+    if scale_moment not in ("meta", "robust", "variance"):
+        raise ValueError(f"scale_moment must be 'meta', 'robust', or 'variance', got {scale_moment!r}")
     X = np.asarray(X, dtype=np.float64)
     R = np.asarray(R, dtype=np.float64)
     T, N = X.shape
@@ -1056,8 +1081,9 @@ def estimate_common(
     ratio_last = None
     jump_lam = 0.0
     jump_c = 0.0
+    jump_dist = "laplace" if scale_moment == "robust" else "gaussian"
     jump_diag = None
-    if scale_moment == "robust":
+    if scale_moment == "robust" or (scale_moment == "meta" and not asymmetry):
         D_rob_all = _structure_function(Xc, band_of, nb, H, robust=True)
         D_rob = D_rob_all.copy()
         D_rob[:, ROBUST_H_MAX:] = np.nan  # declared horizon set of the robust SCALE fit (see ROBUST_H_MAX)
@@ -1136,7 +1162,10 @@ def estimate_common(
         # (i) jump-free robust core
         fit0, _, ratio0, sse0 = _robust_fit_for(0.0, 0.0, fit_var, 3)
         # (ii) the lasting-variance gap between the mean-square fit and the jump-free robust core, computed ONCE
-        s_sc0 = _surge_scale_of(_b_xi_of(fit0["vxi_b"]), band_z, z_K)
+        if scale_moment == "meta":
+            s_sc0 = _jump_scale_of(_b_xi_of(fit_var["vxi_b"]), band_z, z_K)
+        else:
+            s_sc0 = _surge_scale_of(_b_xi_of(fit0["vxi_b"]), band_z, z_K)
         gap0 = np.where(np.isfinite(fit_var["sL2_b"]) & np.isfinite(fit0["sL2_b"]),
                         np.maximum(fit_var["sL2_b"] - fit0["sL2_b"], 0.0), np.nan)
         ok0 = in_k & np.isfinite(gap0) & np.isfinite(fit_var["sL2_b"])
@@ -1150,16 +1179,34 @@ def estimate_common(
             tot_last = tot_last + fit_var["decline_var"]
         gap_share = float(np.sum(w_oct[ok0] * gap0[ok0]) / max(float(np.sum(w_oct[ok0] * tot_last[ok0])), 1e-12)) if ok0.any() else 0.0
         sse_profile = {0.0: sse0}
-        fit, ratio_last = fit0, ratio0
-        # Symmetric jumps belong to the core model; the Stage 3 comparator's tail process is its surge.
-        if (not asymmetry) and gap_share > JUMP_MIN_SHARE and lam_c0 > 0.0:
-            fit_j, c_j, ratio_j, sse_j = _robust_fit_for(JUMP_LAM_FIXED, lam_c0, fit0, 2)
-            sse_profile[JUMP_LAM_FIXED] = sse_j
-            if c_j > 0.0:
-                jump_lam, fit, jump_c, ratio_last = JUMP_LAM_FIXED, fit_j, c_j, ratio_j
-                jump_diag = dict(active=True, gap_share=gap_share, gap_band=gap0.tolist(), lam_c=lam_c0,
-                                 sse_profile=sse_profile, jump_var_per_week_at_K=jump_lam * jump_c,
-                                 jump_sd_at_K=math.sqrt(jump_c))
+
+        if scale_moment == "meta":
+            # Round 6 meta lasting split: preserve exact mean-square (phi, V_xi, sigma_obs) so short-lag
+            # forecast calibration is untouched, and split ONLY lasting variance into diffusive core + rare Gaussian jumps.
+            fit, ratio_last = fit_var, ratio0
+            if (not asymmetry) and gap_share > JUMP_MIN_SHARE and lam_c0 > 0.0:
+                jump_lam = JUMP_LAM_FIXED
+                jump_c = lam_c0 / jump_lam
+                sL2_rem = np.where(
+                    np.isfinite(fit_var["sL2_b"]) & np.isfinite(fit0["sL2_b"]),
+                    np.clip(fit0["sL2_b"], 0.15 * fit_var["sL2_b"], fit_var["sL2_b"]),
+                    fit_var["sL2_b"],
+                )
+                fit = {**fit_var, "sL2_b": sL2_rem}
+                jump_diag = dict(active=True, mode="meta_gaussian_split", gap_share=gap_share,
+                                 gap_band=gap0.tolist(), lam_c=lam_c0,
+                                 jump_var_per_week_at_K=jump_lam * jump_c, jump_sd_at_K=math.sqrt(jump_c))
+        else:
+            fit, ratio_last = fit0, ratio0
+            # Symmetric jumps belong to the core model; the Stage 3 comparator's tail process is its surge.
+            if (not asymmetry) and gap_share > JUMP_MIN_SHARE and lam_c0 > 0.0:
+                fit_j, c_j, ratio_j, sse_j = _robust_fit_for(JUMP_LAM_ROBUST, lam_c0, fit0, 2)
+                sse_profile[JUMP_LAM_ROBUST] = sse_j
+                if c_j > 0.0:
+                    jump_lam, fit, jump_c, ratio_last = JUMP_LAM_ROBUST, fit_j, c_j, ratio_j
+                    jump_diag = dict(active=True, gap_share=gap_share, gap_band=gap0.tolist(), lam_c=lam_c0,
+                                     sse_profile=sse_profile, jump_var_per_week_at_K=jump_lam * jump_c,
+                                     jump_sd_at_K=math.sqrt(jump_c))
         if jump_diag is None:
             jump_diag = dict(active=False, gap_share=gap_share, gap_band=gap0.tolist(), lam_c=lam_c0, sse_profile=sse_profile)
 
@@ -1287,8 +1334,9 @@ def estimate_common(
     # 7. Closed-form Atlas drift (total lasting variance incl. jumps) + optional smooth all-rank refinement
     jump_var_fn = None
     if jump_lam > 0.0 and jump_c > 0.0:
-        def jump_var_fn(z_arr, _lam=jump_lam, _c=jump_c, _b=b_xi, _zk=z_K):
-            return _lam * _c * _surge_scale_of(_b, z_arr, _zk) ** 2
+        _jfn = _surge_scale_of if jump_dist == "laplace" else _jump_scale_of
+        def jump_var_fn(z_arr, _lam=jump_lam, _c=jump_c, _b=b_xi, _zk=z_K, _fn=_jfn):
+            return _lam * _c * _fn(_b, z_arr, _zk) ** 2
     dz, dg = _closed_form_atlas_drift(sigma_L0, beta, L_K, u_lo, u_hi, ladder_obs, N, jump_var_fn=jump_var_fn)
 
     diag = dict(
@@ -1318,7 +1366,7 @@ def estimate_common(
         a_obs_floor=a_obs_floor, b_obs_floor=b_obs_floor, innov_mode=innov_mode,
         surge_lam=surge_lam, surge_mu=surge_mu, surge_rho=surge_rho,
         decline_var=decline_var, decline_rho=decline_rho,
-        jump_lam=jump_lam, jump_c=jump_c,
+        jump_lam=jump_lam, jump_c=jump_c, jump_dist=jump_dist,
         diag=diag,
     )
 
@@ -1445,7 +1493,7 @@ class CommonState:
             hit = rng.random(N) < p.jump_lam
             nh = int(hit.sum())
             if nh:
-                self.L[hit] = self.L[hit] + _jump_sd_of(p, zp[hit]) * _draw_laplace_unit(rng, nh)
+                self.L[hit] = self.L[hit] + _jump_sd_of(p, zp[hit]) * _draw_jump_unit(p, rng, nh)
 
         if self.drift_i is not None:
             self.L = self.L + self.drift_i
@@ -1584,7 +1632,7 @@ def _volatility_posterior(
 
     jump_delta = np.zeros(size, dtype=np.float64)
     if p.jump_lam > 0.0 and p.jump_c > 0.0:
-        jump_delta = (rng.random(size) < p.jump_lam) * _draw_laplace_unit(rng, size)
+        jump_delta = (rng.random(size) < p.jump_lam) * _draw_jump_unit(p, rng, size)
 
     order = np.argsort(z)
     nodes = np.unique(np.linspace(0, z.size - 1, min(25, z.size)).round().astype(int))
